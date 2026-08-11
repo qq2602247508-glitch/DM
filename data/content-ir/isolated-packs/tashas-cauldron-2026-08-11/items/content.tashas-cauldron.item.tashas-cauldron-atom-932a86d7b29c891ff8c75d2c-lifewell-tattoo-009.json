@@ -1,0 +1,198 @@
+{
+  "attunement_requirements": {
+    "required": true,
+    "requirements_text": "任意生物"
+  },
+  "charges": {},
+  "clauses": [
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:lifewell-tattoo:009:equipment",
+      "clause_type": "equipment",
+      "evidence": {
+        "source_fragment": "118"
+      },
+      "parameters": {
+        "equipped_slot": "worn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:lifewell-tattoo:009:attunement",
+      "clause_type": "attunement",
+      "evidence": {
+        "source_text": "需同调"
+      },
+      "parameters": {
+        "required": true,
+        "requirements_text": "任意生物"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:lifewell-tattoo:009:tattoo-lifecycle",
+      "clause_type": "tattoo_lifecycle",
+      "evidence": {
+        "source_text": "针头会化为墨水再变成刺青"
+      },
+      "parameters": {
+        "on_attune": "ink_manifestation",
+        "on_unattune": "needle_returns_and_effects_removed"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:lifewell-tattoo:009:resistance:1",
+      "clause_type": "resistance",
+      "evidence": {
+        "source_text": "对暗蚀伤害的抗性"
+      },
+      "parameters": {
+        "damage_types": [
+          "暗蚀"
+        ],
+        "id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:lifewell-tattoo:009:resistance:1",
+        "source_text": "对暗蚀伤害的抗性"
+      },
+      "trigger": "equipped_or_attuned"
+    }
+  ],
+  "compile": {
+    "blockers": [],
+    "clauses": [
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:lifewell-tattoo:009:equipment",
+        "clause_type": "equipment",
+        "evidence": {
+          "source_fragment": "118"
+        },
+        "parameters": {
+          "equipped_slot": "worn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:lifewell-tattoo:009:attunement",
+        "clause_type": "attunement",
+        "evidence": {
+          "source_text": "需同调"
+        },
+        "parameters": {
+          "required": true,
+          "requirements_text": "任意生物"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:lifewell-tattoo:009:tattoo-lifecycle",
+        "clause_type": "tattoo_lifecycle",
+        "evidence": {
+          "source_text": "针头会化为墨水再变成刺青"
+        },
+        "parameters": {
+          "on_attune": "ink_manifestation",
+          "on_unattune": "needle_returns_and_effects_removed"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:lifewell-tattoo:009:resistance:1",
+        "clause_type": "resistance",
+        "evidence": {
+          "source_text": "对暗蚀伤害的抗性"
+        },
+        "parameters": {
+          "damage_types": [
+            "暗蚀"
+          ],
+          "id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:lifewell-tattoo:009:resistance:1",
+          "source_text": "对暗蚀伤害的抗性"
+        },
+        "trigger": "equipped_or_attuned"
+      }
+    ],
+    "compile_status": "full",
+    "consumer_ids": [
+      "item.attunement.v1",
+      "item.equipment_modifier.v1"
+    ],
+    "item_fingerprint": "12c4efc4bd85db4ca3ef15a537b35aac80186957832cc7958293c6ee1b60bc19",
+    "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-lifewell-tattoo-009",
+    "runtime_preview_full": true,
+    "schema_version": "item-ir-1",
+    "source_trust": "authored_ir"
+  },
+  "conditions": [],
+  "consumption_policy": {
+    "mode": "persistent"
+  },
+  "damage": null,
+  "duration": null,
+  "equipped_slot": "worn",
+  "evidence": {
+    "manual_review_required": false,
+    "rejected_inferences": [
+      "unknown_effects",
+      "unresolved_spell_identity",
+      "freeform_targeting"
+    ],
+    "review_status": "reviewed_explicit_fields_only",
+    "reviewed_fields": [
+      "identity",
+      "kind",
+      "rarity",
+      "attunement",
+      "charges",
+      "clause_boundaries"
+    ],
+    "source_fragment": "118",
+    "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html",
+    "source_text_sha256": "30850bad009ed2cefd63f0b4ca201d8cec3db6f181210c71d103a587d0e26744"
+  },
+  "granted_actions": [],
+  "granted_spells": [],
+  "healing": null,
+  "immunities": [],
+  "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-lifewell-tattoo-009",
+  "item_kind": "magic_tattoo",
+  "localized_name": "命源刺青",
+  "manual_review_required": false,
+  "name": "命源刺青|Lifewell Tattoo",
+  "namespace": "dnd.tashas.recovery.item",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "whole-pack-2026-08-11",
+  "passive_modifiers": [],
+  "rarity": "极珍稀",
+  "requires_attunement": true,
+  "resistances": [
+    {
+      "damage_types": [
+        "暗蚀"
+      ],
+      "id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:lifewell-tattoo:009:resistance:1",
+      "source_text": "对暗蚀伤害的抗性"
+    }
+  ],
+  "resource_bindings": [],
+  "review_fingerprint": "12c4efc4bd85db4ca3ef15a537b35aac80186957832cc7958293c6ee1b60bc19",
+  "review_status": "reviewed",
+  "ruleset_version": "2024",
+  "schema_version": "item-ir-1",
+  "source_fingerprint": "30850bad009ed2cefd63f0b4ca201d8cec3db6f181210c71d103a587d0e26744",
+  "source_fragment": "118",
+  "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html",
+  "source_record_id": "932a86d7b29c891ff8c75d2c",
+  "source_trust": "authored_ir",
+  "stack_policy": {
+    "mode": "unique_instance"
+  },
+  "temporary_hp": null,
+  "triggered_effects": []
+}

@@ -1,0 +1,1344 @@
+{
+  "after_atom_counts": {
+    "by_kind": {
+      "character_option": 15,
+      "class_feature": 63,
+      "companion_profile": 3,
+      "directory": 10,
+      "dm_tool": 7,
+      "environment_rule": 22,
+      "feat": 16,
+      "infusion": 16,
+      "invocation": 8,
+      "magic_item": 36,
+      "magic_tattoo": 11,
+      "maneuver": 8,
+      "narrative": 10,
+      "puzzle": 15,
+      "spell": 21,
+      "subclass_feature": 263
+    },
+    "executable": 407,
+    "player_facing": 407,
+    "total": 524
+  },
+  "audit_fingerprint": "62efdfe7e901e532caf1469b140076806917a9331931ae3ffd97d8cce781a9a1",
+  "before_atom_counts": {
+    "by_kind": {
+      "character_option": 15,
+      "class_feature": 64,
+      "companion_profile": 3,
+      "directory": 10,
+      "dm_tool": 7,
+      "environment_rule": 22,
+      "feat": 16,
+      "infusion": 21,
+      "invocation": 9,
+      "magic_item": 103,
+      "magic_tattoo": 36,
+      "maneuver": 8,
+      "narrative": 9,
+      "puzzle": 15,
+      "spell": 21,
+      "subclass_feature": 266
+    },
+    "executable": 558,
+    "player_facing": 558,
+    "total": 625
+  },
+  "merged_atoms": [
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:00327c82d3ab:049",
+      "content_kind": "magic_item",
+      "name": "豁免",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:1252d0a398f2:054",
+      "content_kind": "magic_item",
+      "name": "感官",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:15e8a37a7567:059",
+      "content_kind": "magic_item",
+      "name": "再生",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:039",
+      "content_kind": "magic_item",
+      "name": "琉克欧",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:29631095055e:053",
+      "content_kind": "magic_item",
+      "name": "状态免疫",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:065",
+      "content_kind": "magic_item",
+      "name": "达文",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:3e9825c326a3:025",
+      "content_kind": "magic_item",
+      "name": "鲁芭的灵魂塔罗卡",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:4452cadefa38:048",
+      "content_kind": "magic_item",
+      "name": "速度",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:4a8754b5052c:052",
+      "content_kind": "magic_item",
+      "name": "伤害免疫",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:017",
+      "content_kind": "magic_item",
+      "name": "伊格薇尔伏恶魔",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:701851b553da:058",
+      "content_kind": "magic_item",
+      "name": "抗魔构造",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:7b4ce71461d6:037",
+      "content_kind": "magic_item",
+      "name": "绝大多数维斯塔尼部族接受以不同方式旅行、不同出身的善意旅行者，他们欢迎那些想要在无尽路途中，在迷雾之后的朦胧幻象中觅得一处家园的人。",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:a5854e3a20bd:062",
+      "content_kind": "magic_item",
+      "name": "动作",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:ac08c36a006b:056",
+      "content_kind": "magic_item",
+      "name": "挑战等级",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:ac:046",
+      "content_kind": "magic_item",
+      "name": "AC",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:b9760b49a97c:050",
+      "content_kind": "magic_item",
+      "name": "技能",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:bab44e141c8b:051",
+      "content_kind": "magic_item",
+      "name": "伤害抗性",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:bb572d37155f:038",
+      "content_kind": "magic_item",
+      "name": "作为一名半身人维斯塔尼人，鲁芭夫人领导着堕影冥界中最大的一支维斯塔尼部族。她来自施特拉德伯爵与伊娃夫人所来自的相同的世界，而她创造了一个善良的、坚韧的社区",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:c6eb8d113532:057",
+      "content_kind": "magic_item",
+      "name": "不变存在",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:cf46df2616bf:064",
+      "content_kind": "magic_item",
+      "name": "飞跃冲击",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:db0e19f5d68b:009",
+      "content_kind": "magic_item",
+      "name": "拉奥圣杖",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:dc981a875c38:061",
+      "content_kind": "magic_item",
+      "name": "非凡本质",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:dfb3eb8e58e3:063",
+      "content_kind": "magic_item",
+      "name": "毁灭铁拳",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:e52972a53915:055",
+      "content_kind": "magic_item",
+      "name": "语言",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:f1ce8849e824:036",
+      "content_kind": "magic_item",
+      "name": "魂之塔罗卡的创造者鲁芭夫人曾是维斯塔尼人中最有影响力的领导者之一。在无数个时代里，维斯塔尼人游荡于堕影冥界之中，其中包括了如同被吸血鬼所困扰的领域",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:f7643be9fbe7:060",
+      "content_kind": "magic_item",
+      "name": "立定起跳",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:fc9c899e53c6:014",
+      "content_kind": "magic_item",
+      "name": "超界逆转",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:hp:047",
+      "content_kind": "magic_item",
+      "name": "HP",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:0c987cb469e2:001",
+      "content_kind": "magic_tattoo",
+      "name": "解文刺青",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:47cedfd115a6:029",
+      "content_kind": "magic_tattoo",
+      "name": "命源刺",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:48de3069d1f9:018",
+      "content_kind": "magic_tattoo",
+      "name": "堕影冥界",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:61baf1448ecb:014",
+      "content_kind": "magic_tattoo",
+      "name": "魔能爪",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:8d7814d75b94:010",
+      "content_kind": "magic_tattoo",
+      "name": "屏障刺青",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:99da751f1d85:026",
+      "content_kind": "magic_tattoo",
+      "name": "鬼步刺",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:a92dd000492e:004",
+      "content_kind": "magic_tattoo",
+      "name": "伪装刺青",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:b9cb8e43543d:022",
+      "content_kind": "magic_tattoo",
+      "name": "吸收刺青",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:bca5d82e14c2:009",
+      "content_kind": "magic_tattoo",
+      "name": "蕴",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:c27398cf29fe:033",
+      "content_kind": "magic_tattoo",
+      "name": "血怒刺青",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:eb093302132b:000",
+      "content_kind": "magic_tattoo",
+      "name": "魔法刺青",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    }
+  ],
+  "pack_id": "tashas-cauldron",
+  "qa_status_counts": {
+    "confirmed_atom": 407,
+    "duplicate": 0,
+    "example_not_rule": 0,
+    "heading_only": 117,
+    "merge_required": 0,
+    "orphan_atom": 0,
+    "parent_missing": 0,
+    "reprint": 0,
+    "source_incomplete": 0,
+    "split_required": 0,
+    "subclause_not_asset": 0,
+    "table_row_not_asset": 0,
+    "wrong_kind": 0
+  },
+  "qa_statuses": [
+    "confirmed_atom",
+    "merge_required",
+    "split_required",
+    "wrong_kind",
+    "duplicate",
+    "reprint",
+    "subclause_not_asset",
+    "example_not_rule",
+    "table_row_not_asset",
+    "heading_only",
+    "source_incomplete",
+    "parent_missing",
+    "orphan_atom"
+  ],
+  "reclassified_atoms": [
+    {
+      "after_atom_id": "tashas-cauldron:atom:cc5fbe7849e1c8052b692354:15478010e55d:000",
+      "after_kind": "narrative",
+      "before_atom_id": "tashas-cauldron:atom:cc5fbe7849e1c8052b692354:15478010e55d:000",
+      "before_kind": "subclass_feature",
+      "source_fingerprint": "93cd8a72cdb2e6f9c41eaf6554e91bc77bcb8519c1dee7ad3fd97aa7cd80e21d"
+    },
+    {
+      "after_atom_id": "tashas-cauldron:atom:cc5fbe7849e1c8052b692354:15478010e55d:000",
+      "after_kind": "narrative",
+      "before_atom_id": "tashas-cauldron:atom:cc5fbe7849e1c8052b692354:15478010e55d:001",
+      "before_kind": "subclass_feature",
+      "source_fingerprint": "93cd8a72cdb2e6f9c41eaf6554e91bc77bcb8519c1dee7ad3fd97aa7cd80e21d"
+    }
+  ],
+  "removed_false_atom_count": 115,
+  "removed_false_atoms": [
+    {
+      "atom_id": "tashas-cauldron:atom:330d678db7b9b2739830f839:additional-warlock-spells:001",
+      "content_kind": "class_feature",
+      "name": "*额外魔契师法术 Additional Warlock Spells",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:72fefe733acdf83cf3e1c860:find-familiar-40-40-dc-rebuke-of-the-talisman:003",
+      "content_kind": "invocation",
+      "name": "先决：链之魔契* 当你施展*寻获魔宠find familiar*时，你将一定程度的魔能力量灌注给被召唤的魔宠，给予这个生物以下的能力： 该魔宠获得40尺的飞行速度、或40尺的游泳速度（由你选择）。 你可以使用一个附赠动作，指挥你的魔宠进行一次攻击动作。 该魔宠的武器攻击被视为魔法性的，用于克服对于非魔法攻击的免疫和抗性。 若该魔宠强迫一个生物进行豁免检定，它使用你的法术豁免DC。 若该魔宠受到伤害，你可以使用你的反应给予它仅对于那次伤害的抗性。  **符令责斥 Rebuke of the Talisman",
+      "qa_status": "wrong_kind",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/魔能祈唤.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:00327c82d3ab:049",
+      "content_kind": "magic_item",
+      "name": "豁免",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:0a5c0862aa93:029",
+      "content_kind": "magic_item",
+      "name": "*编织命运",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:0f668cb26c13:068",
+      "content_kind": "magic_item",
+      "name": "*植入牙齿",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:1252d0a398f2:054",
+      "content_kind": "magic_item",
+      "name": "感官",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:15e8a37a7567:059",
+      "content_kind": "magic_item",
+      "name": "再生",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:1c45b8857cf0:027",
+      "content_kind": "magic_item",
+      "name": "*法术",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:1cef4eef7cb8:030",
+      "content_kind": "magic_item",
+      "name": "*幸福",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:039",
+      "content_kind": "magic_item",
+      "name": "琉克欧",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:29631095055e:053",
+      "content_kind": "magic_item",
+      "name": "状态免疫",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:2be71874f22a:024",
+      "content_kind": "magic_item",
+      "name": "*破坏恶魔志。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:2c7ccd998feb:004",
+      "content_kind": "magic_item",
+      "name": "*完美工具",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:2ec035bb8623:020",
+      "content_kind": "magic_item",
+      "name": "*深渊学识。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:3298269bf90e:069",
+      "content_kind": "magic_item",
+      "name": "*恢复牙齿",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:065",
+      "content_kind": "magic_item",
+      "name": "达文",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:3e9825c326a3:025",
+      "content_kind": "magic_item",
+      "name": "鲁芭的灵魂塔罗卡",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:3f031a4cf46b:015",
+      "content_kind": "magic_item",
+      "name": "*伊格薇尔伏的",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:4452cadefa38:048",
+      "content_kind": "magic_item",
+      "name": "速度",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:4a8754b5052c:052",
+      "content_kind": "magic_item",
+      "name": "伤害免疫",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:4b8bbe5dc7f0:067",
+      "content_kind": "magic_item",
+      "name": "*播种牙齿",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:4eb386249f3c:028",
+      "content_kind": "magic_item",
+      "name": "*持久之视",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:59b566d99b9a:022",
+      "content_kind": "magic_item",
+      "name": "*迷惑。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:5a5bd704d78b:066",
+      "content_kind": "magic_item",
+      "name": "*奇物，神器（需调谐）* 达文-纳之牙是多个故事的具现。它们是成套的牙齿，每一颗都代表着各自大不相同的起源，并且由多种多样的材料制成。整套牙齿被收藏在一个小皮袋中，皮袋上缝着英雄和幻想生物的图案。牙齿在哪里落下，传说就会在哪里化为真实。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:017",
+      "content_kind": "magic_item",
+      "name": "伊格薇尔伏恶魔",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:701851b553da:058",
+      "content_kind": "magic_item",
+      "name": "抗魔构造",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:74e155bdc949:032",
+      "content_kind": "magic_item",
+      "name": "*命运的囚徒",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:7b4ce71461d6:037",
+      "content_kind": "magic_item",
+      "name": "绝大多数维斯塔尼部族接受以不同方式旅行、不同出身的善意旅行者，他们欢迎那些想要在无尽路途中，在迷雾之后的朦胧幻象中觅得一处家园的人。",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:7c79c9628762:035",
+      "content_kind": "magic_item",
+      "name": "*边栏：鲁芭夫人与维斯塔尼人",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:838c88ad9a41:001",
+      "content_kind": "magic_item",
+      "name": "*随机属性",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:838c88ad9a41:010",
+      "content_kind": "magic_item",
+      "name": "*随机属性",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:838c88ad9a41:018",
+      "content_kind": "magic_item",
+      "name": "*随机属性",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:838c88ad9a41:026",
+      "content_kind": "magic_item",
+      "name": "*随机属性",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:83f6b6a35ef7:033",
+      "content_kind": "magic_item",
+      "name": "*重洗命运",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:8439337ed73f:070",
+      "content_kind": "magic_item",
+      "name": "*摧毁牙齿",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:8aac609f7832:012",
+      "content_kind": "magic_item",
+      "name": "*绝对放逐。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:94b48524beb3:021",
+      "content_kind": "magic_item",
+      "name": "*鞭笞邪魔。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:9ba1f18facfc:003",
+      "content_kind": "magic_item",
+      "name": "*杵的属性",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:9bc570c2b151:005",
+      "content_kind": "magic_item",
+      "name": "*原初分解",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:a30e2bcf8e68:006",
+      "content_kind": "magic_item",
+      "name": "*黑夜穿梭",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:a5854e3a20bd:062",
+      "content_kind": "magic_item",
+      "name": "动作",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:a7b923869876:043",
+      "content_kind": "magic_item",
+      "name": "*自毁",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:ac08c36a006b:056",
+      "content_kind": "magic_item",
+      "name": "挑战等级",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:ac:046",
+      "content_kind": "magic_item",
+      "name": "AC",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:b472108719ca:016",
+      "content_kind": "magic_item",
+      "name": "*摧毁或修复圣杖。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:b9429222a73e:008",
+      "content_kind": "magic_item",
+      "name": "*摧毁臼和杵。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:b9760b49a97c:050",
+      "content_kind": "magic_item",
+      "name": "技能",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:bab44e141c8b:051",
+      "content_kind": "magic_item",
+      "name": "伤害抗性",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:bb572d37155f:038",
+      "content_kind": "magic_item",
+      "name": "作为一名半身人维斯塔尼人，鲁芭夫人领导着堕影冥界中最大的一支维斯塔尼部族。她来自施特拉德伯爵与伊娃夫人所来自的相同的世界，而她创造了一个善良的、坚韧的社区",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:bfa3d85090e1:041",
+      "content_kind": "magic_item",
+      "name": "*控制机仆",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:c6b67bf4f642:013",
+      "content_kind": "magic_item",
+      "name": "*堕群本质",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:c6eb8d113532:057",
+      "content_kind": "magic_item",
+      "name": "不变存在",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:cd3af24feef9:042",
+      "content_kind": "magic_item",
+      "name": "*械中幽灵",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:cf46df2616bf:064",
+      "content_kind": "magic_item",
+      "name": "飞跃冲击",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:d8a083028a44:044",
+      "content_kind": "magic_item",
+      "name": "*破坏机仆",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:db0e19f5d68b:009",
+      "content_kind": "magic_item",
+      "name": "拉奥圣杖",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:dc981a875c38:061",
+      "content_kind": "magic_item",
+      "name": "非凡本质",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:decbfaa784f9:034",
+      "content_kind": "magic_item",
+      "name": "*摧毁牌组",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:dfb3eb8e58e3:063",
+      "content_kind": "magic_item",
+      "name": "毁灭铁拳",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:e1f91dd7fe67:011",
+      "content_kind": "magic_item",
+      "name": "*法术。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:e1f91dd7fe67:019",
+      "content_kind": "magic_item",
+      "name": "*法术。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:e302f3161c66:007",
+      "content_kind": "magic_item",
+      "name": "*死马识途",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:e52972a53915:055",
+      "content_kind": "magic_item",
+      "name": "语言",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:e5c93ea49e88:040",
+      "content_kind": "magic_item",
+      "name": "*危险同调",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:ed9e735c97b6:002",
+      "content_kind": "magic_item",
+      "name": "*臼的属性",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:eecbf383fe5b:023",
+      "content_kind": "magic_item",
+      "name": "*封印。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:f1ce8849e824:036",
+      "content_kind": "magic_item",
+      "name": "魂之塔罗卡的创造者鲁芭夫人曾是维斯塔尼人中最有影响力的领导者之一。在无数个时代里，维斯塔尼人游荡于堕影冥界之中，其中包括了如同被吸血鬼所困扰的领域",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:f7643be9fbe7:060",
+      "content_kind": "magic_item",
+      "name": "立定起跳",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:fb56e8ec24f5:031",
+      "content_kind": "magic_item",
+      "name": "*灾祸",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:fc9c899e53c6:014",
+      "content_kind": "magic_item",
+      "name": "超界逆转",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:hp:047",
+      "content_kind": "magic_item",
+      "name": "HP",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:4a11e838abd4:008",
+      "content_kind": "magic_item",
+      "name": "元素精粹碎晶表格",
+      "qa_status": "table_row_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/珍稀.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:b8f4d91cb36e:015",
+      "content_kind": "magic_item",
+      "name": "外界精粹碎晶表格",
+      "qa_status": "table_row_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/珍稀.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:89d7366d5cee1d67bcb2bc9f:48d351a10761:005",
+      "content_kind": "subclass_feature",
+      "name": "**",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）/驯兽师伙伴.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:89d7366d5cee1d67bcb2bc9f:48d351a10761:010",
+      "content_kind": "subclass_feature",
+      "name": "**",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）/驯兽师伙伴.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:0c987cb469e2:001",
+      "content_kind": "magic_tattoo",
+      "name": "解文刺青",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:1b9d1baa3fac:003",
+      "content_kind": "magic_tattoo",
+      "name": "*魔法书写。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:28ba29e350f3:006",
+      "content_kind": "magic_tattoo",
+      "name": "*液态油墨。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:402ae3dc57de:019",
+      "content_kind": "magic_tattoo",
+      "name": "*刺青同调",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:402ae3dc57de:023",
+      "content_kind": "magic_tattoo",
+      "name": "*刺青同调",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:47cedfd115a6:029",
+      "content_kind": "magic_tattoo",
+      "name": "命源刺",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:48de3069d1f9:018",
+      "content_kind": "magic_tattoo",
+      "name": "堕影冥界",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:54fe78396f89:007",
+      "content_kind": "magic_tattoo",
+      "name": "*易容自我。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:578d7ad9a0c4:021",
+      "content_kind": "magic_tattoo",
+      "name": "*幽影防御",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:57ad1e892cda:035",
+      "content_kind": "magic_tattoo",
+      "name": "*嗜血狂袭。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:61baf1448ecb:014",
+      "content_kind": "magic_tattoo",
+      "name": "魔能爪",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:62e2d1a67d81:016",
+      "content_kind": "magic_tattoo",
+      "name": "*魔法打击。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:8a34ccae2e0d:011",
+      "content_kind": "magic_tattoo",
+      "name": "*奇物（刺青）,多种珍稀度（需同调）* 该魔法刺青用一根特殊的针制作，用液态金属般的墨水绘有代表防护的图案。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:8d1ec85213f1:024",
+      "content_kind": "magic_tattoo",
+      "name": "*伤害抗性",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:8d7814d75b94:010",
+      "content_kind": "magic_tattoo",
+      "name": "屏障刺青",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:8df3f42d0fdd:032",
+      "content_kind": "magic_tattoo",
+      "name": "*生命结界。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:99da751f1d85:026",
+      "content_kind": "magic_tattoo",
+      "name": "鬼步刺",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:9b511526289c:017",
+      "content_kind": "magic_tattoo",
+      "name": "*魔能巨",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:a23d8d632b86:028",
+      "content_kind": "magic_tattoo",
+      "name": "*鬼灵形态",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:a92dd000492e:004",
+      "content_kind": "magic_tattoo",
+      "name": "伪装刺青",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:b9cb8e43543d:022",
+      "content_kind": "magic_tattoo",
+      "name": "吸收刺青",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:bca5d82e14c2:009",
+      "content_kind": "magic_tattoo",
+      "name": "蕴",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:c27398cf29fe:033",
+      "content_kind": "magic_tattoo",
+      "name": "血怒刺青",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:c7254f294618:012",
+      "content_kind": "magic_tattoo",
+      "name": "*防护。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:cee70c25a5c3:020",
+      "content_kind": "magic_tattoo",
+      "name": "*阴影精粹",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:da3553db7a14:031",
+      "content_kind": "magic_tattoo",
+      "name": "*暗蚀抗性",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:eb093302132b:000",
+      "content_kind": "magic_tattoo",
+      "name": "魔法刺青",
+      "qa_status": "merge_required",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:f3a9e4d59246:025",
+      "content_kind": "magic_tattoo",
+      "name": "*伤害吸收",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:f3ede2218e17:002",
+      "content_kind": "magic_tattoo",
+      "name": "*刺青同调。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:f3ede2218e17:005",
+      "content_kind": "magic_tattoo",
+      "name": "*刺青同调。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:f3ede2218e17:015",
+      "content_kind": "magic_tattoo",
+      "name": "*刺青同调。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:f3ede2218e17:027",
+      "content_kind": "magic_tattoo",
+      "name": "*刺青同调。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:f3ede2218e17:030",
+      "content_kind": "magic_tattoo",
+      "name": "*刺青同调。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:f3ede2218e17:034",
+      "content_kind": "magic_tattoo",
+      "name": "*刺青同调。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:e7a7ee1c83e9714c46b63ddf:4-2:002",
+      "content_kind": "class_feature",
+      "name": "*第4级武僧特性* 以一个动作，你能消耗2点气并且投掷一粒武艺骰，你恢复等同于掷骰结果加上你的熟练加值的生命值。",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/武僧（TCE）.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:f3c132656f9304ca2264c43a:1-half-cover-10-2-enhanced-defense:003",
+      "content_kind": "infusion",
+      "name": "*物品：一根权杖、法杖、或魔杖（需同调）* 当持握此物品时，那个生物的法术攻击检定获得+1加值，在进行法术法术攻击时无视 半身掩护half cover。 当你的奇械师职业等级达到10级后，该加值变成+2。**增强防御 Enhanced Defense",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/奇械师注法.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:f3c132656f9304ca2264c43a:6-1-1-1d6-boots-of-the-winding-path:002",
+      "content_kind": "infusion",
+      "name": "*物品：一套盔甲（需同调）* 此盔甲拥有6发充能。穿戴者能以下列方式消耗充能： 当着装者进行力量检定或力量豁免检定时，你能消耗1发充能来在那次掷骰上获得等于其智力调整值的加值。 当穿着者被撞击击倒时，它可以用一个反应，消耗1发充能避免被撞击倒地。 此盔甲在每天的黎明时会恢复1d6发已被消耗的充能。**折返之靴 Boots of the Winding Path",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/奇械师注法.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:f3c132656f9304ca2264c43a:replicable-items-10:019",
+      "content_kind": "infusion",
+      "name": "************ 可仿制物品Replicable Items（第10级奇械师）",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/奇械师注法.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:f3c132656f9304ca2264c43a:replicable-items-14:020",
+      "content_kind": "infusion",
+      "name": "************ 可仿制物品Replicable Items（第14级奇械师）",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/奇械师注法.html"
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:f3c132656f9304ca2264c43a:replicable-items-6:018",
+      "content_kind": "infusion",
+      "name": "************ 可仿制物品Replicable Items（第6级奇械师）",
+      "qa_status": "subclause_not_asset",
+      "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/奇械师注法.html"
+    }
+  ],
+  "schema_version": "tashas-atom-quality-audit-1",
+  "split_atoms": [],
+  "structural_anomalies": [],
+  "structural_checks": {
+    "all_atoms_have_qa_status": true,
+    "atom_id_unique": true,
+    "parent_child_valid": true,
+    "source_fingerprint_present": true,
+    "source_records_resolved": true,
+    "source_span_in_bounds": true
+  }
+}

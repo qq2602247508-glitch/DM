@@ -1,0 +1,23 @@
+{
+  "alias_reconciled_total": 2,
+  "authored_total": 31,
+  "explicitly_retired_total": 1,
+  "hard_gate": {
+    "orphan_total": 0,
+    "status": "passed"
+  },
+  "matched_total": 30,
+  "orphan_total": 0,
+  "orphaned_content_ids": [],
+  "pack_id": "tashas-cauldron",
+  "reconciled": [
+    {
+      "content_id": "content.tashas-cauldron.feature.battle-master.precision-attack",
+      "reason": "source page is a Battle Master build recommendation; Precision Attack is not an independent atom on that page",
+      "replacement": null,
+      "status": "explicitly_retired",
+      "typed_ir_path": "data/content-ir/authored/official-packs/tashas-cauldron/features/features/content-tashas-cauldron-feature-battle-master-precision-attack.json"
+    }
+  ],
+  "schema_version": "tashas-authored-provenance-reconciliation-II-1"
+}

@@ -1,0 +1,336 @@
+{
+  "attunement_requirements": {
+    "required": true,
+    "requirements_text": "任意生物"
+  },
+  "charges": {},
+  "clauses": [
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:3e9825c326a3:003:equipment",
+      "clause_type": "equipment",
+      "evidence": {
+        "source_fragment": "70"
+      },
+      "parameters": {
+        "equipped_slot": "worn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:3e9825c326a3:003:attunement",
+      "clause_type": "attunement",
+      "evidence": {
+        "source_text": "需同调"
+      },
+      "parameters": {
+        "required": true,
+        "requirements_text": "任意生物"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:3e9825c326a3:003:action:1",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "用一个动作用牌组施展以下法术（豁免DC18）：*通晓语言**Comprehend Languages*，*侦测善恶**Detect Evil and Good*，*侦测魔法**Detect Magic*，*侦测毒素和疾病**Detect Poison andDIsease*，*物品定位术**Locate Object*，*探知术**Scrying*。一旦你用牌组施展了某个法术，你在下一个黎明前不能再次施展该法术。\n***持久之视***。持握牌组时，你为维持预言系法术的专注所作的体质豁免检定自动成功。\n***编织命运***。以一个动作，你可以从牌组中抽出一张卡，从而编织15尺内你能看见的另一个生物的命运。从以下效应中选择一项：\n***"
+      },
+      "parameters": {
+        "action_economy": "action",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:3e9825c326a3:003:action:1",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "用一个动作用牌组施展以下法术（豁免DC18）：*通晓语言**Comprehend Languages*，*侦测善恶**Detect Evil and Good*，*侦测魔法**Detect Magic*，*侦测毒素和疾病**Detect Poison andDIsease*，*物品定位术**Locate Object*，*探知术**Scrying*。一旦你用牌组施展了某个法术，你在下一个黎明前不能再次施展该法术。\n***持久之视***。持握牌组时，你为维持预言系法术的专注所作的体质豁免检定自动成功。\n***编织命运***。以一个动作，你可以从牌组中抽出一张卡，从而编织15尺内你能看见的另一个生物的命运。从以下效应中选择一项：\n***",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:3e9825c326a3:003:spell-grant",
+      "clause_type": "granted_spell",
+      "evidence": {
+        "manual_review_required": false,
+        "source_excerpt": "of Souls**\n*奇物，神器（需同调）*\n并非所有逗留于世的灵魂都是迷失在通往死后国度之路上的悲惨灵魂。有些灵魂失去活力，成为了囚徒；它们是如此邪恶，以至于凡人不敢将它们释放到那毫无戒心的来世。\n作为由维斯塔尼传说中的人物创造的物品，*鲁芭的灵魂塔罗卡**|Luba‘s Tarokka\nof Souls*塑造了无数英雄的命运。这套牌作出的预言也揭示了巨大的邪恶，引导它的创造者走入邪恶势力的道路。牌组的创造者，鲁芭夫人，依靠着她敏锐的直觉无数次侥幸逃离了自己的毁灭。但就算是她也无法躲过所有的邪恶。在最危急的关头，鲁芭夫人设法用命运的丝线封印住这些至恶的存在，将它们囚禁在了这套塔罗卡中。这些邪恶的灵魂被困于隐藏在卡牌洗混翻转之中的下界空间内，静静地等待着命运本身也被玷污的那一天这一天绝对会到来的。\n和所有塔罗"
+      },
+      "parameters": {
+        "grant_mode": "item_cast",
+        "source_text": "of Souls**\n*奇物，神器（需同调）*\n并非所有逗留于世的灵魂都是迷失在通往死后国度之路上的悲惨灵魂。有些灵魂失去活力，成为了囚徒；它们是如此邪恶，以至于凡人不敢将它们释放到那毫无戒心的来世。\n作为由维斯塔尼传说中的人物创造的物品，*鲁芭的灵魂塔罗卡**|Luba‘s Tarokka\nof Souls*塑造了无数英雄的命运。这套牌作出的预言也揭示了巨大的邪恶，引导它的创造者走入邪恶势力的道路。牌组的创造者，鲁芭夫人，依靠着她敏锐的直觉无数次侥幸逃离了自己的毁灭。但就算是她也无法躲过所有的邪恶。在最危急的关头，鲁芭夫人设法用命运的丝线封印住这些至恶的存在，将它们囚禁在了这套塔罗卡中。这些邪恶的灵魂被困于隐藏在卡牌洗混翻转之中的下界空间内，静静地等待着命运本身也被玷污的那一天这一天绝对会到来的。\n和所有塔罗",
+        "spell_identities": [
+          {
+            "english_name": "",
+            "localized_name": "了某个",
+            "spell_id": "了某个"
+          },
+          {
+            "english_name": "Comprehend Languages",
+            "localized_name": "通晓语言",
+            "spell_id": "comprehend-languages"
+          },
+          {
+            "english_name": "Detect Evil and Good",
+            "localized_name": "侦测善恶",
+            "spell_id": "detect-evil-and-good"
+          },
+          {
+            "english_name": "Detect Magic",
+            "localized_name": "侦测魔法",
+            "spell_id": "detect-magic"
+          },
+          {
+            "english_name": "Detect Poison andDIsease",
+            "localized_name": "侦测毒素和疾病",
+            "spell_id": "detect-poison-anddisease"
+          },
+          {
+            "english_name": "Locate Object",
+            "localized_name": "物品定位术",
+            "spell_id": "locate-object"
+          },
+          {
+            "english_name": "Scrying",
+            "localized_name": "探知术",
+            "spell_id": "scrying"
+          }
+        ],
+        "spell_ids": [
+          "了某个",
+          "comprehend-languages",
+          "detect-evil-and-good",
+          "detect-magic",
+          "detect-poison-anddisease",
+          "locate-object",
+          "scrying"
+        ]
+      },
+      "trigger": "item_action_requested"
+    }
+  ],
+  "compile": {
+    "blockers": [],
+    "clauses": [
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:3e9825c326a3:003:equipment",
+        "clause_type": "equipment",
+        "evidence": {
+          "source_fragment": "70"
+        },
+        "parameters": {
+          "equipped_slot": "worn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:3e9825c326a3:003:attunement",
+        "clause_type": "attunement",
+        "evidence": {
+          "source_text": "需同调"
+        },
+        "parameters": {
+          "required": true,
+          "requirements_text": "任意生物"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "action",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:3e9825c326a3:003:action:1",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "用一个动作用牌组施展以下法术（豁免DC18）：*通晓语言**Comprehend Languages*，*侦测善恶**Detect Evil and Good*，*侦测魔法**Detect Magic*，*侦测毒素和疾病**Detect Poison andDIsease*，*物品定位术**Locate Object*，*探知术**Scrying*。一旦你用牌组施展了某个法术，你在下一个黎明前不能再次施展该法术。\n***持久之视***。持握牌组时，你为维持预言系法术的专注所作的体质豁免检定自动成功。\n***编织命运***。以一个动作，你可以从牌组中抽出一张卡，从而编织15尺内你能看见的另一个生物的命运。从以下效应中选择一项：\n***"
+        },
+        "parameters": {
+          "action_economy": "action",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:3e9825c326a3:003:action:1",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "用一个动作用牌组施展以下法术（豁免DC18）：*通晓语言**Comprehend Languages*，*侦测善恶**Detect Evil and Good*，*侦测魔法**Detect Magic*，*侦测毒素和疾病**Detect Poison andDIsease*，*物品定位术**Locate Object*，*探知术**Scrying*。一旦你用牌组施展了某个法术，你在下一个黎明前不能再次施展该法术。\n***持久之视***。持握牌组时，你为维持预言系法术的专注所作的体质豁免检定自动成功。\n***编织命运***。以一个动作，你可以从牌组中抽出一张卡，从而编织15尺内你能看见的另一个生物的命运。从以下效应中选择一项：\n***",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "action",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:3e9825c326a3:003:spell-grant",
+        "clause_type": "granted_spell",
+        "evidence": {
+          "manual_review_required": false,
+          "source_excerpt": "of Souls**\n*奇物，神器（需同调）*\n并非所有逗留于世的灵魂都是迷失在通往死后国度之路上的悲惨灵魂。有些灵魂失去活力，成为了囚徒；它们是如此邪恶，以至于凡人不敢将它们释放到那毫无戒心的来世。\n作为由维斯塔尼传说中的人物创造的物品，*鲁芭的灵魂塔罗卡**|Luba‘s Tarokka\nof Souls*塑造了无数英雄的命运。这套牌作出的预言也揭示了巨大的邪恶，引导它的创造者走入邪恶势力的道路。牌组的创造者，鲁芭夫人，依靠着她敏锐的直觉无数次侥幸逃离了自己的毁灭。但就算是她也无法躲过所有的邪恶。在最危急的关头，鲁芭夫人设法用命运的丝线封印住这些至恶的存在，将它们囚禁在了这套塔罗卡中。这些邪恶的灵魂被困于隐藏在卡牌洗混翻转之中的下界空间内，静静地等待着命运本身也被玷污的那一天这一天绝对会到来的。\n和所有塔罗"
+        },
+        "parameters": {
+          "grant_mode": "item_cast",
+          "source_text": "of Souls**\n*奇物，神器（需同调）*\n并非所有逗留于世的灵魂都是迷失在通往死后国度之路上的悲惨灵魂。有些灵魂失去活力，成为了囚徒；它们是如此邪恶，以至于凡人不敢将它们释放到那毫无戒心的来世。\n作为由维斯塔尼传说中的人物创造的物品，*鲁芭的灵魂塔罗卡**|Luba‘s Tarokka\nof Souls*塑造了无数英雄的命运。这套牌作出的预言也揭示了巨大的邪恶，引导它的创造者走入邪恶势力的道路。牌组的创造者，鲁芭夫人，依靠着她敏锐的直觉无数次侥幸逃离了自己的毁灭。但就算是她也无法躲过所有的邪恶。在最危急的关头，鲁芭夫人设法用命运的丝线封印住这些至恶的存在，将它们囚禁在了这套塔罗卡中。这些邪恶的灵魂被困于隐藏在卡牌洗混翻转之中的下界空间内，静静地等待着命运本身也被玷污的那一天这一天绝对会到来的。\n和所有塔罗",
+          "spell_identities": [
+            {
+              "english_name": "",
+              "localized_name": "了某个",
+              "spell_id": "了某个"
+            },
+            {
+              "english_name": "Comprehend Languages",
+              "localized_name": "通晓语言",
+              "spell_id": "comprehend-languages"
+            },
+            {
+              "english_name": "Detect Evil and Good",
+              "localized_name": "侦测善恶",
+              "spell_id": "detect-evil-and-good"
+            },
+            {
+              "english_name": "Detect Magic",
+              "localized_name": "侦测魔法",
+              "spell_id": "detect-magic"
+            },
+            {
+              "english_name": "Detect Poison andDIsease",
+              "localized_name": "侦测毒素和疾病",
+              "spell_id": "detect-poison-anddisease"
+            },
+            {
+              "english_name": "Locate Object",
+              "localized_name": "物品定位术",
+              "spell_id": "locate-object"
+            },
+            {
+              "english_name": "Scrying",
+              "localized_name": "探知术",
+              "spell_id": "scrying"
+            }
+          ],
+          "spell_ids": [
+            "了某个",
+            "comprehend-languages",
+            "detect-evil-and-good",
+            "detect-magic",
+            "detect-poison-anddisease",
+            "locate-object",
+            "scrying"
+          ]
+        },
+        "trigger": "item_action_requested"
+      }
+    ],
+    "compile_status": "full",
+    "consumer_ids": [
+      "item.attunement.v1",
+      "item.equipment_modifier.v1",
+      "item.granted_action.v1",
+      "item.granted_spell.v1"
+    ],
+    "item_fingerprint": "073240dedd6f550165391b46d19c53edc316352d19265f07a695b6151d1e7c61",
+    "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
+    "runtime_preview_full": true,
+    "schema_version": "item-ir-1",
+    "source_trust": "authored_ir"
+  },
+  "conditions": [],
+  "consumption_policy": {
+    "mode": "persistent"
+  },
+  "damage": null,
+  "duration": null,
+  "equipped_slot": null,
+  "evidence": {
+    "manual_review_required": false,
+    "rejected_inferences": [
+      "unknown_effects",
+      "unresolved_spell_identity",
+      "freeform_targeting"
+    ],
+    "review_status": "reviewed_explicit_fields_only",
+    "reviewed_fields": [
+      "identity",
+      "kind",
+      "rarity",
+      "attunement",
+      "charges",
+      "clause_boundaries"
+    ],
+    "source_fragment": "70",
+    "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html",
+    "source_text_sha256": "2dbf3be19bb0032f3fd445f6074e2b7a8cfde1c4c747ece0b0f68ac1441b52e9"
+  },
+  "granted_actions": [
+    {
+      "action_economy": "action",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:3e9825c326a3:003:action:1",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "用一个动作用牌组施展以下法术（豁免DC18）：*通晓语言**Comprehend Languages*，*侦测善恶**Detect Evil and Good*，*侦测魔法**Detect Magic*，*侦测毒素和疾病**Detect Poison andDIsease*，*物品定位术**Locate Object*，*探知术**Scrying*。一旦你用牌组施展了某个法术，你在下一个黎明前不能再次施展该法术。\n***持久之视***。持握牌组时，你为维持预言系法术的专注所作的体质豁免检定自动成功。\n***编织命运***。以一个动作，你可以从牌组中抽出一张卡，从而编织15尺内你能看见的另一个生物的命运。从以下效应中选择一项：\n***",
+      "target_policy": "self"
+    }
+  ],
+  "granted_spells": [
+    {
+      "english_name": "",
+      "localized_name": "了某个",
+      "spell_id": "了某个"
+    },
+    {
+      "english_name": "Comprehend Languages",
+      "localized_name": "通晓语言",
+      "spell_id": "comprehend-languages"
+    },
+    {
+      "english_name": "Detect Evil and Good",
+      "localized_name": "侦测善恶",
+      "spell_id": "detect-evil-and-good"
+    },
+    {
+      "english_name": "Detect Magic",
+      "localized_name": "侦测魔法",
+      "spell_id": "detect-magic"
+    },
+    {
+      "english_name": "Detect Poison andDIsease",
+      "localized_name": "侦测毒素和疾病",
+      "spell_id": "detect-poison-anddisease"
+    },
+    {
+      "english_name": "Locate Object",
+      "localized_name": "物品定位术",
+      "spell_id": "locate-object"
+    },
+    {
+      "english_name": "Scrying",
+      "localized_name": "探知术",
+      "spell_id": "scrying"
+    }
+  ],
+  "healing": null,
+  "immunities": [],
+  "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
+  "item_kind": "wondrous_item",
+  "localized_name": "鲁芭的灵魂塔罗卡",
+  "manual_review_required": false,
+  "name": "鲁芭的灵魂塔罗卡",
+  "namespace": "dnd.tashas.recovery.item",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "whole-pack-2026-08-11",
+  "passive_modifiers": [],
+  "rarity": "传说",
+  "requires_attunement": true,
+  "resistances": [],
+  "resource_bindings": [],
+  "review_fingerprint": "073240dedd6f550165391b46d19c53edc316352d19265f07a695b6151d1e7c61",
+  "review_status": "reviewed",
+  "ruleset_version": "2024",
+  "schema_version": "item-ir-1",
+  "source_fingerprint": "2dbf3be19bb0032f3fd445f6074e2b7a8cfde1c4c747ece0b0f68ac1441b52e9",
+  "source_fragment": "70",
+  "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html",
+  "source_record_id": "760b230e1396825928305642",
+  "source_trust": "authored_ir",
+  "stack_policy": {
+    "mode": "unique_instance"
+  },
+  "temporary_hp": null,
+  "triggered_effects": []
+}

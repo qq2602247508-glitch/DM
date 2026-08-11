@@ -1,0 +1,34 @@
+{
+  "closed_loop_gate": {
+    "cas_idempotency": true,
+    "class_subclass_optional_availability": true,
+    "downgrade": true,
+    "duplicate_prevention": true,
+    "grant_spell_resource_action": true,
+    "legacy_boundary": true,
+    "level_prerequisite_choice_windows": true,
+    "pack_enable": true,
+    "pack_pin": true,
+    "replacement": true,
+    "short_long_rest": true,
+    "snapshot_rebuild": true,
+    "upgrade": true
+  },
+  "executed_checks": {
+    "choice_persistence_and_snapshot_rebuild": false,
+    "content_pack_pin_and_legacy_boundary": true,
+    "full_character_creation_upgrade_downgrade": false,
+    "reason": "whole-pack atoms are inventoried, but authored advancement assets are not yet registered for the 427 manual atoms",
+    "source_selection_uses_pack_registry": true
+  },
+  "not_claimed": "whole-pack feature/option assets remain below the required typed/production thresholds; history-backed downgrade and immutable pack pin are now validated without direct snapshot mutation",
+  "pack_compatibility": {
+    "default_2024_without_legacy": "rejected_by_registry",
+    "legacy_opt_in": [
+      "tashas-cauldron"
+    ]
+  },
+  "pack_id": "tashas-cauldron",
+  "schema_version": "tashas-character-advancement-validation-II-1",
+  "status": "bounded_partial"
+}

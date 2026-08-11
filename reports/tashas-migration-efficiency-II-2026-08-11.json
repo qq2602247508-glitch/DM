@@ -1,0 +1,22 @@
+{
+  "after_executable_denominator": 407,
+  "authored_requiring_new_consumer_count": 0,
+  "authored_without_new_code_count": 30,
+  "auto_template_match_rate": 0.071253,
+  "before_executable_denominator": 558,
+  "candidate_accept_rate": 0.071253,
+  "candidate_edit_rate": 0.071253,
+  "candidate_reject_rate": 0.0,
+  "edited_field_count": 29,
+  "false_atom_removed": 115,
+  "item_spec_typed_without_name_branch": 47,
+  "manual_decision_count": 378,
+  "manual_wall_clock_minutes": null,
+  "manual_wall_clock_policy": "not measured; no invented minutes",
+  "name_branch_count": 0,
+  "new_consumer_count": 0,
+  "new_template_count": 0,
+  "pack_id": "tashas-cauldron",
+  "reviewed_field_count": 4070,
+  "schema_version": "tashas-migration-efficiency-II-1"
+}

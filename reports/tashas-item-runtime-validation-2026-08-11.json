@@ -1,0 +1,61 @@
+{
+  "blocked_specs": [
+    {
+      "blockers": [
+        "manual_clause_requires_dm_or_additional_typed_fields"
+      ],
+      "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-all-purpose-tool-000"
+    },
+    {
+      "blockers": [
+        "manual_clause_requires_dm_or_additional_typed_fields"
+      ],
+      "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-feywild-shard-004"
+    },
+    {
+      "blockers": [
+        "manual_clause_requires_dm_or_additional_typed_fields"
+      ],
+      "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-23eee2e4e70e-004"
+    },
+    {
+      "blockers": [
+        "manual_clause_requires_dm_or_additional_typed_fields"
+      ],
+      "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-teeth-ofdahlver-nar-005"
+    },
+    {
+      "blockers": [
+        "manual_clause_requires_dm_or_additional_typed_fields"
+      ],
+      "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-elemental-essence-shard-007"
+    },
+    {
+      "blockers": [
+        "manual_clause_requires_dm_or_additional_typed_fields"
+      ],
+      "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-outer-essence-shard-013"
+    }
+  ],
+  "consumer_ids": [
+    "item.attunement.v1",
+    "item.charge_resource.v1",
+    "item.equipment_modifier.v1",
+    "item.granted_action.v1",
+    "item.granted_spell.v1"
+  ],
+  "item_spec_total": 47,
+  "pack_id": "tashas-cauldron",
+  "schema_version": "tashas-item-runtime-validation-II-1",
+  "temporary_db_validation": "passed:test_tashas_recovery.py::test_typed_item_api_uses_attunement_action_and_idempotency",
+  "typed_compile_full": 41,
+  "validation_contract": {
+    "attunement_reused": true,
+    "equipment_instance_reused": true,
+    "idempotency_cas_rollback_snapshot": true,
+    "name_branch_count": 0,
+    "preview_confirm_transaction": true,
+    "rest_service_charge_recovery": true,
+    "rules_kernel_action_consumer": true
+  }
+}

@@ -1,0 +1,181 @@
+{
+  "attunement_requirements": {
+    "required": true,
+    "requirements_text": "术士"
+  },
+  "charges": {},
+  "clauses": [
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:feywild-shard:004:equipment",
+      "clause_type": "equipment",
+      "evidence": {
+        "source_fragment": "27"
+      },
+      "parameters": {
+        "equipped_slot": "worn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:feywild-shard:004:attunement",
+      "clause_type": "attunement",
+      "evidence": {
+        "source_text": "需同调"
+      },
+      "parameters": {
+        "required": true,
+        "requirements_text": "术士"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:feywild-shard:004:action:1",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，你可以骰一次《玩家手册》的狂野魔法浪涌表格。如果结果是一道法术，则其因为过于狂野而不会受到你的超魔法效应影响，若其一般需要专注，则其不需要专注；该法术维持完整的持续时间。\n如果你没有狂野魔法术法起源，则在投掷狂野魔法浪涌表格后，直到下次黎明前，不能再次使用该属性。"
+      },
+      "parameters": {
+        "action_economy": "action",
+        "action_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:feywild-shard:004:action:1",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": true,
+        "source_excerpt": "作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，你可以骰一次《玩家手册》的狂野魔法浪涌表格。如果结果是一道法术，则其因为过于狂野而不会受到你的超魔法效应影响，若其一般需要专注，则其不需要专注；该法术维持完整的持续时间。\n如果你没有狂野魔法术法起源，则在投掷狂野魔法浪涌表格后，直到下次黎明前，不能再次使用该属性。",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    }
+  ],
+  "compile": {
+    "blockers": [
+      "manual_clause_requires_dm_or_additional_typed_fields"
+    ],
+    "clauses": [
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:feywild-shard:004:equipment",
+        "clause_type": "equipment",
+        "evidence": {
+          "source_fragment": "27"
+        },
+        "parameters": {
+          "equipped_slot": "worn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:feywild-shard:004:attunement",
+        "clause_type": "attunement",
+        "evidence": {
+          "source_text": "需同调"
+        },
+        "parameters": {
+          "required": true,
+          "requirements_text": "术士"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "action",
+        "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:feywild-shard:004:action:1",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，你可以骰一次《玩家手册》的狂野魔法浪涌表格。如果结果是一道法术，则其因为过于狂野而不会受到你的超魔法效应影响，若其一般需要专注，则其不需要专注；该法术维持完整的持续时间。\n如果你没有狂野魔法术法起源，则在投掷狂野魔法浪涌表格后，直到下次黎明前，不能再次使用该属性。"
+        },
+        "parameters": {
+          "action_economy": "action",
+          "action_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:feywild-shard:004:action:1",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": true,
+          "source_excerpt": "作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，你可以骰一次《玩家手册》的狂野魔法浪涌表格。如果结果是一道法术，则其因为过于狂野而不会受到你的超魔法效应影响，若其一般需要专注，则其不需要专注；该法术维持完整的持续时间。\n如果你没有狂野魔法术法起源，则在投掷狂野魔法浪涌表格后，直到下次黎明前，不能再次使用该属性。",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      }
+    ],
+    "compile_status": "partial",
+    "consumer_ids": [
+      "item.attunement.v1",
+      "item.equipment_modifier.v1",
+      "item.granted_action.v1"
+    ],
+    "item_fingerprint": "a1c1bcd1991779e5e4e4486314e1d75e1f443bf9c276d60314a9ccd48a40471c",
+    "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-feywild-shard-004",
+    "runtime_preview_full": false,
+    "schema_version": "item-ir-1",
+    "source_trust": "authored_ir"
+  },
+  "conditions": [],
+  "consumption_policy": {
+    "mode": "persistent"
+  },
+  "damage": null,
+  "duration": null,
+  "equipped_slot": null,
+  "evidence": {
+    "manual_review_required": true,
+    "rejected_inferences": [
+      "unknown_effects",
+      "unresolved_spell_identity",
+      "freeform_targeting"
+    ],
+    "review_status": "reviewed_explicit_fields_only",
+    "reviewed_fields": [
+      "identity",
+      "kind",
+      "rarity",
+      "attunement",
+      "charges",
+      "clause_boundaries"
+    ],
+    "source_fragment": "27",
+    "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/非普通.html",
+    "source_text_sha256": "4eb031c6da5923fa880ceba56c730f758ec4516231b817d91c73eb79204fbd76"
+  },
+  "granted_actions": [
+    {
+      "action_economy": "action",
+      "action_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:feywild-shard:004:action:1",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": true,
+      "source_excerpt": "作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，你可以骰一次《玩家手册》的狂野魔法浪涌表格。如果结果是一道法术，则其因为过于狂野而不会受到你的超魔法效应影响，若其一般需要专注，则其不需要专注；该法术维持完整的持续时间。\n如果你没有狂野魔法术法起源，则在投掷狂野魔法浪涌表格后，直到下次黎明前，不能再次使用该属性。",
+      "target_policy": "self"
+    }
+  ],
+  "granted_spells": [],
+  "healing": null,
+  "immunities": [],
+  "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-feywild-shard-004",
+  "item_kind": "weapon",
+  "localized_name": "妖精荒野碎晶",
+  "manual_review_required": true,
+  "name": "妖精荒野碎晶 Feywild Shard",
+  "namespace": "dnd.tashas.recovery.item",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "whole-pack-2026-08-11",
+  "passive_modifiers": [],
+  "rarity": "非普通",
+  "requires_attunement": true,
+  "resistances": [],
+  "resource_bindings": [],
+  "review_fingerprint": "a1c1bcd1991779e5e4e4486314e1d75e1f443bf9c276d60314a9ccd48a40471c",
+  "review_status": "reviewed",
+  "ruleset_version": "2024",
+  "schema_version": "item-ir-1",
+  "source_fingerprint": "4eb031c6da5923fa880ceba56c730f758ec4516231b817d91c73eb79204fbd76",
+  "source_fragment": "27",
+  "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/非普通.html",
+  "source_record_id": "4220452fa5c2c1b3aed918f5",
+  "source_trust": "authored_ir",
+  "stack_policy": {
+    "mode": "unique_instance"
+  },
+  "temporary_hp": null,
+  "triggered_effects": []
+}

@@ -1,0 +1,243 @@
+{
+  "attunement_requirements": {
+    "required": true,
+    "requirements_text": "法师"
+  },
+  "charges": {
+    "current": 3,
+    "maximum": 3,
+    "recovery_amount": null,
+    "recovery_trigger": "dawn"
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:libram-of-souls-and-flesh:011:equipment",
+      "clause_type": "equipment",
+      "evidence": {
+        "source_fragment": "114"
+      },
+      "parameters": {
+        "equipped_slot": "worn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:libram-of-souls-and-flesh:011:attunement",
+      "clause_type": "attunement",
+      "evidence": {
+        "source_text": "需同调"
+      },
+      "parameters": {
+        "required": true,
+        "requirements_text": "法师"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:libram-of-souls-and-flesh:011:charges",
+      "clause_type": "charge",
+      "evidence": {
+        "text": "3发充能"
+      },
+      "parameters": {
+        "current": 3,
+        "maximum": 3,
+        "recovery_amount": null,
+        "recovery_trigger": "dawn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:libram-of-souls-and-flesh:011:charge-recovery",
+      "clause_type": "charge_recovery",
+      "evidence": {
+        "text": "*奇物,\n珍稀（需法师同调）*\n这本书的封面制以人皮，饰以白骨，触摸时手感冰凉，并发出微微低语。\n这本书在被找到时，包含了以下法术：*活化死尸Animate Dead*，*死亡法阵Circle of Death*，*虚假生命False\nLif*e，*死亡一指Finger of\nDeath*，*死者交谈Speak With\nDead*，*亡灵召唤术Summon\nUndead*（在本书出现）和*汲血之触Vampiric\nTouch*。你可以将其作为法术书。\n当你持握这本书时，你可"
+      },
+      "parameters": {
+        "recovery_amount": null,
+        "recovery_trigger": "dawn",
+        "typed_dawn_event_required": true
+      },
+      "trigger": "dawn"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:libram-of-souls-and-flesh:011:action:1",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个动作，你可以消耗1发充能并伪装成亡灵10分钟。在持续时间内，你外表上如同死者，并且亡灵会忽略你，除非你伤害它们。面对所有的外部检查和侦测法术时，你也只会被显示为亡灵。此效应在你造成伤害或使一个生物进行豁免检定时结束。"
+      },
+      "parameters": {
+        "action_economy": "action",
+        "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:libram-of-souls-and-flesh:011:action:1",
+        "charge_cost": 1,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "作为一个动作，你可以消耗1发充能并伪装成亡灵10分钟。在持续时间内，你外表上如同死者，并且亡灵会忽略你，除非你伤害它们。面对所有的外部检查和侦测法术时，你也只会被显示为亡灵。此效应在你造成伤害或使一个生物进行豁免检定时结束。",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    }
+  ],
+  "compile": {
+    "blockers": [],
+    "clauses": [
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:libram-of-souls-and-flesh:011:equipment",
+        "clause_type": "equipment",
+        "evidence": {
+          "source_fragment": "114"
+        },
+        "parameters": {
+          "equipped_slot": "worn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:libram-of-souls-and-flesh:011:attunement",
+        "clause_type": "attunement",
+        "evidence": {
+          "source_text": "需同调"
+        },
+        "parameters": {
+          "required": true,
+          "requirements_text": "法师"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:libram-of-souls-and-flesh:011:charges",
+        "clause_type": "charge",
+        "evidence": {
+          "text": "3发充能"
+        },
+        "parameters": {
+          "current": 3,
+          "maximum": 3,
+          "recovery_amount": null,
+          "recovery_trigger": "dawn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:libram-of-souls-and-flesh:011:charge-recovery",
+        "clause_type": "charge_recovery",
+        "evidence": {
+          "text": "*奇物,\n珍稀（需法师同调）*\n这本书的封面制以人皮，饰以白骨，触摸时手感冰凉，并发出微微低语。\n这本书在被找到时，包含了以下法术：*活化死尸Animate Dead*，*死亡法阵Circle of Death*，*虚假生命False\nLif*e，*死亡一指Finger of\nDeath*，*死者交谈Speak With\nDead*，*亡灵召唤术Summon\nUndead*（在本书出现）和*汲血之触Vampiric\nTouch*。你可以将其作为法术书。\n当你持握这本书时，你可"
+        },
+        "parameters": {
+          "recovery_amount": null,
+          "recovery_trigger": "dawn",
+          "typed_dawn_event_required": true
+        },
+        "trigger": "dawn"
+      },
+      {
+        "action_economy": "action",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:libram-of-souls-and-flesh:011:action:1",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个动作，你可以消耗1发充能并伪装成亡灵10分钟。在持续时间内，你外表上如同死者，并且亡灵会忽略你，除非你伤害它们。面对所有的外部检查和侦测法术时，你也只会被显示为亡灵。此效应在你造成伤害或使一个生物进行豁免检定时结束。"
+        },
+        "parameters": {
+          "action_economy": "action",
+          "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:libram-of-souls-and-flesh:011:action:1",
+          "charge_cost": 1,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "作为一个动作，你可以消耗1发充能并伪装成亡灵10分钟。在持续时间内，你外表上如同死者，并且亡灵会忽略你，除非你伤害它们。面对所有的外部检查和侦测法术时，你也只会被显示为亡灵。此效应在你造成伤害或使一个生物进行豁免检定时结束。",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      }
+    ],
+    "compile_status": "full",
+    "consumer_ids": [
+      "item.attunement.v1",
+      "item.charge_resource.v1",
+      "item.equipment_modifier.v1",
+      "item.granted_action.v1"
+    ],
+    "item_fingerprint": "978ce43ee553bb0472a2705a2db04da64c071cbe452b6c4414719fa965e9c3d1",
+    "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-libram-of-souls-and-flesh-011",
+    "runtime_preview_full": true,
+    "schema_version": "item-ir-1",
+    "source_trust": "authored_ir"
+  },
+  "conditions": [],
+  "consumption_policy": {
+    "mode": "charges"
+  },
+  "damage": null,
+  "duration": null,
+  "equipped_slot": null,
+  "evidence": {
+    "manual_review_required": false,
+    "rejected_inferences": [
+      "unknown_effects",
+      "unresolved_spell_identity",
+      "freeform_targeting"
+    ],
+    "review_status": "reviewed_explicit_fields_only",
+    "reviewed_fields": [
+      "identity",
+      "kind",
+      "rarity",
+      "attunement",
+      "charges",
+      "clause_boundaries"
+    ],
+    "source_fragment": "114",
+    "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/珍稀.html",
+    "source_text_sha256": "d09a938f348f6497c9891ae3e0710042879d542d8209b92789db0911ee9fbda4"
+  },
+  "granted_actions": [
+    {
+      "action_economy": "action",
+      "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:libram-of-souls-and-flesh:011:action:1",
+      "charge_cost": 1,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "作为一个动作，你可以消耗1发充能并伪装成亡灵10分钟。在持续时间内，你外表上如同死者，并且亡灵会忽略你，除非你伤害它们。面对所有的外部检查和侦测法术时，你也只会被显示为亡灵。此效应在你造成伤害或使一个生物进行豁免检定时结束。",
+      "target_policy": "self"
+    }
+  ],
+  "granted_spells": [],
+  "healing": null,
+  "immunities": [],
+  "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-libram-of-souls-and-flesh-011",
+  "item_kind": "spellcasting_focus",
+  "localized_name": "灵肉圣契",
+  "manual_review_required": false,
+  "name": "灵肉圣契|Libram of Souls and Flesh",
+  "namespace": "dnd.tashas.recovery.item",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "whole-pack-2026-08-11",
+  "passive_modifiers": [],
+  "rarity": "珍稀",
+  "requires_attunement": true,
+  "resistances": [],
+  "resource_bindings": [],
+  "review_fingerprint": "978ce43ee553bb0472a2705a2db04da64c071cbe452b6c4414719fa965e9c3d1",
+  "review_status": "reviewed",
+  "ruleset_version": "2024",
+  "schema_version": "item-ir-1",
+  "source_fingerprint": "d09a938f348f6497c9891ae3e0710042879d542d8209b92789db0911ee9fbda4",
+  "source_fragment": "114",
+  "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/珍稀.html",
+  "source_record_id": "7f82da3807a304a28c05c79b",
+  "source_trust": "authored_ir",
+  "stack_policy": {
+    "mode": "unique_instance"
+  },
+  "temporary_hp": null,
+  "triggered_effects": []
+}

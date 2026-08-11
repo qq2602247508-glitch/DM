@@ -1,3 +1,36 @@
+# 2026-08-11 长执行检查点：《塔莎的万事坩埚》整包覆盖恢复 I
+
+- 本轮仍严格单线程；没有调用子代理。受保护的 `backend/tests/integrations/` 和
+  `backend/tests/ollama.py` 未加入本轮变更，最终必须继续排除暂存。
+- QA 真实分母已修正：第一轮 625 atoms / 558 executable，本轮 524 / 407；删除/合并候选
+  115，source span、parent、source fingerprint、atom ID 结构检查通过。真实 item 分母是
+  36 magic items + 11 magic tattoos = 47，不再使用上一轮 139 的分页/子条款假阳性数。
+- `item-ir-1` 已落地：47/47 reviewed+typed，41 compile/production full，6 保留人工/DM
+  边界，name branch 0。新增通用 equipment modifier、attunement、charge/recovery、granted
+  action/spell、consumable、triggered-effect consumers；EquipmentInstance、Attunement、Rest
+  service、world snapshot 和 transaction/CAS/idempotency 被复用。隔离测试覆盖 item action、
+  长休充能、dawn 不冒充 long rest、DM decision window、replay 和 rollback。
+- 新增 28 个通用 semantic/template interface；5 个 item 模板达到保守 unlock gate，feature/option
+  模板仍因 semantic cluster 未补齐而阻塞。Feature/Option batch 的真实结果为 reviewed 339、
+  typed 21、compile 21、production 14、DM-assisted 0；未达到本轮要求的 120/100/80/50/10，
+  因此不能宣称整包 production closed。
+- 既有 authored provenance 31 条已完成匹配/别名协调/明确退役，orphan 0：Armorer 和
+  Artillerist 工具熟练为 alias reconciliation；Battle Master Precision Attack 因来源是
+  构筑推荐页而非独立规则资产，显式 retired。
+- 角色成长新增 history-backed downgrade preview/confirm、immutable character content-pack
+  pin、snapshot rebuild、CAS/idempotency；隔离测试覆盖 1→3→2、pin duplicate rejection、
+  item/DM action rollback。Tasha feature/option 资产阈值未达，角色状态保留 `bounded_partial`。
+- 新增报告：`reports/tashas-atom-quality-audit-2026-08-11.json`、
+  `reports/tashas-atom-catalog-II-2026-08-11.json`、semantic/template、ItemSpec/tattoo、
+  feature/option、provenance、character、DM、coverage/efficiency II 和 runtime audit V；
+  `docs/tashas-whole-pack-coverage-recovery-I-2026-08-11.md` 是本轮交接主文档。
+- 重复运行迁移脚本后的 stdout、关键报告、closeout、recovery doc 和 isolated pack manifest
+  byte-identical。正式 source HTML/JSON、formal DB、formal registry、real campaign/character
+  不在 apply 范围内。
+- 下一步只做 FeatureSpec/Option 的逐字段语义审阅与 runtime consumer unlock，优先奇械师注法、
+  魔能祈唤、战技、choice/resource/trigger/target/duration/summon lifecycle；不要改 raw source、
+  不要按名称增加 runtime 分支，也不要提前迁移下一本扩展包。
+
 # 2026-08-11 长执行检查点：《塔莎的万事坩埚》整包生产迁移 I
 
 - 本轮严格单线程；没有创建、调用或委托子代理。受保护的

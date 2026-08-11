@@ -1,0 +1,179 @@
+{
+  "attunement_requirements": {
+    "required": true,
+    "requirements_text": "吟游诗人"
+  },
+  "charges": {},
+  "clauses": [
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:rhythm-maker-s-drum:008:equipment",
+      "clause_type": "equipment",
+      "evidence": {
+        "source_fragment": "55"
+      },
+      "parameters": {
+        "equipped_slot": "worn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:rhythm-maker-s-drum:008:attunement",
+      "clause_type": "attunement",
+      "evidence": {
+        "source_text": "需同调"
+      },
+      "parameters": {
+        "required": true,
+        "requirements_text": "吟游诗人"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:rhythm-maker-s-drum:008:action:1",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个动作，你可以演奏这张鼓以恢复一次你诗人激励特性的使用次数。鼓的此项属性，直到下次黎明前，不能再次使用。"
+      },
+      "parameters": {
+        "action_economy": "action",
+        "action_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:rhythm-maker-s-drum:008:action:1",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "作为一个动作，你可以演奏这张鼓以恢复一次你诗人激励特性的使用次数。鼓的此项属性，直到下次黎明前，不能再次使用。",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    }
+  ],
+  "compile": {
+    "blockers": [],
+    "clauses": [
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:rhythm-maker-s-drum:008:equipment",
+        "clause_type": "equipment",
+        "evidence": {
+          "source_fragment": "55"
+        },
+        "parameters": {
+          "equipped_slot": "worn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:rhythm-maker-s-drum:008:attunement",
+        "clause_type": "attunement",
+        "evidence": {
+          "source_text": "需同调"
+        },
+        "parameters": {
+          "required": true,
+          "requirements_text": "吟游诗人"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "action",
+        "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:rhythm-maker-s-drum:008:action:1",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个动作，你可以演奏这张鼓以恢复一次你诗人激励特性的使用次数。鼓的此项属性，直到下次黎明前，不能再次使用。"
+        },
+        "parameters": {
+          "action_economy": "action",
+          "action_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:rhythm-maker-s-drum:008:action:1",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "作为一个动作，你可以演奏这张鼓以恢复一次你诗人激励特性的使用次数。鼓的此项属性，直到下次黎明前，不能再次使用。",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      }
+    ],
+    "compile_status": "full",
+    "consumer_ids": [
+      "item.attunement.v1",
+      "item.equipment_modifier.v1",
+      "item.granted_action.v1"
+    ],
+    "item_fingerprint": "1e5cecea15e9be0e5ed9e9904e76a63a659bc5a301497cb5149d1580ea303cfd",
+    "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
+    "runtime_preview_full": true,
+    "schema_version": "item-ir-1",
+    "source_trust": "authored_ir"
+  },
+  "conditions": [],
+  "consumption_policy": {
+    "mode": "persistent"
+  },
+  "damage": null,
+  "duration": null,
+  "equipped_slot": null,
+  "evidence": {
+    "manual_review_required": false,
+    "rejected_inferences": [
+      "unknown_effects",
+      "unresolved_spell_identity",
+      "freeform_targeting"
+    ],
+    "review_status": "reviewed_explicit_fields_only",
+    "reviewed_fields": [
+      "identity",
+      "kind",
+      "rarity",
+      "attunement",
+      "charges",
+      "clause_boundaries"
+    ],
+    "source_fragment": "55",
+    "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/非普通.html",
+    "source_text_sha256": "bfdd614b8a69a1cf311c77043e8a8963f5cffc0a7ba51fd462434531ef932035"
+  },
+  "granted_actions": [
+    {
+      "action_economy": "action",
+      "action_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:rhythm-maker-s-drum:008:action:1",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "作为一个动作，你可以演奏这张鼓以恢复一次你诗人激励特性的使用次数。鼓的此项属性，直到下次黎明前，不能再次使用。",
+      "target_policy": "self"
+    }
+  ],
+  "granted_spells": [],
+  "healing": null,
+  "immunities": [],
+  "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
+  "item_kind": "wondrous_item",
+  "localized_name": "调律者之鼓",
+  "manual_review_required": false,
+  "name": "调律者之鼓 Rhythm-Maker's Drum",
+  "namespace": "dnd.tashas.recovery.item",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "whole-pack-2026-08-11",
+  "passive_modifiers": [],
+  "rarity": "极珍稀",
+  "requires_attunement": true,
+  "resistances": [],
+  "resource_bindings": [],
+  "review_fingerprint": "1e5cecea15e9be0e5ed9e9904e76a63a659bc5a301497cb5149d1580ea303cfd",
+  "review_status": "reviewed",
+  "ruleset_version": "2024",
+  "schema_version": "item-ir-1",
+  "source_fingerprint": "bfdd614b8a69a1cf311c77043e8a8963f5cffc0a7ba51fd462434531ef932035",
+  "source_fragment": "55",
+  "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/非普通.html",
+  "source_record_id": "4220452fa5c2c1b3aed918f5",
+  "source_trust": "authored_ir",
+  "stack_policy": {
+    "mode": "unique_instance"
+  },
+  "temporary_hp": null,
+  "triggered_effects": []
+}

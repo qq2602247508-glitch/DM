@@ -1,0 +1,196 @@
+{
+  "attunement_requirements": {
+    "required": true,
+    "requirements_text": "法师"
+  },
+  "charges": {
+    "current": 3,
+    "maximum": 3,
+    "recovery_amount": null,
+    "recovery_trigger": "dawn"
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:planecaller-s-codex:014:equipment",
+      "clause_type": "equipment",
+      "evidence": {
+        "source_fragment": "153"
+      },
+      "parameters": {
+        "equipped_slot": "worn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:planecaller-s-codex:014:attunement",
+      "clause_type": "attunement",
+      "evidence": {
+        "source_text": "需同调"
+      },
+      "parameters": {
+        "required": true,
+        "requirements_text": "法师"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:planecaller-s-codex:014:charges",
+      "clause_type": "charge",
+      "evidence": {
+        "text": "3发充能"
+      },
+      "parameters": {
+        "current": 3,
+        "maximum": 3,
+        "recovery_amount": null,
+        "recovery_trigger": "dawn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:planecaller-s-codex:014:charge-recovery",
+      "clause_type": "charge_recovery",
+      "evidence": {
+        "text": "*奇物,\n珍稀（需法师同调）*\n这本书的书页由邪魔的皮革装订，封面上绘制着多元宇宙巨轮的图样。\n这本书在被找到时，包含了以下法术：*放逐术Banishment*，*寻获魔宠Find\nFamiliar*，*异界之门Gate*，*防护法阵Magic Circle*，*异界誓缚Planar\nBinding*和*元素召唤术Summon\nElemental*（在本书出现）。你可以将其作为法术书。\n当你持握这本书时，你可以将其作为你法师法术的法器。\n书具有3发充能，且每天黎明时恢复1d3"
+      },
+      "parameters": {
+        "recovery_amount": null,
+        "recovery_trigger": "dawn",
+        "typed_dawn_event_required": true
+      },
+      "trigger": "dawn"
+    }
+  ],
+  "compile": {
+    "blockers": [],
+    "clauses": [
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:planecaller-s-codex:014:equipment",
+        "clause_type": "equipment",
+        "evidence": {
+          "source_fragment": "153"
+        },
+        "parameters": {
+          "equipped_slot": "worn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:planecaller-s-codex:014:attunement",
+        "clause_type": "attunement",
+        "evidence": {
+          "source_text": "需同调"
+        },
+        "parameters": {
+          "required": true,
+          "requirements_text": "法师"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:planecaller-s-codex:014:charges",
+        "clause_type": "charge",
+        "evidence": {
+          "text": "3发充能"
+        },
+        "parameters": {
+          "current": 3,
+          "maximum": 3,
+          "recovery_amount": null,
+          "recovery_trigger": "dawn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:planecaller-s-codex:014:charge-recovery",
+        "clause_type": "charge_recovery",
+        "evidence": {
+          "text": "*奇物,\n珍稀（需法师同调）*\n这本书的书页由邪魔的皮革装订，封面上绘制着多元宇宙巨轮的图样。\n这本书在被找到时，包含了以下法术：*放逐术Banishment*，*寻获魔宠Find\nFamiliar*，*异界之门Gate*，*防护法阵Magic Circle*，*异界誓缚Planar\nBinding*和*元素召唤术Summon\nElemental*（在本书出现）。你可以将其作为法术书。\n当你持握这本书时，你可以将其作为你法师法术的法器。\n书具有3发充能，且每天黎明时恢复1d3"
+        },
+        "parameters": {
+          "recovery_amount": null,
+          "recovery_trigger": "dawn",
+          "typed_dawn_event_required": true
+        },
+        "trigger": "dawn"
+      }
+    ],
+    "compile_status": "full",
+    "consumer_ids": [
+      "item.attunement.v1",
+      "item.charge_resource.v1",
+      "item.equipment_modifier.v1"
+    ],
+    "item_fingerprint": "216f1692f6cd613a5850652c6a71334cb70488548ef3a93d47d3a8ec708e612b",
+    "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-planecaller-s-codex-014",
+    "runtime_preview_full": true,
+    "schema_version": "item-ir-1",
+    "source_trust": "authored_ir"
+  },
+  "conditions": [],
+  "consumption_policy": {
+    "mode": "charges"
+  },
+  "damage": null,
+  "duration": null,
+  "equipped_slot": null,
+  "evidence": {
+    "manual_review_required": false,
+    "rejected_inferences": [
+      "unknown_effects",
+      "unresolved_spell_identity",
+      "freeform_targeting"
+    ],
+    "review_status": "reviewed_explicit_fields_only",
+    "reviewed_fields": [
+      "identity",
+      "kind",
+      "rarity",
+      "attunement",
+      "charges",
+      "clause_boundaries"
+    ],
+    "source_fragment": "153",
+    "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/珍稀.html",
+    "source_text_sha256": "58f8e5f59ac899459c323c2f1ebe8daf25e2af4860c22f895c31a5f234f67dda"
+  },
+  "granted_actions": [],
+  "granted_spells": [],
+  "healing": null,
+  "immunities": [],
+  "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-planecaller-s-codex-014",
+  "item_kind": "spellcasting_focus",
+  "localized_name": "异界行访录",
+  "manual_review_required": false,
+  "name": "异界行访录|Planecaller's Codex",
+  "namespace": "dnd.tashas.recovery.item",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "whole-pack-2026-08-11",
+  "passive_modifiers": [],
+  "rarity": "珍稀",
+  "requires_attunement": true,
+  "resistances": [],
+  "resource_bindings": [],
+  "review_fingerprint": "216f1692f6cd613a5850652c6a71334cb70488548ef3a93d47d3a8ec708e612b",
+  "review_status": "reviewed",
+  "ruleset_version": "2024",
+  "schema_version": "item-ir-1",
+  "source_fingerprint": "58f8e5f59ac899459c323c2f1ebe8daf25e2af4860c22f895c31a5f234f67dda",
+  "source_fragment": "153",
+  "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/珍稀.html",
+  "source_record_id": "7f82da3807a304a28c05c79b",
+  "source_trust": "authored_ir",
+  "stack_policy": {
+    "mode": "unique_instance"
+  },
+  "temporary_hp": null,
+  "triggered_effects": []
+}

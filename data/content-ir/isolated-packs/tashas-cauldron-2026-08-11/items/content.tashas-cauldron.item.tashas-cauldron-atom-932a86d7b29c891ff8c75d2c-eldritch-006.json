@@ -1,0 +1,205 @@
+{
+  "attunement_requirements": {
+    "required": true,
+    "requirements_text": "任意生物"
+  },
+  "charges": {},
+  "clauses": [
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:eldritch:006:equipment",
+      "clause_type": "equipment",
+      "evidence": {
+        "source_fragment": "69"
+      },
+      "parameters": {
+        "equipped_slot": "worn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:eldritch:006:attunement",
+      "clause_type": "attunement",
+      "evidence": {
+        "source_text": "需同调"
+      },
+      "parameters": {
+        "required": true,
+        "requirements_text": "任意生物"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:eldritch:006:tattoo-lifecycle",
+      "clause_type": "tattoo_lifecycle",
+      "evidence": {
+        "source_text": "针头会化为墨水再变成刺青"
+      },
+      "parameters": {
+        "on_attune": "ink_manifestation",
+        "on_unattune": "needle_returns_and_effects_removed"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "bonus_action",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:eldritch:006:action:1",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个附赠动作，你可以增强刺青1分钟。持续时间内，你每次以武器或徒手打击发动近战攻击时，墨水触须会朝着对方喷射而去，使你可以触及距离你最远15尺的目标。此外，你的近战攻击命中时会造成额外1d6力场伤害。使用后，直到下次黎明前，此附赠动作不能再次使用。"
+      },
+      "parameters": {
+        "action_economy": "bonus_action",
+        "action_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:eldritch:006:action:1",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "作为一个附赠动作，你可以增强刺青1分钟。持续时间内，你每次以武器或徒手打击发动近战攻击时，墨水触须会朝着对方喷射而去，使你可以触及距离你最远15尺的目标。此外，你的近战攻击命中时会造成额外1d6力场伤害。使用后，直到下次黎明前，此附赠动作不能再次使用。",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    }
+  ],
+  "compile": {
+    "blockers": [],
+    "clauses": [
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:eldritch:006:equipment",
+        "clause_type": "equipment",
+        "evidence": {
+          "source_fragment": "69"
+        },
+        "parameters": {
+          "equipped_slot": "worn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:eldritch:006:attunement",
+        "clause_type": "attunement",
+        "evidence": {
+          "source_text": "需同调"
+        },
+        "parameters": {
+          "required": true,
+          "requirements_text": "任意生物"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:eldritch:006:tattoo-lifecycle",
+        "clause_type": "tattoo_lifecycle",
+        "evidence": {
+          "source_text": "针头会化为墨水再变成刺青"
+        },
+        "parameters": {
+          "on_attune": "ink_manifestation",
+          "on_unattune": "needle_returns_and_effects_removed"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "bonus_action",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:eldritch:006:action:1",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个附赠动作，你可以增强刺青1分钟。持续时间内，你每次以武器或徒手打击发动近战攻击时，墨水触须会朝着对方喷射而去，使你可以触及距离你最远15尺的目标。此外，你的近战攻击命中时会造成额外1d6力场伤害。使用后，直到下次黎明前，此附赠动作不能再次使用。"
+        },
+        "parameters": {
+          "action_economy": "bonus_action",
+          "action_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:eldritch:006:action:1",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "作为一个附赠动作，你可以增强刺青1分钟。持续时间内，你每次以武器或徒手打击发动近战攻击时，墨水触须会朝着对方喷射而去，使你可以触及距离你最远15尺的目标。此外，你的近战攻击命中时会造成额外1d6力场伤害。使用后，直到下次黎明前，此附赠动作不能再次使用。",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      }
+    ],
+    "compile_status": "full",
+    "consumer_ids": [
+      "item.attunement.v1",
+      "item.equipment_modifier.v1",
+      "item.granted_action.v1"
+    ],
+    "item_fingerprint": "3232bcdd46716d09890dea63aed02680c4c18f328d7ffd3e1a38c069f9b72288",
+    "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-eldritch-006",
+    "runtime_preview_full": true,
+    "schema_version": "item-ir-1",
+    "source_trust": "authored_ir"
+  },
+  "conditions": [],
+  "consumption_policy": {
+    "mode": "persistent"
+  },
+  "damage": null,
+  "duration": null,
+  "equipped_slot": "worn",
+  "evidence": {
+    "manual_review_required": false,
+    "rejected_inferences": [
+      "unknown_effects",
+      "unresolved_spell_identity",
+      "freeform_targeting"
+    ],
+    "review_status": "reviewed_explicit_fields_only",
+    "reviewed_fields": [
+      "identity",
+      "kind",
+      "rarity",
+      "attunement",
+      "charges",
+      "clause_boundaries"
+    ],
+    "source_fragment": "69",
+    "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html",
+    "source_text_sha256": "882735dae8b4102e8a0e08e8325d4635535ee85e6bf0ec48009d2bcf74283223"
+  },
+  "granted_actions": [
+    {
+      "action_economy": "bonus_action",
+      "action_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:eldritch:006:action:1",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "作为一个附赠动作，你可以增强刺青1分钟。持续时间内，你每次以武器或徒手打击发动近战攻击时，墨水触须会朝着对方喷射而去，使你可以触及距离你最远15尺的目标。此外，你的近战攻击命中时会造成额外1d6力场伤害。使用后，直到下次黎明前，此附赠动作不能再次使用。",
+      "target_policy": "self"
+    }
+  ],
+  "granted_spells": [],
+  "healing": null,
+  "immunities": [],
+  "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-eldritch-006",
+  "item_kind": "magic_tattoo",
+  "localized_name": "魔能爪刺青",
+  "manual_review_required": false,
+  "name": "魔能爪刺青|Eldritch",
+  "namespace": "dnd.tashas.recovery.item",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "whole-pack-2026-08-11",
+  "passive_modifiers": [],
+  "rarity": "非普通",
+  "requires_attunement": true,
+  "resistances": [],
+  "resource_bindings": [],
+  "review_fingerprint": "3232bcdd46716d09890dea63aed02680c4c18f328d7ffd3e1a38c069f9b72288",
+  "review_status": "reviewed",
+  "ruleset_version": "2024",
+  "schema_version": "item-ir-1",
+  "source_fingerprint": "882735dae8b4102e8a0e08e8325d4635535ee85e6bf0ec48009d2bcf74283223",
+  "source_fragment": "69",
+  "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html",
+  "source_record_id": "932a86d7b29c891ff8c75d2c",
+  "source_trust": "authored_ir",
+  "stack_policy": {
+    "mode": "unique_instance"
+  },
+  "temporary_hp": null,
+  "triggered_effects": []
+}

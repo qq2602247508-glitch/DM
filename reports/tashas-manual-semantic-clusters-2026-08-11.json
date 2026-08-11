@@ -1,0 +1,999 @@
+{
+  "cluster_count": 15,
+  "cluster_fingerprint": "8328b7316ebf89ebb9db8464009d137bf7a95daf66bd38743a9c2b04665e38dd",
+  "clusters": [
+    {
+      "cluster_id": "tashas.manual.cluster.001",
+      "complete_content_unlock_count": 0,
+      "content_count": 46,
+      "exact_contract_signature": {
+        "action_economy": "action_economy_unknown",
+        "attack_or_save": "attack_or_save_unknown",
+        "attunement_shape": "none",
+        "charge_shape": "none",
+        "choice_shape": "choice_unknown",
+        "condition_shape": "condition_shape_unknown",
+        "content_kind": "class_feature",
+        "damage_healing_shape": "damage_healing_unknown",
+        "dm_adjudication_shape": "dm_adjudication_unknown",
+        "duration_shape": "duration_shape_unknown",
+        "equipment_shape": "none",
+        "grant_shape": "missing_template",
+        "modifier_shape": "modifier_shape_unknown",
+        "movement_shape": "movement_shape_unknown",
+        "persistence_shape": "persistence_unknown",
+        "recovery_shape": "recovery_shape_unknown",
+        "resource_shape": "resource_shape_unknown",
+        "runtime_consumer_shape": "runtime_consumer_unknown",
+        "scaling_shape": "scaling_shape_unknown",
+        "spell_grant_shape": "none",
+        "success_failure_shape": "success_failure_unknown",
+        "summon_shape": "summon_shape_unknown",
+        "target_shape": "target_shape_unknown",
+        "trigger": "trigger_unknown"
+      },
+      "existing_template_match": false,
+      "feature_count": 46,
+      "item_count": 0,
+      "missing_capability": [
+        "typed_contract"
+      ],
+      "missing_materializer": [
+        "content_ir_runtime"
+      ],
+      "missing_runtime_consumer": [
+        "closed_world_consumer"
+      ],
+      "missing_template": true,
+      "option_count": 0,
+      "representative_atoms": [
+        "tashas-cauldron:atom:05cd5d50f2cb202bbd493805:addtional-sorcerer-spells:001",
+        "tashas-cauldron:atom:05cd5d50f2cb202bbd493805:magical-guidance:006",
+        "tashas-cauldron:atom:05cd5d50f2cb202bbd493805:metamagic-options:002",
+        "tashas-cauldron:atom:05cd5d50f2cb202bbd493805:sorcerous-versatility:005",
+        "tashas-cauldron:atom:28894d328bca545cc65f7eb9:addtional-paladin-spells:001",
+        "tashas-cauldron:atom:28894d328bca545cc65f7eb9:fighting-style-options:002",
+        "tashas-cauldron:atom:28894d328bca545cc65f7eb9:harness-divine-power:006",
+        "tashas-cauldron:atom:28894d328bca545cc65f7eb9:martial-versatility:007"
+      ],
+      "required_review_fields": [
+        "action_economy",
+        "clauses",
+        "content_kind",
+        "dm_boundary",
+        "level",
+        "name",
+        "prerequisites",
+        "resource_and_recovery",
+        "target_policy",
+        "trigger"
+      ],
+      "spell_count": 0
+    },
+    {
+      "cluster_id": "tashas.manual.cluster.002",
+      "complete_content_unlock_count": 0,
+      "content_count": 17,
+      "exact_contract_signature": {
+        "action_economy": "action_economy_unknown",
+        "attack_or_save": "attack_or_save_unknown",
+        "attunement_shape": "none",
+        "charge_shape": "none",
+        "choice_shape": "choice_unknown",
+        "condition_shape": "condition_shape_unknown",
+        "content_kind": "class_feature",
+        "damage_healing_shape": "damage_healing_unknown",
+        "dm_adjudication_shape": "dm_adjudication_unknown",
+        "duration_shape": "duration_shape_unknown",
+        "equipment_shape": "none",
+        "grant_shape": "missing_template",
+        "modifier_shape": "modifier_shape_unknown",
+        "movement_shape": "movement_shape_unknown",
+        "persistence_shape": "persistence_unknown",
+        "recovery_shape": "recovery_shape_unknown",
+        "resource_shape": "resource_shape_unknown",
+        "runtime_consumer_shape": "runtime_consumer_unknown",
+        "scaling_shape": "scaling_shape_unknown",
+        "spell_grant_shape": "none",
+        "success_failure_shape": "success_failure_unknown",
+        "summon_shape": "summon_shape_unknown",
+        "target_shape": "target_shape_unknown",
+        "trigger": "trigger_unknown"
+      },
+      "existing_template_match": false,
+      "feature_count": 17,
+      "item_count": 0,
+      "missing_capability": [
+        "typed_contract"
+      ],
+      "missing_materializer": [
+        "content_ir_runtime"
+      ],
+      "missing_runtime_consumer": [
+        "closed_world_consumer"
+      ],
+      "missing_template": true,
+      "option_count": 0,
+      "representative_atoms": [
+        "tashas-cauldron:atom:05cd5d50f2cb202bbd493805:seeking-spell:003",
+        "tashas-cauldron:atom:05cd5d50f2cb202bbd493805:transmuted-spell:004",
+        "tashas-cauldron:atom:28894d328bca545cc65f7eb9:blessed-warrior:003",
+        "tashas-cauldron:atom:28894d328bca545cc65f7eb9:blind-fighting:004",
+        "tashas-cauldron:atom:28894d328bca545cc65f7eb9:interception:005",
+        "tashas-cauldron:atom:752d57e35706db428895da0a:blind-fighting:008",
+        "tashas-cauldron:atom:752d57e35706db428895da0a:canny-1:002",
+        "tashas-cauldron:atom:752d57e35706db428895da0a:druidic-warrior:009"
+      ],
+      "required_review_fields": [
+        "action_economy",
+        "clauses",
+        "content_kind",
+        "dm_boundary",
+        "level",
+        "name",
+        "prerequisites",
+        "resource_and_recovery",
+        "target_policy",
+        "trigger"
+      ],
+      "spell_count": 0
+    },
+    {
+      "cluster_id": "tashas.manual.cluster.003",
+      "complete_content_unlock_count": 0,
+      "content_count": 3,
+      "exact_contract_signature": {
+        "action_economy": "action_economy_unknown",
+        "attack_or_save": "attack_or_save_unknown",
+        "attunement_shape": "none",
+        "charge_shape": "none",
+        "choice_shape": "choice_present",
+        "condition_shape": "condition_shape_unknown",
+        "content_kind": "feat",
+        "damage_healing_shape": "damage_healing_unknown",
+        "dm_adjudication_shape": "dm_adjudication_unknown",
+        "duration_shape": "duration_shape_unknown",
+        "equipment_shape": "none",
+        "grant_shape": "missing_template",
+        "modifier_shape": "modifier_shape_unknown",
+        "movement_shape": "movement_shape_unknown",
+        "persistence_shape": "persistence_unknown",
+        "recovery_shape": "recovery_shape_unknown",
+        "resource_shape": "resource_shape_unknown",
+        "runtime_consumer_shape": "runtime_consumer_unknown",
+        "scaling_shape": "scaling_shape_unknown",
+        "spell_grant_shape": "none",
+        "success_failure_shape": "success_failure_unknown",
+        "summon_shape": "summon_shape_unknown",
+        "target_shape": "target_shape_unknown",
+        "trigger": "trigger_unknown"
+      },
+      "existing_template_match": false,
+      "feature_count": 0,
+      "item_count": 0,
+      "missing_capability": [
+        "typed_contract"
+      ],
+      "missing_materializer": [
+        "content_ir_runtime"
+      ],
+      "missing_runtime_consumer": [
+        "closed_world_consumer"
+      ],
+      "missing_template": true,
+      "option_count": 3,
+      "representative_atoms": [
+        "tashas-cauldron:atom:1924837fba5aec4d15a290b8:eldritch-adept:004",
+        "tashas-cauldron:atom:1924837fba5aec4d15a290b8:fighting-initiate:006",
+        "tashas-cauldron:atom:1924837fba5aec4d15a290b8:metamagic-adept:008"
+      ],
+      "required_review_fields": [
+        "action_economy",
+        "clauses",
+        "content_kind",
+        "dm_boundary",
+        "level",
+        "name",
+        "prerequisites",
+        "resource_and_recovery",
+        "target_policy",
+        "trigger"
+      ],
+      "spell_count": 0
+    },
+    {
+      "cluster_id": "tashas.manual.cluster.004",
+      "complete_content_unlock_count": 0,
+      "content_count": 12,
+      "exact_contract_signature": {
+        "action_economy": "action_economy_unknown",
+        "attack_or_save": "attack_or_save_unknown",
+        "attunement_shape": "none",
+        "charge_shape": "none",
+        "choice_shape": "choice_unknown",
+        "condition_shape": "condition_shape_unknown",
+        "content_kind": "feat",
+        "damage_healing_shape": "damage_healing_unknown",
+        "dm_adjudication_shape": "dm_adjudication_unknown",
+        "duration_shape": "duration_shape_unknown",
+        "equipment_shape": "none",
+        "grant_shape": "missing_template",
+        "modifier_shape": "modifier_shape_unknown",
+        "movement_shape": "movement_shape_unknown",
+        "persistence_shape": "persistence_unknown",
+        "recovery_shape": "recovery_shape_unknown",
+        "resource_shape": "resource_shape_unknown",
+        "runtime_consumer_shape": "runtime_consumer_unknown",
+        "scaling_shape": "scaling_shape_unknown",
+        "spell_grant_shape": "none",
+        "success_failure_shape": "success_failure_unknown",
+        "summon_shape": "summon_shape_unknown",
+        "target_shape": "target_shape_unknown",
+        "trigger": "trigger_unknown"
+      },
+      "existing_template_match": false,
+      "feature_count": 0,
+      "item_count": 0,
+      "missing_capability": [
+        "typed_contract"
+      ],
+      "missing_materializer": [
+        "content_ir_runtime"
+      ],
+      "missing_runtime_consumer": [
+        "closed_world_consumer"
+      ],
+      "missing_template": true,
+      "option_count": 12,
+      "representative_atoms": [
+        "tashas-cauldron:atom:1924837fba5aec4d15a290b8:artificer-initiate:001",
+        "tashas-cauldron:atom:1924837fba5aec4d15a290b8:chef:002",
+        "tashas-cauldron:atom:1924837fba5aec4d15a290b8:crusher:003",
+        "tashas-cauldron:atom:1924837fba5aec4d15a290b8:fey-touched:005",
+        "tashas-cauldron:atom:1924837fba5aec4d15a290b8:gunner:007",
+        "tashas-cauldron:atom:1924837fba5aec4d15a290b8:piercer:009",
+        "tashas-cauldron:atom:1924837fba5aec4d15a290b8:poisoner:010",
+        "tashas-cauldron:atom:1924837fba5aec4d15a290b8:shadow-touched:011"
+      ],
+      "required_review_fields": [
+        "action_economy",
+        "clauses",
+        "content_kind",
+        "dm_boundary",
+        "level",
+        "name",
+        "prerequisites",
+        "resource_and_recovery",
+        "target_policy",
+        "trigger"
+      ],
+      "spell_count": 0
+    },
+    {
+      "cluster_id": "tashas.manual.cluster.005",
+      "complete_content_unlock_count": 0,
+      "content_count": 3,
+      "exact_contract_signature": {
+        "action_economy": "action_economy_unknown",
+        "attack_or_save": "attack_or_save_unknown",
+        "attunement_shape": "none",
+        "charge_shape": "none",
+        "choice_shape": "choice_present",
+        "condition_shape": "condition_shape_unknown",
+        "content_kind": "infusion",
+        "damage_healing_shape": "damage_healing_unknown",
+        "dm_adjudication_shape": "dm_adjudication_unknown",
+        "duration_shape": "duration_shape_unknown",
+        "equipment_shape": "none",
+        "grant_shape": "missing_template",
+        "modifier_shape": "modifier_shape_unknown",
+        "movement_shape": "movement_shape_unknown",
+        "persistence_shape": "persistence_unknown",
+        "recovery_shape": "recovery_shape_unknown",
+        "resource_shape": "resource_shape_unknown",
+        "runtime_consumer_shape": "runtime_consumer_unknown",
+        "scaling_shape": "scaling_shape_unknown",
+        "spell_grant_shape": "none",
+        "success_failure_shape": "success_failure_unknown",
+        "summon_shape": "summon_shape_unknown",
+        "target_shape": "target_shape_unknown",
+        "trigger": "trigger_unknown"
+      },
+      "existing_template_match": false,
+      "feature_count": 0,
+      "item_count": 0,
+      "missing_capability": [
+        "typed_contract"
+      ],
+      "missing_materializer": [
+        "content_ir_runtime"
+      ],
+      "missing_runtime_consumer": [
+        "closed_world_consumer"
+      ],
+      "missing_template": true,
+      "option_count": 3,
+      "representative_atoms": [
+        "tashas-cauldron:atom:f3c132656f9304ca2264c43a:arcane-propulsion-armor:001",
+        "tashas-cauldron:atom:f3c132656f9304ca2264c43a:reactions:013",
+        "tashas-cauldron:atom:f3c132656f9304ca2264c43a:repulsion-shield:014"
+      ],
+      "required_review_fields": [
+        "action_economy",
+        "clauses",
+        "content_kind",
+        "dm_boundary",
+        "level",
+        "name",
+        "prerequisites",
+        "resource_and_recovery",
+        "target_policy",
+        "trigger"
+      ],
+      "spell_count": 0
+    },
+    {
+      "cluster_id": "tashas.manual.cluster.006",
+      "complete_content_unlock_count": 0,
+      "content_count": 1,
+      "exact_contract_signature": {
+        "action_economy": "action_economy_unknown",
+        "attack_or_save": "attack_or_save_unknown",
+        "attunement_shape": "none",
+        "charge_shape": "none",
+        "choice_shape": "choice_unknown",
+        "condition_shape": "condition_shape_unknown",
+        "content_kind": "infusion",
+        "damage_healing_shape": "damage_healing_unknown",
+        "dm_adjudication_shape": "dm_adjudication_unknown",
+        "duration_shape": "duration_shape_unknown",
+        "equipment_shape": "none",
+        "grant_shape": "missing_template",
+        "modifier_shape": "modifier_shape_unknown",
+        "movement_shape": "movement_shape_unknown",
+        "persistence_shape": "persistence_unknown",
+        "recovery_shape": "recovery_shape_unknown",
+        "resource_shape": "resource_shape_unknown",
+        "runtime_consumer_shape": "runtime_consumer_unknown",
+        "scaling_shape": "scaling_shape_unknown",
+        "spell_grant_shape": "none",
+        "success_failure_shape": "success_failure_unknown",
+        "summon_shape": "summon_shape_unknown",
+        "target_shape": "target_shape_unknown",
+        "trigger": "trigger_unknown"
+      },
+      "existing_template_match": false,
+      "feature_count": 0,
+      "item_count": 0,
+      "missing_capability": [
+        "typed_contract"
+      ],
+      "missing_materializer": [
+        "content_ir_runtime"
+      ],
+      "missing_runtime_consumer": [
+        "closed_world_consumer"
+      ],
+      "missing_template": true,
+      "option_count": 1,
+      "representative_atoms": [
+        "tashas-cauldron:atom:f3c132656f9304ca2264c43a:replicable-items-2:015"
+      ],
+      "required_review_fields": [
+        "action_economy",
+        "clauses",
+        "content_kind",
+        "dm_boundary",
+        "level",
+        "name",
+        "prerequisites",
+        "resource_and_recovery",
+        "target_policy",
+        "trigger"
+      ],
+      "spell_count": 0
+    },
+    {
+      "cluster_id": "tashas.manual.cluster.007",
+      "complete_content_unlock_count": 0,
+      "content_count": 11,
+      "exact_contract_signature": {
+        "action_economy": "action_economy_unknown",
+        "attack_or_save": "attack_or_save_unknown",
+        "attunement_shape": "none",
+        "charge_shape": "none",
+        "choice_shape": "choice_unknown",
+        "condition_shape": "condition_shape_unknown",
+        "content_kind": "infusion",
+        "damage_healing_shape": "damage_healing_unknown",
+        "dm_adjudication_shape": "dm_adjudication_unknown",
+        "duration_shape": "duration_shape_unknown",
+        "equipment_shape": "none",
+        "grant_shape": "missing_template",
+        "modifier_shape": "modifier_shape_unknown",
+        "movement_shape": "movement_shape_unknown",
+        "persistence_shape": "persistence_unknown",
+        "recovery_shape": "recovery_shape_unknown",
+        "resource_shape": "resource_shape_unknown",
+        "runtime_consumer_shape": "runtime_consumer_unknown",
+        "scaling_shape": "scaling_shape_unknown",
+        "spell_grant_shape": "none",
+        "success_failure_shape": "success_failure_unknown",
+        "summon_shape": "summon_shape_unknown",
+        "target_shape": "target_shape_unknown",
+        "trigger": "trigger_unknown"
+      },
+      "existing_template_match": false,
+      "feature_count": 0,
+      "item_count": 0,
+      "missing_capability": [
+        "typed_contract"
+      ],
+      "missing_materializer": [
+        "content_ir_runtime"
+      ],
+      "missing_runtime_consumer": [
+        "closed_world_consumer"
+      ],
+      "missing_template": true,
+      "option_count": 11,
+      "representative_atoms": [
+        "tashas-cauldron:atom:f3c132656f9304ca2264c43a:0d201c27300d:007",
+        "tashas-cauldron:atom:f3c132656f9304ca2264c43a:36654dc25181:005",
+        "tashas-cauldron:atom:f3c132656f9304ca2264c43a:593ccfd276fa:011",
+        "tashas-cauldron:atom:f3c132656f9304ca2264c43a:8cd15eb3a9c6:008",
+        "tashas-cauldron:atom:f3c132656f9304ca2264c43a:9ea5acf14472:009",
+        "tashas-cauldron:atom:f3c132656f9304ca2264c43a:aa826ac97a13:010",
+        "tashas-cauldron:atom:f3c132656f9304ca2264c43a:dd1374175fd3:004",
+        "tashas-cauldron:atom:f3c132656f9304ca2264c43a:de061d145beb:006"
+      ],
+      "required_review_fields": [
+        "action_economy",
+        "clauses",
+        "content_kind",
+        "dm_boundary",
+        "level",
+        "name",
+        "prerequisites",
+        "resource_and_recovery",
+        "target_policy",
+        "trigger"
+      ],
+      "spell_count": 0
+    },
+    {
+      "cluster_id": "tashas.manual.cluster.008",
+      "complete_content_unlock_count": 0,
+      "content_count": 1,
+      "exact_contract_signature": {
+        "action_economy": "action_economy_unknown",
+        "attack_or_save": "attack_or_save_unknown",
+        "attunement_shape": "none",
+        "charge_shape": "none",
+        "choice_shape": "choice_unknown",
+        "condition_shape": "condition_shape_unknown",
+        "content_kind": "invocation",
+        "damage_healing_shape": "damage_healing_unknown",
+        "dm_adjudication_shape": "dm_adjudication_unknown",
+        "duration_shape": "duration_shape_unknown",
+        "equipment_shape": "none",
+        "grant_shape": "missing_template",
+        "modifier_shape": "modifier_shape_unknown",
+        "movement_shape": "movement_shape_unknown",
+        "persistence_shape": "persistence_unknown",
+        "recovery_shape": "recovery_shape_unknown",
+        "resource_shape": "resource_shape_unknown",
+        "runtime_consumer_shape": "runtime_consumer_unknown",
+        "scaling_shape": "scaling_shape_unknown",
+        "spell_grant_shape": "none",
+        "success_failure_shape": "success_failure_unknown",
+        "summon_shape": "summon_shape_unknown",
+        "target_shape": "target_shape_unknown",
+        "trigger": "trigger_unknown"
+      },
+      "existing_template_match": false,
+      "feature_count": 0,
+      "item_count": 0,
+      "missing_capability": [
+        "typed_contract"
+      ],
+      "missing_materializer": [
+        "content_ir_runtime"
+      ],
+      "missing_runtime_consumer": [
+        "closed_world_consumer"
+      ],
+      "missing_template": true,
+      "option_count": 1,
+      "representative_atoms": [
+        "tashas-cauldron:atom:72fefe733acdf83cf3e1c860:gift-of-the-protectors:006"
+      ],
+      "required_review_fields": [
+        "action_economy",
+        "clauses",
+        "content_kind",
+        "dm_boundary",
+        "level",
+        "name",
+        "prerequisites",
+        "resource_and_recovery",
+        "target_policy",
+        "trigger"
+      ],
+      "spell_count": 0
+    },
+    {
+      "cluster_id": "tashas.manual.cluster.009",
+      "complete_content_unlock_count": 0,
+      "content_count": 6,
+      "exact_contract_signature": {
+        "action_economy": "action_economy_unknown",
+        "attack_or_save": "attack_or_save_unknown",
+        "attunement_shape": "none",
+        "charge_shape": "none",
+        "choice_shape": "choice_unknown",
+        "condition_shape": "condition_shape_unknown",
+        "content_kind": "invocation",
+        "damage_healing_shape": "damage_healing_unknown",
+        "dm_adjudication_shape": "dm_adjudication_unknown",
+        "duration_shape": "duration_shape_unknown",
+        "equipment_shape": "none",
+        "grant_shape": "missing_template",
+        "modifier_shape": "modifier_shape_unknown",
+        "movement_shape": "movement_shape_unknown",
+        "persistence_shape": "persistence_unknown",
+        "recovery_shape": "recovery_shape_unknown",
+        "resource_shape": "resource_shape_unknown",
+        "runtime_consumer_shape": "runtime_consumer_unknown",
+        "scaling_shape": "scaling_shape_unknown",
+        "spell_grant_shape": "none",
+        "success_failure_shape": "success_failure_unknown",
+        "summon_shape": "summon_shape_unknown",
+        "target_shape": "target_shape_unknown",
+        "trigger": "trigger_unknown"
+      },
+      "existing_template_match": false,
+      "feature_count": 0,
+      "item_count": 0,
+      "missing_capability": [
+        "typed_contract"
+      ],
+      "missing_materializer": [
+        "content_ir_runtime"
+      ],
+      "missing_runtime_consumer": [
+        "closed_world_consumer"
+      ],
+      "missing_template": true,
+      "option_count": 6,
+      "representative_atoms": [
+        "tashas-cauldron:atom:72fefe733acdf83cf3e1c860:bond-of-the-talisman:007",
+        "tashas-cauldron:atom:72fefe733acdf83cf3e1c860:eldritch-mind:001",
+        "tashas-cauldron:atom:72fefe733acdf83cf3e1c860:far-scribe:003",
+        "tashas-cauldron:atom:72fefe733acdf83cf3e1c860:investment-of-the-chain-master:002",
+        "tashas-cauldron:atom:72fefe733acdf83cf3e1c860:protection-of-the-talisman:005",
+        "tashas-cauldron:atom:72fefe733acdf83cf3e1c860:undying-servitude:004"
+      ],
+      "required_review_fields": [
+        "action_economy",
+        "clauses",
+        "content_kind",
+        "dm_boundary",
+        "level",
+        "name",
+        "prerequisites",
+        "resource_and_recovery",
+        "target_policy",
+        "trigger"
+      ],
+      "spell_count": 0
+    },
+    {
+      "cluster_id": "tashas.manual.cluster.010",
+      "complete_content_unlock_count": 0,
+      "content_count": 36,
+      "exact_contract_signature": {
+        "action_economy": "action_economy_unknown",
+        "attack_or_save": "attack_or_save_unknown",
+        "attunement_shape": "attunement_shape_unknown",
+        "charge_shape": "charge_shape_unknown",
+        "choice_shape": "choice_unknown",
+        "condition_shape": "condition_shape_unknown",
+        "content_kind": "magic_item",
+        "damage_healing_shape": "damage_healing_unknown",
+        "dm_adjudication_shape": "dm_adjudication_unknown",
+        "duration_shape": "duration_shape_unknown",
+        "equipment_shape": "equipment_shape",
+        "grant_shape": "missing_template",
+        "modifier_shape": "modifier_shape_unknown",
+        "movement_shape": "movement_shape_unknown",
+        "persistence_shape": "persistence_unknown",
+        "recovery_shape": "recovery_shape_unknown",
+        "resource_shape": "resource_shape_unknown",
+        "runtime_consumer_shape": "runtime_consumer_unknown",
+        "scaling_shape": "scaling_shape_unknown",
+        "spell_grant_shape": "none",
+        "success_failure_shape": "success_failure_unknown",
+        "summon_shape": "summon_shape_unknown",
+        "target_shape": "target_shape_unknown",
+        "trigger": "trigger_unknown"
+      },
+      "existing_template_match": false,
+      "feature_count": 0,
+      "item_count": 36,
+      "missing_capability": [
+        "typed_contract"
+      ],
+      "missing_materializer": [
+        "content_ir_runtime"
+      ],
+      "missing_runtime_consumer": [
+        "closed_world_consumer"
+      ],
+      "missing_template": true,
+      "option_count": 0,
+      "representative_atoms": [
+        "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000",
+        "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:amulet-of-the-devout:001",
+        "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:arcane-grimoire:002",
+        "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:bloodwell-vial:003",
+        "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:feywild-shard:004",
+        "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:guardian-emblem:005",
+        "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:moon-sickle:006",
+        "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:nature-s-mantle:007"
+      ],
+      "required_review_fields": [
+        "action_economy",
+        "clauses",
+        "content_kind",
+        "dm_boundary",
+        "level",
+        "name",
+        "prerequisites",
+        "resource_and_recovery",
+        "target_policy",
+        "trigger"
+      ],
+      "spell_count": 0
+    },
+    {
+      "cluster_id": "tashas.manual.cluster.011",
+      "complete_content_unlock_count": 0,
+      "content_count": 11,
+      "exact_contract_signature": {
+        "action_economy": "action_economy_unknown",
+        "attack_or_save": "attack_or_save_unknown",
+        "attunement_shape": "attunement_shape_unknown",
+        "charge_shape": "charge_shape_unknown",
+        "choice_shape": "choice_unknown",
+        "condition_shape": "condition_shape_unknown",
+        "content_kind": "magic_tattoo",
+        "damage_healing_shape": "damage_healing_unknown",
+        "dm_adjudication_shape": "dm_adjudication_unknown",
+        "duration_shape": "duration_shape_unknown",
+        "equipment_shape": "equipment_shape",
+        "grant_shape": "missing_template",
+        "modifier_shape": "modifier_shape_unknown",
+        "movement_shape": "movement_shape_unknown",
+        "persistence_shape": "persistence_unknown",
+        "recovery_shape": "recovery_shape_unknown",
+        "resource_shape": "resource_shape_unknown",
+        "runtime_consumer_shape": "runtime_consumer_unknown",
+        "scaling_shape": "scaling_shape_unknown",
+        "spell_grant_shape": "none",
+        "success_failure_shape": "success_failure_unknown",
+        "summon_shape": "summon_shape_unknown",
+        "target_shape": "target_shape_unknown",
+        "trigger": "trigger_unknown"
+      },
+      "existing_template_match": false,
+      "feature_count": 0,
+      "item_count": 11,
+      "missing_capability": [
+        "typed_contract"
+      ],
+      "missing_materializer": [
+        "content_ir_runtime"
+      ],
+      "missing_runtime_consumer": [
+        "closed_world_consumer"
+      ],
+      "missing_template": true,
+      "option_count": 0,
+      "representative_atoms": [
+        "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:8d7814d75b94:003",
+        "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:a92dd000492e:001",
+        "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:b9cb8e43543d:007",
+        "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:c27398cf29fe:010",
+        "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:coiling:004",
+        "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:eldritch:005",
+        "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:ghost-step-tattoo:008",
+        "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:illuminator-s-tattoo:000"
+      ],
+      "required_review_fields": [
+        "action_economy",
+        "clauses",
+        "content_kind",
+        "dm_boundary",
+        "level",
+        "name",
+        "prerequisites",
+        "resource_and_recovery",
+        "target_policy",
+        "trigger"
+      ],
+      "spell_count": 0
+    },
+    {
+      "cluster_id": "tashas.manual.cluster.012",
+      "complete_content_unlock_count": 0,
+      "content_count": 5,
+      "exact_contract_signature": {
+        "action_economy": "action_economy_unknown",
+        "attack_or_save": "attack_or_save_unknown",
+        "attunement_shape": "none",
+        "charge_shape": "none",
+        "choice_shape": "choice_unknown",
+        "condition_shape": "condition_shape_unknown",
+        "content_kind": "maneuver",
+        "damage_healing_shape": "damage_healing_unknown",
+        "dm_adjudication_shape": "dm_adjudication_unknown",
+        "duration_shape": "duration_shape_unknown",
+        "equipment_shape": "none",
+        "grant_shape": "missing_template",
+        "modifier_shape": "modifier_shape_unknown",
+        "movement_shape": "movement_shape_unknown",
+        "persistence_shape": "persistence_unknown",
+        "recovery_shape": "recovery_shape_unknown",
+        "resource_shape": "resource_shape_unknown",
+        "runtime_consumer_shape": "runtime_consumer_unknown",
+        "scaling_shape": "scaling_shape_unknown",
+        "spell_grant_shape": "none",
+        "success_failure_shape": "success_failure_unknown",
+        "summon_shape": "summon_shape_unknown",
+        "target_shape": "target_shape_unknown",
+        "trigger": "trigger_unknown"
+      },
+      "existing_template_match": false,
+      "feature_count": 0,
+      "item_count": 0,
+      "missing_capability": [
+        "typed_contract"
+      ],
+      "missing_materializer": [
+        "content_ir_runtime"
+      ],
+      "missing_runtime_consumer": [
+        "closed_world_consumer"
+      ],
+      "missing_template": true,
+      "option_count": 5,
+      "representative_atoms": [
+        "tashas-cauldron:atom:12139219bf7e575f9cde019c:bait-and-switch:002",
+        "tashas-cauldron:atom:12139219bf7e575f9cde019c:brace:003",
+        "tashas-cauldron:atom:12139219bf7e575f9cde019c:grappling-strike:005",
+        "tashas-cauldron:atom:12139219bf7e575f9cde019c:quick-toss:006",
+        "tashas-cauldron:atom:12139219bf7e575f9cde019c:tactical-assessment:007"
+      ],
+      "required_review_fields": [
+        "action_economy",
+        "clauses",
+        "content_kind",
+        "dm_boundary",
+        "level",
+        "name",
+        "prerequisites",
+        "resource_and_recovery",
+        "target_policy",
+        "trigger"
+      ],
+      "spell_count": 0
+    },
+    {
+      "cluster_id": "tashas.manual.cluster.013",
+      "complete_content_unlock_count": 0,
+      "content_count": 13,
+      "exact_contract_signature": {
+        "action_economy": "action_economy_unknown",
+        "attack_or_save": "attack_or_save_unknown",
+        "attunement_shape": "none",
+        "charge_shape": "none",
+        "choice_shape": "choice_unknown",
+        "condition_shape": "condition_shape_unknown",
+        "content_kind": "spell",
+        "damage_healing_shape": "damage_healing_unknown",
+        "dm_adjudication_shape": "dm_adjudication_unknown",
+        "duration_shape": "duration_shape_unknown",
+        "equipment_shape": "none",
+        "grant_shape": "missing_template",
+        "modifier_shape": "modifier_shape_unknown",
+        "movement_shape": "movement_shape_unknown",
+        "persistence_shape": "persistence_unknown",
+        "recovery_shape": "recovery_shape_unknown",
+        "resource_shape": "resource_shape_unknown",
+        "runtime_consumer_shape": "runtime_consumer_unknown",
+        "scaling_shape": "scaling_shape_unknown",
+        "spell_grant_shape": "spell_grant_shape",
+        "success_failure_shape": "success_failure_unknown",
+        "summon_shape": "summon_shape_unknown",
+        "target_shape": "target_shape_unknown",
+        "trigger": "trigger_unknown"
+      },
+      "existing_template_match": false,
+      "feature_count": 0,
+      "item_count": 0,
+      "missing_capability": [
+        "typed_contract"
+      ],
+      "missing_materializer": [
+        "content_ir_runtime"
+      ],
+      "missing_runtime_consumer": [
+        "closed_world_consumer"
+      ],
+      "missing_template": true,
+      "option_count": 0,
+      "representative_atoms": [
+        "tashas-cauldron:atom:186b6f8d92a18280c411d71f:18adac47cc2b:000",
+        "tashas-cauldron:atom:1ac1466462ef7c0514a3ea44:fe782ac2e6fd:000",
+        "tashas-cauldron:atom:2aa8d961d7c7274480168627:df44bca3c04b:000",
+        "tashas-cauldron:atom:34f3e707683bf37f2adf1f04:4ad138ddbaec:000",
+        "tashas-cauldron:atom:5473a33b48053a0271120a31:15009ae27bf5:000",
+        "tashas-cauldron:atom:821697eef9deee02919ab171:12a10b7eaa79:000",
+        "tashas-cauldron:atom:8c4325e8ec5be6bdaa772525:bb3987574085:000",
+        "tashas-cauldron:atom:9bcc248fd8cb8514ecc26155:40ca1b5a4c1c:000"
+      ],
+      "required_review_fields": [
+        "action_economy",
+        "clauses",
+        "content_kind",
+        "dm_boundary",
+        "level",
+        "name",
+        "prerequisites",
+        "resource_and_recovery",
+        "target_policy",
+        "trigger"
+      ],
+      "spell_count": 13
+    },
+    {
+      "cluster_id": "tashas.manual.cluster.014",
+      "complete_content_unlock_count": 0,
+      "content_count": 140,
+      "exact_contract_signature": {
+        "action_economy": "action_economy_unknown",
+        "attack_or_save": "attack_or_save_unknown",
+        "attunement_shape": "none",
+        "charge_shape": "none",
+        "choice_shape": "choice_unknown",
+        "condition_shape": "condition_shape_unknown",
+        "content_kind": "subclass_feature",
+        "damage_healing_shape": "damage_healing_unknown",
+        "dm_adjudication_shape": "dm_adjudication_unknown",
+        "duration_shape": "duration_shape_unknown",
+        "equipment_shape": "none",
+        "grant_shape": "missing_template",
+        "modifier_shape": "modifier_shape_unknown",
+        "movement_shape": "movement_shape_unknown",
+        "persistence_shape": "persistence_unknown",
+        "recovery_shape": "recovery_shape_unknown",
+        "resource_shape": "resource_shape_unknown",
+        "runtime_consumer_shape": "runtime_consumer_unknown",
+        "scaling_shape": "scaling_shape_unknown",
+        "spell_grant_shape": "none",
+        "success_failure_shape": "success_failure_unknown",
+        "summon_shape": "summon_shape_unknown",
+        "target_shape": "target_shape_unknown",
+        "trigger": "trigger_unknown"
+      },
+      "existing_template_match": false,
+      "feature_count": 140,
+      "item_count": 0,
+      "missing_capability": [
+        "typed_contract"
+      ],
+      "missing_materializer": [
+        "content_ir_runtime"
+      ],
+      "missing_runtime_consumer": [
+        "closed_world_consumer"
+      ],
+      "missing_template": true,
+      "option_count": 0,
+      "representative_atoms": [
+        "tashas-cauldron:atom:008f917eace997a6a54939d5:expanded-spell-list:001",
+        "tashas-cauldron:atom:008f917eace997a6a54939d5:fathomless-plunge:007",
+        "tashas-cauldron:atom:008f917eace997a6a54939d5:gift-of-the-sea:003",
+        "tashas-cauldron:atom:008f917eace997a6a54939d5:grasping-tentacles:006",
+        "tashas-cauldron:atom:008f917eace997a6a54939d5:guardian-coil:005",
+        "tashas-cauldron:atom:008f917eace997a6a54939d5:oceanic-soul:004",
+        "tashas-cauldron:atom:008f917eace997a6a54939d5:tentacle-of-the-deeps:002",
+        "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:bonus-proficiencies:001"
+      ],
+      "required_review_fields": [
+        "action_economy",
+        "clauses",
+        "content_kind",
+        "dm_boundary",
+        "level",
+        "name",
+        "prerequisites",
+        "resource_and_recovery",
+        "target_policy",
+        "trigger"
+      ],
+      "spell_count": 0
+    },
+    {
+      "cluster_id": "tashas.manual.cluster.015",
+      "complete_content_unlock_count": 0,
+      "content_count": 73,
+      "exact_contract_signature": {
+        "action_economy": "action_economy_unknown",
+        "attack_or_save": "attack_or_save_unknown",
+        "attunement_shape": "none",
+        "charge_shape": "none",
+        "choice_shape": "choice_unknown",
+        "condition_shape": "condition_shape_unknown",
+        "content_kind": "subclass_feature",
+        "damage_healing_shape": "damage_healing_unknown",
+        "dm_adjudication_shape": "dm_adjudication_unknown",
+        "duration_shape": "duration_shape_unknown",
+        "equipment_shape": "none",
+        "grant_shape": "missing_template",
+        "modifier_shape": "modifier_shape_unknown",
+        "movement_shape": "movement_shape_unknown",
+        "persistence_shape": "persistence_unknown",
+        "recovery_shape": "recovery_shape_unknown",
+        "resource_shape": "resource_shape_unknown",
+        "runtime_consumer_shape": "runtime_consumer_unknown",
+        "scaling_shape": "scaling_shape_unknown",
+        "spell_grant_shape": "none",
+        "success_failure_shape": "success_failure_unknown",
+        "summon_shape": "summon_shape_unknown",
+        "target_shape": "target_shape_unknown",
+        "trigger": "trigger_unknown"
+      },
+      "existing_template_match": false,
+      "feature_count": 73,
+      "item_count": 0,
+      "missing_capability": [
+        "typed_contract"
+      ],
+      "missing_materializer": [
+        "content_ir_runtime"
+      ],
+      "missing_runtime_consumer": [
+        "closed_world_consumer"
+      ],
+      "missing_template": true,
+      "option_count": 0,
+      "representative_atoms": [
+        "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:cloud-rune:003",
+        "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:fire-rune:004",
+        "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:frost-rune:005",
+        "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:hill-rune:007",
+        "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:master-of-runes:012",
+        "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:rune-carver:002",
+        "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:runic-juggernaut:013",
+        "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:stone-rune:006"
+      ],
+      "required_review_fields": [
+        "action_economy",
+        "clauses",
+        "content_kind",
+        "dm_boundary",
+        "level",
+        "name",
+        "prerequisites",
+        "resource_and_recovery",
+        "target_policy",
+        "trigger"
+      ],
+      "spell_count": 0
+    }
+  ],
+  "pack_id": "tashas-cauldron",
+  "schema_version": "tashas-manual-semantic-clusters-1"
+}

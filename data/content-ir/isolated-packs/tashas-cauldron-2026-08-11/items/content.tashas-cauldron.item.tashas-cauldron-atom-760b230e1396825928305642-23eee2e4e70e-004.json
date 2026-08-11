@@ -1,0 +1,1432 @@
+{
+  "attunement_requirements": {
+    "required": true,
+    "requirements_text": "任意生物"
+  },
+  "charges": {
+    "current": 12,
+    "maximum": 12,
+    "recovery_amount": "all",
+    "recovery_trigger": "dawn"
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:equipment",
+      "clause_type": "equipment",
+      "evidence": {
+        "source_fragment": "blockquote:145"
+      },
+      "parameters": {
+        "equipped_slot": "worn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:attunement",
+      "clause_type": "attunement",
+      "evidence": {
+        "source_text": "需同调"
+      },
+      "parameters": {
+        "required": true,
+        "requirements_text": "任意生物"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:charges",
+      "clause_type": "charge",
+      "evidence": {
+        "text": "12发充能"
+      },
+      "parameters": {
+        "current": 12,
+        "maximum": 12,
+        "recovery_amount": "all",
+        "recovery_trigger": "dawn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:charge-recovery",
+      "clause_type": "charge_recovery",
+      "evidence": {
+        "text": "**芭芭********雅嘎的臼与杵****|Baba\nYaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一"
+      },
+      "parameters": {
+        "recovery_amount": "all",
+        "recovery_trigger": "dawn",
+        "typed_dawn_event_required": true
+      },
+      "trigger": "dawn"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:immunity:1",
+      "clause_type": "immunity",
+      "evidence": {
+        "source_text": "伤害免疫"
+      },
+      "parameters": {
+        "id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:immunity:1",
+        "manual_decision_required": true,
+        "scope": "source_text",
+        "source_text": "伤害免疫"
+      },
+      "trigger": "equipped_or_attuned"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:1",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个动作，你可以命令杵开始捣碎作业。杵会自行行动，将臼中容纳的物品捣成均能够同等用于烹调或炼金的浆糊或精细粉末，持续1分钟或你用一个动作来口头命令它停止。在你的回合开始时，任何处于臼内的东西会受到4d10力场伤害。若目标生命值因此降至0，则其会被捣成适宜的粉末、肉浆或者浆糊。只有魔法物品不受影响。若你愿意，你可以在杵停止工作时让臼把它的内容物分开成不同堆，比如骨粉和骨粉放在一起，药末与药末堆在一起，尚在搏动的机体器官堆在一起。\n***黑夜穿梭***。若你在臼内持握着杵，你可以用动作发出口头命令，让臼穿穿梭到一处特定的地点或一个特定的生物处。你不需要知道你的目标在什么位置，但你的目标必须是一个特定的位置不可以仅仅是“最近的河流”或"
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:1",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "作为一个动作，你可以命令杵开始捣碎作业。杵会自行行动，将臼中容纳的物品捣成均能够同等用于烹调或炼金的浆糊或精细粉末，持续1分钟或你用一个动作来口头命令它停止。在你的回合开始时，任何处于臼内的东西会受到4d10力场伤害。若目标生命值因此降至0，则其会被捣成适宜的粉末、肉浆或者浆糊。只有魔法物品不受影响。若你愿意，你可以在杵停止工作时让臼把它的内容物分开成不同堆，比如骨粉和骨粉放在一起，药末与药末堆在一起，尚在搏动的机体器官堆在一起。\n***黑夜穿梭***。若你在臼内持握着杵，你可以用动作发出口头命令，让臼穿穿梭到一处特定的地点或一个特定的生物处。你不需要知道你的目标在什么位置，但你的目标必须是一个特定的位置不可以仅仅是“最近的河流”或",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:2",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "用一个动作来口头命令它停止。在你的回合开始时，任何处于臼内的东西会受到4d10力场伤害。若目标生命值因此降至0，则其会被捣成适宜的粉末、肉浆或者浆糊。只有魔法物品不受影响。若你愿意，你可以在杵停止工作时让臼把它的内容物分开成不同堆，比如骨粉和骨粉放在一起，药末与药末堆在一起，尚在搏动的机体器官堆在一起。\n***黑夜穿梭***。若你在臼内持握着杵，你可以用动作发出口头命令，让臼穿穿梭到一处特定的地点或一个特定的生物处。你不需要知道你的目标在什么位置，但你的目标必须是一个特定的位置不可以仅仅是“最近的河流”或“一条红龙的巢穴”。若被选定的目标在你的1000英里内，臼就会飞向空中而后消失。你与任何处于臼内的生物会穿过一道梦境般的天穹，朦胧"
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:2",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "用一个动作来口头命令它停止。在你的回合开始时，任何处于臼内的东西会受到4d10力场伤害。若目标生命值因此降至0，则其会被捣成适宜的粉末、肉浆或者浆糊。只有魔法物品不受影响。若你愿意，你可以在杵停止工作时让臼把它的内容物分开成不同堆，比如骨粉和骨粉放在一起，药末与药末堆在一起，尚在搏动的机体器官堆在一起。\n***黑夜穿梭***。若你在臼内持握着杵，你可以用动作发出口头命令，让臼穿穿梭到一处特定的地点或一个特定的生物处。你不需要知道你的目标在什么位置，但你的目标必须是一个特定的位置不可以仅仅是“最近的河流”或“一条红龙的巢穴”。若被选定的目标在你的1000英里内，臼就会飞向空中而后消失。你与任何处于臼内的生物会穿过一道梦境般的天穹，朦胧",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:3",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "用一个动作消耗1发或更多充能施展下列法术（豁免DC18）：*生命灵光**Aura\nof Life*（2充能），*净化灵光**Aura\nof Purity*（2充能），放逐术Banishment（1充能），*希望信标**Beacon\nof Hope*（1充能），*群体疗伤术**Mass Cure Wounds*（3充能）。圣杖在每天黎明时恢复1d6发已消耗的充能。\n***绝对放逐。***当你正与圣杖同调且持握着它时，你可以花费10分钟以放逐你一英里内除了那些最强大的邪魔以外的任何邪魔。任何挑战等级大于等于19的邪魔不受影响。每个被放逐的邪魔会被送回其家园位面且在100年内无法再次回到*拉奥圣杖**Croook of Rao*将其放逐的"
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:3",
+        "charge_cost": 1,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "用一个动作消耗1发或更多充能施展下列法术（豁免DC18）：*生命灵光**Aura\nof Life*（2充能），*净化灵光**Aura\nof Purity*（2充能），放逐术Banishment（1充能），*希望信标**Beacon\nof Hope*（1充能），*群体疗伤术**Mass Cure Wounds*（3充能）。圣杖在每天黎明时恢复1d6发已消耗的充能。\n***绝对放逐。***当你正与圣杖同调且持握着它时，你可以花费10分钟以放逐你一英里内除了那些最强大的邪魔以外的任何邪魔。任何挑战等级大于等于19的邪魔不受影响。每个被放逐的邪魔会被送回其家园位面且在100年内无法再次回到*拉奥圣杖**Croook of Rao*将其放逐的",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:4",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "用一个动作随意施展*塔莎狂笑术**Tasha’s Hideous\nLaughter*或消耗1发或更多的充能施展以下法术（DC20）：*防护法阵**Magic Circle*（1发充能），*魔魂壶**Magic Jar*（3发充能），*异界誓盟**Planar Ally*（3发充能），*异界誓缚**Planar Binding*（2发充能），*位面转移**Plane Shift*（仅限深渊层级；3发充能），*邪魔召唤术**Summon Fiend*（3发充能；出现于本书）。\n***深渊学识。***你可以在你每次进行辨认关于恶魔的消息的智力检定或关于深渊的感知（求生）检定时查阅恶魔志。若如此做，你的检定使用双倍的熟练加值。\n***鞭笞邪"
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:4",
+        "charge_cost": 1,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "用一个动作随意施展*塔莎狂笑术**Tasha’s Hideous\nLaughter*或消耗1发或更多的充能施展以下法术（DC20）：*防护法阵**Magic Circle*（1发充能），*魔魂壶**Magic Jar*（3发充能），*异界誓盟**Planar Ally*（3发充能），*异界誓缚**Planar Binding*（2发充能），*位面转移**Plane Shift*（仅限深渊层级；3发充能），*邪魔召唤术**Summon Fiend*（3发充能；出现于本书）。\n***深渊学识。***你可以在你每次进行辨认关于恶魔的消息的智力检定或关于深渊的感知（求生）检定时查阅恶魔志。若如此做，你的检定使用双倍的熟练加值。\n***鞭笞邪",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:5",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个动作，你可以选择一个你可见且被困在*防护法阵**Magic Circle*中的邪魔。该邪魔必须以劣势进行一次DC20的魅力豁免，豁免失败则被困在恶魔志的一张空白页中。并且会附上受困生物广为人知的名字与堕落内容的详细文字。使用后，直到下次黎明前，这项动作不能再次使用。\n当你结束了一次长休时，如果你和恶魔志存在于同一位面，则书中所困挑战等级最高的生物可以尝试附身你。你必须进行一次DC20的魅力豁免。若豁免失败，则你如同一具提线玩偶般被该生物附身。附身你的生物可以用一个动作释放你，并在最近的一处未占据空间出现。若豁免成功，则尝试附身你的邪魔在未来7天内都不能再次尝试附身你。\n在这本魔典被发现时，已经有了1d4张书页被占据，一般是各"
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:5",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "作为一个动作，你可以选择一个你可见且被困在*防护法阵**Magic Circle*中的邪魔。该邪魔必须以劣势进行一次DC20的魅力豁免，豁免失败则被困在恶魔志的一张空白页中。并且会附上受困生物广为人知的名字与堕落内容的详细文字。使用后，直到下次黎明前，这项动作不能再次使用。\n当你结束了一次长休时，如果你和恶魔志存在于同一位面，则书中所困挑战等级最高的生物可以尝试附身你。你必须进行一次DC20的魅力豁免。若豁免失败，则你如同一具提线玩偶般被该生物附身。附身你的生物可以用一个动作释放你，并在最近的一处未占据空间出现。若豁免成功，则尝试附身你的邪魔在未来7天内都不能再次尝试附身你。\n在这本魔典被发现时，已经有了1d4张书页被占据，一般是各",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:6",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "用一个动作释放你，并在最近的一处未占据空间出现。若豁免成功，则尝试附身你的邪魔在未来7天内都不能再次尝试附身你。\n在这本魔典被发现时，已经有了1d4张书页被占据，一般是各种恶魔。\n***破坏恶魔志。***要摧毁这本书，必须有六位不同的恶魔领主分别撕下书内六分之一的页数。书页被撕下后会在24小时内恢复。而在所有书页被撕下与恢复之前，任何打开剩余装订部分的人都会被传送到一处隐藏在书中的新生深渊层级。在这致命、的半智能领域中心，有一件遗失许久的神器，弗拉兹-厄鲁之杖。如果法杖被带离这处口袋位面，魔典会立刻变成一本*《反序古典**Tome ofZyx**》*普通而过时的抄本，这本书是创造恶魔志的基底。法杖一旦出现，恶魔领主弗拉兹-厄鲁会立刻"
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:6",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "用一个动作释放你，并在最近的一处未占据空间出现。若豁免成功，则尝试附身你的邪魔在未来7天内都不能再次尝试附身你。\n在这本魔典被发现时，已经有了1d4张书页被占据，一般是各种恶魔。\n***破坏恶魔志。***要摧毁这本书，必须有六位不同的恶魔领主分别撕下书内六分之一的页数。书页被撕下后会在24小时内恢复。而在所有书页被撕下与恢复之前，任何打开剩余装订部分的人都会被传送到一处隐藏在书中的新生深渊层级。在这致命、的半智能领域中心，有一件遗失许久的神器，弗拉兹-厄鲁之杖。如果法杖被带离这处口袋位面，魔典会立刻变成一本*《反序古典**Tome ofZyx**》*普通而过时的抄本，这本书是创造恶魔志的基底。法杖一旦出现，恶魔领主弗拉兹-厄鲁会立刻",
+        "target_policy": "source_text"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:7",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "用一个动作用牌组施展以下法术（豁免DC18）：*通晓语言**Comprehend Languages*，*侦测善恶**Detect Evil and Good*，*侦测魔法**Detect Magic*，*侦测毒素和疾病**Detect Poison andDIsease*，*物品定位术**Locate Object*，*探知术**Scrying*。一旦你用牌组施展了某个法术，你在下一个黎明前不能再次施展该法术。\n***持久之视***。持握牌组时，你为维持预言系法术的专注所作的体质豁免检定自动成功。\n***编织命运***。以一个动作，你可以从牌组中抽出一张卡，从而编织15尺内你能看见的另一个生物的命运。从以下效应中选择一项：\n***"
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:7",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "用一个动作用牌组施展以下法术（豁免DC18）：*通晓语言**Comprehend Languages*，*侦测善恶**Detect Evil and Good*，*侦测魔法**Detect Magic*，*侦测毒素和疾病**Detect Poison andDIsease*，*物品定位术**Locate Object*，*探知术**Scrying*。一旦你用牌组施展了某个法术，你在下一个黎明前不能再次施展该法术。\n***持久之视***。持握牌组时，你为维持预言系法术的专注所作的体质豁免检定自动成功。\n***编织命运***。以一个动作，你可以从牌组中抽出一张卡，从而编织15尺内你能看见的另一个生物的命运。从以下效应中选择一项：\n***",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:8",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使用了。如果在某颗牙齿已经被使用后再次投出对应的骰值，你会取出表格中位于最底下的未被使用的牙齿。\n***播种牙齿***。为了播种牙齿，你将它放置在你触及内一个未占据空间的地面上，或者你可以将它或者你可以将它投掷"
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:8",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": true,
+        "source_excerpt": "用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使用了。如果在某颗牙齿已经被使用后再次投出对应的骰值，你会取出表格中位于最底下的未被使用的牙齿。\n***播种牙齿***。为了播种牙齿，你将它放置在你触及内一个未占据空间的地面上，或者你可以将它或者你可以将它投掷",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:9",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个动作，你可以消耗一发充能并触碰一个生物。该生物恢复 2d8+2 生命值，并且解除所有影响它的疾病和毒素。使用该动作时，你前额会出现一个闪闪发光的独角兽之角幻象，持续至你的回合结束。你获得以下缺陷： “ 当我看见邪恶在行动时，我必须去对抗它。 ” |\n| 8 | 跨越布拉之岩 Beyond the Rock of Bral （ 银制夺心 魔牙齿） | 2 只 夺心魔 Mind Flayer 。 | 你获得 120 尺 心灵感应 ，描述见 怪物图鉴 。你可以随意施展 侦测思想 Detect Thoughts 法术，而无需任何法术成分。由于来自记忆和周围的心灵的絮叨低语，你在感知（察觉）和感知（洞悉）检定中获得劣势。 |\n| 9 "
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:9",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "作为一个动作，你可以消耗一发充能并触碰一个生物。该生物恢复 2d8+2 生命值，并且解除所有影响它的疾病和毒素。使用该动作时，你前额会出现一个闪闪发光的独角兽之角幻象，持续至你的回合结束。你获得以下缺陷： “ 当我看见邪恶在行动时，我必须去对抗它。 ” |\n| 8 | 跨越布拉之岩 Beyond the Rock of Bral （ 银制夺心 魔牙齿） | 2 只 夺心魔 Mind Flayer 。 | 你获得 120 尺 心灵感应 ，描述见 怪物图鉴 。你可以随意施展 侦测思想 Detect Thoughts 法术，而无需任何法术成分。由于来自记忆和周围的心灵的絮叨低语，你在感知（察觉）和感知（洞悉）检定中获得劣势。 |\n| 9 ",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:10",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个动作，你可以用牙齿施展 艾伐黑触手 Evard ’ s\n Black Tentacles 法术（ DC18 ）。该属性被使用后，直至下个黎明前，不能再次使用。 |\n| 11 | 詹德 阳星的永劫 The Thousand Deaths of Jander Sunstar （泛黄的吸血鬼尖牙） | 1 位 吸血鬼 Vampire 。 | 你可以进行啃咬攻击，作为一种徒手打击。命中时，造成 1d6 穿刺伤害外加 3d6 暗蚀伤害 。你恢复等同于所 造成暗蚀伤害 的生命值。当你处于阳光下时，你无法恢复生命值。 |\n| 12 | 卡伽什 的梦魇 Nightmares of Kaggash （扭曲 的眼魔牙齿 ） | 1 只 眼魔 B"
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:10",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "作为一个动作，你可以用牙齿施展 艾伐黑触手 Evard ’ s\n Black Tentacles 法术（ DC18 ）。该属性被使用后，直至下个黎明前，不能再次使用。 |\n| 11 | 詹德 阳星的永劫 The Thousand Deaths of Jander Sunstar （泛黄的吸血鬼尖牙） | 1 位 吸血鬼 Vampire 。 | 你可以进行啃咬攻击，作为一种徒手打击。命中时，造成 1d6 穿刺伤害外加 3d6 暗蚀伤害 。你恢复等同于所 造成暗蚀伤害 的生命值。当你处于阳光下时，你无法恢复生命值。 |\n| 12 | 卡伽什 的梦魇 Nightmares of Kaggash （扭曲 的眼魔牙齿 ） | 1 只 眼魔 B",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:11",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个动作，你可以用牙齿施展 摄心目光 Eyebite 法术。使用该动作后，直到下次黎明前，不能再次使用该动作。当你完成 一 次长休时， 骰 一个 d20 。得出 20 时，一只由 DM 选择的异 怪出现 在你 30 尺内并开始攻击。 |\n| 13 | 通天三桥 Three Bridges to the Sky （青金石制恶鬼尖牙） | 3 位 恶鬼 Oni 。 | 你获得 30 尺飞行速度，并且你可以用牙齿随意施展 侦测魔法 Detect Magic 法术。当你同调的魔法物品数量少于三件时，你提升 1 级 力竭 Exhaustion ，该状态无法被移除，直至你同调至少三件魔法物品。 |\n| 14 | 卓戈 萨 之爪 The Cl"
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:11",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": true,
+        "source_excerpt": "作为一个动作，你可以用牙齿施展 摄心目光 Eyebite 法术。使用该动作后，直到下次黎明前，不能再次使用该动作。当你完成 一 次长休时， 骰 一个 d20 。得出 20 时，一只由 DM 选择的异 怪出现 在你 30 尺内并开始攻击。 |\n| 13 | 通天三桥 Three Bridges to the Sky （青金石制恶鬼尖牙） | 3 位 恶鬼 Oni 。 | 你获得 30 尺飞行速度，并且你可以用牙齿随意施展 侦测魔法 Detect Magic 法术。当你同调的魔法物品数量少于三件时，你提升 1 级 力竭 Exhaustion ，该状态无法被移除，直至你同调至少三件魔法物品。 |\n| 14 | 卓戈 萨 之爪 The Cl",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:12",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个动作，你可以喷出 90 尺锥形的火焰。在范围的生物必须进行一次 DC24 的敏捷豁免，豁免失败者受到 26d6 点火焰伤害，成功则伤害减半。使用该吐 息武器 后，你提升 2 级 力竭 Exhaustion 。 |\n| 20 | 达文 - 纳之牙 Dahlver -Nar ’ s\n Tooth （ 蒙灰的 人类臼齿） | 1 位 祭司 Priest 。 | 作为一个动作，你可以呼唤神圣力量援助你。描述你需要的帮助，回应的结果由 DM 决定；此时通常请求任何牧师法术的效应都在可接受范围内。该属性被使用后，七天内不能再次使用。 |"
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:12",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": true,
+        "source_excerpt": "作为一个动作，你可以喷出 90 尺锥形的火焰。在范围的生物必须进行一次 DC24 的敏捷豁免，豁免失败者受到 26d6 点火焰伤害，成功则伤害减半。使用该吐 息武器 后，你提升 2 级 力竭 Exhaustion 。 |\n| 20 | 达文 - 纳之牙 Dahlver -Nar ’ s\n Tooth （ 蒙灰的 人类臼齿） | 1 位 祭司 Priest 。 | 作为一个动作，你可以呼唤神圣力量援助你。描述你需要的帮助，回应的结果由 DM 决定；此时通常请求任何牧师法术的效应都在可接受范围内。该属性被使用后，七天内不能再次使用。 |",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:13",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个动作，你可以呼唤神圣力量援助你。描述你需要的帮助，回应的结果由 DM 决定；此时通常请求任何牧师法术的效应都在可接受范围内。该属性被使用后，七天内不能再次使用。 |"
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:13",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": true,
+        "source_excerpt": "作为一个动作，你可以呼唤神圣力量援助你。描述你需要的帮助，回应的结果由 DM 决定；此时通常请求任何牧师法术的效应都在可接受范围内。该属性被使用后，七天内不能再次使用。 |",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:spell-grant",
+      "clause_type": "granted_spell",
+      "evidence": {
+        "manual_review_required": false,
+        "source_excerpt": "**芭芭********雅嘎的臼与杵****|Baba\nYaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。"
+      },
+      "parameters": {
+        "grant_mode": "item_cast",
+        "source_text": "**芭芭********雅嘎的臼与杵****|Baba\nYaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。",
+        "spell_identities": [
+          {
+            "english_name": "",
+            "localized_name": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰",
+            "spell_id": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰"
+          },
+          {
+            "english_name": "",
+            "localized_name": "了某个",
+            "spell_id": "了某个"
+          },
+          {
+            "english_name": "Revivify",
+            "localized_name": "回生术",
+            "spell_id": "revivify"
+          },
+          {
+            "english_name": "",
+            "localized_name": "庇护术Sanctuary，持续24小时或直至你打破该效应",
+            "spell_id": "庇护术Sanctuary，持续24小时或直至你打破该效应"
+          },
+          {
+            "english_name": "Detect Thoughts",
+            "localized_name": "侦测思想",
+            "spell_id": "detect-thoughts"
+          },
+          {
+            "english_name": "Black Tentacles",
+            "localized_name": "艾伐黑触手Evard’s",
+            "spell_id": "black-tentacles"
+          },
+          {
+            "english_name": "Eyebite",
+            "localized_name": "摄心目光",
+            "spell_id": "eyebite"
+          },
+          {
+            "english_name": "Detect Magic",
+            "localized_name": "侦测魔法",
+            "spell_id": "detect-magic"
+          },
+          {
+            "english_name": "Animate Dead",
+            "localized_name": "活化死尸",
+            "spell_id": "animate-dead"
+          },
+          {
+            "english_name": "Dominate Monster",
+            "localized_name": "支配怪物",
+            "spell_id": "dominate-monster"
+          },
+          {
+            "english_name": "Baba",
+            "localized_name": "雅嘎的臼与杵",
+            "spell_id": "baba"
+          },
+          {
+            "english_name": "Croook of Rao",
+            "localized_name": "拉奥圣杖",
+            "spell_id": "croook-of-rao"
+          },
+          {
+            "english_name": "Aura",
+            "localized_name": "生命灵光",
+            "spell_id": "aura"
+          },
+          {
+            "english_name": "Aura",
+            "localized_name": "净化灵光",
+            "spell_id": "aura"
+          },
+          {
+            "english_name": "Beacon",
+            "localized_name": "希望信标",
+            "spell_id": "beacon"
+          },
+          {
+            "english_name": "Mass Cure Wounds",
+            "localized_name": "群体疗伤术",
+            "spell_id": "mass-cure-wounds"
+          },
+          {
+            "english_name": "Croook",
+            "localized_name": "拉奥圣杖",
+            "spell_id": "croook"
+          },
+          {
+            "english_name": "Tasha’s Hideous",
+            "localized_name": "塔莎狂笑术",
+            "spell_id": "tasha’s-hideous"
+          },
+          {
+            "english_name": "Magic Circle",
+            "localized_name": "防护法阵",
+            "spell_id": "magic-circle"
+          },
+          {
+            "english_name": "Magic Jar",
+            "localized_name": "魔魂壶",
+            "spell_id": "magic-jar"
+          },
+          {
+            "english_name": "Planar Ally",
+            "localized_name": "异界誓盟",
+            "spell_id": "planar-ally"
+          },
+          {
+            "english_name": "Planar Binding",
+            "localized_name": "异界誓缚",
+            "spell_id": "planar-binding"
+          },
+          {
+            "english_name": "Plane Shift",
+            "localized_name": "位面转移",
+            "spell_id": "plane-shift"
+          },
+          {
+            "english_name": "Summon Fiend",
+            "localized_name": "邪魔召唤术",
+            "spell_id": "summon-fiend"
+          },
+          {
+            "english_name": "Comprehend Languages",
+            "localized_name": "通晓语言",
+            "spell_id": "comprehend-languages"
+          },
+          {
+            "english_name": "Detect Evil and Good",
+            "localized_name": "侦测善恶",
+            "spell_id": "detect-evil-and-good"
+          },
+          {
+            "english_name": "Detect Poison andDIsease",
+            "localized_name": "侦测毒素和疾病",
+            "spell_id": "detect-poison-anddisease"
+          },
+          {
+            "english_name": "Locate Object",
+            "localized_name": "物品定位术",
+            "spell_id": "locate-object"
+          },
+          {
+            "english_name": "Scrying",
+            "localized_name": "探知术",
+            "spell_id": "scrying"
+          },
+          {
+            "english_name": "Mighty Servant ofLeuk-O",
+            "localized_name": "的非凡机仆",
+            "spell_id": "mighty-servant-ofleuk-o"
+          },
+          {
+            "english_name": "Invisible",
+            "localized_name": "隐形",
+            "spell_id": "invisible"
+          },
+          {
+            "english_name": "Prone",
+            "localized_name": "倒地",
+            "spell_id": "prone"
+          }
+        ],
+        "spell_ids": [
+          "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰",
+          "了某个",
+          "revivify",
+          "庇护术Sanctuary，持续24小时或直至你打破该效应",
+          "detect-thoughts",
+          "black-tentacles",
+          "eyebite",
+          "detect-magic",
+          "animate-dead",
+          "dominate-monster",
+          "baba",
+          "croook-of-rao",
+          "aura",
+          "aura",
+          "beacon",
+          "mass-cure-wounds",
+          "croook",
+          "tasha’s-hideous",
+          "magic-circle",
+          "magic-jar",
+          "planar-ally",
+          "planar-binding",
+          "plane-shift",
+          "summon-fiend",
+          "comprehend-languages",
+          "detect-evil-and-good",
+          "detect-poison-anddisease",
+          "locate-object",
+          "scrying",
+          "mighty-servant-ofleuk-o",
+          "invisible",
+          "prone"
+        ]
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:healing-modifier",
+      "clause_type": "passive_modifier",
+      "evidence": {
+        "source_text": "恢复生命值的法术增加1d4"
+      },
+      "parameters": {
+        "dice": "1d4",
+        "modifier_kind": "healing_bonus",
+        "target": "self"
+      },
+      "trigger": "healing_spell_while_held"
+    }
+  ],
+  "compile": {
+    "blockers": [
+      "manual_clause_requires_dm_or_additional_typed_fields"
+    ],
+    "clauses": [
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:equipment",
+        "clause_type": "equipment",
+        "evidence": {
+          "source_fragment": "blockquote:145"
+        },
+        "parameters": {
+          "equipped_slot": "worn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:attunement",
+        "clause_type": "attunement",
+        "evidence": {
+          "source_text": "需同调"
+        },
+        "parameters": {
+          "required": true,
+          "requirements_text": "任意生物"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:charges",
+        "clause_type": "charge",
+        "evidence": {
+          "text": "12发充能"
+        },
+        "parameters": {
+          "current": 12,
+          "maximum": 12,
+          "recovery_amount": "all",
+          "recovery_trigger": "dawn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:charge-recovery",
+        "clause_type": "charge_recovery",
+        "evidence": {
+          "text": "**芭芭********雅嘎的臼与杵****|Baba\nYaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一"
+        },
+        "parameters": {
+          "recovery_amount": "all",
+          "recovery_trigger": "dawn",
+          "typed_dawn_event_required": true
+        },
+        "trigger": "dawn"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:immunity:1",
+        "clause_type": "immunity",
+        "evidence": {
+          "source_text": "伤害免疫"
+        },
+        "parameters": {
+          "id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:immunity:1",
+          "manual_decision_required": true,
+          "scope": "source_text",
+          "source_text": "伤害免疫"
+        },
+        "trigger": "equipped_or_attuned"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:1",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个动作，你可以命令杵开始捣碎作业。杵会自行行动，将臼中容纳的物品捣成均能够同等用于烹调或炼金的浆糊或精细粉末，持续1分钟或你用一个动作来口头命令它停止。在你的回合开始时，任何处于臼内的东西会受到4d10力场伤害。若目标生命值因此降至0，则其会被捣成适宜的粉末、肉浆或者浆糊。只有魔法物品不受影响。若你愿意，你可以在杵停止工作时让臼把它的内容物分开成不同堆，比如骨粉和骨粉放在一起，药末与药末堆在一起，尚在搏动的机体器官堆在一起。\n***黑夜穿梭***。若你在臼内持握着杵，你可以用动作发出口头命令，让臼穿穿梭到一处特定的地点或一个特定的生物处。你不需要知道你的目标在什么位置，但你的目标必须是一个特定的位置不可以仅仅是“最近的河流”或"
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:1",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "作为一个动作，你可以命令杵开始捣碎作业。杵会自行行动，将臼中容纳的物品捣成均能够同等用于烹调或炼金的浆糊或精细粉末，持续1分钟或你用一个动作来口头命令它停止。在你的回合开始时，任何处于臼内的东西会受到4d10力场伤害。若目标生命值因此降至0，则其会被捣成适宜的粉末、肉浆或者浆糊。只有魔法物品不受影响。若你愿意，你可以在杵停止工作时让臼把它的内容物分开成不同堆，比如骨粉和骨粉放在一起，药末与药末堆在一起，尚在搏动的机体器官堆在一起。\n***黑夜穿梭***。若你在臼内持握着杵，你可以用动作发出口头命令，让臼穿穿梭到一处特定的地点或一个特定的生物处。你不需要知道你的目标在什么位置，但你的目标必须是一个特定的位置不可以仅仅是“最近的河流”或",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:2",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "用一个动作来口头命令它停止。在你的回合开始时，任何处于臼内的东西会受到4d10力场伤害。若目标生命值因此降至0，则其会被捣成适宜的粉末、肉浆或者浆糊。只有魔法物品不受影响。若你愿意，你可以在杵停止工作时让臼把它的内容物分开成不同堆，比如骨粉和骨粉放在一起，药末与药末堆在一起，尚在搏动的机体器官堆在一起。\n***黑夜穿梭***。若你在臼内持握着杵，你可以用动作发出口头命令，让臼穿穿梭到一处特定的地点或一个特定的生物处。你不需要知道你的目标在什么位置，但你的目标必须是一个特定的位置不可以仅仅是“最近的河流”或“一条红龙的巢穴”。若被选定的目标在你的1000英里内，臼就会飞向空中而后消失。你与任何处于臼内的生物会穿过一道梦境般的天穹，朦胧"
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:2",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "用一个动作来口头命令它停止。在你的回合开始时，任何处于臼内的东西会受到4d10力场伤害。若目标生命值因此降至0，则其会被捣成适宜的粉末、肉浆或者浆糊。只有魔法物品不受影响。若你愿意，你可以在杵停止工作时让臼把它的内容物分开成不同堆，比如骨粉和骨粉放在一起，药末与药末堆在一起，尚在搏动的机体器官堆在一起。\n***黑夜穿梭***。若你在臼内持握着杵，你可以用动作发出口头命令，让臼穿穿梭到一处特定的地点或一个特定的生物处。你不需要知道你的目标在什么位置，但你的目标必须是一个特定的位置不可以仅仅是“最近的河流”或“一条红龙的巢穴”。若被选定的目标在你的1000英里内，臼就会飞向空中而后消失。你与任何处于臼内的生物会穿过一道梦境般的天穹，朦胧",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:3",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "用一个动作消耗1发或更多充能施展下列法术（豁免DC18）：*生命灵光**Aura\nof Life*（2充能），*净化灵光**Aura\nof Purity*（2充能），放逐术Banishment（1充能），*希望信标**Beacon\nof Hope*（1充能），*群体疗伤术**Mass Cure Wounds*（3充能）。圣杖在每天黎明时恢复1d6发已消耗的充能。\n***绝对放逐。***当你正与圣杖同调且持握着它时，你可以花费10分钟以放逐你一英里内除了那些最强大的邪魔以外的任何邪魔。任何挑战等级大于等于19的邪魔不受影响。每个被放逐的邪魔会被送回其家园位面且在100年内无法再次回到*拉奥圣杖**Croook of Rao*将其放逐的"
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:3",
+          "charge_cost": 1,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "用一个动作消耗1发或更多充能施展下列法术（豁免DC18）：*生命灵光**Aura\nof Life*（2充能），*净化灵光**Aura\nof Purity*（2充能），放逐术Banishment（1充能），*希望信标**Beacon\nof Hope*（1充能），*群体疗伤术**Mass Cure Wounds*（3充能）。圣杖在每天黎明时恢复1d6发已消耗的充能。\n***绝对放逐。***当你正与圣杖同调且持握着它时，你可以花费10分钟以放逐你一英里内除了那些最强大的邪魔以外的任何邪魔。任何挑战等级大于等于19的邪魔不受影响。每个被放逐的邪魔会被送回其家园位面且在100年内无法再次回到*拉奥圣杖**Croook of Rao*将其放逐的",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:4",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "用一个动作随意施展*塔莎狂笑术**Tasha’s Hideous\nLaughter*或消耗1发或更多的充能施展以下法术（DC20）：*防护法阵**Magic Circle*（1发充能），*魔魂壶**Magic Jar*（3发充能），*异界誓盟**Planar Ally*（3发充能），*异界誓缚**Planar Binding*（2发充能），*位面转移**Plane Shift*（仅限深渊层级；3发充能），*邪魔召唤术**Summon Fiend*（3发充能；出现于本书）。\n***深渊学识。***你可以在你每次进行辨认关于恶魔的消息的智力检定或关于深渊的感知（求生）检定时查阅恶魔志。若如此做，你的检定使用双倍的熟练加值。\n***鞭笞邪"
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:4",
+          "charge_cost": 1,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "用一个动作随意施展*塔莎狂笑术**Tasha’s Hideous\nLaughter*或消耗1发或更多的充能施展以下法术（DC20）：*防护法阵**Magic Circle*（1发充能），*魔魂壶**Magic Jar*（3发充能），*异界誓盟**Planar Ally*（3发充能），*异界誓缚**Planar Binding*（2发充能），*位面转移**Plane Shift*（仅限深渊层级；3发充能），*邪魔召唤术**Summon Fiend*（3发充能；出现于本书）。\n***深渊学识。***你可以在你每次进行辨认关于恶魔的消息的智力检定或关于深渊的感知（求生）检定时查阅恶魔志。若如此做，你的检定使用双倍的熟练加值。\n***鞭笞邪",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:5",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个动作，你可以选择一个你可见且被困在*防护法阵**Magic Circle*中的邪魔。该邪魔必须以劣势进行一次DC20的魅力豁免，豁免失败则被困在恶魔志的一张空白页中。并且会附上受困生物广为人知的名字与堕落内容的详细文字。使用后，直到下次黎明前，这项动作不能再次使用。\n当你结束了一次长休时，如果你和恶魔志存在于同一位面，则书中所困挑战等级最高的生物可以尝试附身你。你必须进行一次DC20的魅力豁免。若豁免失败，则你如同一具提线玩偶般被该生物附身。附身你的生物可以用一个动作释放你，并在最近的一处未占据空间出现。若豁免成功，则尝试附身你的邪魔在未来7天内都不能再次尝试附身你。\n在这本魔典被发现时，已经有了1d4张书页被占据，一般是各"
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:5",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "作为一个动作，你可以选择一个你可见且被困在*防护法阵**Magic Circle*中的邪魔。该邪魔必须以劣势进行一次DC20的魅力豁免，豁免失败则被困在恶魔志的一张空白页中。并且会附上受困生物广为人知的名字与堕落内容的详细文字。使用后，直到下次黎明前，这项动作不能再次使用。\n当你结束了一次长休时，如果你和恶魔志存在于同一位面，则书中所困挑战等级最高的生物可以尝试附身你。你必须进行一次DC20的魅力豁免。若豁免失败，则你如同一具提线玩偶般被该生物附身。附身你的生物可以用一个动作释放你，并在最近的一处未占据空间出现。若豁免成功，则尝试附身你的邪魔在未来7天内都不能再次尝试附身你。\n在这本魔典被发现时，已经有了1d4张书页被占据，一般是各",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:6",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "用一个动作释放你，并在最近的一处未占据空间出现。若豁免成功，则尝试附身你的邪魔在未来7天内都不能再次尝试附身你。\n在这本魔典被发现时，已经有了1d4张书页被占据，一般是各种恶魔。\n***破坏恶魔志。***要摧毁这本书，必须有六位不同的恶魔领主分别撕下书内六分之一的页数。书页被撕下后会在24小时内恢复。而在所有书页被撕下与恢复之前，任何打开剩余装订部分的人都会被传送到一处隐藏在书中的新生深渊层级。在这致命、的半智能领域中心，有一件遗失许久的神器，弗拉兹-厄鲁之杖。如果法杖被带离这处口袋位面，魔典会立刻变成一本*《反序古典**Tome ofZyx**》*普通而过时的抄本，这本书是创造恶魔志的基底。法杖一旦出现，恶魔领主弗拉兹-厄鲁会立刻"
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:6",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "用一个动作释放你，并在最近的一处未占据空间出现。若豁免成功，则尝试附身你的邪魔在未来7天内都不能再次尝试附身你。\n在这本魔典被发现时，已经有了1d4张书页被占据，一般是各种恶魔。\n***破坏恶魔志。***要摧毁这本书，必须有六位不同的恶魔领主分别撕下书内六分之一的页数。书页被撕下后会在24小时内恢复。而在所有书页被撕下与恢复之前，任何打开剩余装订部分的人都会被传送到一处隐藏在书中的新生深渊层级。在这致命、的半智能领域中心，有一件遗失许久的神器，弗拉兹-厄鲁之杖。如果法杖被带离这处口袋位面，魔典会立刻变成一本*《反序古典**Tome ofZyx**》*普通而过时的抄本，这本书是创造恶魔志的基底。法杖一旦出现，恶魔领主弗拉兹-厄鲁会立刻",
+          "target_policy": "source_text"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:7",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "用一个动作用牌组施展以下法术（豁免DC18）：*通晓语言**Comprehend Languages*，*侦测善恶**Detect Evil and Good*，*侦测魔法**Detect Magic*，*侦测毒素和疾病**Detect Poison andDIsease*，*物品定位术**Locate Object*，*探知术**Scrying*。一旦你用牌组施展了某个法术，你在下一个黎明前不能再次施展该法术。\n***持久之视***。持握牌组时，你为维持预言系法术的专注所作的体质豁免检定自动成功。\n***编织命运***。以一个动作，你可以从牌组中抽出一张卡，从而编织15尺内你能看见的另一个生物的命运。从以下效应中选择一项：\n***"
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:7",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "用一个动作用牌组施展以下法术（豁免DC18）：*通晓语言**Comprehend Languages*，*侦测善恶**Detect Evil and Good*，*侦测魔法**Detect Magic*，*侦测毒素和疾病**Detect Poison andDIsease*，*物品定位术**Locate Object*，*探知术**Scrying*。一旦你用牌组施展了某个法术，你在下一个黎明前不能再次施展该法术。\n***持久之视***。持握牌组时，你为维持预言系法术的专注所作的体质豁免检定自动成功。\n***编织命运***。以一个动作，你可以从牌组中抽出一张卡，从而编织15尺内你能看见的另一个生物的命运。从以下效应中选择一项：\n***",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:8",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使用了。如果在某颗牙齿已经被使用后再次投出对应的骰值，你会取出表格中位于最底下的未被使用的牙齿。\n***播种牙齿***。为了播种牙齿，你将它放置在你触及内一个未占据空间的地面上，或者你可以将它或者你可以将它投掷"
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:8",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": true,
+          "source_excerpt": "用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使用了。如果在某颗牙齿已经被使用后再次投出对应的骰值，你会取出表格中位于最底下的未被使用的牙齿。\n***播种牙齿***。为了播种牙齿，你将它放置在你触及内一个未占据空间的地面上，或者你可以将它或者你可以将它投掷",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:9",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个动作，你可以消耗一发充能并触碰一个生物。该生物恢复 2d8+2 生命值，并且解除所有影响它的疾病和毒素。使用该动作时，你前额会出现一个闪闪发光的独角兽之角幻象，持续至你的回合结束。你获得以下缺陷： “ 当我看见邪恶在行动时，我必须去对抗它。 ” |\n| 8 | 跨越布拉之岩 Beyond the Rock of Bral （ 银制夺心 魔牙齿） | 2 只 夺心魔 Mind Flayer 。 | 你获得 120 尺 心灵感应 ，描述见 怪物图鉴 。你可以随意施展 侦测思想 Detect Thoughts 法术，而无需任何法术成分。由于来自记忆和周围的心灵的絮叨低语，你在感知（察觉）和感知（洞悉）检定中获得劣势。 |\n| 9 "
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:9",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "作为一个动作，你可以消耗一发充能并触碰一个生物。该生物恢复 2d8+2 生命值，并且解除所有影响它的疾病和毒素。使用该动作时，你前额会出现一个闪闪发光的独角兽之角幻象，持续至你的回合结束。你获得以下缺陷： “ 当我看见邪恶在行动时，我必须去对抗它。 ” |\n| 8 | 跨越布拉之岩 Beyond the Rock of Bral （ 银制夺心 魔牙齿） | 2 只 夺心魔 Mind Flayer 。 | 你获得 120 尺 心灵感应 ，描述见 怪物图鉴 。你可以随意施展 侦测思想 Detect Thoughts 法术，而无需任何法术成分。由于来自记忆和周围的心灵的絮叨低语，你在感知（察觉）和感知（洞悉）检定中获得劣势。 |\n| 9 ",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:10",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个动作，你可以用牙齿施展 艾伐黑触手 Evard ’ s\n Black Tentacles 法术（ DC18 ）。该属性被使用后，直至下个黎明前，不能再次使用。 |\n| 11 | 詹德 阳星的永劫 The Thousand Deaths of Jander Sunstar （泛黄的吸血鬼尖牙） | 1 位 吸血鬼 Vampire 。 | 你可以进行啃咬攻击，作为一种徒手打击。命中时，造成 1d6 穿刺伤害外加 3d6 暗蚀伤害 。你恢复等同于所 造成暗蚀伤害 的生命值。当你处于阳光下时，你无法恢复生命值。 |\n| 12 | 卡伽什 的梦魇 Nightmares of Kaggash （扭曲 的眼魔牙齿 ） | 1 只 眼魔 B"
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:10",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "作为一个动作，你可以用牙齿施展 艾伐黑触手 Evard ’ s\n Black Tentacles 法术（ DC18 ）。该属性被使用后，直至下个黎明前，不能再次使用。 |\n| 11 | 詹德 阳星的永劫 The Thousand Deaths of Jander Sunstar （泛黄的吸血鬼尖牙） | 1 位 吸血鬼 Vampire 。 | 你可以进行啃咬攻击，作为一种徒手打击。命中时，造成 1d6 穿刺伤害外加 3d6 暗蚀伤害 。你恢复等同于所 造成暗蚀伤害 的生命值。当你处于阳光下时，你无法恢复生命值。 |\n| 12 | 卡伽什 的梦魇 Nightmares of Kaggash （扭曲 的眼魔牙齿 ） | 1 只 眼魔 B",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:11",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个动作，你可以用牙齿施展 摄心目光 Eyebite 法术。使用该动作后，直到下次黎明前，不能再次使用该动作。当你完成 一 次长休时， 骰 一个 d20 。得出 20 时，一只由 DM 选择的异 怪出现 在你 30 尺内并开始攻击。 |\n| 13 | 通天三桥 Three Bridges to the Sky （青金石制恶鬼尖牙） | 3 位 恶鬼 Oni 。 | 你获得 30 尺飞行速度，并且你可以用牙齿随意施展 侦测魔法 Detect Magic 法术。当你同调的魔法物品数量少于三件时，你提升 1 级 力竭 Exhaustion ，该状态无法被移除，直至你同调至少三件魔法物品。 |\n| 14 | 卓戈 萨 之爪 The Cl"
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:11",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": true,
+          "source_excerpt": "作为一个动作，你可以用牙齿施展 摄心目光 Eyebite 法术。使用该动作后，直到下次黎明前，不能再次使用该动作。当你完成 一 次长休时， 骰 一个 d20 。得出 20 时，一只由 DM 选择的异 怪出现 在你 30 尺内并开始攻击。 |\n| 13 | 通天三桥 Three Bridges to the Sky （青金石制恶鬼尖牙） | 3 位 恶鬼 Oni 。 | 你获得 30 尺飞行速度，并且你可以用牙齿随意施展 侦测魔法 Detect Magic 法术。当你同调的魔法物品数量少于三件时，你提升 1 级 力竭 Exhaustion ，该状态无法被移除，直至你同调至少三件魔法物品。 |\n| 14 | 卓戈 萨 之爪 The Cl",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:12",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个动作，你可以喷出 90 尺锥形的火焰。在范围的生物必须进行一次 DC24 的敏捷豁免，豁免失败者受到 26d6 点火焰伤害，成功则伤害减半。使用该吐 息武器 后，你提升 2 级 力竭 Exhaustion 。 |\n| 20 | 达文 - 纳之牙 Dahlver -Nar ’ s\n Tooth （ 蒙灰的 人类臼齿） | 1 位 祭司 Priest 。 | 作为一个动作，你可以呼唤神圣力量援助你。描述你需要的帮助，回应的结果由 DM 决定；此时通常请求任何牧师法术的效应都在可接受范围内。该属性被使用后，七天内不能再次使用。 |"
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:12",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": true,
+          "source_excerpt": "作为一个动作，你可以喷出 90 尺锥形的火焰。在范围的生物必须进行一次 DC24 的敏捷豁免，豁免失败者受到 26d6 点火焰伤害，成功则伤害减半。使用该吐 息武器 后，你提升 2 级 力竭 Exhaustion 。 |\n| 20 | 达文 - 纳之牙 Dahlver -Nar ’ s\n Tooth （ 蒙灰的 人类臼齿） | 1 位 祭司 Priest 。 | 作为一个动作，你可以呼唤神圣力量援助你。描述你需要的帮助，回应的结果由 DM 决定；此时通常请求任何牧师法术的效应都在可接受范围内。该属性被使用后，七天内不能再次使用。 |",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:13",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个动作，你可以呼唤神圣力量援助你。描述你需要的帮助，回应的结果由 DM 决定；此时通常请求任何牧师法术的效应都在可接受范围内。该属性被使用后，七天内不能再次使用。 |"
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:13",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": true,
+          "source_excerpt": "作为一个动作，你可以呼唤神圣力量援助你。描述你需要的帮助，回应的结果由 DM 决定；此时通常请求任何牧师法术的效应都在可接受范围内。该属性被使用后，七天内不能再次使用。 |",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "action",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:spell-grant",
+        "clause_type": "granted_spell",
+        "evidence": {
+          "manual_review_required": false,
+          "source_excerpt": "**芭芭********雅嘎的臼与杵****|Baba\nYaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。"
+        },
+        "parameters": {
+          "grant_mode": "item_cast",
+          "source_text": "**芭芭********雅嘎的臼与杵****|Baba\nYaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。",
+          "spell_identities": [
+            {
+              "english_name": "",
+              "localized_name": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰",
+              "spell_id": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰"
+            },
+            {
+              "english_name": "",
+              "localized_name": "了某个",
+              "spell_id": "了某个"
+            },
+            {
+              "english_name": "Revivify",
+              "localized_name": "回生术",
+              "spell_id": "revivify"
+            },
+            {
+              "english_name": "",
+              "localized_name": "庇护术Sanctuary，持续24小时或直至你打破该效应",
+              "spell_id": "庇护术Sanctuary，持续24小时或直至你打破该效应"
+            },
+            {
+              "english_name": "Detect Thoughts",
+              "localized_name": "侦测思想",
+              "spell_id": "detect-thoughts"
+            },
+            {
+              "english_name": "Black Tentacles",
+              "localized_name": "艾伐黑触手Evard’s",
+              "spell_id": "black-tentacles"
+            },
+            {
+              "english_name": "Eyebite",
+              "localized_name": "摄心目光",
+              "spell_id": "eyebite"
+            },
+            {
+              "english_name": "Detect Magic",
+              "localized_name": "侦测魔法",
+              "spell_id": "detect-magic"
+            },
+            {
+              "english_name": "Animate Dead",
+              "localized_name": "活化死尸",
+              "spell_id": "animate-dead"
+            },
+            {
+              "english_name": "Dominate Monster",
+              "localized_name": "支配怪物",
+              "spell_id": "dominate-monster"
+            },
+            {
+              "english_name": "Baba",
+              "localized_name": "雅嘎的臼与杵",
+              "spell_id": "baba"
+            },
+            {
+              "english_name": "Croook of Rao",
+              "localized_name": "拉奥圣杖",
+              "spell_id": "croook-of-rao"
+            },
+            {
+              "english_name": "Aura",
+              "localized_name": "生命灵光",
+              "spell_id": "aura"
+            },
+            {
+              "english_name": "Aura",
+              "localized_name": "净化灵光",
+              "spell_id": "aura"
+            },
+            {
+              "english_name": "Beacon",
+              "localized_name": "希望信标",
+              "spell_id": "beacon"
+            },
+            {
+              "english_name": "Mass Cure Wounds",
+              "localized_name": "群体疗伤术",
+              "spell_id": "mass-cure-wounds"
+            },
+            {
+              "english_name": "Croook",
+              "localized_name": "拉奥圣杖",
+              "spell_id": "croook"
+            },
+            {
+              "english_name": "Tasha’s Hideous",
+              "localized_name": "塔莎狂笑术",
+              "spell_id": "tasha’s-hideous"
+            },
+            {
+              "english_name": "Magic Circle",
+              "localized_name": "防护法阵",
+              "spell_id": "magic-circle"
+            },
+            {
+              "english_name": "Magic Jar",
+              "localized_name": "魔魂壶",
+              "spell_id": "magic-jar"
+            },
+            {
+              "english_name": "Planar Ally",
+              "localized_name": "异界誓盟",
+              "spell_id": "planar-ally"
+            },
+            {
+              "english_name": "Planar Binding",
+              "localized_name": "异界誓缚",
+              "spell_id": "planar-binding"
+            },
+            {
+              "english_name": "Plane Shift",
+              "localized_name": "位面转移",
+              "spell_id": "plane-shift"
+            },
+            {
+              "english_name": "Summon Fiend",
+              "localized_name": "邪魔召唤术",
+              "spell_id": "summon-fiend"
+            },
+            {
+              "english_name": "Comprehend Languages",
+              "localized_name": "通晓语言",
+              "spell_id": "comprehend-languages"
+            },
+            {
+              "english_name": "Detect Evil and Good",
+              "localized_name": "侦测善恶",
+              "spell_id": "detect-evil-and-good"
+            },
+            {
+              "english_name": "Detect Poison andDIsease",
+              "localized_name": "侦测毒素和疾病",
+              "spell_id": "detect-poison-anddisease"
+            },
+            {
+              "english_name": "Locate Object",
+              "localized_name": "物品定位术",
+              "spell_id": "locate-object"
+            },
+            {
+              "english_name": "Scrying",
+              "localized_name": "探知术",
+              "spell_id": "scrying"
+            },
+            {
+              "english_name": "Mighty Servant ofLeuk-O",
+              "localized_name": "的非凡机仆",
+              "spell_id": "mighty-servant-ofleuk-o"
+            },
+            {
+              "english_name": "Invisible",
+              "localized_name": "隐形",
+              "spell_id": "invisible"
+            },
+            {
+              "english_name": "Prone",
+              "localized_name": "倒地",
+              "spell_id": "prone"
+            }
+          ],
+          "spell_ids": [
+            "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰",
+            "了某个",
+            "revivify",
+            "庇护术Sanctuary，持续24小时或直至你打破该效应",
+            "detect-thoughts",
+            "black-tentacles",
+            "eyebite",
+            "detect-magic",
+            "animate-dead",
+            "dominate-monster",
+            "baba",
+            "croook-of-rao",
+            "aura",
+            "aura",
+            "beacon",
+            "mass-cure-wounds",
+            "croook",
+            "tasha’s-hideous",
+            "magic-circle",
+            "magic-jar",
+            "planar-ally",
+            "planar-binding",
+            "plane-shift",
+            "summon-fiend",
+            "comprehend-languages",
+            "detect-evil-and-good",
+            "detect-poison-anddisease",
+            "locate-object",
+            "scrying",
+            "mighty-servant-ofleuk-o",
+            "invisible",
+            "prone"
+          ]
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:healing-modifier",
+        "clause_type": "passive_modifier",
+        "evidence": {
+          "source_text": "恢复生命值的法术增加1d4"
+        },
+        "parameters": {
+          "dice": "1d4",
+          "modifier_kind": "healing_bonus",
+          "target": "self"
+        },
+        "trigger": "healing_spell_while_held"
+      }
+    ],
+    "compile_status": "partial",
+    "consumer_ids": [
+      "item.attunement.v1",
+      "item.charge_resource.v1",
+      "item.equipment_modifier.v1",
+      "item.granted_action.v1",
+      "item.granted_spell.v1"
+    ],
+    "item_fingerprint": "c4ade86f9581ddd69d36380125ffe6c6ee005797610f6ef21e8ded703ac44b8b",
+    "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-23eee2e4e70e-004",
+    "runtime_preview_full": false,
+    "schema_version": "item-ir-1",
+    "source_trust": "authored_ir"
+  },
+  "conditions": [],
+  "consumption_policy": {
+    "mode": "charges"
+  },
+  "damage": null,
+  "duration": null,
+  "equipped_slot": null,
+  "evidence": {
+    "manual_review_required": true,
+    "rejected_inferences": [
+      "unknown_effects",
+      "unresolved_spell_identity",
+      "freeform_targeting"
+    ],
+    "review_status": "reviewed_explicit_fields_only",
+    "reviewed_fields": [
+      "identity",
+      "kind",
+      "rarity",
+      "attunement",
+      "charges",
+      "clause_boundaries"
+    ],
+    "source_fragment": "blockquote:145",
+    "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html",
+    "source_text_sha256": "7350e9813ff4d643fb748c72c336331e144c2dc4429ee54c92d7060fb151045b"
+  },
+  "granted_actions": [
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:1",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "作为一个动作，你可以命令杵开始捣碎作业。杵会自行行动，将臼中容纳的物品捣成均能够同等用于烹调或炼金的浆糊或精细粉末，持续1分钟或你用一个动作来口头命令它停止。在你的回合开始时，任何处于臼内的东西会受到4d10力场伤害。若目标生命值因此降至0，则其会被捣成适宜的粉末、肉浆或者浆糊。只有魔法物品不受影响。若你愿意，你可以在杵停止工作时让臼把它的内容物分开成不同堆，比如骨粉和骨粉放在一起，药末与药末堆在一起，尚在搏动的机体器官堆在一起。\n***黑夜穿梭***。若你在臼内持握着杵，你可以用动作发出口头命令，让臼穿穿梭到一处特定的地点或一个特定的生物处。你不需要知道你的目标在什么位置，但你的目标必须是一个特定的位置不可以仅仅是“最近的河流”或",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:2",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "用一个动作来口头命令它停止。在你的回合开始时，任何处于臼内的东西会受到4d10力场伤害。若目标生命值因此降至0，则其会被捣成适宜的粉末、肉浆或者浆糊。只有魔法物品不受影响。若你愿意，你可以在杵停止工作时让臼把它的内容物分开成不同堆，比如骨粉和骨粉放在一起，药末与药末堆在一起，尚在搏动的机体器官堆在一起。\n***黑夜穿梭***。若你在臼内持握着杵，你可以用动作发出口头命令，让臼穿穿梭到一处特定的地点或一个特定的生物处。你不需要知道你的目标在什么位置，但你的目标必须是一个特定的位置不可以仅仅是“最近的河流”或“一条红龙的巢穴”。若被选定的目标在你的1000英里内，臼就会飞向空中而后消失。你与任何处于臼内的生物会穿过一道梦境般的天穹，朦胧",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:3",
+      "charge_cost": 1,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "用一个动作消耗1发或更多充能施展下列法术（豁免DC18）：*生命灵光**Aura\nof Life*（2充能），*净化灵光**Aura\nof Purity*（2充能），放逐术Banishment（1充能），*希望信标**Beacon\nof Hope*（1充能），*群体疗伤术**Mass Cure Wounds*（3充能）。圣杖在每天黎明时恢复1d6发已消耗的充能。\n***绝对放逐。***当你正与圣杖同调且持握着它时，你可以花费10分钟以放逐你一英里内除了那些最强大的邪魔以外的任何邪魔。任何挑战等级大于等于19的邪魔不受影响。每个被放逐的邪魔会被送回其家园位面且在100年内无法再次回到*拉奥圣杖**Croook of Rao*将其放逐的",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:4",
+      "charge_cost": 1,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "用一个动作随意施展*塔莎狂笑术**Tasha’s Hideous\nLaughter*或消耗1发或更多的充能施展以下法术（DC20）：*防护法阵**Magic Circle*（1发充能），*魔魂壶**Magic Jar*（3发充能），*异界誓盟**Planar Ally*（3发充能），*异界誓缚**Planar Binding*（2发充能），*位面转移**Plane Shift*（仅限深渊层级；3发充能），*邪魔召唤术**Summon Fiend*（3发充能；出现于本书）。\n***深渊学识。***你可以在你每次进行辨认关于恶魔的消息的智力检定或关于深渊的感知（求生）检定时查阅恶魔志。若如此做，你的检定使用双倍的熟练加值。\n***鞭笞邪",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:5",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "作为一个动作，你可以选择一个你可见且被困在*防护法阵**Magic Circle*中的邪魔。该邪魔必须以劣势进行一次DC20的魅力豁免，豁免失败则被困在恶魔志的一张空白页中。并且会附上受困生物广为人知的名字与堕落内容的详细文字。使用后，直到下次黎明前，这项动作不能再次使用。\n当你结束了一次长休时，如果你和恶魔志存在于同一位面，则书中所困挑战等级最高的生物可以尝试附身你。你必须进行一次DC20的魅力豁免。若豁免失败，则你如同一具提线玩偶般被该生物附身。附身你的生物可以用一个动作释放你，并在最近的一处未占据空间出现。若豁免成功，则尝试附身你的邪魔在未来7天内都不能再次尝试附身你。\n在这本魔典被发现时，已经有了1d4张书页被占据，一般是各",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:6",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "用一个动作释放你，并在最近的一处未占据空间出现。若豁免成功，则尝试附身你的邪魔在未来7天内都不能再次尝试附身你。\n在这本魔典被发现时，已经有了1d4张书页被占据，一般是各种恶魔。\n***破坏恶魔志。***要摧毁这本书，必须有六位不同的恶魔领主分别撕下书内六分之一的页数。书页被撕下后会在24小时内恢复。而在所有书页被撕下与恢复之前，任何打开剩余装订部分的人都会被传送到一处隐藏在书中的新生深渊层级。在这致命、的半智能领域中心，有一件遗失许久的神器，弗拉兹-厄鲁之杖。如果法杖被带离这处口袋位面，魔典会立刻变成一本*《反序古典**Tome ofZyx**》*普通而过时的抄本，这本书是创造恶魔志的基底。法杖一旦出现，恶魔领主弗拉兹-厄鲁会立刻",
+      "target_policy": "source_text"
+    },
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:7",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "用一个动作用牌组施展以下法术（豁免DC18）：*通晓语言**Comprehend Languages*，*侦测善恶**Detect Evil and Good*，*侦测魔法**Detect Magic*，*侦测毒素和疾病**Detect Poison andDIsease*，*物品定位术**Locate Object*，*探知术**Scrying*。一旦你用牌组施展了某个法术，你在下一个黎明前不能再次施展该法术。\n***持久之视***。持握牌组时，你为维持预言系法术的专注所作的体质豁免检定自动成功。\n***编织命运***。以一个动作，你可以从牌组中抽出一张卡，从而编织15尺内你能看见的另一个生物的命运。从以下效应中选择一项：\n***",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:8",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": true,
+      "source_excerpt": "用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使用了。如果在某颗牙齿已经被使用后再次投出对应的骰值，你会取出表格中位于最底下的未被使用的牙齿。\n***播种牙齿***。为了播种牙齿，你将它放置在你触及内一个未占据空间的地面上，或者你可以将它或者你可以将它投掷",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:9",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "作为一个动作，你可以消耗一发充能并触碰一个生物。该生物恢复 2d8+2 生命值，并且解除所有影响它的疾病和毒素。使用该动作时，你前额会出现一个闪闪发光的独角兽之角幻象，持续至你的回合结束。你获得以下缺陷： “ 当我看见邪恶在行动时，我必须去对抗它。 ” |\n| 8 | 跨越布拉之岩 Beyond the Rock of Bral （ 银制夺心 魔牙齿） | 2 只 夺心魔 Mind Flayer 。 | 你获得 120 尺 心灵感应 ，描述见 怪物图鉴 。你可以随意施展 侦测思想 Detect Thoughts 法术，而无需任何法术成分。由于来自记忆和周围的心灵的絮叨低语，你在感知（察觉）和感知（洞悉）检定中获得劣势。 |\n| 9 ",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:10",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "作为一个动作，你可以用牙齿施展 艾伐黑触手 Evard ’ s\n Black Tentacles 法术（ DC18 ）。该属性被使用后，直至下个黎明前，不能再次使用。 |\n| 11 | 詹德 阳星的永劫 The Thousand Deaths of Jander Sunstar （泛黄的吸血鬼尖牙） | 1 位 吸血鬼 Vampire 。 | 你可以进行啃咬攻击，作为一种徒手打击。命中时，造成 1d6 穿刺伤害外加 3d6 暗蚀伤害 。你恢复等同于所 造成暗蚀伤害 的生命值。当你处于阳光下时，你无法恢复生命值。 |\n| 12 | 卡伽什 的梦魇 Nightmares of Kaggash （扭曲 的眼魔牙齿 ） | 1 只 眼魔 B",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:11",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": true,
+      "source_excerpt": "作为一个动作，你可以用牙齿施展 摄心目光 Eyebite 法术。使用该动作后，直到下次黎明前，不能再次使用该动作。当你完成 一 次长休时， 骰 一个 d20 。得出 20 时，一只由 DM 选择的异 怪出现 在你 30 尺内并开始攻击。 |\n| 13 | 通天三桥 Three Bridges to the Sky （青金石制恶鬼尖牙） | 3 位 恶鬼 Oni 。 | 你获得 30 尺飞行速度，并且你可以用牙齿随意施展 侦测魔法 Detect Magic 法术。当你同调的魔法物品数量少于三件时，你提升 1 级 力竭 Exhaustion ，该状态无法被移除，直至你同调至少三件魔法物品。 |\n| 14 | 卓戈 萨 之爪 The Cl",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:12",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": true,
+      "source_excerpt": "作为一个动作，你可以喷出 90 尺锥形的火焰。在范围的生物必须进行一次 DC24 的敏捷豁免，豁免失败者受到 26d6 点火焰伤害，成功则伤害减半。使用该吐 息武器 后，你提升 2 级 力竭 Exhaustion 。 |\n| 20 | 达文 - 纳之牙 Dahlver -Nar ’ s\n Tooth （ 蒙灰的 人类臼齿） | 1 位 祭司 Priest 。 | 作为一个动作，你可以呼唤神圣力量援助你。描述你需要的帮助，回应的结果由 DM 决定；此时通常请求任何牧师法术的效应都在可接受范围内。该属性被使用后，七天内不能再次使用。 |",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:action:13",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": true,
+      "source_excerpt": "作为一个动作，你可以呼唤神圣力量援助你。描述你需要的帮助，回应的结果由 DM 决定；此时通常请求任何牧师法术的效应都在可接受范围内。该属性被使用后，七天内不能再次使用。 |",
+      "target_policy": "self"
+    }
+  ],
+  "granted_spells": [
+    {
+      "english_name": "",
+      "localized_name": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰",
+      "spell_id": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰"
+    },
+    {
+      "english_name": "",
+      "localized_name": "了某个",
+      "spell_id": "了某个"
+    },
+    {
+      "english_name": "Revivify",
+      "localized_name": "回生术",
+      "spell_id": "revivify"
+    },
+    {
+      "english_name": "",
+      "localized_name": "庇护术Sanctuary，持续24小时或直至你打破该效应",
+      "spell_id": "庇护术Sanctuary，持续24小时或直至你打破该效应"
+    },
+    {
+      "english_name": "Detect Thoughts",
+      "localized_name": "侦测思想",
+      "spell_id": "detect-thoughts"
+    },
+    {
+      "english_name": "Black Tentacles",
+      "localized_name": "艾伐黑触手Evard’s",
+      "spell_id": "black-tentacles"
+    },
+    {
+      "english_name": "Eyebite",
+      "localized_name": "摄心目光",
+      "spell_id": "eyebite"
+    },
+    {
+      "english_name": "Detect Magic",
+      "localized_name": "侦测魔法",
+      "spell_id": "detect-magic"
+    },
+    {
+      "english_name": "Animate Dead",
+      "localized_name": "活化死尸",
+      "spell_id": "animate-dead"
+    },
+    {
+      "english_name": "Dominate Monster",
+      "localized_name": "支配怪物",
+      "spell_id": "dominate-monster"
+    },
+    {
+      "english_name": "Baba",
+      "localized_name": "雅嘎的臼与杵",
+      "spell_id": "baba"
+    },
+    {
+      "english_name": "Croook of Rao",
+      "localized_name": "拉奥圣杖",
+      "spell_id": "croook-of-rao"
+    },
+    {
+      "english_name": "Aura",
+      "localized_name": "生命灵光",
+      "spell_id": "aura"
+    },
+    {
+      "english_name": "Aura",
+      "localized_name": "净化灵光",
+      "spell_id": "aura"
+    },
+    {
+      "english_name": "Beacon",
+      "localized_name": "希望信标",
+      "spell_id": "beacon"
+    },
+    {
+      "english_name": "Mass Cure Wounds",
+      "localized_name": "群体疗伤术",
+      "spell_id": "mass-cure-wounds"
+    },
+    {
+      "english_name": "Croook",
+      "localized_name": "拉奥圣杖",
+      "spell_id": "croook"
+    },
+    {
+      "english_name": "Tasha’s Hideous",
+      "localized_name": "塔莎狂笑术",
+      "spell_id": "tasha’s-hideous"
+    },
+    {
+      "english_name": "Magic Circle",
+      "localized_name": "防护法阵",
+      "spell_id": "magic-circle"
+    },
+    {
+      "english_name": "Magic Jar",
+      "localized_name": "魔魂壶",
+      "spell_id": "magic-jar"
+    },
+    {
+      "english_name": "Planar Ally",
+      "localized_name": "异界誓盟",
+      "spell_id": "planar-ally"
+    },
+    {
+      "english_name": "Planar Binding",
+      "localized_name": "异界誓缚",
+      "spell_id": "planar-binding"
+    },
+    {
+      "english_name": "Plane Shift",
+      "localized_name": "位面转移",
+      "spell_id": "plane-shift"
+    },
+    {
+      "english_name": "Summon Fiend",
+      "localized_name": "邪魔召唤术",
+      "spell_id": "summon-fiend"
+    },
+    {
+      "english_name": "Comprehend Languages",
+      "localized_name": "通晓语言",
+      "spell_id": "comprehend-languages"
+    },
+    {
+      "english_name": "Detect Evil and Good",
+      "localized_name": "侦测善恶",
+      "spell_id": "detect-evil-and-good"
+    },
+    {
+      "english_name": "Detect Poison andDIsease",
+      "localized_name": "侦测毒素和疾病",
+      "spell_id": "detect-poison-anddisease"
+    },
+    {
+      "english_name": "Locate Object",
+      "localized_name": "物品定位术",
+      "spell_id": "locate-object"
+    },
+    {
+      "english_name": "Scrying",
+      "localized_name": "探知术",
+      "spell_id": "scrying"
+    },
+    {
+      "english_name": "Mighty Servant ofLeuk-O",
+      "localized_name": "的非凡机仆",
+      "spell_id": "mighty-servant-ofleuk-o"
+    },
+    {
+      "english_name": "Invisible",
+      "localized_name": "隐形",
+      "spell_id": "invisible"
+    },
+    {
+      "english_name": "Prone",
+      "localized_name": "倒地",
+      "spell_id": "prone"
+    }
+  ],
+  "healing": null,
+  "immunities": [
+    {
+      "id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:immunity:1",
+      "manual_decision_required": true,
+      "scope": "source_text",
+      "source_text": "伤害免疫"
+    }
+  ],
+  "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-23eee2e4e70e-004",
+  "item_kind": "weapon",
+  "localized_name": "琉克欧",
+  "manual_review_required": true,
+  "name": "琉克欧",
+  "namespace": "dnd.tashas.recovery.item",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "whole-pack-2026-08-11",
+  "passive_modifiers": [],
+  "rarity": "传说",
+  "requires_attunement": true,
+  "resistances": [],
+  "resource_bindings": [],
+  "review_fingerprint": "c4ade86f9581ddd69d36380125ffe6c6ee005797610f6ef21e8ded703ac44b8b",
+  "review_status": "reviewed",
+  "ruleset_version": "2024",
+  "schema_version": "item-ir-1",
+  "source_fingerprint": "7350e9813ff4d643fb748c72c336331e144c2dc4429ee54c92d7060fb151045b",
+  "source_fragment": "blockquote:145",
+  "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html",
+  "source_record_id": "760b230e1396825928305642",
+  "source_trust": "authored_ir",
+  "stack_policy": {
+    "mode": "unique_instance"
+  },
+  "temporary_hp": null,
+  "triggered_effects": []
+}

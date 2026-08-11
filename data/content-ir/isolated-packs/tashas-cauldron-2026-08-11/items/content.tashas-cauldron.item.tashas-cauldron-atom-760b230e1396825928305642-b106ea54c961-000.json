@@ -1,0 +1,343 @@
+{
+  "attunement_requirements": {
+    "required": true,
+    "requirements_text": "任意生物"
+  },
+  "charges": {
+    "current": 12,
+    "maximum": 12,
+    "recovery_amount": "all",
+    "recovery_trigger": "dawn"
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:equipment",
+      "clause_type": "equipment",
+      "evidence": {
+        "source_fragment": "1"
+      },
+      "parameters": {
+        "equipped_slot": "worn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:attunement",
+      "clause_type": "attunement",
+      "evidence": {
+        "source_text": "需同调"
+      },
+      "parameters": {
+        "required": true,
+        "requirements_text": "任意生物"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:charges",
+      "clause_type": "charge",
+      "evidence": {
+        "text": "12发充能"
+      },
+      "parameters": {
+        "current": 12,
+        "maximum": 12,
+        "recovery_amount": "all",
+        "recovery_trigger": "dawn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:charge-recovery",
+      "clause_type": "charge_recovery",
+      "evidence": {
+        "text": "Yaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属"
+      },
+      "parameters": {
+        "recovery_amount": "all",
+        "recovery_trigger": "dawn",
+        "typed_dawn_event_required": true
+      },
+      "trigger": "dawn"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:action:1",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个动作，你可以命令杵开始捣碎作业。杵会自行行动，将臼中容纳的物品捣成均能够同等用于烹调或炼金的浆糊或精细粉末，持续1分钟或你用一个动作来口头命令它停止。在你的回合开始时，任何处于臼内的东西会受到4d10力场伤害。若目标生命值因此降至0，则其会被捣成适宜的粉末、肉浆或者浆糊。只有魔法物品不受影响。若你愿意，你可以在杵停止工作时让臼把它的内容物分开成不同堆，比如骨粉和骨粉放在一起，药末与药末堆在一起，尚在搏动的机体器官堆在一起。\n***黑夜穿梭***。若你在臼内持握着杵，你可以用动作发出口头命令，让臼穿穿梭到一处特定的地点或一个特定的生物处。你不需要知道你的目标在什么位置，但你的目标必须是一个特定的位置不可以仅仅是“最近的河流”或"
+      },
+      "parameters": {
+        "action_economy": "action",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:action:1",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "作为一个动作，你可以命令杵开始捣碎作业。杵会自行行动，将臼中容纳的物品捣成均能够同等用于烹调或炼金的浆糊或精细粉末，持续1分钟或你用一个动作来口头命令它停止。在你的回合开始时，任何处于臼内的东西会受到4d10力场伤害。若目标生命值因此降至0，则其会被捣成适宜的粉末、肉浆或者浆糊。只有魔法物品不受影响。若你愿意，你可以在杵停止工作时让臼把它的内容物分开成不同堆，比如骨粉和骨粉放在一起，药末与药末堆在一起，尚在搏动的机体器官堆在一起。\n***黑夜穿梭***。若你在臼内持握着杵，你可以用动作发出口头命令，让臼穿穿梭到一处特定的地点或一个特定的生物处。你不需要知道你的目标在什么位置，但你的目标必须是一个特定的位置不可以仅仅是“最近的河流”或",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:action:2",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "用一个动作来口头命令它停止。在你的回合开始时，任何处于臼内的东西会受到4d10力场伤害。若目标生命值因此降至0，则其会被捣成适宜的粉末、肉浆或者浆糊。只有魔法物品不受影响。若你愿意，你可以在杵停止工作时让臼把它的内容物分开成不同堆，比如骨粉和骨粉放在一起，药末与药末堆在一起，尚在搏动的机体器官堆在一起。\n***黑夜穿梭***。若你在臼内持握着杵，你可以用动作发出口头命令，让臼穿穿梭到一处特定的地点或一个特定的生物处。你不需要知道你的目标在什么位置，但你的目标必须是一个特定的位置不可以仅仅是“最近的河流”或“一条红龙的巢穴”。若被选定的目标在你的1000英里内，臼就会飞向空中而后消失。你与任何处于臼内的生物会穿过一道梦境般的天穹，朦胧"
+      },
+      "parameters": {
+        "action_economy": "action",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:action:2",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "用一个动作来口头命令它停止。在你的回合开始时，任何处于臼内的东西会受到4d10力场伤害。若目标生命值因此降至0，则其会被捣成适宜的粉末、肉浆或者浆糊。只有魔法物品不受影响。若你愿意，你可以在杵停止工作时让臼把它的内容物分开成不同堆，比如骨粉和骨粉放在一起，药末与药末堆在一起，尚在搏动的机体器官堆在一起。\n***黑夜穿梭***。若你在臼内持握着杵，你可以用动作发出口头命令，让臼穿穿梭到一处特定的地点或一个特定的生物处。你不需要知道你的目标在什么位置，但你的目标必须是一个特定的位置不可以仅仅是“最近的河流”或“一条红龙的巢穴”。若被选定的目标在你的1000英里内，臼就会飞向空中而后消失。你与任何处于臼内的生物会穿过一道梦境般的天穹，朦胧",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:spell-grant",
+      "clause_type": "granted_spell",
+      "evidence": {
+        "manual_review_required": false,
+        "source_excerpt": "Yaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。臼是一个微型的小木碗。然而，臼的大小会随着你放进去的任何"
+      },
+      "parameters": {
+        "grant_mode": "item_cast",
+        "source_text": "Yaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。臼是一个微型的小木碗。然而，臼的大小会随着你放进去的任何",
+        "spell_identities": [
+          {
+            "english_name": "Baba",
+            "localized_name": "雅嘎的臼与杵",
+            "spell_id": "baba"
+          }
+        ],
+        "spell_ids": [
+          "baba"
+        ]
+      },
+      "trigger": "item_action_requested"
+    }
+  ],
+  "compile": {
+    "blockers": [],
+    "clauses": [
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:equipment",
+        "clause_type": "equipment",
+        "evidence": {
+          "source_fragment": "1"
+        },
+        "parameters": {
+          "equipped_slot": "worn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:attunement",
+        "clause_type": "attunement",
+        "evidence": {
+          "source_text": "需同调"
+        },
+        "parameters": {
+          "required": true,
+          "requirements_text": "任意生物"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:charges",
+        "clause_type": "charge",
+        "evidence": {
+          "text": "12发充能"
+        },
+        "parameters": {
+          "current": 12,
+          "maximum": 12,
+          "recovery_amount": "all",
+          "recovery_trigger": "dawn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:charge-recovery",
+        "clause_type": "charge_recovery",
+        "evidence": {
+          "text": "Yaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属"
+        },
+        "parameters": {
+          "recovery_amount": "all",
+          "recovery_trigger": "dawn",
+          "typed_dawn_event_required": true
+        },
+        "trigger": "dawn"
+      },
+      {
+        "action_economy": "action",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:action:1",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个动作，你可以命令杵开始捣碎作业。杵会自行行动，将臼中容纳的物品捣成均能够同等用于烹调或炼金的浆糊或精细粉末，持续1分钟或你用一个动作来口头命令它停止。在你的回合开始时，任何处于臼内的东西会受到4d10力场伤害。若目标生命值因此降至0，则其会被捣成适宜的粉末、肉浆或者浆糊。只有魔法物品不受影响。若你愿意，你可以在杵停止工作时让臼把它的内容物分开成不同堆，比如骨粉和骨粉放在一起，药末与药末堆在一起，尚在搏动的机体器官堆在一起。\n***黑夜穿梭***。若你在臼内持握着杵，你可以用动作发出口头命令，让臼穿穿梭到一处特定的地点或一个特定的生物处。你不需要知道你的目标在什么位置，但你的目标必须是一个特定的位置不可以仅仅是“最近的河流”或"
+        },
+        "parameters": {
+          "action_economy": "action",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:action:1",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "作为一个动作，你可以命令杵开始捣碎作业。杵会自行行动，将臼中容纳的物品捣成均能够同等用于烹调或炼金的浆糊或精细粉末，持续1分钟或你用一个动作来口头命令它停止。在你的回合开始时，任何处于臼内的东西会受到4d10力场伤害。若目标生命值因此降至0，则其会被捣成适宜的粉末、肉浆或者浆糊。只有魔法物品不受影响。若你愿意，你可以在杵停止工作时让臼把它的内容物分开成不同堆，比如骨粉和骨粉放在一起，药末与药末堆在一起，尚在搏动的机体器官堆在一起。\n***黑夜穿梭***。若你在臼内持握着杵，你可以用动作发出口头命令，让臼穿穿梭到一处特定的地点或一个特定的生物处。你不需要知道你的目标在什么位置，但你的目标必须是一个特定的位置不可以仅仅是“最近的河流”或",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "action",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:action:2",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "用一个动作来口头命令它停止。在你的回合开始时，任何处于臼内的东西会受到4d10力场伤害。若目标生命值因此降至0，则其会被捣成适宜的粉末、肉浆或者浆糊。只有魔法物品不受影响。若你愿意，你可以在杵停止工作时让臼把它的内容物分开成不同堆，比如骨粉和骨粉放在一起，药末与药末堆在一起，尚在搏动的机体器官堆在一起。\n***黑夜穿梭***。若你在臼内持握着杵，你可以用动作发出口头命令，让臼穿穿梭到一处特定的地点或一个特定的生物处。你不需要知道你的目标在什么位置，但你的目标必须是一个特定的位置不可以仅仅是“最近的河流”或“一条红龙的巢穴”。若被选定的目标在你的1000英里内，臼就会飞向空中而后消失。你与任何处于臼内的生物会穿过一道梦境般的天穹，朦胧"
+        },
+        "parameters": {
+          "action_economy": "action",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:action:2",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "用一个动作来口头命令它停止。在你的回合开始时，任何处于臼内的东西会受到4d10力场伤害。若目标生命值因此降至0，则其会被捣成适宜的粉末、肉浆或者浆糊。只有魔法物品不受影响。若你愿意，你可以在杵停止工作时让臼把它的内容物分开成不同堆，比如骨粉和骨粉放在一起，药末与药末堆在一起，尚在搏动的机体器官堆在一起。\n***黑夜穿梭***。若你在臼内持握着杵，你可以用动作发出口头命令，让臼穿穿梭到一处特定的地点或一个特定的生物处。你不需要知道你的目标在什么位置，但你的目标必须是一个特定的位置不可以仅仅是“最近的河流”或“一条红龙的巢穴”。若被选定的目标在你的1000英里内，臼就会飞向空中而后消失。你与任何处于臼内的生物会穿过一道梦境般的天穹，朦胧",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "action",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:spell-grant",
+        "clause_type": "granted_spell",
+        "evidence": {
+          "manual_review_required": false,
+          "source_excerpt": "Yaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。臼是一个微型的小木碗。然而，臼的大小会随着你放进去的任何"
+        },
+        "parameters": {
+          "grant_mode": "item_cast",
+          "source_text": "Yaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。臼是一个微型的小木碗。然而，臼的大小会随着你放进去的任何",
+          "spell_identities": [
+            {
+              "english_name": "Baba",
+              "localized_name": "雅嘎的臼与杵",
+              "spell_id": "baba"
+            }
+          ],
+          "spell_ids": [
+            "baba"
+          ]
+        },
+        "trigger": "item_action_requested"
+      }
+    ],
+    "compile_status": "full",
+    "consumer_ids": [
+      "item.attunement.v1",
+      "item.charge_resource.v1",
+      "item.equipment_modifier.v1",
+      "item.granted_action.v1",
+      "item.granted_spell.v1"
+    ],
+    "item_fingerprint": "13d19e69a27edf538bdec13dcf40f59af4f53c5085e8aee5391b405ccc2b530e",
+    "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
+    "runtime_preview_full": true,
+    "schema_version": "item-ir-1",
+    "source_trust": "authored_ir"
+  },
+  "conditions": [],
+  "consumption_policy": {
+    "mode": "charges"
+  },
+  "damage": null,
+  "duration": null,
+  "equipped_slot": null,
+  "evidence": {
+    "manual_review_required": false,
+    "rejected_inferences": [
+      "unknown_effects",
+      "unresolved_spell_identity",
+      "freeform_targeting"
+    ],
+    "review_status": "reviewed_explicit_fields_only",
+    "reviewed_fields": [
+      "identity",
+      "kind",
+      "rarity",
+      "attunement",
+      "charges",
+      "clause_boundaries"
+    ],
+    "source_fragment": "1",
+    "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html",
+    "source_text_sha256": "b5baaab02bb3a82bc796cfeb427b3effe79233ba8fa3ab36226577dca4af8463"
+  },
+  "granted_actions": [
+    {
+      "action_economy": "action",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:action:1",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "作为一个动作，你可以命令杵开始捣碎作业。杵会自行行动，将臼中容纳的物品捣成均能够同等用于烹调或炼金的浆糊或精细粉末，持续1分钟或你用一个动作来口头命令它停止。在你的回合开始时，任何处于臼内的东西会受到4d10力场伤害。若目标生命值因此降至0，则其会被捣成适宜的粉末、肉浆或者浆糊。只有魔法物品不受影响。若你愿意，你可以在杵停止工作时让臼把它的内容物分开成不同堆，比如骨粉和骨粉放在一起，药末与药末堆在一起，尚在搏动的机体器官堆在一起。\n***黑夜穿梭***。若你在臼内持握着杵，你可以用动作发出口头命令，让臼穿穿梭到一处特定的地点或一个特定的生物处。你不需要知道你的目标在什么位置，但你的目标必须是一个特定的位置不可以仅仅是“最近的河流”或",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "action",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:action:2",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "用一个动作来口头命令它停止。在你的回合开始时，任何处于臼内的东西会受到4d10力场伤害。若目标生命值因此降至0，则其会被捣成适宜的粉末、肉浆或者浆糊。只有魔法物品不受影响。若你愿意，你可以在杵停止工作时让臼把它的内容物分开成不同堆，比如骨粉和骨粉放在一起，药末与药末堆在一起，尚在搏动的机体器官堆在一起。\n***黑夜穿梭***。若你在臼内持握着杵，你可以用动作发出口头命令，让臼穿穿梭到一处特定的地点或一个特定的生物处。你不需要知道你的目标在什么位置，但你的目标必须是一个特定的位置不可以仅仅是“最近的河流”或“一条红龙的巢穴”。若被选定的目标在你的1000英里内，臼就会飞向空中而后消失。你与任何处于臼内的生物会穿过一道梦境般的天穹，朦胧",
+      "target_policy": "self"
+    }
+  ],
+  "granted_spells": [
+    {
+      "english_name": "Baba",
+      "localized_name": "雅嘎的臼与杵",
+      "spell_id": "baba"
+    }
+  ],
+  "healing": null,
+  "immunities": [],
+  "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
+  "item_kind": "weapon",
+  "localized_name": "芭芭",
+  "manual_review_required": false,
+  "name": "芭芭",
+  "namespace": "dnd.tashas.recovery.item",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "whole-pack-2026-08-11",
+  "passive_modifiers": [],
+  "rarity": null,
+  "requires_attunement": true,
+  "resistances": [],
+  "resource_bindings": [],
+  "review_fingerprint": "13d19e69a27edf538bdec13dcf40f59af4f53c5085e8aee5391b405ccc2b530e",
+  "review_status": "reviewed",
+  "ruleset_version": "2024",
+  "schema_version": "item-ir-1",
+  "source_fingerprint": "b5baaab02bb3a82bc796cfeb427b3effe79233ba8fa3ab36226577dca4af8463",
+  "source_fragment": "1",
+  "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html",
+  "source_record_id": "760b230e1396825928305642",
+  "source_trust": "authored_ir",
+  "stack_policy": {
+    "mode": "unique_instance"
+  },
+  "temporary_hp": null,
+  "triggered_effects": []
+}

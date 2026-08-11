@@ -1,0 +1,243 @@
+{
+  "attunement_requirements": {
+    "required": true,
+    "requirements_text": "魔契师或德鲁伊"
+  },
+  "charges": {
+    "current": 3,
+    "maximum": 3,
+    "recovery_amount": null,
+    "recovery_trigger": "dawn"
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:bell-branch:004:equipment",
+      "clause_type": "equipment",
+      "evidence": {
+        "source_fragment": "43"
+      },
+      "parameters": {
+        "equipped_slot": "worn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:bell-branch:004:attunement",
+      "clause_type": "attunement",
+      "evidence": {
+        "source_text": "需同调"
+      },
+      "parameters": {
+        "required": true,
+        "requirements_text": "魔契师或德鲁伊"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:bell-branch:004:charges",
+      "clause_type": "charge",
+      "evidence": {
+        "text": "3发充能"
+      },
+      "parameters": {
+        "current": 3,
+        "maximum": 3,
+        "recovery_amount": null,
+        "recovery_trigger": "dawn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:bell-branch:004:charge-recovery",
+      "clause_type": "charge_recovery",
+      "evidence": {
+        "text": "*奇物,\n珍稀（需魔契师或德鲁伊同调）*\n这个银色的小物件看起来就像一根树枝，上面正挂着许多金色的小铃铛。你持握着它时可以将其作为法器。\n树枝具有3发充能，且每天黎明时恢复1d3发已消耗的充能。你持握它时，可以通过以下方式消耗充能：\n\n- 作为一个附赠动作，你可以消耗1发充能以侦测距离你60尺内的异怪、天族、构装、元素、妖精、邪魔与亡灵。若这些生物存在在60尺内且对你没有处于全身掩护，那么金铃便会轻声作响，它们的音调揭示了所存在生物的种类。以一个动作，你可以消耗1发充能施展*"
+      },
+      "parameters": {
+        "recovery_amount": null,
+        "recovery_trigger": "dawn",
+        "typed_dawn_event_required": true
+      },
+      "trigger": "dawn"
+    },
+    {
+      "action_economy": "bonus_action",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:bell-branch:004:action:1",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个附赠动作，你可以消耗1发充能以侦测距离你60尺内的异怪、天族、构装、元素、妖精、邪魔与亡灵。若这些生物存在在60尺内且对你没有处于全身掩护，那么金铃便会轻声作响，它们的音调揭示了所存在生物的种类。以一个动作，你可以消耗1发充能施展*防护善恶Protection From Evil and Good*法术。"
+      },
+      "parameters": {
+        "action_economy": "bonus_action",
+        "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:bell-branch:004:action:1",
+        "charge_cost": 1,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "作为一个附赠动作，你可以消耗1发充能以侦测距离你60尺内的异怪、天族、构装、元素、妖精、邪魔与亡灵。若这些生物存在在60尺内且对你没有处于全身掩护，那么金铃便会轻声作响，它们的音调揭示了所存在生物的种类。以一个动作，你可以消耗1发充能施展*防护善恶Protection From Evil and Good*法术。",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    }
+  ],
+  "compile": {
+    "blockers": [],
+    "clauses": [
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:bell-branch:004:equipment",
+        "clause_type": "equipment",
+        "evidence": {
+          "source_fragment": "43"
+        },
+        "parameters": {
+          "equipped_slot": "worn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:bell-branch:004:attunement",
+        "clause_type": "attunement",
+        "evidence": {
+          "source_text": "需同调"
+        },
+        "parameters": {
+          "required": true,
+          "requirements_text": "魔契师或德鲁伊"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:bell-branch:004:charges",
+        "clause_type": "charge",
+        "evidence": {
+          "text": "3发充能"
+        },
+        "parameters": {
+          "current": 3,
+          "maximum": 3,
+          "recovery_amount": null,
+          "recovery_trigger": "dawn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:bell-branch:004:charge-recovery",
+        "clause_type": "charge_recovery",
+        "evidence": {
+          "text": "*奇物,\n珍稀（需魔契师或德鲁伊同调）*\n这个银色的小物件看起来就像一根树枝，上面正挂着许多金色的小铃铛。你持握着它时可以将其作为法器。\n树枝具有3发充能，且每天黎明时恢复1d3发已消耗的充能。你持握它时，可以通过以下方式消耗充能：\n\n- 作为一个附赠动作，你可以消耗1发充能以侦测距离你60尺内的异怪、天族、构装、元素、妖精、邪魔与亡灵。若这些生物存在在60尺内且对你没有处于全身掩护，那么金铃便会轻声作响，它们的音调揭示了所存在生物的种类。以一个动作，你可以消耗1发充能施展*"
+        },
+        "parameters": {
+          "recovery_amount": null,
+          "recovery_trigger": "dawn",
+          "typed_dawn_event_required": true
+        },
+        "trigger": "dawn"
+      },
+      {
+        "action_economy": "bonus_action",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:bell-branch:004:action:1",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个附赠动作，你可以消耗1发充能以侦测距离你60尺内的异怪、天族、构装、元素、妖精、邪魔与亡灵。若这些生物存在在60尺内且对你没有处于全身掩护，那么金铃便会轻声作响，它们的音调揭示了所存在生物的种类。以一个动作，你可以消耗1发充能施展*防护善恶Protection From Evil and Good*法术。"
+        },
+        "parameters": {
+          "action_economy": "bonus_action",
+          "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:bell-branch:004:action:1",
+          "charge_cost": 1,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "作为一个附赠动作，你可以消耗1发充能以侦测距离你60尺内的异怪、天族、构装、元素、妖精、邪魔与亡灵。若这些生物存在在60尺内且对你没有处于全身掩护，那么金铃便会轻声作响，它们的音调揭示了所存在生物的种类。以一个动作，你可以消耗1发充能施展*防护善恶Protection From Evil and Good*法术。",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      }
+    ],
+    "compile_status": "full",
+    "consumer_ids": [
+      "item.attunement.v1",
+      "item.charge_resource.v1",
+      "item.equipment_modifier.v1",
+      "item.granted_action.v1"
+    ],
+    "item_fingerprint": "bf63cf9d874635b91b223c28a59367d32128ce211a6f64edfd4089f118a92eb3",
+    "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-bell-branch-004",
+    "runtime_preview_full": true,
+    "schema_version": "item-ir-1",
+    "source_trust": "authored_ir"
+  },
+  "conditions": [],
+  "consumption_policy": {
+    "mode": "charges"
+  },
+  "damage": null,
+  "duration": null,
+  "equipped_slot": null,
+  "evidence": {
+    "manual_review_required": false,
+    "rejected_inferences": [
+      "unknown_effects",
+      "unresolved_spell_identity",
+      "freeform_targeting"
+    ],
+    "review_status": "reviewed_explicit_fields_only",
+    "reviewed_fields": [
+      "identity",
+      "kind",
+      "rarity",
+      "attunement",
+      "charges",
+      "clause_boundaries"
+    ],
+    "source_fragment": "43",
+    "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/珍稀.html",
+    "source_text_sha256": "68b0aa64c7359b51c1fd9b55c0d1d872413d3ab704ed0c4ba1954f4c2a51ec1b"
+  },
+  "granted_actions": [
+    {
+      "action_economy": "bonus_action",
+      "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:bell-branch:004:action:1",
+      "charge_cost": 1,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "作为一个附赠动作，你可以消耗1发充能以侦测距离你60尺内的异怪、天族、构装、元素、妖精、邪魔与亡灵。若这些生物存在在60尺内且对你没有处于全身掩护，那么金铃便会轻声作响，它们的音调揭示了所存在生物的种类。以一个动作，你可以消耗1发充能施展*防护善恶Protection From Evil and Good*法术。",
+      "target_policy": "self"
+    }
+  ],
+  "granted_spells": [],
+  "healing": null,
+  "immunities": [],
+  "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-bell-branch-004",
+  "item_kind": "spellcasting_focus",
+  "localized_name": "钟铃圣枝",
+  "manual_review_required": false,
+  "name": "钟铃圣枝|Bell Branch",
+  "namespace": "dnd.tashas.recovery.item",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "whole-pack-2026-08-11",
+  "passive_modifiers": [],
+  "rarity": "珍稀",
+  "requires_attunement": true,
+  "resistances": [],
+  "resource_bindings": [],
+  "review_fingerprint": "bf63cf9d874635b91b223c28a59367d32128ce211a6f64edfd4089f118a92eb3",
+  "review_status": "reviewed",
+  "ruleset_version": "2024",
+  "schema_version": "item-ir-1",
+  "source_fingerprint": "68b0aa64c7359b51c1fd9b55c0d1d872413d3ab704ed0c4ba1954f4c2a51ec1b",
+  "source_fragment": "43",
+  "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/珍稀.html",
+  "source_record_id": "7f82da3807a304a28c05c79b",
+  "source_trust": "authored_ir",
+  "stack_policy": {
+    "mode": "unique_instance"
+  },
+  "temporary_hp": null,
+  "triggered_effects": []
+}

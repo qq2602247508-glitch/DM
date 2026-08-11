@@ -1,0 +1,205 @@
+{
+  "attunement_requirements": {
+    "required": true,
+    "requirements_text": "任意生物"
+  },
+  "charges": {},
+  "clauses": [
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:shadowfellbrand-tattoo:007:equipment",
+      "clause_type": "equipment",
+      "evidence": {
+        "source_fragment": "77"
+      },
+      "parameters": {
+        "equipped_slot": "worn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:shadowfellbrand-tattoo:007:attunement",
+      "clause_type": "attunement",
+      "evidence": {
+        "source_text": "需同调"
+      },
+      "parameters": {
+        "required": true,
+        "requirements_text": "任意生物"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:shadowfellbrand-tattoo:007:tattoo-lifecycle",
+      "clause_type": "tattoo_lifecycle",
+      "evidence": {
+        "source_text": "针头会化为墨水再变成刺青"
+      },
+      "parameters": {
+        "on_attune": "ink_manifestation",
+        "on_unattune": "needle_returns_and_effects_removed"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:shadowfellbrand-tattoo:007:action:1",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "用一个反应变为非实体形态，将受到的伤害减半。直到下次日落前，这个反应不能再次使用。"
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:shadowfellbrand-tattoo:007:action:1",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "用一个反应变为非实体形态，将受到的伤害减半。直到下次日落前，这个反应不能再次使用。",
+        "target_policy": "source_text"
+      },
+      "trigger": "item_action_requested"
+    }
+  ],
+  "compile": {
+    "blockers": [],
+    "clauses": [
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:shadowfellbrand-tattoo:007:equipment",
+        "clause_type": "equipment",
+        "evidence": {
+          "source_fragment": "77"
+        },
+        "parameters": {
+          "equipped_slot": "worn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:shadowfellbrand-tattoo:007:attunement",
+        "clause_type": "attunement",
+        "evidence": {
+          "source_text": "需同调"
+        },
+        "parameters": {
+          "required": true,
+          "requirements_text": "任意生物"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:shadowfellbrand-tattoo:007:tattoo-lifecycle",
+        "clause_type": "tattoo_lifecycle",
+        "evidence": {
+          "source_text": "针头会化为墨水再变成刺青"
+        },
+        "parameters": {
+          "on_attune": "ink_manifestation",
+          "on_unattune": "needle_returns_and_effects_removed"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:shadowfellbrand-tattoo:007:action:1",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "用一个反应变为非实体形态，将受到的伤害减半。直到下次日落前，这个反应不能再次使用。"
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:shadowfellbrand-tattoo:007:action:1",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "用一个反应变为非实体形态，将受到的伤害减半。直到下次日落前，这个反应不能再次使用。",
+          "target_policy": "source_text"
+        },
+        "trigger": "item_action_requested"
+      }
+    ],
+    "compile_status": "full",
+    "consumer_ids": [
+      "item.attunement.v1",
+      "item.equipment_modifier.v1",
+      "item.granted_action.v1"
+    ],
+    "item_fingerprint": "ee0d97cea1b5abcd06b8ee029f82523adad237b9b972dadb3129ad23aa6ce378",
+    "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-shadowfellbrand-tattoo-007",
+    "runtime_preview_full": true,
+    "schema_version": "item-ir-1",
+    "source_trust": "authored_ir"
+  },
+  "conditions": [],
+  "consumption_policy": {
+    "mode": "persistent"
+  },
+  "damage": null,
+  "duration": null,
+  "equipped_slot": "worn",
+  "evidence": {
+    "manual_review_required": false,
+    "rejected_inferences": [
+      "unknown_effects",
+      "unresolved_spell_identity",
+      "freeform_targeting"
+    ],
+    "review_status": "reviewed_explicit_fields_only",
+    "reviewed_fields": [
+      "identity",
+      "kind",
+      "rarity",
+      "attunement",
+      "charges",
+      "clause_boundaries"
+    ],
+    "source_fragment": "77",
+    "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html",
+    "source_text_sha256": "d5a5567111ce3196757d97ad46e278200321f7d82e200710ea2b7cd1a9648d44"
+  },
+  "granted_actions": [
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:shadowfellbrand-tattoo:007:action:1",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "用一个反应变为非实体形态，将受到的伤害减半。直到下次日落前，这个反应不能再次使用。",
+      "target_policy": "source_text"
+    }
+  ],
+  "granted_spells": [],
+  "healing": null,
+  "immunities": [],
+  "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-shadowfellbrand-tattoo-007",
+  "item_kind": "magic_tattoo",
+  "localized_name": "堕影冥界印记刺青",
+  "manual_review_required": false,
+  "name": "堕影冥界印记刺青|ShadowfellBrand Tattoo",
+  "namespace": "dnd.tashas.recovery.item",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "whole-pack-2026-08-11",
+  "passive_modifiers": [],
+  "rarity": "珍稀",
+  "requires_attunement": true,
+  "resistances": [],
+  "resource_bindings": [],
+  "review_fingerprint": "ee0d97cea1b5abcd06b8ee029f82523adad237b9b972dadb3129ad23aa6ce378",
+  "review_status": "reviewed",
+  "ruleset_version": "2024",
+  "schema_version": "item-ir-1",
+  "source_fingerprint": "d5a5567111ce3196757d97ad46e278200321f7d82e200710ea2b7cd1a9648d44",
+  "source_fragment": "77",
+  "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html",
+  "source_record_id": "932a86d7b29c891ff8c75d2c",
+  "source_trust": "authored_ir",
+  "stack_policy": {
+    "mode": "unique_instance"
+  },
+  "temporary_hp": null,
+  "triggered_effects": []
+}

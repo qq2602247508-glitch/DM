@@ -1,0 +1,269 @@
+{
+  "attunement_requirements": {
+    "required": true,
+    "requirements_text": "吟游诗人"
+  },
+  "charges": {},
+  "clauses": [
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:lyre-of-building:012:equipment",
+      "clause_type": "equipment",
+      "evidence": {
+        "source_fragment": "130"
+      },
+      "parameters": {
+        "equipped_slot": "worn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:lyre-of-building:012:attunement",
+      "clause_type": "attunement",
+      "evidence": {
+        "source_text": "需同调"
+      },
+      "parameters": {
+        "required": true,
+        "requirements_text": "吟游诗人"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:lyre-of-building:012:action:1",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "用一个动作施展*修复术Mending*。当一个距离你300尺内的物件或建筑受到伤害时，你也可以用一个反应弹奏这把里拉琴，使其免疫该此次伤害以及其他同类型伤害，直到你的下个回合开始。\n此外，你可以用一个动作弹奏这把里拉琴，施展*鬼斧神工Fabricate*、*地动术Move\nEarth*、*穿墙术Passwall*或*构装召唤术Summon\nConstruct*（在本书出现），直到下次黎明前，该法术不能再以此法施展。"
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:lyre-of-building:012:action:1",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "用一个动作施展*修复术Mending*。当一个距离你300尺内的物件或建筑受到伤害时，你也可以用一个反应弹奏这把里拉琴，使其免疫该此次伤害以及其他同类型伤害，直到你的下个回合开始。\n此外，你可以用一个动作弹奏这把里拉琴，施展*鬼斧神工Fabricate*、*地动术Move\nEarth*、*穿墙术Passwall*或*构装召唤术Summon\nConstruct*（在本书出现），直到下次黎明前，该法术不能再以此法施展。",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:lyre-of-building:012:action:2",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "用一个反应弹奏这把里拉琴，使其免疫该此次伤害以及其他同类型伤害，直到你的下个回合开始。\n此外，你可以用一个动作弹奏这把里拉琴，施展*鬼斧神工Fabricate*、*地动术Move\nEarth*、*穿墙术Passwall*或*构装召唤术Summon\nConstruct*（在本书出现），直到下次黎明前，该法术不能再以此法施展。"
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:lyre-of-building:012:action:2",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "用一个反应弹奏这把里拉琴，使其免疫该此次伤害以及其他同类型伤害，直到你的下个回合开始。\n此外，你可以用一个动作弹奏这把里拉琴，施展*鬼斧神工Fabricate*、*地动术Move\nEarth*、*穿墙术Passwall*或*构装召唤术Summon\nConstruct*（在本书出现），直到下次黎明前，该法术不能再以此法施展。",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:lyre-of-building:012:action:3",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "用一个动作弹奏这把里拉琴，施展*鬼斧神工Fabricate*、*地动术Move\nEarth*、*穿墙术Passwall*或*构装召唤术Summon\nConstruct*（在本书出现），直到下次黎明前，该法术不能再以此法施展。"
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:lyre-of-building:012:action:3",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "用一个动作弹奏这把里拉琴，施展*鬼斧神工Fabricate*、*地动术Move\nEarth*、*穿墙术Passwall*或*构装召唤术Summon\nConstruct*（在本书出现），直到下次黎明前，该法术不能再以此法施展。",
+        "target_policy": "source_text"
+      },
+      "trigger": "item_action_requested"
+    }
+  ],
+  "compile": {
+    "blockers": [],
+    "clauses": [
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:lyre-of-building:012:equipment",
+        "clause_type": "equipment",
+        "evidence": {
+          "source_fragment": "130"
+        },
+        "parameters": {
+          "equipped_slot": "worn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:lyre-of-building:012:attunement",
+        "clause_type": "attunement",
+        "evidence": {
+          "source_text": "需同调"
+        },
+        "parameters": {
+          "required": true,
+          "requirements_text": "吟游诗人"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:lyre-of-building:012:action:1",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "用一个动作施展*修复术Mending*。当一个距离你300尺内的物件或建筑受到伤害时，你也可以用一个反应弹奏这把里拉琴，使其免疫该此次伤害以及其他同类型伤害，直到你的下个回合开始。\n此外，你可以用一个动作弹奏这把里拉琴，施展*鬼斧神工Fabricate*、*地动术Move\nEarth*、*穿墙术Passwall*或*构装召唤术Summon\nConstruct*（在本书出现），直到下次黎明前，该法术不能再以此法施展。"
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:lyre-of-building:012:action:1",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "用一个动作施展*修复术Mending*。当一个距离你300尺内的物件或建筑受到伤害时，你也可以用一个反应弹奏这把里拉琴，使其免疫该此次伤害以及其他同类型伤害，直到你的下个回合开始。\n此外，你可以用一个动作弹奏这把里拉琴，施展*鬼斧神工Fabricate*、*地动术Move\nEarth*、*穿墙术Passwall*或*构装召唤术Summon\nConstruct*（在本书出现），直到下次黎明前，该法术不能再以此法施展。",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:lyre-of-building:012:action:2",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "用一个反应弹奏这把里拉琴，使其免疫该此次伤害以及其他同类型伤害，直到你的下个回合开始。\n此外，你可以用一个动作弹奏这把里拉琴，施展*鬼斧神工Fabricate*、*地动术Move\nEarth*、*穿墙术Passwall*或*构装召唤术Summon\nConstruct*（在本书出现），直到下次黎明前，该法术不能再以此法施展。"
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:lyre-of-building:012:action:2",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "用一个反应弹奏这把里拉琴，使其免疫该此次伤害以及其他同类型伤害，直到你的下个回合开始。\n此外，你可以用一个动作弹奏这把里拉琴，施展*鬼斧神工Fabricate*、*地动术Move\nEarth*、*穿墙术Passwall*或*构装召唤术Summon\nConstruct*（在本书出现），直到下次黎明前，该法术不能再以此法施展。",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:lyre-of-building:012:action:3",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "用一个动作弹奏这把里拉琴，施展*鬼斧神工Fabricate*、*地动术Move\nEarth*、*穿墙术Passwall*或*构装召唤术Summon\nConstruct*（在本书出现），直到下次黎明前，该法术不能再以此法施展。"
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:lyre-of-building:012:action:3",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "用一个动作弹奏这把里拉琴，施展*鬼斧神工Fabricate*、*地动术Move\nEarth*、*穿墙术Passwall*或*构装召唤术Summon\nConstruct*（在本书出现），直到下次黎明前，该法术不能再以此法施展。",
+          "target_policy": "source_text"
+        },
+        "trigger": "item_action_requested"
+      }
+    ],
+    "compile_status": "full",
+    "consumer_ids": [
+      "item.attunement.v1",
+      "item.equipment_modifier.v1",
+      "item.granted_action.v1"
+    ],
+    "item_fingerprint": "f0dc7ecc39c32a53629c93adfba4b30cdb4b1b5bd9159a738423c9c99a5cfd6a",
+    "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-lyre-of-building-012",
+    "runtime_preview_full": true,
+    "schema_version": "item-ir-1",
+    "source_trust": "authored_ir"
+  },
+  "conditions": [],
+  "consumption_policy": {
+    "mode": "persistent"
+  },
+  "damage": null,
+  "duration": null,
+  "equipped_slot": null,
+  "evidence": {
+    "manual_review_required": false,
+    "rejected_inferences": [
+      "unknown_effects",
+      "unresolved_spell_identity",
+      "freeform_targeting"
+    ],
+    "review_status": "reviewed_explicit_fields_only",
+    "reviewed_fields": [
+      "identity",
+      "kind",
+      "rarity",
+      "attunement",
+      "charges",
+      "clause_boundaries"
+    ],
+    "source_fragment": "130",
+    "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/珍稀.html",
+    "source_text_sha256": "2a8a41a6aaa61697aaa407ad854fdaf8953667f463fb259c07c8b916487bccd4"
+  },
+  "granted_actions": [
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:lyre-of-building:012:action:1",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "用一个动作施展*修复术Mending*。当一个距离你300尺内的物件或建筑受到伤害时，你也可以用一个反应弹奏这把里拉琴，使其免疫该此次伤害以及其他同类型伤害，直到你的下个回合开始。\n此外，你可以用一个动作弹奏这把里拉琴，施展*鬼斧神工Fabricate*、*地动术Move\nEarth*、*穿墙术Passwall*或*构装召唤术Summon\nConstruct*（在本书出现），直到下次黎明前，该法术不能再以此法施展。",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:lyre-of-building:012:action:2",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "用一个反应弹奏这把里拉琴，使其免疫该此次伤害以及其他同类型伤害，直到你的下个回合开始。\n此外，你可以用一个动作弹奏这把里拉琴，施展*鬼斧神工Fabricate*、*地动术Move\nEarth*、*穿墙术Passwall*或*构装召唤术Summon\nConstruct*（在本书出现），直到下次黎明前，该法术不能再以此法施展。",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:lyre-of-building:012:action:3",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "用一个动作弹奏这把里拉琴，施展*鬼斧神工Fabricate*、*地动术Move\nEarth*、*穿墙术Passwall*或*构装召唤术Summon\nConstruct*（在本书出现），直到下次黎明前，该法术不能再以此法施展。",
+      "target_policy": "source_text"
+    }
+  ],
+  "granted_spells": [],
+  "healing": null,
+  "immunities": [],
+  "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-lyre-of-building-012",
+  "item_kind": "wondrous_item",
+  "localized_name": "建筑里拉琴",
+  "manual_review_required": false,
+  "name": "建筑里拉琴|Lyre of Building",
+  "namespace": "dnd.tashas.recovery.item",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "whole-pack-2026-08-11",
+  "passive_modifiers": [],
+  "rarity": "珍稀",
+  "requires_attunement": true,
+  "resistances": [],
+  "resource_bindings": [],
+  "review_fingerprint": "f0dc7ecc39c32a53629c93adfba4b30cdb4b1b5bd9159a738423c9c99a5cfd6a",
+  "review_status": "reviewed",
+  "ruleset_version": "2024",
+  "schema_version": "item-ir-1",
+  "source_fingerprint": "2a8a41a6aaa61697aaa407ad854fdaf8953667f463fb259c07c8b916487bccd4",
+  "source_fragment": "130",
+  "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/珍稀.html",
+  "source_record_id": "7f82da3807a304a28c05c79b",
+  "source_trust": "authored_ir",
+  "stack_policy": {
+    "mode": "unique_instance"
+  },
+  "temporary_hp": null,
+  "triggered_effects": []
+}

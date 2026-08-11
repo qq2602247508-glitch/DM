@@ -1,0 +1,215 @@
+{
+  "attunement_requirements": {
+    "required": true,
+    "requirements_text": "德鲁伊或游侠"
+  },
+  "charges": {},
+  "clauses": [
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:moon-sickle:006:equipment",
+      "clause_type": "equipment",
+      "evidence": {
+        "source_fragment": "41"
+      },
+      "parameters": {
+        "equipped_slot": "worn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:moon-sickle:006:attunement",
+      "clause_type": "attunement",
+      "evidence": {
+        "source_text": "需同调"
+      },
+      "parameters": {
+        "required": true,
+        "requirements_text": "德鲁伊或游侠"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:moon-sickle:006:spell-grant",
+      "clause_type": "granted_spell",
+      "evidence": {
+        "manual_review_required": false,
+        "source_excerpt": "*武器（镰刀），非普通（+1），珍稀（+2），极珍稀（+3）（需德鲁伊或游侠同调\n）\n*这把银刃镰刀闪烁着柔和的月光。当持握这把魔法武器时，你用其发动的攻击检定和伤害掷骰，与你德鲁伊或游侠法术的法术攻击检定与法术豁免DC上具有加值。加值取决于武器的稀有度。\n此外，你可以用镰刀作为你施展德鲁伊或游侠法术的法器。\n当你持握这把镰刀，施展一道恢复生命值的法术时，你可以骰一枚d4并将所得结果加入回复的生命值中。"
+      },
+      "parameters": {
+        "grant_mode": "item_cast",
+        "source_text": "*武器（镰刀），非普通（+1），珍稀（+2），极珍稀（+3）（需德鲁伊或游侠同调\n）\n*这把银刃镰刀闪烁着柔和的月光。当持握这把魔法武器时，你用其发动的攻击检定和伤害掷骰，与你德鲁伊或游侠法术的法术攻击检定与法术豁免DC上具有加值。加值取决于武器的稀有度。\n此外，你可以用镰刀作为你施展德鲁伊或游侠法术的法器。\n当你持握这把镰刀，施展一道恢复生命值的法术时，你可以骰一枚d4并将所得结果加入回复的生命值中。",
+        "spell_identities": [
+          {
+            "english_name": "",
+            "localized_name": "德鲁伊或游侠",
+            "spell_id": "德鲁伊或游侠"
+          }
+        ],
+        "spell_ids": [
+          "德鲁伊或游侠"
+        ]
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:moon-sickle:006:healing-modifier",
+      "clause_type": "passive_modifier",
+      "evidence": {
+        "source_text": "恢复生命值的法术增加1d4"
+      },
+      "parameters": {
+        "dice": "1d4",
+        "modifier_kind": "healing_bonus",
+        "target": "self"
+      },
+      "trigger": "healing_spell_while_held"
+    }
+  ],
+  "compile": {
+    "blockers": [],
+    "clauses": [
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:moon-sickle:006:equipment",
+        "clause_type": "equipment",
+        "evidence": {
+          "source_fragment": "41"
+        },
+        "parameters": {
+          "equipped_slot": "worn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:moon-sickle:006:attunement",
+        "clause_type": "attunement",
+        "evidence": {
+          "source_text": "需同调"
+        },
+        "parameters": {
+          "required": true,
+          "requirements_text": "德鲁伊或游侠"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "action",
+        "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:moon-sickle:006:spell-grant",
+        "clause_type": "granted_spell",
+        "evidence": {
+          "manual_review_required": false,
+          "source_excerpt": "*武器（镰刀），非普通（+1），珍稀（+2），极珍稀（+3）（需德鲁伊或游侠同调\n）\n*这把银刃镰刀闪烁着柔和的月光。当持握这把魔法武器时，你用其发动的攻击检定和伤害掷骰，与你德鲁伊或游侠法术的法术攻击检定与法术豁免DC上具有加值。加值取决于武器的稀有度。\n此外，你可以用镰刀作为你施展德鲁伊或游侠法术的法器。\n当你持握这把镰刀，施展一道恢复生命值的法术时，你可以骰一枚d4并将所得结果加入回复的生命值中。"
+        },
+        "parameters": {
+          "grant_mode": "item_cast",
+          "source_text": "*武器（镰刀），非普通（+1），珍稀（+2），极珍稀（+3）（需德鲁伊或游侠同调\n）\n*这把银刃镰刀闪烁着柔和的月光。当持握这把魔法武器时，你用其发动的攻击检定和伤害掷骰，与你德鲁伊或游侠法术的法术攻击检定与法术豁免DC上具有加值。加值取决于武器的稀有度。\n此外，你可以用镰刀作为你施展德鲁伊或游侠法术的法器。\n当你持握这把镰刀，施展一道恢复生命值的法术时，你可以骰一枚d4并将所得结果加入回复的生命值中。",
+          "spell_identities": [
+            {
+              "english_name": "",
+              "localized_name": "德鲁伊或游侠",
+              "spell_id": "德鲁伊或游侠"
+            }
+          ],
+          "spell_ids": [
+            "德鲁伊或游侠"
+          ]
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:moon-sickle:006:healing-modifier",
+        "clause_type": "passive_modifier",
+        "evidence": {
+          "source_text": "恢复生命值的法术增加1d4"
+        },
+        "parameters": {
+          "dice": "1d4",
+          "modifier_kind": "healing_bonus",
+          "target": "self"
+        },
+        "trigger": "healing_spell_while_held"
+      }
+    ],
+    "compile_status": "full",
+    "consumer_ids": [
+      "item.attunement.v1",
+      "item.equipment_modifier.v1",
+      "item.granted_spell.v1"
+    ],
+    "item_fingerprint": "dfdc723a801c4c47d60a63e5187535e1152abfc1139d48b5c3a5900cf18f8cb5",
+    "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-moon-sickle-006",
+    "runtime_preview_full": true,
+    "schema_version": "item-ir-1",
+    "source_trust": "authored_ir"
+  },
+  "conditions": [],
+  "consumption_policy": {
+    "mode": "persistent"
+  },
+  "damage": null,
+  "duration": null,
+  "equipped_slot": null,
+  "evidence": {
+    "manual_review_required": false,
+    "rejected_inferences": [
+      "unknown_effects",
+      "unresolved_spell_identity",
+      "freeform_targeting"
+    ],
+    "review_status": "reviewed_explicit_fields_only",
+    "reviewed_fields": [
+      "identity",
+      "kind",
+      "rarity",
+      "attunement",
+      "charges",
+      "clause_boundaries"
+    ],
+    "source_fragment": "41",
+    "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/非普通.html",
+    "source_text_sha256": "bff6fb35f513660517feb8be644c71be1b4d062be0bb6042570e47d28690c3f8"
+  },
+  "granted_actions": [],
+  "granted_spells": [
+    {
+      "english_name": "",
+      "localized_name": "德鲁伊或游侠",
+      "spell_id": "德鲁伊或游侠"
+    }
+  ],
+  "healing": null,
+  "immunities": [],
+  "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-moon-sickle-006",
+  "item_kind": "weapon",
+  "localized_name": "月镰",
+  "manual_review_required": false,
+  "name": "月镰 Moon Sickle",
+  "namespace": "dnd.tashas.recovery.item",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "whole-pack-2026-08-11",
+  "passive_modifiers": [],
+  "rarity": "极珍稀",
+  "requires_attunement": true,
+  "resistances": [],
+  "resource_bindings": [],
+  "review_fingerprint": "dfdc723a801c4c47d60a63e5187535e1152abfc1139d48b5c3a5900cf18f8cb5",
+  "review_status": "reviewed",
+  "ruleset_version": "2024",
+  "schema_version": "item-ir-1",
+  "source_fingerprint": "bff6fb35f513660517feb8be644c71be1b4d062be0bb6042570e47d28690c3f8",
+  "source_fragment": "41",
+  "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/非普通.html",
+  "source_record_id": "4220452fa5c2c1b3aed918f5",
+  "source_trust": "authored_ir",
+  "stack_policy": {
+    "mode": "unique_instance"
+  },
+  "temporary_hp": null,
+  "triggered_effects": []
+}

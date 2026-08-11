@@ -1,0 +1,281 @@
+{
+  "attunement_requirements": {
+    "required": true,
+    "requirements_text": "奇械师"
+  },
+  "charges": {},
+  "clauses": [
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000:equipment",
+      "clause_type": "equipment",
+      "evidence": {
+        "source_fragment": "1"
+      },
+      "parameters": {
+        "equipped_slot": "worn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000:attunement",
+      "clause_type": "attunement",
+      "evidence": {
+        "source_text": "需同调"
+      },
+      "parameters": {
+        "required": true,
+        "requirements_text": "奇械师"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000:action:1",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个动作，你可以触摸这件物品，而后它会转换为一套由你选择的工匠工具（见《玩家手册》\n的装备\n章节以查看工匠工具的表格）。无论这件工具外表如何，你都拥有该工具的熟练项。\n当持握这套工具时，你在你奇械师法术的法术攻击骰和法术豁免DC上获得加值。加值取决于工具的稀有度。\n作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。"
+      },
+      "parameters": {
+        "action_economy": "action",
+        "action_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000:action:1",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": true,
+        "source_excerpt": "作为一个动作，你可以触摸这件物品，而后它会转换为一套由你选择的工匠工具（见《玩家手册》\n的装备\n章节以查看工匠工具的表格）。无论这件工具外表如何，你都拥有该工具的熟练项。\n当持握这套工具时，你在你奇械师法术的法术攻击骰和法术豁免DC上获得加值。加值取决于工具的稀有度。\n作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000:action:2",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。"
+      },
+      "parameters": {
+        "action_economy": "action",
+        "action_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000:action:2",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000:spell-grant",
+      "clause_type": "granted_spell",
+      "evidence": {
+        "manual_review_required": false,
+        "source_excerpt": "*奇物，非普通（+1），珍稀（+2），极珍稀（+3）（需奇械师同调）*\n这把简单的螺丝刀可以转换为许多种工具：作为一个动作，你可以触摸这件物品，而后它会转换为一套由你选择的工匠工具（见《玩家手册》\n的装备\n章节以查看工匠工具的表格）。无论这件工具外表如何，你都拥有该工具的熟练项。\n当持握这套工具时，你在你奇械师法术的法术攻击骰和法术豁免DC上获得加值。加值取决于工具的稀有度。\n作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。"
+      },
+      "parameters": {
+        "grant_mode": "item_cast",
+        "source_text": "*奇物，非普通（+1），珍稀（+2），极珍稀（+3）（需奇械师同调）*\n这把简单的螺丝刀可以转换为许多种工具：作为一个动作，你可以触摸这件物品，而后它会转换为一套由你选择的工匠工具（见《玩家手册》\n的装备\n章节以查看工匠工具的表格）。无论这件工具外表如何，你都拥有该工具的熟练项。\n当持握这套工具时，你在你奇械师法术的法术攻击骰和法术豁免DC上获得加值。加值取决于工具的稀有度。\n作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。",
+        "spell_identities": [
+          {
+            "english_name": "",
+            "localized_name": "该戏法",
+            "spell_id": "该戏法"
+          }
+        ],
+        "spell_ids": [
+          "该戏法"
+        ]
+      },
+      "trigger": "item_action_requested"
+    }
+  ],
+  "compile": {
+    "blockers": [
+      "manual_clause_requires_dm_or_additional_typed_fields"
+    ],
+    "clauses": [
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000:equipment",
+        "clause_type": "equipment",
+        "evidence": {
+          "source_fragment": "1"
+        },
+        "parameters": {
+          "equipped_slot": "worn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000:attunement",
+        "clause_type": "attunement",
+        "evidence": {
+          "source_text": "需同调"
+        },
+        "parameters": {
+          "required": true,
+          "requirements_text": "奇械师"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "action",
+        "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000:action:1",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个动作，你可以触摸这件物品，而后它会转换为一套由你选择的工匠工具（见《玩家手册》\n的装备\n章节以查看工匠工具的表格）。无论这件工具外表如何，你都拥有该工具的熟练项。\n当持握这套工具时，你在你奇械师法术的法术攻击骰和法术豁免DC上获得加值。加值取决于工具的稀有度。\n作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。"
+        },
+        "parameters": {
+          "action_economy": "action",
+          "action_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000:action:1",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": true,
+          "source_excerpt": "作为一个动作，你可以触摸这件物品，而后它会转换为一套由你选择的工匠工具（见《玩家手册》\n的装备\n章节以查看工匠工具的表格）。无论这件工具外表如何，你都拥有该工具的熟练项。\n当持握这套工具时，你在你奇械师法术的法术攻击骰和法术豁免DC上获得加值。加值取决于工具的稀有度。\n作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "action",
+        "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000:action:2",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。"
+        },
+        "parameters": {
+          "action_economy": "action",
+          "action_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000:action:2",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "action",
+        "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000:spell-grant",
+        "clause_type": "granted_spell",
+        "evidence": {
+          "manual_review_required": false,
+          "source_excerpt": "*奇物，非普通（+1），珍稀（+2），极珍稀（+3）（需奇械师同调）*\n这把简单的螺丝刀可以转换为许多种工具：作为一个动作，你可以触摸这件物品，而后它会转换为一套由你选择的工匠工具（见《玩家手册》\n的装备\n章节以查看工匠工具的表格）。无论这件工具外表如何，你都拥有该工具的熟练项。\n当持握这套工具时，你在你奇械师法术的法术攻击骰和法术豁免DC上获得加值。加值取决于工具的稀有度。\n作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。"
+        },
+        "parameters": {
+          "grant_mode": "item_cast",
+          "source_text": "*奇物，非普通（+1），珍稀（+2），极珍稀（+3）（需奇械师同调）*\n这把简单的螺丝刀可以转换为许多种工具：作为一个动作，你可以触摸这件物品，而后它会转换为一套由你选择的工匠工具（见《玩家手册》\n的装备\n章节以查看工匠工具的表格）。无论这件工具外表如何，你都拥有该工具的熟练项。\n当持握这套工具时，你在你奇械师法术的法术攻击骰和法术豁免DC上获得加值。加值取决于工具的稀有度。\n作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。",
+          "spell_identities": [
+            {
+              "english_name": "",
+              "localized_name": "该戏法",
+              "spell_id": "该戏法"
+            }
+          ],
+          "spell_ids": [
+            "该戏法"
+          ]
+        },
+        "trigger": "item_action_requested"
+      }
+    ],
+    "compile_status": "partial",
+    "consumer_ids": [
+      "item.attunement.v1",
+      "item.equipment_modifier.v1",
+      "item.granted_action.v1",
+      "item.granted_spell.v1"
+    ],
+    "item_fingerprint": "df6cc7ad7c25fb3220247731d08f22d0253d56bc5d7f5d8296711448dd0d712a",
+    "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-all-purpose-tool-000",
+    "runtime_preview_full": false,
+    "schema_version": "item-ir-1",
+    "source_trust": "authored_ir"
+  },
+  "conditions": [],
+  "consumption_policy": {
+    "mode": "persistent"
+  },
+  "damage": null,
+  "duration": null,
+  "equipped_slot": null,
+  "evidence": {
+    "manual_review_required": true,
+    "rejected_inferences": [
+      "unknown_effects",
+      "unresolved_spell_identity",
+      "freeform_targeting"
+    ],
+    "review_status": "reviewed_explicit_fields_only",
+    "reviewed_fields": [
+      "identity",
+      "kind",
+      "rarity",
+      "attunement",
+      "charges",
+      "clause_boundaries"
+    ],
+    "source_fragment": "1",
+    "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/非普通.html",
+    "source_text_sha256": "43fa14a51443bf482f83124614fbe03c978550d012b492f3529bc018c8cac27c"
+  },
+  "granted_actions": [
+    {
+      "action_economy": "action",
+      "action_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000:action:1",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": true,
+      "source_excerpt": "作为一个动作，你可以触摸这件物品，而后它会转换为一套由你选择的工匠工具（见《玩家手册》\n的装备\n章节以查看工匠工具的表格）。无论这件工具外表如何，你都拥有该工具的熟练项。\n当持握这套工具时，你在你奇械师法术的法术攻击骰和法术豁免DC上获得加值。加值取决于工具的稀有度。\n作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "action",
+      "action_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000:action:2",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。",
+      "target_policy": "self"
+    }
+  ],
+  "granted_spells": [
+    {
+      "english_name": "",
+      "localized_name": "该戏法",
+      "spell_id": "该戏法"
+    }
+  ],
+  "healing": null,
+  "immunities": [],
+  "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-all-purpose-tool-000",
+  "item_kind": "tool",
+  "localized_name": "万能工具",
+  "manual_review_required": true,
+  "name": "万能工具 All-Purpose Tool",
+  "namespace": "dnd.tashas.recovery.item",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "whole-pack-2026-08-11",
+  "passive_modifiers": [],
+  "rarity": "极珍稀",
+  "requires_attunement": true,
+  "resistances": [],
+  "resource_bindings": [],
+  "review_fingerprint": "df6cc7ad7c25fb3220247731d08f22d0253d56bc5d7f5d8296711448dd0d712a",
+  "review_status": "reviewed",
+  "ruleset_version": "2024",
+  "schema_version": "item-ir-1",
+  "source_fingerprint": "43fa14a51443bf482f83124614fbe03c978550d012b492f3529bc018c8cac27c",
+  "source_fragment": "1",
+  "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/非普通.html",
+  "source_record_id": "4220452fa5c2c1b3aed918f5",
+  "source_trust": "authored_ir",
+  "stack_policy": {
+    "mode": "unique_instance"
+  },
+  "temporary_hp": null,
+  "triggered_effects": []
+}

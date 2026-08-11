@@ -1,0 +1,207 @@
+{
+  "gate": {
+    "minimum_cluster_content": 8,
+    "minimum_complete_unlock": 5,
+    "unknown_contract_fields_block": true
+  },
+  "pack_id": "tashas-cauldron",
+  "ranking": [
+    {
+      "candidate_count": 47,
+      "runtime_consumer": "item.equipment_modifier.v1",
+      "status": "unlocked",
+      "template_id": "item.passive",
+      "unlock_count": 41
+    },
+    {
+      "candidate_count": 47,
+      "runtime_consumer": "item.attunement.v1",
+      "status": "unlocked",
+      "template_id": "item.attunement",
+      "unlock_count": 39
+    },
+    {
+      "candidate_count": 47,
+      "runtime_consumer": "item.granted_action.v1",
+      "status": "unlocked",
+      "template_id": "item.action",
+      "unlock_count": 27
+    },
+    {
+      "candidate_count": 47,
+      "runtime_consumer": "item.charge_resource.v1",
+      "status": "unlocked",
+      "template_id": "item.charges",
+      "unlock_count": 17
+    },
+    {
+      "candidate_count": 11,
+      "runtime_consumer": "item.attunement.v1",
+      "status": "unlocked",
+      "template_id": "item.tattoo.lifecycle",
+      "unlock_count": 11
+    },
+    {
+      "candidate_count": 350,
+      "runtime_consumer": "combat.feature_action",
+      "status": "blocked",
+      "template_id": "feature.action.grant",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 366,
+      "runtime_consumer": "advancement.choice",
+      "status": "blocked",
+      "template_id": "feature.choice.mode",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 350,
+      "runtime_consumer": "advancement.replacement",
+      "status": "blocked",
+      "template_id": "feature.choice.replacement",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 3,
+      "runtime_consumer": "entity.companion",
+      "status": "blocked",
+      "template_id": "feature.companion.profile",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 326,
+      "runtime_consumer": "advancement.feature_grant",
+      "status": "blocked",
+      "template_id": "feature.grant.fixed",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 326,
+      "runtime_consumer": "advancement.level_gate",
+      "status": "blocked",
+      "template_id": "feature.grant.level_gated",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 326,
+      "runtime_consumer": "advancement.spell_list",
+      "status": "blocked",
+      "template_id": "feature.grant.spell_expanded",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 326,
+      "runtime_consumer": "advancement.spell",
+      "status": "blocked",
+      "template_id": "feature.grant.spell_fixed",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 342,
+      "runtime_consumer": "combat.passive",
+      "status": "blocked",
+      "template_id": "feature.modifier.passive",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 342,
+      "runtime_consumer": "combat.trigger",
+      "status": "blocked",
+      "template_id": "feature.once_per_turn",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 342,
+      "runtime_consumer": "advancement.proficiency",
+      "status": "blocked",
+      "template_id": "feature.proficiency.grant",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 342,
+      "runtime_consumer": "advancement.choice",
+      "status": "blocked",
+      "template_id": "feature.proficiency.replacement",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 342,
+      "runtime_consumer": "combat.defense",
+      "status": "blocked",
+      "template_id": "feature.resistance.immunity",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 326,
+      "runtime_consumer": "rest.long",
+      "status": "blocked",
+      "template_id": "feature.resource.long_rest",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 326,
+      "runtime_consumer": "advancement.resource",
+      "status": "blocked",
+      "template_id": "feature.resource.pool",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 326,
+      "runtime_consumer": "rest.short",
+      "status": "blocked",
+      "template_id": "feature.resource.short_rest",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 326,
+      "runtime_consumer": "advancement.scaling",
+      "status": "blocked",
+      "template_id": "feature.scaling.die",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 266,
+      "runtime_consumer": "entity.summon",
+      "status": "blocked",
+      "template_id": "feature.summon.profile",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 342,
+      "runtime_consumer": "combat.trigger",
+      "status": "blocked",
+      "template_id": "feature.triggered.modifier",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 16,
+      "runtime_consumer": "advancement.feat",
+      "status": "blocked",
+      "template_id": "option.feat.prereq",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 16,
+      "runtime_consumer": "advancement.infusion",
+      "status": "blocked",
+      "template_id": "option.infusion.choice",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 8,
+      "runtime_consumer": "advancement.invocation",
+      "status": "blocked",
+      "template_id": "option.invocation.prereq",
+      "unlock_count": 0
+    },
+    {
+      "candidate_count": 8,
+      "runtime_consumer": "combat.maneuver",
+      "status": "blocked",
+      "template_id": "option.maneuver.choice",
+      "unlock_count": 0
+    }
+  ],
+  "schema_version": "tashas-template-unlock-ranking-II-1"
+}

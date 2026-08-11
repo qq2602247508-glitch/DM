@@ -1,0 +1,205 @@
+{
+  "attunement_requirements": {
+    "required": true,
+    "requirements_text": "任意生物"
+  },
+  "charges": {},
+  "clauses": [
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:illuminator-s-tattoo:000:equipment",
+      "clause_type": "equipment",
+      "evidence": {
+        "source_fragment": "17"
+      },
+      "parameters": {
+        "equipped_slot": "worn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:illuminator-s-tattoo:000:attunement",
+      "clause_type": "attunement",
+      "evidence": {
+        "source_text": "需同调"
+      },
+      "parameters": {
+        "required": true,
+        "requirements_text": "任意生物"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:illuminator-s-tattoo:000:tattoo-lifecycle",
+      "clause_type": "tattoo_lifecycle",
+      "evidence": {
+        "source_text": "针头会化为墨水再变成刺青"
+      },
+      "parameters": {
+        "on_attune": "ink_manifestation",
+        "on_unattune": "needle_returns_and_effects_removed"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:illuminator-s-tattoo:000:action:1",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个动作，你可以触摸一段至多长达一页的文字，然后说出一个生物的名字。在接下来的24小时内，你所触摸的文字变为对除你和你所说出名字的生物以外所有人隐形。你们中的一个可以通过触碰文字来解除隐形（无需动作）。\n使用后，直到下次黎明前，此动作不能再次使用。"
+      },
+      "parameters": {
+        "action_economy": "action",
+        "action_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:illuminator-s-tattoo:000:action:1",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "作为一个动作，你可以触摸一段至多长达一页的文字，然后说出一个生物的名字。在接下来的24小时内，你所触摸的文字变为对除你和你所说出名字的生物以外所有人隐形。你们中的一个可以通过触碰文字来解除隐形（无需动作）。\n使用后，直到下次黎明前，此动作不能再次使用。",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    }
+  ],
+  "compile": {
+    "blockers": [],
+    "clauses": [
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:illuminator-s-tattoo:000:equipment",
+        "clause_type": "equipment",
+        "evidence": {
+          "source_fragment": "17"
+        },
+        "parameters": {
+          "equipped_slot": "worn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:illuminator-s-tattoo:000:attunement",
+        "clause_type": "attunement",
+        "evidence": {
+          "source_text": "需同调"
+        },
+        "parameters": {
+          "required": true,
+          "requirements_text": "任意生物"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:illuminator-s-tattoo:000:tattoo-lifecycle",
+        "clause_type": "tattoo_lifecycle",
+        "evidence": {
+          "source_text": "针头会化为墨水再变成刺青"
+        },
+        "parameters": {
+          "on_attune": "ink_manifestation",
+          "on_unattune": "needle_returns_and_effects_removed"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "action",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:illuminator-s-tattoo:000:action:1",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个动作，你可以触摸一段至多长达一页的文字，然后说出一个生物的名字。在接下来的24小时内，你所触摸的文字变为对除你和你所说出名字的生物以外所有人隐形。你们中的一个可以通过触碰文字来解除隐形（无需动作）。\n使用后，直到下次黎明前，此动作不能再次使用。"
+        },
+        "parameters": {
+          "action_economy": "action",
+          "action_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:illuminator-s-tattoo:000:action:1",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "作为一个动作，你可以触摸一段至多长达一页的文字，然后说出一个生物的名字。在接下来的24小时内，你所触摸的文字变为对除你和你所说出名字的生物以外所有人隐形。你们中的一个可以通过触碰文字来解除隐形（无需动作）。\n使用后，直到下次黎明前，此动作不能再次使用。",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      }
+    ],
+    "compile_status": "full",
+    "consumer_ids": [
+      "item.attunement.v1",
+      "item.equipment_modifier.v1",
+      "item.granted_action.v1"
+    ],
+    "item_fingerprint": "70bd873c873317922c43ebc57174596a78494ee00450f1efa5dbb7eeacb65418",
+    "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-illuminator-s-tattoo-000",
+    "runtime_preview_full": true,
+    "schema_version": "item-ir-1",
+    "source_trust": "authored_ir"
+  },
+  "conditions": [],
+  "consumption_policy": {
+    "mode": "persistent"
+  },
+  "damage": null,
+  "duration": null,
+  "equipped_slot": "worn",
+  "evidence": {
+    "manual_review_required": false,
+    "rejected_inferences": [
+      "unknown_effects",
+      "unresolved_spell_identity",
+      "freeform_targeting"
+    ],
+    "review_status": "reviewed_explicit_fields_only",
+    "reviewed_fields": [
+      "identity",
+      "kind",
+      "rarity",
+      "attunement",
+      "charges",
+      "clause_boundaries"
+    ],
+    "source_fragment": "17",
+    "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html",
+    "source_text_sha256": "ba1da26a67f4ad3eb2e40125be3bcec2a8052e3ba5667b8d42e456dde88b659f"
+  },
+  "granted_actions": [
+    {
+      "action_economy": "action",
+      "action_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:illuminator-s-tattoo:000:action:1",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "作为一个动作，你可以触摸一段至多长达一页的文字，然后说出一个生物的名字。在接下来的24小时内，你所触摸的文字变为对除你和你所说出名字的生物以外所有人隐形。你们中的一个可以通过触碰文字来解除隐形（无需动作）。\n使用后，直到下次黎明前，此动作不能再次使用。",
+      "target_policy": "self"
+    }
+  ],
+  "granted_spells": [],
+  "healing": null,
+  "immunities": [],
+  "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-illuminator-s-tattoo-000",
+  "item_kind": "magic_tattoo",
+  "localized_name": "解文刺青",
+  "manual_review_required": false,
+  "name": "解文刺青|Illuminator's tattoo",
+  "namespace": "dnd.tashas.recovery.item",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "whole-pack-2026-08-11",
+  "passive_modifiers": [],
+  "rarity": "普通",
+  "requires_attunement": true,
+  "resistances": [],
+  "resource_bindings": [],
+  "review_fingerprint": "70bd873c873317922c43ebc57174596a78494ee00450f1efa5dbb7eeacb65418",
+  "review_status": "reviewed",
+  "ruleset_version": "2024",
+  "schema_version": "item-ir-1",
+  "source_fingerprint": "ba1da26a67f4ad3eb2e40125be3bcec2a8052e3ba5667b8d42e456dde88b659f",
+  "source_fragment": "17",
+  "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html",
+  "source_record_id": "932a86d7b29c891ff8c75d2c",
+  "source_trust": "authored_ir",
+  "stack_policy": {
+    "mode": "unique_instance"
+  },
+  "temporary_hp": null,
+  "triggered_effects": []
+}

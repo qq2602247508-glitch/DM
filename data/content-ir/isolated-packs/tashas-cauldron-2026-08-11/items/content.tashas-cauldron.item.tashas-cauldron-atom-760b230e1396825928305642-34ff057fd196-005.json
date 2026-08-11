@@ -1,0 +1,578 @@
+{
+  "attunement_requirements": {},
+  "charges": {},
+  "clauses": [
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:equipment",
+      "clause_type": "equipment",
+      "evidence": {
+        "source_fragment": "185"
+      },
+      "parameters": {
+        "equipped_slot": "worn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:1",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使用了。如果在某颗牙齿已经被使用后再次投出对应的骰值，你会取出表格中位于最底下的未被使用的牙齿。\n***播种牙齿***。为了播种牙齿，你将它放置在你触及内一个未占据空间的地面上，或者你可以将它或者你可以将它投掷"
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:1",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": true,
+        "source_excerpt": "用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使用了。如果在某颗牙齿已经被使用后再次投出对应的骰值，你会取出表格中位于最底下的未被使用的牙齿。\n***播种牙齿***。为了播种牙齿，你将它放置在你触及内一个未占据空间的地面上，或者你可以将它或者你可以将它投掷",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:2",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个动作，你可以消耗一发充能并触碰一个生物。该生物恢复 2d8+2 生命值，并且解除所有影响它的疾病和毒素。使用该动作时，你前额会出现一个闪闪发光的独角兽之角幻象，持续至你的回合结束。你获得以下缺陷： “ 当我看见邪恶在行动时，我必须去对抗它。 ” |\n| 8 | 跨越布拉之岩 Beyond the Rock of Bral （ 银制夺心 魔牙齿） | 2 只 夺心魔 Mind Flayer 。 | 你获得 120 尺 心灵感应 ，描述见 怪物图鉴 。你可以随意施展 侦测思想 Detect Thoughts 法术，而无需任何法术成分。由于来自记忆和周围的心灵的絮叨低语，你在感知（察觉）和感知（洞悉）检定中获得劣势。 |\n| 9 "
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:2",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "作为一个动作，你可以消耗一发充能并触碰一个生物。该生物恢复 2d8+2 生命值，并且解除所有影响它的疾病和毒素。使用该动作时，你前额会出现一个闪闪发光的独角兽之角幻象，持续至你的回合结束。你获得以下缺陷： “ 当我看见邪恶在行动时，我必须去对抗它。 ” |\n| 8 | 跨越布拉之岩 Beyond the Rock of Bral （ 银制夺心 魔牙齿） | 2 只 夺心魔 Mind Flayer 。 | 你获得 120 尺 心灵感应 ，描述见 怪物图鉴 。你可以随意施展 侦测思想 Detect Thoughts 法术，而无需任何法术成分。由于来自记忆和周围的心灵的絮叨低语，你在感知（察觉）和感知（洞悉）检定中获得劣势。 |\n| 9 ",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:3",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个动作，你可以用牙齿施展 艾伐黑触手 Evard ’ s\n Black Tentacles 法术（ DC18 ）。该属性被使用后，直至下个黎明前，不能再次使用。 |\n| 11 | 詹德 阳星的永劫 The Thousand Deaths of Jander Sunstar （泛黄的吸血鬼尖牙） | 1 位 吸血鬼 Vampire 。 | 你可以进行啃咬攻击，作为一种徒手打击。命中时，造成 1d6 穿刺伤害外加 3d6 暗蚀伤害 。你恢复等同于所 造成暗蚀伤害 的生命值。当你处于阳光下时，你无法恢复生命值。 |\n| 12 | 卡伽什 的梦魇 Nightmares of Kaggash （扭曲 的眼魔牙齿 ） | 1 只 眼魔 B"
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:3",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "作为一个动作，你可以用牙齿施展 艾伐黑触手 Evard ’ s\n Black Tentacles 法术（ DC18 ）。该属性被使用后，直至下个黎明前，不能再次使用。 |\n| 11 | 詹德 阳星的永劫 The Thousand Deaths of Jander Sunstar （泛黄的吸血鬼尖牙） | 1 位 吸血鬼 Vampire 。 | 你可以进行啃咬攻击，作为一种徒手打击。命中时，造成 1d6 穿刺伤害外加 3d6 暗蚀伤害 。你恢复等同于所 造成暗蚀伤害 的生命值。当你处于阳光下时，你无法恢复生命值。 |\n| 12 | 卡伽什 的梦魇 Nightmares of Kaggash （扭曲 的眼魔牙齿 ） | 1 只 眼魔 B",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:4",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个动作，你可以用牙齿施展 摄心目光 Eyebite 法术。使用该动作后，直到下次黎明前，不能再次使用该动作。当你完成 一 次长休时， 骰 一个 d20 。得出 20 时，一只由 DM 选择的异 怪出现 在你 30 尺内并开始攻击。 |\n| 13 | 通天三桥 Three Bridges to the Sky （青金石制恶鬼尖牙） | 3 位 恶鬼 Oni 。 | 你获得 30 尺飞行速度，并且你可以用牙齿随意施展 侦测魔法 Detect Magic 法术。当你同调的魔法物品数量少于三件时，你提升 1 级 力竭 Exhaustion ，该状态无法被移除，直至你同调至少三件魔法物品。 |\n| 14 | 卓戈 萨 之爪 The Cl"
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:4",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": true,
+        "source_excerpt": "作为一个动作，你可以用牙齿施展 摄心目光 Eyebite 法术。使用该动作后，直到下次黎明前，不能再次使用该动作。当你完成 一 次长休时， 骰 一个 d20 。得出 20 时，一只由 DM 选择的异 怪出现 在你 30 尺内并开始攻击。 |\n| 13 | 通天三桥 Three Bridges to the Sky （青金石制恶鬼尖牙） | 3 位 恶鬼 Oni 。 | 你获得 30 尺飞行速度，并且你可以用牙齿随意施展 侦测魔法 Detect Magic 法术。当你同调的魔法物品数量少于三件时，你提升 1 级 力竭 Exhaustion ，该状态无法被移除，直至你同调至少三件魔法物品。 |\n| 14 | 卓戈 萨 之爪 The Cl",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:5",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个动作，你可以喷出 90 尺锥形的火焰。在范围的生物必须进行一次 DC24 的敏捷豁免，豁免失败者受到 26d6 点火焰伤害，成功则伤害减半。使用该吐 息武器 后，你提升 2 级 力竭 Exhaustion 。 |\n| 20 | 达文 - 纳之牙 Dahlver -Nar ’ s\n Tooth （ 蒙灰的 人类臼齿） | 1 位 祭司 Priest 。 | 作为一个动作，你可以呼唤神圣力量援助你。描述你需要的帮助，回应的结果由 DM 决定；此时通常请求任何牧师法术的效应都在可接受范围内。该属性被使用后，七天内不能再次使用。 |"
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:5",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": true,
+        "source_excerpt": "作为一个动作，你可以喷出 90 尺锥形的火焰。在范围的生物必须进行一次 DC24 的敏捷豁免，豁免失败者受到 26d6 点火焰伤害，成功则伤害减半。使用该吐 息武器 后，你提升 2 级 力竭 Exhaustion 。 |\n| 20 | 达文 - 纳之牙 Dahlver -Nar ’ s\n Tooth （ 蒙灰的 人类臼齿） | 1 位 祭司 Priest 。 | 作为一个动作，你可以呼唤神圣力量援助你。描述你需要的帮助，回应的结果由 DM 决定；此时通常请求任何牧师法术的效应都在可接受范围内。该属性被使用后，七天内不能再次使用。 |",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:6",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个动作，你可以呼唤神圣力量援助你。描述你需要的帮助，回应的结果由 DM 决定；此时通常请求任何牧师法术的效应都在可接受范围内。该属性被使用后，七天内不能再次使用。 |"
+      },
+      "parameters": {
+        "action_economy": "reaction",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:6",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": true,
+        "source_excerpt": "作为一个动作，你可以呼唤神圣力量援助你。描述你需要的帮助，回应的结果由 DM 决定；此时通常请求任何牧师法术的效应都在可接受范围内。该属性被使用后，七天内不能再次使用。 |",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:spell-grant",
+      "clause_type": "granted_spell",
+      "evidence": {
+        "manual_review_required": false,
+        "source_excerpt": "***奇物，神器（需调谐）*\n达文-纳之牙是多个故事的具现。它们是成套的牙齿，每一颗都代表着各自大不相同的起源，并且由多种多样的材料制成。整套牙齿被收藏在一个小皮袋中，皮袋上缝着英雄和幻想生物的图案。牙齿在哪里落下，传说就会在哪里化为真实。\n***使用牙齿***。当持握小皮袋时，你可以使用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使"
+      },
+      "parameters": {
+        "grant_mode": "item_cast",
+        "source_text": "***奇物，神器（需调谐）*\n达文-纳之牙是多个故事的具现。它们是成套的牙齿，每一颗都代表着各自大不相同的起源，并且由多种多样的材料制成。整套牙齿被收藏在一个小皮袋中，皮袋上缝着英雄和幻想生物的图案。牙齿在哪里落下，传说就会在哪里化为真实。\n***使用牙齿***。当持握小皮袋时，你可以使用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使",
+        "spell_identities": [
+          {
+            "english_name": "Revivify",
+            "localized_name": "回生术",
+            "spell_id": "revivify"
+          },
+          {
+            "english_name": "",
+            "localized_name": "庇护术Sanctuary，持续24小时或直至你打破该效应",
+            "spell_id": "庇护术Sanctuary，持续24小时或直至你打破该效应"
+          },
+          {
+            "english_name": "Detect Thoughts",
+            "localized_name": "侦测思想",
+            "spell_id": "detect-thoughts"
+          },
+          {
+            "english_name": "Black Tentacles",
+            "localized_name": "艾伐黑触手Evard’s",
+            "spell_id": "black-tentacles"
+          },
+          {
+            "english_name": "Eyebite",
+            "localized_name": "摄心目光",
+            "spell_id": "eyebite"
+          },
+          {
+            "english_name": "Detect Magic",
+            "localized_name": "侦测魔法",
+            "spell_id": "detect-magic"
+          },
+          {
+            "english_name": "Animate Dead",
+            "localized_name": "活化死尸",
+            "spell_id": "animate-dead"
+          },
+          {
+            "english_name": "Dominate Monster",
+            "localized_name": "支配怪物",
+            "spell_id": "dominate-monster"
+          }
+        ],
+        "spell_ids": [
+          "revivify",
+          "庇护术Sanctuary，持续24小时或直至你打破该效应",
+          "detect-thoughts",
+          "black-tentacles",
+          "eyebite",
+          "detect-magic",
+          "animate-dead",
+          "dominate-monster"
+        ]
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:healing-modifier",
+      "clause_type": "passive_modifier",
+      "evidence": {
+        "source_text": "恢复生命值的法术增加1d4"
+      },
+      "parameters": {
+        "dice": "1d4",
+        "modifier_kind": "healing_bonus",
+        "target": "self"
+      },
+      "trigger": "healing_spell_while_held"
+    }
+  ],
+  "compile": {
+    "blockers": [
+      "manual_clause_requires_dm_or_additional_typed_fields"
+    ],
+    "clauses": [
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:equipment",
+        "clause_type": "equipment",
+        "evidence": {
+          "source_fragment": "185"
+        },
+        "parameters": {
+          "equipped_slot": "worn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:1",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使用了。如果在某颗牙齿已经被使用后再次投出对应的骰值，你会取出表格中位于最底下的未被使用的牙齿。\n***播种牙齿***。为了播种牙齿，你将它放置在你触及内一个未占据空间的地面上，或者你可以将它或者你可以将它投掷"
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:1",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": true,
+          "source_excerpt": "用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使用了。如果在某颗牙齿已经被使用后再次投出对应的骰值，你会取出表格中位于最底下的未被使用的牙齿。\n***播种牙齿***。为了播种牙齿，你将它放置在你触及内一个未占据空间的地面上，或者你可以将它或者你可以将它投掷",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:2",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个动作，你可以消耗一发充能并触碰一个生物。该生物恢复 2d8+2 生命值，并且解除所有影响它的疾病和毒素。使用该动作时，你前额会出现一个闪闪发光的独角兽之角幻象，持续至你的回合结束。你获得以下缺陷： “ 当我看见邪恶在行动时，我必须去对抗它。 ” |\n| 8 | 跨越布拉之岩 Beyond the Rock of Bral （ 银制夺心 魔牙齿） | 2 只 夺心魔 Mind Flayer 。 | 你获得 120 尺 心灵感应 ，描述见 怪物图鉴 。你可以随意施展 侦测思想 Detect Thoughts 法术，而无需任何法术成分。由于来自记忆和周围的心灵的絮叨低语，你在感知（察觉）和感知（洞悉）检定中获得劣势。 |\n| 9 "
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:2",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "作为一个动作，你可以消耗一发充能并触碰一个生物。该生物恢复 2d8+2 生命值，并且解除所有影响它的疾病和毒素。使用该动作时，你前额会出现一个闪闪发光的独角兽之角幻象，持续至你的回合结束。你获得以下缺陷： “ 当我看见邪恶在行动时，我必须去对抗它。 ” |\n| 8 | 跨越布拉之岩 Beyond the Rock of Bral （ 银制夺心 魔牙齿） | 2 只 夺心魔 Mind Flayer 。 | 你获得 120 尺 心灵感应 ，描述见 怪物图鉴 。你可以随意施展 侦测思想 Detect Thoughts 法术，而无需任何法术成分。由于来自记忆和周围的心灵的絮叨低语，你在感知（察觉）和感知（洞悉）检定中获得劣势。 |\n| 9 ",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:3",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个动作，你可以用牙齿施展 艾伐黑触手 Evard ’ s\n Black Tentacles 法术（ DC18 ）。该属性被使用后，直至下个黎明前，不能再次使用。 |\n| 11 | 詹德 阳星的永劫 The Thousand Deaths of Jander Sunstar （泛黄的吸血鬼尖牙） | 1 位 吸血鬼 Vampire 。 | 你可以进行啃咬攻击，作为一种徒手打击。命中时，造成 1d6 穿刺伤害外加 3d6 暗蚀伤害 。你恢复等同于所 造成暗蚀伤害 的生命值。当你处于阳光下时，你无法恢复生命值。 |\n| 12 | 卡伽什 的梦魇 Nightmares of Kaggash （扭曲 的眼魔牙齿 ） | 1 只 眼魔 B"
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:3",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "作为一个动作，你可以用牙齿施展 艾伐黑触手 Evard ’ s\n Black Tentacles 法术（ DC18 ）。该属性被使用后，直至下个黎明前，不能再次使用。 |\n| 11 | 詹德 阳星的永劫 The Thousand Deaths of Jander Sunstar （泛黄的吸血鬼尖牙） | 1 位 吸血鬼 Vampire 。 | 你可以进行啃咬攻击，作为一种徒手打击。命中时，造成 1d6 穿刺伤害外加 3d6 暗蚀伤害 。你恢复等同于所 造成暗蚀伤害 的生命值。当你处于阳光下时，你无法恢复生命值。 |\n| 12 | 卡伽什 的梦魇 Nightmares of Kaggash （扭曲 的眼魔牙齿 ） | 1 只 眼魔 B",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:4",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个动作，你可以用牙齿施展 摄心目光 Eyebite 法术。使用该动作后，直到下次黎明前，不能再次使用该动作。当你完成 一 次长休时， 骰 一个 d20 。得出 20 时，一只由 DM 选择的异 怪出现 在你 30 尺内并开始攻击。 |\n| 13 | 通天三桥 Three Bridges to the Sky （青金石制恶鬼尖牙） | 3 位 恶鬼 Oni 。 | 你获得 30 尺飞行速度，并且你可以用牙齿随意施展 侦测魔法 Detect Magic 法术。当你同调的魔法物品数量少于三件时，你提升 1 级 力竭 Exhaustion ，该状态无法被移除，直至你同调至少三件魔法物品。 |\n| 14 | 卓戈 萨 之爪 The Cl"
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:4",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": true,
+          "source_excerpt": "作为一个动作，你可以用牙齿施展 摄心目光 Eyebite 法术。使用该动作后，直到下次黎明前，不能再次使用该动作。当你完成 一 次长休时， 骰 一个 d20 。得出 20 时，一只由 DM 选择的异 怪出现 在你 30 尺内并开始攻击。 |\n| 13 | 通天三桥 Three Bridges to the Sky （青金石制恶鬼尖牙） | 3 位 恶鬼 Oni 。 | 你获得 30 尺飞行速度，并且你可以用牙齿随意施展 侦测魔法 Detect Magic 法术。当你同调的魔法物品数量少于三件时，你提升 1 级 力竭 Exhaustion ，该状态无法被移除，直至你同调至少三件魔法物品。 |\n| 14 | 卓戈 萨 之爪 The Cl",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:5",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个动作，你可以喷出 90 尺锥形的火焰。在范围的生物必须进行一次 DC24 的敏捷豁免，豁免失败者受到 26d6 点火焰伤害，成功则伤害减半。使用该吐 息武器 后，你提升 2 级 力竭 Exhaustion 。 |\n| 20 | 达文 - 纳之牙 Dahlver -Nar ’ s\n Tooth （ 蒙灰的 人类臼齿） | 1 位 祭司 Priest 。 | 作为一个动作，你可以呼唤神圣力量援助你。描述你需要的帮助，回应的结果由 DM 决定；此时通常请求任何牧师法术的效应都在可接受范围内。该属性被使用后，七天内不能再次使用。 |"
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:5",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": true,
+          "source_excerpt": "作为一个动作，你可以喷出 90 尺锥形的火焰。在范围的生物必须进行一次 DC24 的敏捷豁免，豁免失败者受到 26d6 点火焰伤害，成功则伤害减半。使用该吐 息武器 后，你提升 2 级 力竭 Exhaustion 。 |\n| 20 | 达文 - 纳之牙 Dahlver -Nar ’ s\n Tooth （ 蒙灰的 人类臼齿） | 1 位 祭司 Priest 。 | 作为一个动作，你可以呼唤神圣力量援助你。描述你需要的帮助，回应的结果由 DM 决定；此时通常请求任何牧师法术的效应都在可接受范围内。该属性被使用后，七天内不能再次使用。 |",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "reaction",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:6",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个动作，你可以呼唤神圣力量援助你。描述你需要的帮助，回应的结果由 DM 决定；此时通常请求任何牧师法术的效应都在可接受范围内。该属性被使用后，七天内不能再次使用。 |"
+        },
+        "parameters": {
+          "action_economy": "reaction",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:6",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": true,
+          "source_excerpt": "作为一个动作，你可以呼唤神圣力量援助你。描述你需要的帮助，回应的结果由 DM 决定；此时通常请求任何牧师法术的效应都在可接受范围内。该属性被使用后，七天内不能再次使用。 |",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "action",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:spell-grant",
+        "clause_type": "granted_spell",
+        "evidence": {
+          "manual_review_required": false,
+          "source_excerpt": "***奇物，神器（需调谐）*\n达文-纳之牙是多个故事的具现。它们是成套的牙齿，每一颗都代表着各自大不相同的起源，并且由多种多样的材料制成。整套牙齿被收藏在一个小皮袋中，皮袋上缝着英雄和幻想生物的图案。牙齿在哪里落下，传说就会在哪里化为真实。\n***使用牙齿***。当持握小皮袋时，你可以使用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使"
+        },
+        "parameters": {
+          "grant_mode": "item_cast",
+          "source_text": "***奇物，神器（需调谐）*\n达文-纳之牙是多个故事的具现。它们是成套的牙齿，每一颗都代表着各自大不相同的起源，并且由多种多样的材料制成。整套牙齿被收藏在一个小皮袋中，皮袋上缝着英雄和幻想生物的图案。牙齿在哪里落下，传说就会在哪里化为真实。\n***使用牙齿***。当持握小皮袋时，你可以使用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使",
+          "spell_identities": [
+            {
+              "english_name": "Revivify",
+              "localized_name": "回生术",
+              "spell_id": "revivify"
+            },
+            {
+              "english_name": "",
+              "localized_name": "庇护术Sanctuary，持续24小时或直至你打破该效应",
+              "spell_id": "庇护术Sanctuary，持续24小时或直至你打破该效应"
+            },
+            {
+              "english_name": "Detect Thoughts",
+              "localized_name": "侦测思想",
+              "spell_id": "detect-thoughts"
+            },
+            {
+              "english_name": "Black Tentacles",
+              "localized_name": "艾伐黑触手Evard’s",
+              "spell_id": "black-tentacles"
+            },
+            {
+              "english_name": "Eyebite",
+              "localized_name": "摄心目光",
+              "spell_id": "eyebite"
+            },
+            {
+              "english_name": "Detect Magic",
+              "localized_name": "侦测魔法",
+              "spell_id": "detect-magic"
+            },
+            {
+              "english_name": "Animate Dead",
+              "localized_name": "活化死尸",
+              "spell_id": "animate-dead"
+            },
+            {
+              "english_name": "Dominate Monster",
+              "localized_name": "支配怪物",
+              "spell_id": "dominate-monster"
+            }
+          ],
+          "spell_ids": [
+            "revivify",
+            "庇护术Sanctuary，持续24小时或直至你打破该效应",
+            "detect-thoughts",
+            "black-tentacles",
+            "eyebite",
+            "detect-magic",
+            "animate-dead",
+            "dominate-monster"
+          ]
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:healing-modifier",
+        "clause_type": "passive_modifier",
+        "evidence": {
+          "source_text": "恢复生命值的法术增加1d4"
+        },
+        "parameters": {
+          "dice": "1d4",
+          "modifier_kind": "healing_bonus",
+          "target": "self"
+        },
+        "trigger": "healing_spell_while_held"
+      }
+    ],
+    "compile_status": "partial",
+    "consumer_ids": [
+      "item.equipment_modifier.v1",
+      "item.granted_action.v1",
+      "item.granted_spell.v1"
+    ],
+    "item_fingerprint": "e95aa90215a4fd26ed11d7b1713caec449171f08538955e11516e73b5a18caea",
+    "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-34ff057fd196-005",
+    "runtime_preview_full": false,
+    "schema_version": "item-ir-1",
+    "source_trust": "authored_ir"
+  },
+  "conditions": [],
+  "consumption_policy": {
+    "mode": "persistent"
+  },
+  "damage": null,
+  "duration": null,
+  "equipped_slot": null,
+  "evidence": {
+    "manual_review_required": true,
+    "rejected_inferences": [
+      "unknown_effects",
+      "unresolved_spell_identity",
+      "freeform_targeting"
+    ],
+    "review_status": "reviewed_explicit_fields_only",
+    "reviewed_fields": [
+      "identity",
+      "kind",
+      "rarity",
+      "attunement",
+      "charges",
+      "clause_boundaries"
+    ],
+    "source_fragment": "185",
+    "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html",
+    "source_text_sha256": "0652aff69f6adbfba37dee5ab0ba42795dba5811b2238d959c04b266ea518c01"
+  },
+  "granted_actions": [
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:1",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": true,
+      "source_excerpt": "用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使用了。如果在某颗牙齿已经被使用后再次投出对应的骰值，你会取出表格中位于最底下的未被使用的牙齿。\n***播种牙齿***。为了播种牙齿，你将它放置在你触及内一个未占据空间的地面上，或者你可以将它或者你可以将它投掷",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:2",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "作为一个动作，你可以消耗一发充能并触碰一个生物。该生物恢复 2d8+2 生命值，并且解除所有影响它的疾病和毒素。使用该动作时，你前额会出现一个闪闪发光的独角兽之角幻象，持续至你的回合结束。你获得以下缺陷： “ 当我看见邪恶在行动时，我必须去对抗它。 ” |\n| 8 | 跨越布拉之岩 Beyond the Rock of Bral （ 银制夺心 魔牙齿） | 2 只 夺心魔 Mind Flayer 。 | 你获得 120 尺 心灵感应 ，描述见 怪物图鉴 。你可以随意施展 侦测思想 Detect Thoughts 法术，而无需任何法术成分。由于来自记忆和周围的心灵的絮叨低语，你在感知（察觉）和感知（洞悉）检定中获得劣势。 |\n| 9 ",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:3",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "作为一个动作，你可以用牙齿施展 艾伐黑触手 Evard ’ s\n Black Tentacles 法术（ DC18 ）。该属性被使用后，直至下个黎明前，不能再次使用。 |\n| 11 | 詹德 阳星的永劫 The Thousand Deaths of Jander Sunstar （泛黄的吸血鬼尖牙） | 1 位 吸血鬼 Vampire 。 | 你可以进行啃咬攻击，作为一种徒手打击。命中时，造成 1d6 穿刺伤害外加 3d6 暗蚀伤害 。你恢复等同于所 造成暗蚀伤害 的生命值。当你处于阳光下时，你无法恢复生命值。 |\n| 12 | 卡伽什 的梦魇 Nightmares of Kaggash （扭曲 的眼魔牙齿 ） | 1 只 眼魔 B",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:4",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": true,
+      "source_excerpt": "作为一个动作，你可以用牙齿施展 摄心目光 Eyebite 法术。使用该动作后，直到下次黎明前，不能再次使用该动作。当你完成 一 次长休时， 骰 一个 d20 。得出 20 时，一只由 DM 选择的异 怪出现 在你 30 尺内并开始攻击。 |\n| 13 | 通天三桥 Three Bridges to the Sky （青金石制恶鬼尖牙） | 3 位 恶鬼 Oni 。 | 你获得 30 尺飞行速度，并且你可以用牙齿随意施展 侦测魔法 Detect Magic 法术。当你同调的魔法物品数量少于三件时，你提升 1 级 力竭 Exhaustion ，该状态无法被移除，直至你同调至少三件魔法物品。 |\n| 14 | 卓戈 萨 之爪 The Cl",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:5",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": true,
+      "source_excerpt": "作为一个动作，你可以喷出 90 尺锥形的火焰。在范围的生物必须进行一次 DC24 的敏捷豁免，豁免失败者受到 26d6 点火焰伤害，成功则伤害减半。使用该吐 息武器 后，你提升 2 级 力竭 Exhaustion 。 |\n| 20 | 达文 - 纳之牙 Dahlver -Nar ’ s\n Tooth （ 蒙灰的 人类臼齿） | 1 位 祭司 Priest 。 | 作为一个动作，你可以呼唤神圣力量援助你。描述你需要的帮助，回应的结果由 DM 决定；此时通常请求任何牧师法术的效应都在可接受范围内。该属性被使用后，七天内不能再次使用。 |",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "reaction",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:34ff057fd196:005:action:6",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": true,
+      "source_excerpt": "作为一个动作，你可以呼唤神圣力量援助你。描述你需要的帮助，回应的结果由 DM 决定；此时通常请求任何牧师法术的效应都在可接受范围内。该属性被使用后，七天内不能再次使用。 |",
+      "target_policy": "self"
+    }
+  ],
+  "granted_spells": [
+    {
+      "english_name": "Revivify",
+      "localized_name": "回生术",
+      "spell_id": "revivify"
+    },
+    {
+      "english_name": "",
+      "localized_name": "庇护术Sanctuary，持续24小时或直至你打破该效应",
+      "spell_id": "庇护术Sanctuary，持续24小时或直至你打破该效应"
+    },
+    {
+      "english_name": "Detect Thoughts",
+      "localized_name": "侦测思想",
+      "spell_id": "detect-thoughts"
+    },
+    {
+      "english_name": "Black Tentacles",
+      "localized_name": "艾伐黑触手Evard’s",
+      "spell_id": "black-tentacles"
+    },
+    {
+      "english_name": "Eyebite",
+      "localized_name": "摄心目光",
+      "spell_id": "eyebite"
+    },
+    {
+      "english_name": "Detect Magic",
+      "localized_name": "侦测魔法",
+      "spell_id": "detect-magic"
+    },
+    {
+      "english_name": "Animate Dead",
+      "localized_name": "活化死尸",
+      "spell_id": "animate-dead"
+    },
+    {
+      "english_name": "Dominate Monster",
+      "localized_name": "支配怪物",
+      "spell_id": "dominate-monster"
+    }
+  ],
+  "healing": null,
+  "immunities": [],
+  "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-34ff057fd196-005",
+  "item_kind": "weapon",
+  "localized_name": "达文",
+  "manual_review_required": true,
+  "name": "达文",
+  "namespace": "dnd.tashas.recovery.item",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "whole-pack-2026-08-11",
+  "passive_modifiers": [],
+  "rarity": "传说",
+  "requires_attunement": false,
+  "resistances": [],
+  "resource_bindings": [],
+  "review_fingerprint": "e95aa90215a4fd26ed11d7b1713caec449171f08538955e11516e73b5a18caea",
+  "review_status": "reviewed",
+  "ruleset_version": "2024",
+  "schema_version": "item-ir-1",
+  "source_fingerprint": "0652aff69f6adbfba37dee5ab0ba42795dba5811b2238d959c04b266ea518c01",
+  "source_fragment": "185",
+  "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html",
+  "source_record_id": "760b230e1396825928305642",
+  "source_trust": "authored_ir",
+  "stack_policy": {
+    "mode": "unique_instance"
+  },
+  "temporary_hp": null,
+  "triggered_effects": []
+}

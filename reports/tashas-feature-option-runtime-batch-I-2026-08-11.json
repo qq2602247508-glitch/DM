@@ -1,0 +1,60 @@
+{
+  "atom_total": 339,
+  "by_kind": {
+    "class_feature": 63,
+    "feat": 15,
+    "infusion": 15,
+    "invocation": 7,
+    "maneuver": 7,
+    "subclass_feature": 232
+  },
+  "compile_full_total": 21,
+  "dm_assisted_total": 0,
+  "gate_status": "partial",
+  "manual_total": 318,
+  "pack_id": "tashas-cauldron",
+  "production_full_total": 14,
+  "review_blocker_counts": {
+    "reviewed_typed_mapping": 21,
+    "unmatched_requires_review": 318
+  },
+  "reviewed_total": 339,
+  "runtime_consumer_policy": {
+    "existing_typed_ir_only": true,
+    "manual_atoms_not_promoted": true,
+    "new_name_branches": 0
+  },
+  "runtime_full_atom_ids": [
+    "tashas-cauldron:atom:12139219bf7e575f9cde019c:ambush:001",
+    "tashas-cauldron:atom:12139219bf7e575f9cde019c:commanding-presence:004",
+    "tashas-cauldron:atom:606d89f6e0ea3b2e0194f24c:arcane-jolt:010",
+    "tashas-cauldron:atom:606d89f6e0ea3b2e0194f24c:repair-3:007",
+    "tashas-cauldron:atom:606d89f6e0ea3b2e0194f24c:tool-proficiency:001",
+    "tashas-cauldron:atom:a13253dc90904c96eaa719ab:protective-field:002",
+    "tashas-cauldron:atom:a13253dc90904c96eaa719ab:psionic-strike:003",
+    "tashas-cauldron:atom:a13253dc90904c96eaa719ab:telekinetic-movement:004",
+    "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:dampening-field:011",
+    "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:defensive-field:007",
+    "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:extra-attack:012",
+    "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:lightning-launcher:009",
+    "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:tools-of-the-trade:001",
+    "tashas-cauldron:atom:d4e98761778ae5c18fd66bdb:hand-of-harm:003",
+    "tashas-cauldron:atom:d4e98761778ae5c18fd66bdb:hand-of-healing:002",
+    "tashas-cauldron:atom:d4e98761778ae5c18fd66bdb:implements-of-mercy:001",
+    "tashas-cauldron:atom:d4e98761778ae5c18fd66bdb:physician-s-touch:004",
+    "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:chemical-mastery:006",
+    "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:restorative-reagents:005",
+    "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:tool-proficiency:001",
+    "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:tool-proficiency:001"
+  ],
+  "schema_version": "tashas-feature-option-runtime-batch-I-1",
+  "source_of_truth": "tashas-content-atom-catalog-II plus authored Typed IR provenance",
+  "thresholds": {
+    "compile_full": 80,
+    "dm_assisted": 10,
+    "production_full": 50,
+    "reviewed": 120,
+    "typed": 100
+  },
+  "typed_total": 21
+}

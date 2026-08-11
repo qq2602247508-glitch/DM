@@ -1,0 +1,174 @@
+{
+  "after": {
+    "compile_only": 35,
+    "production_full": 76,
+    "tasha_atom_pack": {
+      "authored_typed_ir": 30,
+      "candidate_generated": 407,
+      "compile_full": 29,
+      "compile_only": 11,
+      "consumer_unlocks": {
+        "existing_generic_consumer": {
+          "content_ids": [
+            "content.tashas-cauldron.feature.alchemist-chemical-mastery",
+            "content.tashas-cauldron.feature.alchemist-restorative-reagents",
+            "content.tashas-cauldron.feature.armorer-dampening-field",
+            "content.tashas-cauldron.feature.armorer-defensive-field",
+            "content.tashas-cauldron.feature.armorer-extra-attack",
+            "content.tashas-cauldron.feature.armorer-lightning-launcher",
+            "content.tashas-cauldron.feature.battle-smith-arcane-jolt-damage",
+            "content.tashas-cauldron.feature.battle-smith-arcane-jolt-healing",
+            "content.tashas-cauldron.feature.battle-smith-repair",
+            "content.tashas-cauldron.feature.psi-warrior-protective-field",
+            "content.tashas-cauldron.feature.psi-warrior-psionic-strike",
+            "content.tashas-cauldron.feature.psi-warrior-telekinetic-movement",
+            "content.tashas-cauldron.feature.way-of-mercy-hand-harm",
+            "content.tashas-cauldron.feature.way-of-mercy-hand-healing",
+            "content.tashas-cauldron.feature.way-of-mercy-physicians-touch",
+            "tashas-cauldron:spell:0036d7dc058c496ef08fe340",
+            "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac",
+            "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+            "tashas-cauldron:spell:ef0f92b557fb48d421d462e1"
+          ],
+          "name_branch_count": 0,
+          "new_consumer_count": 0
+        }
+      },
+      "content_atom_total": 524,
+      "content_id_funnel": {
+        "compile_only": 11,
+        "dm_assisted": 1,
+        "matched_typed_ir": 30,
+        "production_full": 18,
+        "relation_holds": true
+      },
+      "current_project_compile_only": 35,
+      "current_project_compiled_unique": 111,
+      "current_project_production_full": 76,
+      "current_project_production_registry_fingerprint": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+      "dm_assisted": 1,
+      "dm_reference": 107,
+      "draft_total": 407,
+      "duplicate_or_reprint": 0,
+      "executable_candidate_total": 407,
+      "existing_typed_ir_total": 31,
+      "existing_typed_ir_unmatched": [],
+      "formal_499_status": {
+        "source": "reports/class-feature-audit-2026-08-07.json",
+        "status_counts": {
+          "dm_only": 61,
+          "full": 328,
+          "partial": 110
+        },
+        "total": 499
+      },
+      "game_usable": 18,
+      "invalid_source": 0,
+      "item_ir": {
+        "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
+        "dm_assisted_count": 0,
+        "implemented": true,
+        "inventory_atom_count": 47,
+        "production_count": 41,
+        "typed_count": 47,
+        "unlock_ranking": [
+          {
+            "capability": "item.passive_modifier",
+            "consumer": "item.equipment_modifier.v1",
+            "unlock_count": 41
+          },
+          {
+            "capability": "item.attunement",
+            "consumer": "item.attunement.v1",
+            "unlock_count": 38
+          },
+          {
+            "capability": "item.charge_resource",
+            "consumer": "item.charge_resource.v1",
+            "unlock_count": 17
+          },
+          {
+            "capability": "item.granted_action",
+            "consumer": "item.granted_action.v1",
+            "unlock_count": 27
+          },
+          {
+            "capability": "item.tattoo_lifecycle",
+            "consumer": "item.attunement.v1",
+            "unlock_count": 11
+          }
+        ]
+      },
+      "kind_counts": {
+        "character_option": 15,
+        "class_feature": 63,
+        "companion_profile": 3,
+        "directory": 10,
+        "dm_tool": 7,
+        "environment_rule": 22,
+        "feat": 16,
+        "infusion": 16,
+        "invocation": 8,
+        "magic_item": 36,
+        "magic_tattoo": 11,
+        "maneuver": 8,
+        "narrative": 10,
+        "puzzle": 15,
+        "spell": 21,
+        "subclass_feature": 263
+      },
+      "manual_authoring": 378,
+      "non_instantiable": 10,
+      "pack_fingerprint": "c49bc727a3a19701b60aee9123836e1e9824c99960a30150d3ba7b1795e07105",
+      "pack_id": "tashas-cauldron",
+      "player_facing_atom_total": 407,
+      "player_kind_counts": {
+        "class_feature": 63,
+        "feat": 15,
+        "infusion": 15,
+        "invocation": 7,
+        "magic_item": 36,
+        "magic_tattoo": 11,
+        "maneuver": 7,
+        "spell": 21,
+        "subclass_feature": 232
+      },
+      "production_full": 17,
+      "reviewed_total": 407,
+      "runtime_preview_full": 29,
+      "schema_version": "tashas-whole-pack-migration-1",
+      "source_book": "塔莎的万事坩埚",
+      "source_record_classified": 144,
+      "source_record_scanned": 144,
+      "source_record_total": 144,
+      "source_record_unclassified": 0,
+      "status_counts": {
+        "compile_only": 11,
+        "dm_assisted": 1,
+        "dm_reference": 107,
+        "duplicate_or_reprint": 0,
+        "invalid_source": 0,
+        "manual_authoring": 378,
+        "non_instantiable": 10,
+        "out_of_scope_with_reason": 0,
+        "production_full": 17
+      },
+      "template_matched": 29
+    },
+    "unique_compiled": 111
+  },
+  "baseline": {
+    "compile_only": 35,
+    "production_full": 76,
+    "unique_compiled": 111
+  },
+  "database_unchanged": true,
+  "existing_production_full_not_retracted": true,
+  "formal_499_unchanged": true,
+  "formal_registry_unchanged": true,
+  "name_branches_added": 0,
+  "registry_and_database_unchanged": true,
+  "schema_version": "content-ir-runtime-level-audit-V-1",
+  "tasha_item_compile_full": 41,
+  "tasha_item_spec_typed": 47
+}

@@ -1,0 +1,129 @@
+{
+  "attunement_requirements": {},
+  "charges": {},
+  "clauses": [
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:magic-tattoo:000:equipment",
+      "clause_type": "equipment",
+      "evidence": {
+        "source_fragment": "1"
+      },
+      "parameters": {
+        "equipped_slot": "worn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:magic-tattoo:000:tattoo-lifecycle",
+      "clause_type": "tattoo_lifecycle",
+      "evidence": {
+        "source_text": "针头会化为墨水再变成刺青"
+      },
+      "parameters": {
+        "on_attune": "ink_manifestation",
+        "on_unattune": "needle_returns_and_effects_removed"
+      },
+      "trigger": "attunement_confirmed"
+    }
+  ],
+  "compile": {
+    "blockers": [],
+    "clauses": [
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:magic-tattoo:000:equipment",
+        "clause_type": "equipment",
+        "evidence": {
+          "source_fragment": "1"
+        },
+        "parameters": {
+          "equipped_slot": "worn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:magic-tattoo:000:tattoo-lifecycle",
+        "clause_type": "tattoo_lifecycle",
+        "evidence": {
+          "source_text": "针头会化为墨水再变成刺青"
+        },
+        "parameters": {
+          "on_attune": "ink_manifestation",
+          "on_unattune": "needle_returns_and_effects_removed"
+        },
+        "trigger": "attunement_confirmed"
+      }
+    ],
+    "compile_status": "full",
+    "consumer_ids": [
+      "item.attunement.v1",
+      "item.equipment_modifier.v1"
+    ],
+    "item_fingerprint": "9c026bdb096bea006358a2ba5b69642f9610930570c9a53184678b6de463aca3",
+    "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-magic-tattoo-000",
+    "runtime_preview_full": true,
+    "schema_version": "item-ir-1",
+    "source_trust": "authored_ir"
+  },
+  "conditions": [],
+  "consumption_policy": {
+    "mode": "persistent"
+  },
+  "damage": null,
+  "duration": null,
+  "equipped_slot": "worn",
+  "evidence": {
+    "manual_review_required": false,
+    "rejected_inferences": [
+      "unknown_effects",
+      "unresolved_spell_identity",
+      "freeform_targeting"
+    ],
+    "review_status": "reviewed_explicit_fields_only",
+    "reviewed_fields": [
+      "identity",
+      "kind",
+      "rarity",
+      "attunement",
+      "charges",
+      "clause_boundaries"
+    ],
+    "source_fragment": "1",
+    "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html",
+    "source_text_sha256": "78efdf91f6f22ffad03f336e2d11fe61144a763b28bd522ddfd1902b8c3c9fcb"
+  },
+  "granted_actions": [],
+  "granted_spells": [],
+  "healing": null,
+  "immunities": [],
+  "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-magic-tattoo-000",
+  "item_kind": "magic_tattoo",
+  "localized_name": "魔法刺青",
+  "manual_review_required": false,
+  "name": "魔法刺青|Magic Tattoo",
+  "namespace": "dnd.tashas.recovery.item",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "whole-pack-2026-08-11",
+  "passive_modifiers": [],
+  "rarity": "传说",
+  "requires_attunement": false,
+  "resistances": [],
+  "resource_bindings": [],
+  "review_fingerprint": "9c026bdb096bea006358a2ba5b69642f9610930570c9a53184678b6de463aca3",
+  "review_status": "reviewed",
+  "ruleset_version": "2024",
+  "schema_version": "item-ir-1",
+  "source_fingerprint": "78efdf91f6f22ffad03f336e2d11fe61144a763b28bd522ddfd1902b8c3c9fcb",
+  "source_fragment": "1",
+  "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html",
+  "source_record_id": "932a86d7b29c891ff8c75d2c",
+  "source_trust": "authored_ir",
+  "stack_policy": {
+    "mode": "unique_instance"
+  },
+  "temporary_hp": null,
+  "triggered_effects": []
+}

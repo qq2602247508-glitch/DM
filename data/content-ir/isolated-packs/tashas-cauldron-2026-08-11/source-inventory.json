@@ -1,5 +1,5 @@
 {
-  "inventory_fingerprint": "80a7d243e4c2cb180406ad28c83f5e04562a3622f175d03c86f42b3e076f67d8",
+  "inventory_fingerprint": "549424ddcf7d5d605f130324f0f4dba6efce38e6dfca19227211d8732783373f",
   "pack_id": "tashas-cauldron",
   "records": [
     {
@@ -2160,7 +2160,7 @@
       "subclass_name": null
     },
     {
-      "atom_count": 21,
+      "atom_count": 16,
       "class_name": "奇械师",
       "content_length": 5890,
       "edition": "2014",
@@ -2256,7 +2256,7 @@
       "subclass_name": "装甲师"
     },
     {
-      "atom_count": 6,
+      "atom_count": 7,
       "class_name": "奇械师",
       "content_length": 3224,
       "edition": "2014",
@@ -2420,7 +2420,7 @@
       "subclass_name": null
     },
     {
-      "atom_count": 2,
+      "atom_count": 1,
       "class_name": "战士",
       "content_length": 2168,
       "edition": "2014",
@@ -2436,11 +2436,11 @@
       "officiality": "unknown",
       "source_content_type": "classes",
       "source_fingerprint": "93cd8a72cdb2e6f9c41eaf6554e91bc77bcb8519c1dee7ad3fd97aa7cd80e21d",
-      "source_kind": "subclass_feature",
+      "source_kind": "narrative",
       "source_name": "战斗大师构筑",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/战斗大师构筑.html",
       "source_record_id": "cc5fbe7849e1c8052b692354",
-      "source_role": "player_facing",
+      "source_role": "dm_reference",
       "subclass_name": "战斗大师构筑"
     },
     {
@@ -2562,7 +2562,7 @@
       "subclass_name": "畸变心智"
     },
     {
-      "atom_count": 3,
+      "atom_count": 2,
       "class_name": "武僧",
       "content_length": 680,
       "edition": "2014",
@@ -2772,7 +2772,7 @@
       "subclass_name": "集群牧者"
     },
     {
-      "atom_count": 14,
+      "atom_count": 12,
       "class_name": "游侠",
       "content_length": 2336,
       "edition": "2014",
@@ -3028,7 +3028,7 @@
       "subclass_name": "深海意志"
     },
     {
-      "atom_count": 9,
+      "atom_count": 8,
       "class_name": "邪术师",
       "content_length": 1500,
       "edition": "2014",
@@ -3255,7 +3255,7 @@
       "subclass_name": null
     },
     {
-      "atom_count": 20,
+      "atom_count": 18,
       "class_name": null,
       "content_length": 8117,
       "edition": "2014",
@@ -3279,7 +3279,7 @@
       "subclass_name": null
     },
     {
-      "atom_count": 71,
+      "atom_count": 6,
       "class_name": null,
       "content_length": 15176,
       "edition": "2014",
@@ -3327,7 +3327,7 @@
       "subclass_name": null
     },
     {
-      "atom_count": 36,
+      "atom_count": 11,
       "class_name": null,
       "content_length": 4822,
       "edition": "2014",

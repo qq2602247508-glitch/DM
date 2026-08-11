@@ -1,0 +1,222 @@
+{
+  "attunement_requirements": {
+    "required": true,
+    "requirements_text": "任意生物"
+  },
+  "charges": {
+    "current": 10,
+    "maximum": 10,
+    "recovery_amount": "all",
+    "recovery_trigger": "dawn"
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:c27398cf29fe:011:equipment",
+      "clause_type": "equipment",
+      "evidence": {
+        "source_fragment": "125"
+      },
+      "parameters": {
+        "equipped_slot": "worn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:c27398cf29fe:011:attunement",
+      "clause_type": "attunement",
+      "evidence": {
+        "source_text": "需同调"
+      },
+      "parameters": {
+        "required": true,
+        "requirements_text": "任意生物"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:c27398cf29fe:011:tattoo-lifecycle",
+      "clause_type": "tattoo_lifecycle",
+      "evidence": {
+        "source_text": "针头会化为墨水再变成刺青"
+      },
+      "parameters": {
+        "on_attune": "ink_manifestation",
+        "on_unattune": "needle_returns_and_effects_removed"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:c27398cf29fe:011:charges",
+      "clause_type": "charge",
+      "evidence": {
+        "text": "10发充能"
+      },
+      "parameters": {
+        "current": 10,
+        "maximum": 10,
+        "recovery_amount": "all",
+        "recovery_trigger": "dawn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:c27398cf29fe:011:charge-recovery",
+      "clause_type": "charge_recovery",
+      "evidence": {
+        "text": "Fury Tattoo****\n***奇物（刺青）**,**传说（需同调）*\n该魔法刺青用一根特殊的针制作，该刺青的形状与颜色能够唤起愤怒。\n***刺青同调。***同调此物品时，你需要将针持握，并抵在你想要让刺青出现的那处皮肤上。当同调完成时，针头会化为墨水再变成刺青。若你与刺青的同调结束，刺青会消失，针头会再次出现在你的位置中。\n***嗜血狂袭。***刺青具有10发充能，其在每天黎明时恢复所有已消耗的充能。当刺青在你的皮肤上时，你获得以下增益：\n\n·当你以武器攻击命中一个生"
+      },
+      "parameters": {
+        "recovery_amount": "all",
+        "recovery_trigger": "dawn",
+        "typed_dawn_event_required": true
+      },
+      "trigger": "dawn"
+    }
+  ],
+  "compile": {
+    "blockers": [],
+    "clauses": [
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:c27398cf29fe:011:equipment",
+        "clause_type": "equipment",
+        "evidence": {
+          "source_fragment": "125"
+        },
+        "parameters": {
+          "equipped_slot": "worn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:c27398cf29fe:011:attunement",
+        "clause_type": "attunement",
+        "evidence": {
+          "source_text": "需同调"
+        },
+        "parameters": {
+          "required": true,
+          "requirements_text": "任意生物"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:c27398cf29fe:011:tattoo-lifecycle",
+        "clause_type": "tattoo_lifecycle",
+        "evidence": {
+          "source_text": "针头会化为墨水再变成刺青"
+        },
+        "parameters": {
+          "on_attune": "ink_manifestation",
+          "on_unattune": "needle_returns_and_effects_removed"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:c27398cf29fe:011:charges",
+        "clause_type": "charge",
+        "evidence": {
+          "text": "10发充能"
+        },
+        "parameters": {
+          "current": 10,
+          "maximum": 10,
+          "recovery_amount": "all",
+          "recovery_trigger": "dawn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:c27398cf29fe:011:charge-recovery",
+        "clause_type": "charge_recovery",
+        "evidence": {
+          "text": "Fury Tattoo****\n***奇物（刺青）**,**传说（需同调）*\n该魔法刺青用一根特殊的针制作，该刺青的形状与颜色能够唤起愤怒。\n***刺青同调。***同调此物品时，你需要将针持握，并抵在你想要让刺青出现的那处皮肤上。当同调完成时，针头会化为墨水再变成刺青。若你与刺青的同调结束，刺青会消失，针头会再次出现在你的位置中。\n***嗜血狂袭。***刺青具有10发充能，其在每天黎明时恢复所有已消耗的充能。当刺青在你的皮肤上时，你获得以下增益：\n\n·当你以武器攻击命中一个生"
+        },
+        "parameters": {
+          "recovery_amount": "all",
+          "recovery_trigger": "dawn",
+          "typed_dawn_event_required": true
+        },
+        "trigger": "dawn"
+      }
+    ],
+    "compile_status": "full",
+    "consumer_ids": [
+      "item.attunement.v1",
+      "item.charge_resource.v1",
+      "item.equipment_modifier.v1"
+    ],
+    "item_fingerprint": "036916666720e970f6dbae055022317980fc2c4a4a8c095879fcd1fa8bf6f60b",
+    "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-c27398cf29fe-011",
+    "runtime_preview_full": true,
+    "schema_version": "item-ir-1",
+    "source_trust": "authored_ir"
+  },
+  "conditions": [],
+  "consumption_policy": {
+    "mode": "charges"
+  },
+  "damage": null,
+  "duration": null,
+  "equipped_slot": "worn",
+  "evidence": {
+    "manual_review_required": false,
+    "rejected_inferences": [
+      "unknown_effects",
+      "unresolved_spell_identity",
+      "freeform_targeting"
+    ],
+    "review_status": "reviewed_explicit_fields_only",
+    "reviewed_fields": [
+      "identity",
+      "kind",
+      "rarity",
+      "attunement",
+      "charges",
+      "clause_boundaries"
+    ],
+    "source_fragment": "125",
+    "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html",
+    "source_text_sha256": "5f0d18ff37fe6f5ea95c15e3e485e35cff326b63654077fc2c547e40e0b7599c"
+  },
+  "granted_actions": [],
+  "granted_spells": [],
+  "healing": null,
+  "immunities": [],
+  "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-c27398cf29fe-011",
+  "item_kind": "magic_tattoo",
+  "localized_name": "血怒刺青",
+  "manual_review_required": false,
+  "name": "血怒刺青",
+  "namespace": "dnd.tashas.recovery.item",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "whole-pack-2026-08-11",
+  "passive_modifiers": [],
+  "rarity": "传说",
+  "requires_attunement": true,
+  "resistances": [],
+  "resource_bindings": [],
+  "review_fingerprint": "036916666720e970f6dbae055022317980fc2c4a4a8c095879fcd1fa8bf6f60b",
+  "review_status": "reviewed",
+  "ruleset_version": "2024",
+  "schema_version": "item-ir-1",
+  "source_fingerprint": "5f0d18ff37fe6f5ea95c15e3e485e35cff326b63654077fc2c547e40e0b7599c",
+  "source_fragment": "125",
+  "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/魔法刺青.html",
+  "source_record_id": "932a86d7b29c891ff8c75d2c",
+  "source_trust": "authored_ir",
+  "stack_policy": {
+    "mode": "unique_instance"
+  },
+  "temporary_hp": null,
+  "triggered_effects": []
+}

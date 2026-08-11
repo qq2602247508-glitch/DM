@@ -3,10 +3,10 @@
     "compile_only": 35,
     "production_full": 76,
     "tasha_atom_pack": {
-      "authored_typed_ir": 28,
-      "candidate_generated": 558,
-      "compile_full": 28,
-      "compile_only": 9,
+      "authored_typed_ir": 30,
+      "candidate_generated": 407,
+      "compile_full": 29,
+      "compile_only": 11,
       "consumer_unlocks": {
         "existing_generic_consumer": {
           "content_ids": [
@@ -34,11 +34,11 @@
           "new_consumer_count": 0
         }
       },
-      "content_atom_total": 625,
+      "content_atom_total": 524,
       "content_id_funnel": {
-        "compile_only": 9,
+        "compile_only": 11,
         "dm_assisted": 1,
-        "matched_typed_ir": 28,
+        "matched_typed_ir": 30,
         "production_full": 18,
         "relation_holds": true
       },
@@ -47,16 +47,12 @@
       "current_project_production_full": 76,
       "current_project_production_registry_fingerprint": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
       "dm_assisted": 1,
-      "dm_reference": 57,
-      "draft_total": 558,
+      "dm_reference": 107,
+      "draft_total": 407,
       "duplicate_or_reprint": 0,
-      "executable_candidate_total": 558,
+      "executable_candidate_total": 407,
       "existing_typed_ir_total": 31,
-      "existing_typed_ir_unmatched": [
-        "content.tashas-cauldron.feature.armorer.tools-of-the-trade",
-        "content.tashas-cauldron.feature.artillerist.tool-proficiency",
-        "content.tashas-cauldron.feature.battle-master.precision-attack"
-      ],
+      "existing_typed_ir_unmatched": [],
       "formal_499_status": {
         "source": "reports/class-feature-audit-2026-08-07.json",
         "status_counts": {
@@ -66,71 +62,80 @@
         },
         "total": 499
       },
-      "game_usable": 19,
+      "game_usable": 18,
       "invalid_source": 0,
       "item_ir": {
-        "blocker": "generic ItemSpec/equipment-attunement consumer is not yet wired",
+        "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
         "dm_assisted_count": 0,
-        "implemented": false,
-        "inventory_atom_count": 139,
-        "production_count": 0,
+        "implemented": true,
+        "inventory_atom_count": 47,
+        "production_count": 41,
+        "typed_count": 47,
         "unlock_ranking": [
           {
             "capability": "item.passive_modifier",
-            "reason": "no ItemSpec authority",
-            "unlock_count": 0
+            "consumer": "item.equipment_modifier.v1",
+            "unlock_count": 41
           },
           {
-            "capability": "item.charges_and_recovery",
-            "reason": "no resource-bound item consumer",
-            "unlock_count": 0
+            "capability": "item.attunement",
+            "consumer": "item.attunement.v1",
+            "unlock_count": 38
+          },
+          {
+            "capability": "item.charge_resource",
+            "consumer": "item.charge_resource.v1",
+            "unlock_count": 17
           },
           {
             "capability": "item.granted_action",
-            "reason": "no item action lifecycle",
-            "unlock_count": 0
+            "consumer": "item.granted_action.v1",
+            "unlock_count": 27
+          },
+          {
+            "capability": "item.tattoo_lifecycle",
+            "consumer": "item.attunement.v1",
+            "unlock_count": 11
           }
         ]
       },
       "kind_counts": {
         "character_option": 15,
-        "class_feature": 64,
+        "class_feature": 63,
         "companion_profile": 3,
         "directory": 10,
         "dm_tool": 7,
         "environment_rule": 22,
         "feat": 16,
-        "infusion": 21,
-        "invocation": 9,
-        "magic_item": 103,
-        "magic_tattoo": 36,
+        "infusion": 16,
+        "invocation": 8,
+        "magic_item": 36,
+        "magic_tattoo": 11,
         "maneuver": 8,
-        "narrative": 9,
+        "narrative": 10,
         "puzzle": 15,
         "spell": 21,
-        "subclass_feature": 266
+        "subclass_feature": 263
       },
-      "manual_authoring": 530,
+      "manual_authoring": 378,
       "non_instantiable": 10,
-      "pack_fingerprint": "d7a0b07373de0c870f54918448caa74965bdf43fc1eb6338c8e5bf400a4e7c75",
+      "pack_fingerprint": "c49bc727a3a19701b60aee9123836e1e9824c99960a30150d3ba7b1795e07105",
       "pack_id": "tashas-cauldron",
-      "player_facing_atom_total": 558,
+      "player_facing_atom_total": 407,
       "player_kind_counts": {
-        "character_option": 15,
-        "class_feature": 64,
-        "companion_profile": 3,
+        "class_feature": 63,
         "feat": 15,
-        "infusion": 20,
-        "invocation": 8,
-        "magic_item": 103,
-        "magic_tattoo": 36,
+        "infusion": 15,
+        "invocation": 7,
+        "magic_item": 36,
+        "magic_tattoo": 11,
         "maneuver": 7,
         "spell": 21,
-        "subclass_feature": 266
+        "subclass_feature": 232
       },
-      "production_full": 18,
-      "reviewed_total": 558,
-      "runtime_preview_full": 28,
+      "production_full": 17,
+      "reviewed_total": 407,
+      "runtime_preview_full": 29,
       "schema_version": "tashas-whole-pack-migration-1",
       "source_book": "塔莎的万事坩埚",
       "source_record_classified": 144,
@@ -138,17 +143,17 @@
       "source_record_total": 144,
       "source_record_unclassified": 0,
       "status_counts": {
-        "compile_only": 9,
+        "compile_only": 11,
         "dm_assisted": 1,
-        "dm_reference": 57,
+        "dm_reference": 107,
         "duplicate_or_reprint": 0,
         "invalid_source": 0,
-        "manual_authoring": 530,
+        "manual_authoring": 378,
         "non_instantiable": 10,
         "out_of_scope_with_reason": 0,
-        "production_full": 18
+        "production_full": 17
       },
-      "template_matched": 28
+      "template_matched": 29
     },
     "unique_compiled": 111
   },

@@ -1,0 +1,82 @@
+{
+  "compile_full": 11,
+  "items": [
+    {
+      "blockers": [],
+      "compile_status": "full",
+      "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-8d7814d75b94-003",
+      "localized_name": "屏障刺青"
+    },
+    {
+      "blockers": [],
+      "compile_status": "full",
+      "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-a92dd000492e-001",
+      "localized_name": "伪装刺青"
+    },
+    {
+      "blockers": [],
+      "compile_status": "full",
+      "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-b9cb8e43543d-007",
+      "localized_name": "吸收刺青"
+    },
+    {
+      "blockers": [],
+      "compile_status": "full",
+      "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-c27398cf29fe-010",
+      "localized_name": "血怒刺青"
+    },
+    {
+      "blockers": [],
+      "compile_status": "full",
+      "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-coiling-004",
+      "localized_name": "缠爪刺青"
+    },
+    {
+      "blockers": [],
+      "compile_status": "full",
+      "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-eldritch-005",
+      "localized_name": "魔能爪刺青"
+    },
+    {
+      "blockers": [],
+      "compile_status": "full",
+      "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-ghost-step-tattoo-008",
+      "localized_name": "鬼步刺青"
+    },
+    {
+      "blockers": [],
+      "compile_status": "full",
+      "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-illuminator-s-tattoo-000",
+      "localized_name": "解文刺青"
+    },
+    {
+      "blockers": [],
+      "compile_status": "full",
+      "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-lifewell-tattoo-009",
+      "localized_name": "命源刺青"
+    },
+    {
+      "blockers": [],
+      "compile_status": "full",
+      "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-shadowfellbrand-tattoo-006",
+      "localized_name": "堕影冥界印记刺青"
+    },
+    {
+      "blockers": [],
+      "compile_status": "full",
+      "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-spell-wrought-tattoo-002",
+      "localized_name": "蕴法刺青"
+    }
+  ],
+  "lifecycle_policy": {
+    "attune": "requires active Attunement row or equipped non-attunement item",
+    "name_branch_count": 0,
+    "needle_and_ink": "typed tattoo_lifecycle clause; unknown visual prose is not inferred",
+    "unattune": "remove active item effects through snapshot materialization"
+  },
+  "pack_id": "tashas-cauldron",
+  "schema_version": "tashas-magic-tattoo-validation-II-1",
+  "tattoo_atom_total": 11,
+  "tattoo_spec_total": 11,
+  "typed_lifecycle_clause_total": 11
+}

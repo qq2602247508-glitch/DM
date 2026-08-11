@@ -1,0 +1,507 @@
+{
+  "attunement_requirements": {
+    "required": true,
+    "requirements_text": "任意生物"
+  },
+  "charges": {
+    "current": 8,
+    "maximum": 8,
+    "recovery_amount": null,
+    "recovery_trigger": "dawn"
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:equipment",
+      "clause_type": "equipment",
+      "evidence": {
+        "source_fragment": "53"
+      },
+      "parameters": {
+        "equipped_slot": "worn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:attunement",
+      "clause_type": "attunement",
+      "evidence": {
+        "source_text": "需同调"
+      },
+      "parameters": {
+        "required": true,
+        "requirements_text": "任意生物"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:charges",
+      "clause_type": "charge",
+      "evidence": {
+        "text": "8发充能"
+      },
+      "parameters": {
+        "current": 8,
+        "maximum": 8,
+        "recovery_amount": null,
+        "recovery_trigger": "dawn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:charge-recovery",
+      "clause_type": "charge_recovery",
+      "evidence": {
+        "text": "*奇物**,**神器（需同调）*\n作为一份关于深渊之无限层级及其居民的宏大论文，*伊格薇尔伏恶魔**志**Demonomicon**ofIggwilv*是多元宇宙中最详细而最为亵渎的关于恶魔学识的记载。这卷书记载了从亘古到现在关于深渊与恶魔的所有渎神之物。恶魔们尝试过删减其中的文本，而虽有的部分被从书本的脊页上撕下，但大部分章节仍存，而且较之前更能揭示恶魔的秘密。这书所含之物已非亵渎二字所能形容。一小片不为人知的，无底深渊本身的碎片被囚禁于字字句句之后，使得无论有多少页被撕下"
+      },
+      "parameters": {
+        "recovery_amount": null,
+        "recovery_trigger": "dawn",
+        "typed_dawn_event_required": true
+      },
+      "trigger": "dawn"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:action:1",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "用一个动作随意施展*塔莎狂笑术**Tasha’s Hideous\nLaughter*或消耗1发或更多的充能施展以下法术（DC20）：*防护法阵**Magic Circle*（1发充能），*魔魂壶**Magic Jar*（3发充能），*异界誓盟**Planar Ally*（3发充能），*异界誓缚**Planar Binding*（2发充能），*位面转移**Plane Shift*（仅限深渊层级；3发充能），*邪魔召唤术**Summon Fiend*（3发充能；出现于本书）。\n***深渊学识。***你可以在你每次进行辨认关于恶魔的消息的智力检定或关于深渊的感知（求生）检定时查阅恶魔志。若如此做，你的检定使用双倍的熟练加值。\n***鞭笞邪"
+      },
+      "parameters": {
+        "action_economy": "action",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:action:1",
+        "charge_cost": 1,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "用一个动作随意施展*塔莎狂笑术**Tasha’s Hideous\nLaughter*或消耗1发或更多的充能施展以下法术（DC20）：*防护法阵**Magic Circle*（1发充能），*魔魂壶**Magic Jar*（3发充能），*异界誓盟**Planar Ally*（3发充能），*异界誓缚**Planar Binding*（2发充能），*位面转移**Plane Shift*（仅限深渊层级；3发充能），*邪魔召唤术**Summon Fiend*（3发充能；出现于本书）。\n***深渊学识。***你可以在你每次进行辨认关于恶魔的消息的智力检定或关于深渊的感知（求生）检定时查阅恶魔志。若如此做，你的检定使用双倍的熟练加值。\n***鞭笞邪",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:action:2",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个动作，你可以选择一个你可见且被困在*防护法阵**Magic Circle*中的邪魔。该邪魔必须以劣势进行一次DC20的魅力豁免，豁免失败则被困在恶魔志的一张空白页中。并且会附上受困生物广为人知的名字与堕落内容的详细文字。使用后，直到下次黎明前，这项动作不能再次使用。\n当你结束了一次长休时，如果你和恶魔志存在于同一位面，则书中所困挑战等级最高的生物可以尝试附身你。你必须进行一次DC20的魅力豁免。若豁免失败，则你如同一具提线玩偶般被该生物附身。附身你的生物可以用一个动作释放你，并在最近的一处未占据空间出现。若豁免成功，则尝试附身你的邪魔在未来7天内都不能再次尝试附身你。\n在这本魔典被发现时，已经有了1d4张书页被占据，一般是各"
+      },
+      "parameters": {
+        "action_economy": "action",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:action:2",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "作为一个动作，你可以选择一个你可见且被困在*防护法阵**Magic Circle*中的邪魔。该邪魔必须以劣势进行一次DC20的魅力豁免，豁免失败则被困在恶魔志的一张空白页中。并且会附上受困生物广为人知的名字与堕落内容的详细文字。使用后，直到下次黎明前，这项动作不能再次使用。\n当你结束了一次长休时，如果你和恶魔志存在于同一位面，则书中所困挑战等级最高的生物可以尝试附身你。你必须进行一次DC20的魅力豁免。若豁免失败，则你如同一具提线玩偶般被该生物附身。附身你的生物可以用一个动作释放你，并在最近的一处未占据空间出现。若豁免成功，则尝试附身你的邪魔在未来7天内都不能再次尝试附身你。\n在这本魔典被发现时，已经有了1d4张书页被占据，一般是各",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:action:3",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "用一个动作释放你，并在最近的一处未占据空间出现。若豁免成功，则尝试附身你的邪魔在未来7天内都不能再次尝试附身你。\n在这本魔典被发现时，已经有了1d4张书页被占据，一般是各种恶魔。\n***破坏恶魔志。***要摧毁这本书，必须有六位不同的恶魔领主分别撕下书内六分之一的页数。书页被撕下后会在24小时内恢复。而在所有书页被撕下与恢复之前，任何打开剩余装订部分的人都会被传送到一处隐藏在书中的新生深渊层级。在这致命、的半智能领域中心，有一件遗失许久的神器，弗拉兹-厄鲁之杖。如果法杖被带离这处口袋位面，魔典会立刻变成一本*《反序古典**Tome ofZyx**》*普通而过时的抄本，这本书是创造恶魔志的基底。法杖一旦出现，恶魔领主弗拉兹-厄鲁会立刻"
+      },
+      "parameters": {
+        "action_economy": "action",
+        "action_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:action:3",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "用一个动作释放你，并在最近的一处未占据空间出现。若豁免成功，则尝试附身你的邪魔在未来7天内都不能再次尝试附身你。\n在这本魔典被发现时，已经有了1d4张书页被占据，一般是各种恶魔。\n***破坏恶魔志。***要摧毁这本书，必须有六位不同的恶魔领主分别撕下书内六分之一的页数。书页被撕下后会在24小时内恢复。而在所有书页被撕下与恢复之前，任何打开剩余装订部分的人都会被传送到一处隐藏在书中的新生深渊层级。在这致命、的半智能领域中心，有一件遗失许久的神器，弗拉兹-厄鲁之杖。如果法杖被带离这处口袋位面，魔典会立刻变成一本*《反序古典**Tome ofZyx**》*普通而过时的抄本，这本书是创造恶魔志的基底。法杖一旦出现，恶魔领主弗拉兹-厄鲁会立刻",
+        "target_policy": "source_text"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:spell-grant",
+      "clause_type": "granted_spell",
+      "evidence": {
+        "manual_review_required": false,
+        "source_excerpt": "*奇物**,**神器（需同调）*\n作为一份关于深渊之无限层级及其居民的宏大论文，*伊格薇尔伏恶魔**志**Demonomicon**ofIggwilv*是多元宇宙中最详细而最为亵渎的关于恶魔学识的记载。这卷书记载了从亘古到现在关于深渊与恶魔的所有渎神之物。恶魔们尝试过删减其中的文本，而虽有的部分被从书本的脊页上撕下，但大部分章节仍存，而且较之前更能揭示恶魔的秘密。这书所含之物已非亵渎二字所能形容。一小片不为人知的，无底深渊本身的碎片被囚禁于字字句句之后，使得无论有多少页被撕下，也能让书时刻保持着更新，这本书也不仅仅只是想要成为一本参考材料。\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的*“**神器**”*章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效减益属性一项弱效减"
+      },
+      "parameters": {
+        "grant_mode": "item_cast",
+        "source_text": "*奇物**,**神器（需同调）*\n作为一份关于深渊之无限层级及其居民的宏大论文，*伊格薇尔伏恶魔**志**Demonomicon**ofIggwilv*是多元宇宙中最详细而最为亵渎的关于恶魔学识的记载。这卷书记载了从亘古到现在关于深渊与恶魔的所有渎神之物。恶魔们尝试过删减其中的文本，而虽有的部分被从书本的脊页上撕下，但大部分章节仍存，而且较之前更能揭示恶魔的秘密。这书所含之物已非亵渎二字所能形容。一小片不为人知的，无底深渊本身的碎片被囚禁于字字句句之后，使得无论有多少页被撕下，也能让书时刻保持着更新，这本书也不仅仅只是想要成为一本参考材料。\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的*“**神器**”*章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效减益属性一项弱效减",
+        "spell_identities": [
+          {
+            "english_name": "",
+            "localized_name": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰",
+            "spell_id": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰"
+          },
+          {
+            "english_name": "Tasha’s Hideous",
+            "localized_name": "塔莎狂笑术",
+            "spell_id": "tasha’s-hideous"
+          },
+          {
+            "english_name": "Magic Circle",
+            "localized_name": "防护法阵",
+            "spell_id": "magic-circle"
+          },
+          {
+            "english_name": "Magic Jar",
+            "localized_name": "魔魂壶",
+            "spell_id": "magic-jar"
+          },
+          {
+            "english_name": "Planar Ally",
+            "localized_name": "异界誓盟",
+            "spell_id": "planar-ally"
+          },
+          {
+            "english_name": "Planar Binding",
+            "localized_name": "异界誓缚",
+            "spell_id": "planar-binding"
+          },
+          {
+            "english_name": "Plane Shift",
+            "localized_name": "位面转移",
+            "spell_id": "plane-shift"
+          },
+          {
+            "english_name": "Summon Fiend",
+            "localized_name": "邪魔召唤术",
+            "spell_id": "summon-fiend"
+          }
+        ],
+        "spell_ids": [
+          "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰",
+          "tasha’s-hideous",
+          "magic-circle",
+          "magic-jar",
+          "planar-ally",
+          "planar-binding",
+          "plane-shift",
+          "summon-fiend"
+        ]
+      },
+      "trigger": "item_action_requested"
+    }
+  ],
+  "compile": {
+    "blockers": [],
+    "clauses": [
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:equipment",
+        "clause_type": "equipment",
+        "evidence": {
+          "source_fragment": "53"
+        },
+        "parameters": {
+          "equipped_slot": "worn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:attunement",
+        "clause_type": "attunement",
+        "evidence": {
+          "source_text": "需同调"
+        },
+        "parameters": {
+          "required": true,
+          "requirements_text": "任意生物"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:charges",
+        "clause_type": "charge",
+        "evidence": {
+          "text": "8发充能"
+        },
+        "parameters": {
+          "current": 8,
+          "maximum": 8,
+          "recovery_amount": null,
+          "recovery_trigger": "dawn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:charge-recovery",
+        "clause_type": "charge_recovery",
+        "evidence": {
+          "text": "*奇物**,**神器（需同调）*\n作为一份关于深渊之无限层级及其居民的宏大论文，*伊格薇尔伏恶魔**志**Demonomicon**ofIggwilv*是多元宇宙中最详细而最为亵渎的关于恶魔学识的记载。这卷书记载了从亘古到现在关于深渊与恶魔的所有渎神之物。恶魔们尝试过删减其中的文本，而虽有的部分被从书本的脊页上撕下，但大部分章节仍存，而且较之前更能揭示恶魔的秘密。这书所含之物已非亵渎二字所能形容。一小片不为人知的，无底深渊本身的碎片被囚禁于字字句句之后，使得无论有多少页被撕下"
+        },
+        "parameters": {
+          "recovery_amount": null,
+          "recovery_trigger": "dawn",
+          "typed_dawn_event_required": true
+        },
+        "trigger": "dawn"
+      },
+      {
+        "action_economy": "action",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:action:1",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "用一个动作随意施展*塔莎狂笑术**Tasha’s Hideous\nLaughter*或消耗1发或更多的充能施展以下法术（DC20）：*防护法阵**Magic Circle*（1发充能），*魔魂壶**Magic Jar*（3发充能），*异界誓盟**Planar Ally*（3发充能），*异界誓缚**Planar Binding*（2发充能），*位面转移**Plane Shift*（仅限深渊层级；3发充能），*邪魔召唤术**Summon Fiend*（3发充能；出现于本书）。\n***深渊学识。***你可以在你每次进行辨认关于恶魔的消息的智力检定或关于深渊的感知（求生）检定时查阅恶魔志。若如此做，你的检定使用双倍的熟练加值。\n***鞭笞邪"
+        },
+        "parameters": {
+          "action_economy": "action",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:action:1",
+          "charge_cost": 1,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "用一个动作随意施展*塔莎狂笑术**Tasha’s Hideous\nLaughter*或消耗1发或更多的充能施展以下法术（DC20）：*防护法阵**Magic Circle*（1发充能），*魔魂壶**Magic Jar*（3发充能），*异界誓盟**Planar Ally*（3发充能），*异界誓缚**Planar Binding*（2发充能），*位面转移**Plane Shift*（仅限深渊层级；3发充能），*邪魔召唤术**Summon Fiend*（3发充能；出现于本书）。\n***深渊学识。***你可以在你每次进行辨认关于恶魔的消息的智力检定或关于深渊的感知（求生）检定时查阅恶魔志。若如此做，你的检定使用双倍的熟练加值。\n***鞭笞邪",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "action",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:action:2",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个动作，你可以选择一个你可见且被困在*防护法阵**Magic Circle*中的邪魔。该邪魔必须以劣势进行一次DC20的魅力豁免，豁免失败则被困在恶魔志的一张空白页中。并且会附上受困生物广为人知的名字与堕落内容的详细文字。使用后，直到下次黎明前，这项动作不能再次使用。\n当你结束了一次长休时，如果你和恶魔志存在于同一位面，则书中所困挑战等级最高的生物可以尝试附身你。你必须进行一次DC20的魅力豁免。若豁免失败，则你如同一具提线玩偶般被该生物附身。附身你的生物可以用一个动作释放你，并在最近的一处未占据空间出现。若豁免成功，则尝试附身你的邪魔在未来7天内都不能再次尝试附身你。\n在这本魔典被发现时，已经有了1d4张书页被占据，一般是各"
+        },
+        "parameters": {
+          "action_economy": "action",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:action:2",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "作为一个动作，你可以选择一个你可见且被困在*防护法阵**Magic Circle*中的邪魔。该邪魔必须以劣势进行一次DC20的魅力豁免，豁免失败则被困在恶魔志的一张空白页中。并且会附上受困生物广为人知的名字与堕落内容的详细文字。使用后，直到下次黎明前，这项动作不能再次使用。\n当你结束了一次长休时，如果你和恶魔志存在于同一位面，则书中所困挑战等级最高的生物可以尝试附身你。你必须进行一次DC20的魅力豁免。若豁免失败，则你如同一具提线玩偶般被该生物附身。附身你的生物可以用一个动作释放你，并在最近的一处未占据空间出现。若豁免成功，则尝试附身你的邪魔在未来7天内都不能再次尝试附身你。\n在这本魔典被发现时，已经有了1d4张书页被占据，一般是各",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "action",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:action:3",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "用一个动作释放你，并在最近的一处未占据空间出现。若豁免成功，则尝试附身你的邪魔在未来7天内都不能再次尝试附身你。\n在这本魔典被发现时，已经有了1d4张书页被占据，一般是各种恶魔。\n***破坏恶魔志。***要摧毁这本书，必须有六位不同的恶魔领主分别撕下书内六分之一的页数。书页被撕下后会在24小时内恢复。而在所有书页被撕下与恢复之前，任何打开剩余装订部分的人都会被传送到一处隐藏在书中的新生深渊层级。在这致命、的半智能领域中心，有一件遗失许久的神器，弗拉兹-厄鲁之杖。如果法杖被带离这处口袋位面，魔典会立刻变成一本*《反序古典**Tome ofZyx**》*普通而过时的抄本，这本书是创造恶魔志的基底。法杖一旦出现，恶魔领主弗拉兹-厄鲁会立刻"
+        },
+        "parameters": {
+          "action_economy": "action",
+          "action_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:action:3",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "用一个动作释放你，并在最近的一处未占据空间出现。若豁免成功，则尝试附身你的邪魔在未来7天内都不能再次尝试附身你。\n在这本魔典被发现时，已经有了1d4张书页被占据，一般是各种恶魔。\n***破坏恶魔志。***要摧毁这本书，必须有六位不同的恶魔领主分别撕下书内六分之一的页数。书页被撕下后会在24小时内恢复。而在所有书页被撕下与恢复之前，任何打开剩余装订部分的人都会被传送到一处隐藏在书中的新生深渊层级。在这致命、的半智能领域中心，有一件遗失许久的神器，弗拉兹-厄鲁之杖。如果法杖被带离这处口袋位面，魔典会立刻变成一本*《反序古典**Tome ofZyx**》*普通而过时的抄本，这本书是创造恶魔志的基底。法杖一旦出现，恶魔领主弗拉兹-厄鲁会立刻",
+          "target_policy": "source_text"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "action",
+        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:spell-grant",
+        "clause_type": "granted_spell",
+        "evidence": {
+          "manual_review_required": false,
+          "source_excerpt": "*奇物**,**神器（需同调）*\n作为一份关于深渊之无限层级及其居民的宏大论文，*伊格薇尔伏恶魔**志**Demonomicon**ofIggwilv*是多元宇宙中最详细而最为亵渎的关于恶魔学识的记载。这卷书记载了从亘古到现在关于深渊与恶魔的所有渎神之物。恶魔们尝试过删减其中的文本，而虽有的部分被从书本的脊页上撕下，但大部分章节仍存，而且较之前更能揭示恶魔的秘密。这书所含之物已非亵渎二字所能形容。一小片不为人知的，无底深渊本身的碎片被囚禁于字字句句之后，使得无论有多少页被撕下，也能让书时刻保持着更新，这本书也不仅仅只是想要成为一本参考材料。\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的*“**神器**”*章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效减益属性一项弱效减"
+        },
+        "parameters": {
+          "grant_mode": "item_cast",
+          "source_text": "*奇物**,**神器（需同调）*\n作为一份关于深渊之无限层级及其居民的宏大论文，*伊格薇尔伏恶魔**志**Demonomicon**ofIggwilv*是多元宇宙中最详细而最为亵渎的关于恶魔学识的记载。这卷书记载了从亘古到现在关于深渊与恶魔的所有渎神之物。恶魔们尝试过删减其中的文本，而虽有的部分被从书本的脊页上撕下，但大部分章节仍存，而且较之前更能揭示恶魔的秘密。这书所含之物已非亵渎二字所能形容。一小片不为人知的，无底深渊本身的碎片被囚禁于字字句句之后，使得无论有多少页被撕下，也能让书时刻保持着更新，这本书也不仅仅只是想要成为一本参考材料。\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的*“**神器**”*章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效减益属性一项弱效减",
+          "spell_identities": [
+            {
+              "english_name": "",
+              "localized_name": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰",
+              "spell_id": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰"
+            },
+            {
+              "english_name": "Tasha’s Hideous",
+              "localized_name": "塔莎狂笑术",
+              "spell_id": "tasha’s-hideous"
+            },
+            {
+              "english_name": "Magic Circle",
+              "localized_name": "防护法阵",
+              "spell_id": "magic-circle"
+            },
+            {
+              "english_name": "Magic Jar",
+              "localized_name": "魔魂壶",
+              "spell_id": "magic-jar"
+            },
+            {
+              "english_name": "Planar Ally",
+              "localized_name": "异界誓盟",
+              "spell_id": "planar-ally"
+            },
+            {
+              "english_name": "Planar Binding",
+              "localized_name": "异界誓缚",
+              "spell_id": "planar-binding"
+            },
+            {
+              "english_name": "Plane Shift",
+              "localized_name": "位面转移",
+              "spell_id": "plane-shift"
+            },
+            {
+              "english_name": "Summon Fiend",
+              "localized_name": "邪魔召唤术",
+              "spell_id": "summon-fiend"
+            }
+          ],
+          "spell_ids": [
+            "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰",
+            "tasha’s-hideous",
+            "magic-circle",
+            "magic-jar",
+            "planar-ally",
+            "planar-binding",
+            "plane-shift",
+            "summon-fiend"
+          ]
+        },
+        "trigger": "item_action_requested"
+      }
+    ],
+    "compile_status": "full",
+    "consumer_ids": [
+      "item.attunement.v1",
+      "item.charge_resource.v1",
+      "item.equipment_modifier.v1",
+      "item.granted_action.v1",
+      "item.granted_spell.v1"
+    ],
+    "item_fingerprint": "1966ea4db8eea5eb7c8214efda8c7cd3a95dec1472f4e9d1a43fd8aa4f69be71",
+    "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-682baf0e9760-002",
+    "runtime_preview_full": true,
+    "schema_version": "item-ir-1",
+    "source_trust": "authored_ir"
+  },
+  "conditions": [],
+  "consumption_policy": {
+    "mode": "charges"
+  },
+  "damage": null,
+  "duration": null,
+  "equipped_slot": null,
+  "evidence": {
+    "manual_review_required": false,
+    "rejected_inferences": [
+      "unknown_effects",
+      "unresolved_spell_identity",
+      "freeform_targeting"
+    ],
+    "review_status": "reviewed_explicit_fields_only",
+    "reviewed_fields": [
+      "identity",
+      "kind",
+      "rarity",
+      "attunement",
+      "charges",
+      "clause_boundaries"
+    ],
+    "source_fragment": "53",
+    "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html",
+    "source_text_sha256": "bb7e27ecdf9df5d155bae20e97ccdf874f78fd2589eff065d20f310786f25527"
+  },
+  "granted_actions": [
+    {
+      "action_economy": "action",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:action:1",
+      "charge_cost": 1,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "用一个动作随意施展*塔莎狂笑术**Tasha’s Hideous\nLaughter*或消耗1发或更多的充能施展以下法术（DC20）：*防护法阵**Magic Circle*（1发充能），*魔魂壶**Magic Jar*（3发充能），*异界誓盟**Planar Ally*（3发充能），*异界誓缚**Planar Binding*（2发充能），*位面转移**Plane Shift*（仅限深渊层级；3发充能），*邪魔召唤术**Summon Fiend*（3发充能；出现于本书）。\n***深渊学识。***你可以在你每次进行辨认关于恶魔的消息的智力检定或关于深渊的感知（求生）检定时查阅恶魔志。若如此做，你的检定使用双倍的熟练加值。\n***鞭笞邪",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "action",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:action:2",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "作为一个动作，你可以选择一个你可见且被困在*防护法阵**Magic Circle*中的邪魔。该邪魔必须以劣势进行一次DC20的魅力豁免，豁免失败则被困在恶魔志的一张空白页中。并且会附上受困生物广为人知的名字与堕落内容的详细文字。使用后，直到下次黎明前，这项动作不能再次使用。\n当你结束了一次长休时，如果你和恶魔志存在于同一位面，则书中所困挑战等级最高的生物可以尝试附身你。你必须进行一次DC20的魅力豁免。若豁免失败，则你如同一具提线玩偶般被该生物附身。附身你的生物可以用一个动作释放你，并在最近的一处未占据空间出现。若豁免成功，则尝试附身你的邪魔在未来7天内都不能再次尝试附身你。\n在这本魔典被发现时，已经有了1d4张书页被占据，一般是各",
+      "target_policy": "self"
+    },
+    {
+      "action_economy": "action",
+      "action_id": "tashas-cauldron:atom:760b230e1396825928305642:682baf0e9760:002:action:3",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "用一个动作释放你，并在最近的一处未占据空间出现。若豁免成功，则尝试附身你的邪魔在未来7天内都不能再次尝试附身你。\n在这本魔典被发现时，已经有了1d4张书页被占据，一般是各种恶魔。\n***破坏恶魔志。***要摧毁这本书，必须有六位不同的恶魔领主分别撕下书内六分之一的页数。书页被撕下后会在24小时内恢复。而在所有书页被撕下与恢复之前，任何打开剩余装订部分的人都会被传送到一处隐藏在书中的新生深渊层级。在这致命、的半智能领域中心，有一件遗失许久的神器，弗拉兹-厄鲁之杖。如果法杖被带离这处口袋位面，魔典会立刻变成一本*《反序古典**Tome ofZyx**》*普通而过时的抄本，这本书是创造恶魔志的基底。法杖一旦出现，恶魔领主弗拉兹-厄鲁会立刻",
+      "target_policy": "source_text"
+    }
+  ],
+  "granted_spells": [
+    {
+      "english_name": "",
+      "localized_name": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰",
+      "spell_id": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰"
+    },
+    {
+      "english_name": "Tasha’s Hideous",
+      "localized_name": "塔莎狂笑术",
+      "spell_id": "tasha’s-hideous"
+    },
+    {
+      "english_name": "Magic Circle",
+      "localized_name": "防护法阵",
+      "spell_id": "magic-circle"
+    },
+    {
+      "english_name": "Magic Jar",
+      "localized_name": "魔魂壶",
+      "spell_id": "magic-jar"
+    },
+    {
+      "english_name": "Planar Ally",
+      "localized_name": "异界誓盟",
+      "spell_id": "planar-ally"
+    },
+    {
+      "english_name": "Planar Binding",
+      "localized_name": "异界誓缚",
+      "spell_id": "planar-binding"
+    },
+    {
+      "english_name": "Plane Shift",
+      "localized_name": "位面转移",
+      "spell_id": "plane-shift"
+    },
+    {
+      "english_name": "Summon Fiend",
+      "localized_name": "邪魔召唤术",
+      "spell_id": "summon-fiend"
+    }
+  ],
+  "healing": null,
+  "immunities": [],
+  "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-682baf0e9760-002",
+  "item_kind": "wondrous_item",
+  "localized_name": "伊格薇尔伏恶魔",
+  "manual_review_required": false,
+  "name": "伊格薇尔伏恶魔",
+  "namespace": "dnd.tashas.recovery.item",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "whole-pack-2026-08-11",
+  "passive_modifiers": [],
+  "rarity": "普通",
+  "requires_attunement": true,
+  "resistances": [],
+  "resource_bindings": [],
+  "review_fingerprint": "1966ea4db8eea5eb7c8214efda8c7cd3a95dec1472f4e9d1a43fd8aa4f69be71",
+  "review_status": "reviewed",
+  "ruleset_version": "2024",
+  "schema_version": "item-ir-1",
+  "source_fingerprint": "bb7e27ecdf9df5d155bae20e97ccdf874f78fd2589eff065d20f310786f25527",
+  "source_fragment": "53",
+  "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/神器.html",
+  "source_record_id": "760b230e1396825928305642",
+  "source_trust": "authored_ir",
+  "stack_policy": {
+    "mode": "unique_instance"
+  },
+  "temporary_hp": null,
+  "triggered_effects": []
+}

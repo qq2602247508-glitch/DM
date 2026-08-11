@@ -1,6 +1,6 @@
 {
   "atom_dm_assisted_count": 1,
-  "atom_production_full_count": 18,
+  "atom_production_full_count": 17,
   "dm_assisted_atoms": [
     "tashas-cauldron:atom:0036d7dc058c496ef08fe340:a27f6b57964b:000"
   ],
@@ -39,7 +39,6 @@
     "tashas-cauldron:atom:606d89f6e0ea3b2e0194f24c:arcane-jolt:010",
     "tashas-cauldron:atom:606d89f6e0ea3b2e0194f24c:repair-3:007",
     "tashas-cauldron:atom:7947fb03852a7bc77d69e3ac:be0996c2cd7c:000",
-    "tashas-cauldron:atom:a13253dc90904c96eaa719ab:426032a81bb5:001",
     "tashas-cauldron:atom:a13253dc90904c96eaa719ab:protective-field:002",
     "tashas-cauldron:atom:a13253dc90904c96eaa719ab:psionic-strike:003",
     "tashas-cauldron:atom:a13253dc90904c96eaa719ab:telekinetic-movement:004",
@@ -276,7 +275,7 @@
       "runtime_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1"
     }
   },
-  "runtime_preview_full_count": 28,
+  "runtime_preview_full_count": 29,
   "schema_version": "tashas-production-runtime-report-1",
   "unmatched_production_runtime_ids": []
 }

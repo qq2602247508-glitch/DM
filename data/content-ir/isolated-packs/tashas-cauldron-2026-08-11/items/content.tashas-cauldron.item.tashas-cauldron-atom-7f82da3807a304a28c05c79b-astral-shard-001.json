@@ -1,0 +1,234 @@
+{
+  "attunement_requirements": {
+    "required": true,
+    "requirements_text": "术士"
+  },
+  "charges": {},
+  "clauses": [
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:astral-shard:001:equipment",
+      "clause_type": "equipment",
+      "evidence": {
+        "source_fragment": "11"
+      },
+      "parameters": {
+        "equipped_slot": "worn"
+      },
+      "trigger": "item_lifecycle"
+    },
+    {
+      "action_economy": "none",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:astral-shard:001:attunement",
+      "clause_type": "attunement",
+      "evidence": {
+        "source_text": "需同调"
+      },
+      "parameters": {
+        "required": true,
+        "requirements_text": "术士"
+      },
+      "trigger": "attunement_confirmed"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:astral-shard:001:action:1",
+      "clause_type": "granted_action",
+      "evidence": {
+        "source_excerpt": "作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用。\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，可以在施展法术后立即传送到至多30尺内一个你能看见且未被占据的位置。"
+      },
+      "parameters": {
+        "action_economy": "action",
+        "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:astral-shard:001:action:1",
+        "charge_cost": 0,
+        "consumer_id": "item.granted_action.v1",
+        "manual_review_required": false,
+        "source_excerpt": "作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用。\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，可以在施展法术后立即传送到至多30尺内一个你能看见且未被占据的位置。",
+        "target_policy": "self"
+      },
+      "trigger": "item_action_requested"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:astral-shard:001:spell-grant",
+      "clause_type": "granted_spell",
+      "evidence": {
+        "manual_review_required": false,
+        "source_excerpt": "*奇物, 珍稀（需术士同调）*\n这块水晶是一块来自星光位面的坚硬碎晶，银色的迷雾在其表面上流转。\n作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用。\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，可以在施展法术后立即传送到至多30尺内一个你能看见且未被占据的位置。"
+      },
+      "parameters": {
+        "grant_mode": "item_cast",
+        "source_text": "*奇物, 珍稀（需术士同调）*\n这块水晶是一块来自星光位面的坚硬碎晶，银色的迷雾在其表面上流转。\n作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用。\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，可以在施展法术后立即传送到至多30尺内一个你能看见且未被占据的位置。",
+        "spell_identities": [
+          {
+            "english_name": "",
+            "localized_name": "法术后立即传送到至多30尺内一个你能看见且未被占据的位置",
+            "spell_id": "法术后立即传送到至多30尺内一个你能看见且未被占据的位置"
+          }
+        ],
+        "spell_ids": [
+          "法术后立即传送到至多30尺内一个你能看见且未被占据的位置"
+        ]
+      },
+      "trigger": "item_action_requested"
+    }
+  ],
+  "compile": {
+    "blockers": [],
+    "clauses": [
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:astral-shard:001:equipment",
+        "clause_type": "equipment",
+        "evidence": {
+          "source_fragment": "11"
+        },
+        "parameters": {
+          "equipped_slot": "worn"
+        },
+        "trigger": "item_lifecycle"
+      },
+      {
+        "action_economy": "none",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:astral-shard:001:attunement",
+        "clause_type": "attunement",
+        "evidence": {
+          "source_text": "需同调"
+        },
+        "parameters": {
+          "required": true,
+          "requirements_text": "术士"
+        },
+        "trigger": "attunement_confirmed"
+      },
+      {
+        "action_economy": "action",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:astral-shard:001:action:1",
+        "clause_type": "granted_action",
+        "evidence": {
+          "source_excerpt": "作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用。\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，可以在施展法术后立即传送到至多30尺内一个你能看见且未被占据的位置。"
+        },
+        "parameters": {
+          "action_economy": "action",
+          "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:astral-shard:001:action:1",
+          "charge_cost": 0,
+          "consumer_id": "item.granted_action.v1",
+          "manual_review_required": false,
+          "source_excerpt": "作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用。\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，可以在施展法术后立即传送到至多30尺内一个你能看见且未被占据的位置。",
+          "target_policy": "self"
+        },
+        "trigger": "item_action_requested"
+      },
+      {
+        "action_economy": "action",
+        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:astral-shard:001:spell-grant",
+        "clause_type": "granted_spell",
+        "evidence": {
+          "manual_review_required": false,
+          "source_excerpt": "*奇物, 珍稀（需术士同调）*\n这块水晶是一块来自星光位面的坚硬碎晶，银色的迷雾在其表面上流转。\n作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用。\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，可以在施展法术后立即传送到至多30尺内一个你能看见且未被占据的位置。"
+        },
+        "parameters": {
+          "grant_mode": "item_cast",
+          "source_text": "*奇物, 珍稀（需术士同调）*\n这块水晶是一块来自星光位面的坚硬碎晶，银色的迷雾在其表面上流转。\n作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用。\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，可以在施展法术后立即传送到至多30尺内一个你能看见且未被占据的位置。",
+          "spell_identities": [
+            {
+              "english_name": "",
+              "localized_name": "法术后立即传送到至多30尺内一个你能看见且未被占据的位置",
+              "spell_id": "法术后立即传送到至多30尺内一个你能看见且未被占据的位置"
+            }
+          ],
+          "spell_ids": [
+            "法术后立即传送到至多30尺内一个你能看见且未被占据的位置"
+          ]
+        },
+        "trigger": "item_action_requested"
+      }
+    ],
+    "compile_status": "full",
+    "consumer_ids": [
+      "item.attunement.v1",
+      "item.equipment_modifier.v1",
+      "item.granted_action.v1",
+      "item.granted_spell.v1"
+    ],
+    "item_fingerprint": "f7004d37b474cadddf2f459eb7c452b241f478074f48c3a2d48b780f08c68453",
+    "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
+    "runtime_preview_full": true,
+    "schema_version": "item-ir-1",
+    "source_trust": "authored_ir"
+  },
+  "conditions": [],
+  "consumption_policy": {
+    "mode": "persistent"
+  },
+  "damage": null,
+  "duration": null,
+  "equipped_slot": null,
+  "evidence": {
+    "manual_review_required": false,
+    "rejected_inferences": [
+      "unknown_effects",
+      "unresolved_spell_identity",
+      "freeform_targeting"
+    ],
+    "review_status": "reviewed_explicit_fields_only",
+    "reviewed_fields": [
+      "identity",
+      "kind",
+      "rarity",
+      "attunement",
+      "charges",
+      "clause_boundaries"
+    ],
+    "source_fragment": "11",
+    "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/珍稀.html",
+    "source_text_sha256": "5d55277b4302de2655699eed3531e9666851ae630795a0d39a6edbcf92f05f10"
+  },
+  "granted_actions": [
+    {
+      "action_economy": "action",
+      "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:astral-shard:001:action:1",
+      "charge_cost": 0,
+      "consumer_id": "item.granted_action.v1",
+      "manual_review_required": false,
+      "source_excerpt": "作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用。\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，可以在施展法术后立即传送到至多30尺内一个你能看见且未被占据的位置。",
+      "target_policy": "self"
+    }
+  ],
+  "granted_spells": [
+    {
+      "english_name": "",
+      "localized_name": "法术后立即传送到至多30尺内一个你能看见且未被占据的位置",
+      "spell_id": "法术后立即传送到至多30尺内一个你能看见且未被占据的位置"
+    }
+  ],
+  "healing": null,
+  "immunities": [],
+  "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
+  "item_kind": "weapon",
+  "localized_name": "星界碎晶",
+  "manual_review_required": false,
+  "name": "星界碎晶|Astral Shard",
+  "namespace": "dnd.tashas.recovery.item",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "whole-pack-2026-08-11",
+  "passive_modifiers": [],
+  "rarity": "珍稀",
+  "requires_attunement": true,
+  "resistances": [],
+  "resource_bindings": [],
+  "review_fingerprint": "f7004d37b474cadddf2f459eb7c452b241f478074f48c3a2d48b780f08c68453",
+  "review_status": "reviewed",
+  "ruleset_version": "2024",
+  "schema_version": "item-ir-1",
+  "source_fingerprint": "5d55277b4302de2655699eed3531e9666851ae630795a0d39a6edbcf92f05f10",
+  "source_fragment": "11",
+  "source_path": "塔莎的万事坩埚/魔法物品/魔法物品详述/珍稀.html",
+  "source_record_id": "7f82da3807a304a28c05c79b",
+  "source_trust": "authored_ir",
+  "stack_policy": {
+    "mode": "unique_instance"
+  },
+  "temporary_hp": null,
+  "triggered_effects": []
+}
