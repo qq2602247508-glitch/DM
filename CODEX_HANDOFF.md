@@ -1,3 +1,42 @@
+# 2026-08-11 长执行检查点：《塔莎的万事坩埚》整包生产迁移 I
+
+- 本轮严格单线程；没有创建、调用或委托子代理。受保护的
+  `backend/tests/integrations/` 与 `backend/tests/ollama.py` 未修改、未暂存、未提交。
+- 建立真实分母链：144/144 source records 已扫描并分类，生成 625 个 Content Atom，其中
+  558 个玩家向 executable candidate；同一批次完整生成 558 Draft/Candidate/Review。
+- 类型分布：`class_feature 64`、`subclass_feature 266`、`spell 21`、`feat 16`、
+  `character_option 15`、`maneuver 8`、`invocation 9`、`infusion 21`、
+  `magic_item 103`、`magic_tattoo 36`、`companion_profile 3`、`dm_tool 7`、
+  `environment_rule 22`、`puzzle 15`、`narrative 9`、`directory 10`。
+- 已复用既有 12 个模板；template match 28/558（5.02%），没有新模板、没有 name branch、
+  没有新 generic consumer。28 条 authored/verified Typed IR 全部接回；compile full/runtime
+  preview full 均为 28。现有 authored IR 共 31 条，另有 3 条 provenance 未匹配真实 atom，已
+  明确列为 mismatch：Armorer Tools of the Trade、Artillerist Tool Proficiency、Battle
+  Master Precision Attack。
+- Atom 状态为 `production_full 18`、`dm_assisted 1`、`compile_only 9`、
+  `manual_authoring 530`、`dm_reference 57`、`non_instantiable 10`、`invalid 0`、
+  `duplicate_or_reprint 0`；Content-ID funnel `28 = 18 + 1 + 9` 通过。现有 Tasha registry
+  的 19 个 production runtime ID 全部映射到真实 atom，未产生 registry 回归。
+- Item/刺青 139 个（103 magic item + 36 magic tattoo）仅完成 inventory；未伪装成 runtime，
+  blocker 是通用 `ItemSpec`/equipment-attunement/resource consumer 尚未接线。角色成长只做了
+  bounded partial：pack compatibility/legacy boundary、reload/idempotent/rollback probe 已
+  通过，未声称完成升级、降级、快照重建或正式 apply。
+- 现有项目基线保持 `111 unique compiled / 35 compile-only / 76 production full`，正式 499
+  条职业审计保持 `328 full / 110 partial / 61 dm_only`；formal registry、database、campaign
+  数据均未修改。代表性法术运行时检查沿用既有 preview→confirm→result→replay、CAS、rollback、
+  snapshot 与召唤 DM continuation 证据，Tasha 4 条法术 atom 有生产运行时证据。
+- 代码入口：`backend/src/dnd_dm_assistant/application/tashas_whole_pack.py`、
+  `scripts/migrate-tashas-whole-pack.py`；测试：
+  `backend/tests/test_tashas_whole_pack_migration.py`。报告与 isolated pack 见
+  `reports/tashas-whole-pack-report-2026-08-11.json` 和
+  `data/content-ir/isolated-packs/tashas-cauldron-2026-08-11/`。
+- 全量后端 pytest、backend/src+tests Ruff、迁移脚本 Ruff、compileall、diff-check 均通过；前端
+  未改动，未运行前端门禁。连续两次生成的报告、closeout 与 isolated pack 文件 byte-identical。
+- 下一步应先建设 ItemSpec/equipment-attunement/resource-bound item consumer，再回填 139 个
+  item atoms；若选择下一本整包，优先费资本的巨龙宝库（Fizban）：同为 2014-compatible，已
+  有 pack/runtime 边界且 source scope 较小、法术候选仅 7 个，适合作为 Item/实体边界的下一次
+  受控迁移。
+
 # 2026-08-11 长执行检查点：Rules Kernel、DM 裁定窗口与 3D 场景战斗协议 I
 
 - 本轮全程单线程；没有创建、调用或委托子代理。`backend/tests/integrations/` 与
