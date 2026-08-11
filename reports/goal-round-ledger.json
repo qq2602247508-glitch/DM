@@ -38,7 +38,7 @@
         "difference": "Round 6 harvests eight remaining full Feature contracts through the existing typed passive/inspection consumer; formal campaign/character/database rows remain outside the evidence boundary.",
         "prompt_baseline": {"round_target_production_or_dm": 8}
       },
-      "commits": [],
+      "commits": ["8df8ca3"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [
@@ -64,11 +64,11 @@
       "phase": "F",
       "push_receipt": {
         "branch": "main",
-        "commit_hash": "pending",
-        "pushed_at": "pending",
+        "commit_hash": "8df8ca391c7844a78c56a73d6909ac4ab2e2fb68",
+        "pushed_at": "2026-08-12T03:24:06+0800",
         "remote": "origin",
         "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
-        "result": "pending"
+        "result": "success"
       },
       "reports": [
         "reports/tashas-feature-production-consumer-round-VI-2026-08-12.json",

@@ -5,6 +5,7 @@
 - 本轮复用现有 feature runtime registry、passive inspection、actor/target CAS、transaction/idempotency；没有新增 feature-name/name-based runtime branch。
 - 新增证据入口：`scripts/validate-tashas-feature-production-consumer-round-VI.py`、`reports/tashas-feature-production-consumer-round-VI-2026-08-12.json`、`data/content-ir/compiled/production-runtime-results-VIII.json`、`docs/tashas-feature-production-consumer-round-VI-2026-08-12.md`。Round VI validator 两次关键输出 hash 一致；whole-pack migration 两次关键报告/runtime hash 一致。
 - formal apply/database/campaign/character 仍为 false；3D、source corpus、formal 499 audit 未改。受保护的 `backend/tests/integrations/` 和 `backend/tests/ollama.py` 未暂存/提交，database fingerprint 仍为 `f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad`。
+- Round VI evidence 已提交并推送：`8df8ca391c7844a78c56a73d6909ac4ab2e2fb68`，`origin/main` push success，2026-08-12 03:24:06 +0800；ledger receipt 随后单独提交。
 - Round VI 后继续处理 vessel/entity、exhaustion、spectral object、teleport destination、psionic payment 与 ItemSpec lifecycle；不要把 isolated-only / DM-reference 伪装成 production，也不要迁移下一本扩展包。
 
 # 2026-08-12 Round 5 检查点：Typed Advancement / Character Growth Consumer 扩展
