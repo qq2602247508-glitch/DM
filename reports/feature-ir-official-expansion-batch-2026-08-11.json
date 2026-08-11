@@ -1,0 +1,28 @@
+{
+  "authored_feature_ir": 8,
+  "feat_candidates": 1,
+  "feature_candidates": 48,
+  "full": 8,
+  "invalid": 0,
+  "manual": 0,
+  "partial": 0,
+  "schema_version": "feature-ir-batch-report-1",
+  "selected_feature_ids": [
+    "content.tashas-cauldron.feature.alchemist.tool-proficiency",
+    "content.tashas-cauldron.feature.armorer.tools-of-the-trade",
+    "content.tashas-cauldron.feature.artillerist.tool-proficiency",
+    "content.tashas-cauldron.feature.battle-master.ambush",
+    "content.tashas-cauldron.feature.battle-master.commanding-presence",
+    "content.tashas-cauldron.feature.battle-master.precision-attack",
+    "content.tashas-cauldron.feature.battle-smith.tool-proficiency",
+    "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy"
+  ],
+  "source_book": "塔莎的万事坩埚",
+  "spell_candidates": 21,
+  "whole_book_status_before_authored": {
+    "full": 0,
+    "invalid": 0,
+    "manual": 49,
+    "partial": 0
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "duplicate_feature_id": "covered_by existing compile_artifact_directory closed-world check",
+  "duplicate_spell_id": "covered_by existing compile_artifact_directory closed-world check",
+  "fingerprint_conflict": "covered_by manifest source_fingerprints and dry-run conflict path",
+  "formal_targets_written": false,
+  "idempotent_replay": true,
+  "packs": {
+    "core-2024-golden": {
+      "campaign_unchanged": true,
+      "character_snapshot_unchanged": true,
+      "first": {
+        "campaign_written": false,
+        "character_written": false,
+        "conflicts": [],
+        "formal_feature_registry_written": false,
+        "formal_spell_registry_written": false,
+        "manifest_fingerprint": "88f45a876ead20b6140099fa42acd0ffd8af5688dbcb08353e44bef2e9a25968",
+        "production_mutated": false,
+        "rolled_back": false,
+        "schema_version": "content-ir-dry-run-1",
+        "status": "dry_run"
+      },
+      "formal_database_unchanged": true,
+      "formal_registry_unchanged": true,
+      "production_mutated": false,
+      "runtime_preview_count": 12,
+      "second": {
+        "conflicts": [],
+        "manifest_fingerprint": "88f45a876ead20b6140099fa42acd0ffd8af5688dbcb08353e44bef2e9a25968",
+        "production_mutated": false,
+        "rolled_back": false,
+        "schema_version": "content-ir-dry-run-1",
+        "status": "idempotent_replay"
+      }
+    },
+    "official-expansion-features-tasha": {
+      "campaign_unchanged": true,
+      "character_snapshot_unchanged": true,
+      "first": {
+        "campaign_written": false,
+        "character_written": false,
+        "conflicts": [],
+        "formal_feature_registry_written": false,
+        "formal_spell_registry_written": false,
+        "manifest_fingerprint": "bdb3a124adc4bbef4defed0ee72c43fa5d9f7ef335b137d7e8cbb1a3e1fad7c1",
+        "production_mutated": false,
+        "rolled_back": false,
+        "schema_version": "content-ir-dry-run-1",
+        "status": "dry_run"
+      },
+      "formal_database_unchanged": true,
+      "formal_registry_unchanged": true,
+      "production_mutated": false,
+      "runtime_preview_count": 8,
+      "second": {
+        "conflicts": [],
+        "manifest_fingerprint": "bdb3a124adc4bbef4defed0ee72c43fa5d9f7ef335b137d7e8cbb1a3e1fad7c1",
+        "production_mutated": false,
+        "rolled_back": false,
+        "schema_version": "content-ir-dry-run-1",
+        "status": "idempotent_replay"
+      }
+    },
+    "official-expansion-spells-xanathar": {
+      "campaign_unchanged": true,
+      "character_snapshot_unchanged": true,
+      "first": {
+        "campaign_written": false,
+        "character_written": false,
+        "conflicts": [],
+        "formal_feature_registry_written": false,
+        "formal_spell_registry_written": false,
+        "manifest_fingerprint": "79e9cef7c8d6fa46af937731a71c6c76d8efff386bc37a39a3b306b2e287e780",
+        "production_mutated": false,
+        "rolled_back": false,
+        "schema_version": "content-ir-dry-run-1",
+        "status": "dry_run"
+      },
+      "formal_database_unchanged": true,
+      "formal_registry_unchanged": true,
+      "production_mutated": false,
+      "runtime_preview_count": 5,
+      "second": {
+        "conflicts": [],
+        "manifest_fingerprint": "79e9cef7c8d6fa46af937731a71c6c76d8efff386bc37a39a3b306b2e287e780",
+        "production_mutated": false,
+        "rolled_back": false,
+        "schema_version": "content-ir-dry-run-1",
+        "status": "idempotent_replay"
+      }
+    }
+  },
+  "schema_version": "content-ir-isolated-pack-dry-run-1"
+}

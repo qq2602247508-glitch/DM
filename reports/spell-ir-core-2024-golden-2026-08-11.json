@@ -1,0 +1,31 @@
+{
+  "authored_typed_ir": 12,
+  "detail_candidates": 391,
+  "full": 12,
+  "invalid": 0,
+  "manual": 391,
+  "partial": 0,
+  "schema_version": "spell-ir-batch-report-1",
+  "selected_spell_ids": [
+    "core-phb-2024:spell:123b43e9b05ce7fba2082a58",
+    "core-phb-2024:spell:25c29e45961513478bcd8bc0",
+    "core-phb-2024:spell:3a56665b98f37eed02921de6",
+    "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+    "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+    "core-phb-2024:spell:80a94afd6beb396baec20560",
+    "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b",
+    "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+    "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+    "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+    "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+    "core-phb-2024:spell:fb279ff13dba2abcce376201"
+  ],
+  "source_book": "玩家手册 2024",
+  "total_records": 650,
+  "whole_book_status_before_authored": {
+    "full": 0,
+    "invalid": 0,
+    "manual": 391,
+    "partial": 0
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "new_capabilities": [],
+  "new_capability_count": 0,
+  "next_candidates": [
+    {
+      "candidate": "Xanathar additional simple area/save spells",
+      "reason": "same saving_throw + area + damage + upcast contract"
+    },
+    {
+      "candidate": "Tasha fixed tool/proficiency features",
+      "reason": "same advancement.proficiency materializer with generic choice input"
+    }
+  ],
+  "reused_capabilities": [
+    {
+      "authored_clause_occurrence": 5,
+      "capability_id": "spell.apply_condition.v1"
+    },
+    {
+      "authored_clause_occurrence": 12,
+      "capability_id": "spell.area.v1"
+    },
+    {
+      "authored_clause_occurrence": 3,
+      "capability_id": "spell.attack_roll.v1"
+    },
+    {
+      "authored_clause_occurrence": 19,
+      "capability_id": "spell.damage.v1"
+    },
+    {
+      "authored_clause_occurrence": 2,
+      "capability_id": "spell.healing.v1"
+    },
+    {
+      "authored_clause_occurrence": 1,
+      "capability_id": "spell.movement.v1"
+    },
+    {
+      "authored_clause_occurrence": 16,
+      "capability_id": "spell.saving_throw.v1"
+    },
+    {
+      "authored_clause_occurrence": 21,
+      "capability_id": "spell.target_selection.v1"
+    },
+    {
+      "authored_clause_occurrence": 1,
+      "capability_id": "spell.temporary_hp.v1"
+    },
+    {
+      "authored_clause_occurrence": 22,
+      "capability_id": "spell.upcast.v1"
+    }
+  ],
+  "schema_version": "content-ir-completion-unlock-ranking-1"
+}

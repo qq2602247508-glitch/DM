@@ -1,0 +1,115 @@
+{
+  "authored_typed_ir": 10,
+  "different_official_packs": 4,
+  "full": 10,
+  "invalid": 0,
+  "manual": 126,
+  "packs": {
+    "book-of-many-things": {
+      "authored_feature_ir": 0,
+      "authored_spell_ir": 1,
+      "feat_candidates": 1,
+      "feature_candidates": 0,
+      "selected_batch_status": {
+        "full": 1,
+        "invalid": 0,
+        "manual": 0,
+        "partial": 0
+      },
+      "source_book": "万象无常书",
+      "spell_candidates": 3,
+      "whole_book_feature_status": {
+        "full": 0,
+        "invalid": 0,
+        "manual": 1,
+        "partial": 0
+      },
+      "whole_book_spell_status": {
+        "full": 0,
+        "invalid": 0,
+        "manual": 3,
+        "partial": 0
+      }
+    },
+    "fizbans-treasury": {
+      "authored_feature_ir": 0,
+      "authored_spell_ir": 2,
+      "feat_candidates": 1,
+      "feature_candidates": 2,
+      "selected_batch_status": {
+        "full": 2,
+        "invalid": 0,
+        "manual": 0,
+        "partial": 0
+      },
+      "source_book": "费资本的巨龙宝库",
+      "spell_candidates": 7,
+      "whole_book_feature_status": {
+        "full": 0,
+        "invalid": 0,
+        "manual": 3,
+        "partial": 0
+      },
+      "whole_book_spell_status": {
+        "full": 0,
+        "invalid": 0,
+        "manual": 7,
+        "partial": 0
+      }
+    },
+    "tashas-cauldron": {
+      "authored_feature_ir": 0,
+      "authored_spell_ir": 2,
+      "feat_candidates": 1,
+      "feature_candidates": 48,
+      "selected_batch_status": {
+        "full": 2,
+        "invalid": 0,
+        "manual": 0,
+        "partial": 0
+      },
+      "source_book": "塔莎的万事坩埚",
+      "spell_candidates": 21,
+      "whole_book_feature_status": {
+        "full": 0,
+        "invalid": 0,
+        "manual": 49,
+        "partial": 0
+      },
+      "whole_book_spell_status": {
+        "full": 0,
+        "invalid": 0,
+        "manual": 21,
+        "partial": 0
+      }
+    },
+    "xanathars-guide": {
+      "authored_feature_ir": 0,
+      "authored_spell_ir": 5,
+      "feat_candidates": 1,
+      "feature_candidates": 25,
+      "selected_batch_status": {
+        "full": 5,
+        "invalid": 0,
+        "manual": 0,
+        "partial": 0
+      },
+      "source_book": "珊娜萨的万事指南",
+      "spell_candidates": 95,
+      "whole_book_feature_status": {
+        "full": 0,
+        "invalid": 0,
+        "manual": 26,
+        "partial": 0
+      },
+      "whole_book_spell_status": {
+        "full": 0,
+        "invalid": 0,
+        "manual": 95,
+        "partial": 0
+      }
+    }
+  },
+  "partial": 0,
+  "schema_version": "spell-ir-batch-report-1"
+}
