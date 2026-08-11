@@ -210,6 +210,7 @@ class CharacterCreate(BaseModel):
     spellcasting: dict[str, Any] = Field(default_factory=dict)
     class_levels: dict[str, int] = Field(default_factory=dict)
     subclass_choices: dict[str, str] = Field(default_factory=dict)
+    content_pack_pins: list[str] = Field(default_factory=list, max_length=20)
     notes: str | None = None
     dm_override_reason: str | None = Field(default=None, max_length=2_000)
 
@@ -255,6 +256,7 @@ class CharacterPatch(BaseModel):
     spellcasting: dict[str, Any] | None = None
     class_levels: dict[str, int] | None = None
     subclass_choices: dict[str, str] | None = None
+    content_pack_pins: list[str] | None = Field(default=None, max_length=20)
     notes: str | None = None
     dm_override_reason: str | None = Field(default=None, max_length=2_000)
     version: int | None = Field(None, ge=1)
@@ -304,6 +306,7 @@ class CharacterResponse(VersionedResponse):
     spellcasting: dict[str, Any]
     class_levels: dict[str, int]
     subclass_choices: dict[str, str]
+    content_pack_pins: list[str]
     notes: str | None
 
 
@@ -2536,9 +2539,12 @@ class EquipmentOperationRequest(BaseModel):
     character_id: str
     character_version: int = Field(ge=1)
     equipment_id: str
-    operation: Literal["equip", "unequip", "consume", "use_charge", "attune", "unattune"]
+    operation: Literal[
+        "equip", "unequip", "consume", "use_charge", "use_action", "attune", "unattune"
+    ]
     slot: Literal["armor", "main_hand", "off_hand", "focus", "worn"] | None = None
     amount: int = Field(default=1, ge=1)
+    action_id: str | None = Field(default=None, min_length=1, max_length=120)
     preview_token: str | None = None
     idempotency_key: str | None = Field(default=None, min_length=8, max_length=120)
 

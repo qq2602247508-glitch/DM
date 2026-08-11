@@ -124,6 +124,41 @@ def equipment_confirm(
     return call(lambda: service.equipment_confirm(campaign_id, body.model_dump()))
 
 
+@router.post("/equipment/adjudication/preview")
+def item_adjudication_preview(
+    campaign_id: str,
+    body: dict[str, Any],
+    service: Annotated[SpellEconomyService, Depends(get_spell_economy_service)],
+) -> dict[str, Any]:
+    return call(lambda: service.item_adjudication_preview(campaign_id, body))
+
+
+@router.post("/equipment/adjudication/confirm")
+def item_adjudication_confirm(
+    campaign_id: str,
+    body: dict[str, Any],
+    service: Annotated[SpellEconomyService, Depends(get_spell_economy_service)],
+) -> dict[str, Any]:
+    return call(lambda: service.item_adjudication_confirm(campaign_id, body))
+
+
+@router.post("/equipment/adjudication/{adjudication_id}/rollback")
+def item_adjudication_rollback(
+    campaign_id: str,
+    adjudication_id: str,
+    body: dict[str, Any],
+    service: Annotated[SpellEconomyService, Depends(get_spell_economy_service)],
+) -> dict[str, Any]:
+    return call(
+        lambda: service.item_adjudication_rollback(
+            campaign_id,
+            adjudication_id,
+            int(body.get("expected_character_version") or 0),
+            int(body.get("expected_equipment_version") or 0),
+        )
+    )
+
+
 @router.post("/commerce/preview")
 def commerce_preview(
     campaign_id: str,

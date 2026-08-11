@@ -38,6 +38,7 @@ from dnd_dm_assistant.infrastructure.database.models import (
     CharacterCondition,
     Combat,
     Combatant,
+    EquipmentInstance,
     OperationTransaction,
     ResourcePool,
     RestRecord,
@@ -359,6 +360,57 @@ class RestService:
             hit_die.current = min(hit_die.maximum, hit_die.current + gained)
         session.flush()
         return sorted(pools, key=lambda pool: (pool.key, pool.id))
+
+    @staticmethod
+    def _item_charge_recovery(
+        session: Session,
+        character: Character,
+        *,
+        effective_type: str,
+        completed: bool,
+    ) -> list[dict[str, Any]]:
+        """Build typed item-charge recovery changes without treating dawn as rest."""
+
+        if not completed:
+            return []
+        rows = session.scalars(
+            select(EquipmentInstance).where(
+                EquipmentInstance.character_id == character.id,
+                EquipmentInstance.campaign_id == character.campaign_id,
+            )
+        ).all()
+        changes: list[dict[str, Any]] = []
+        for row in rows:
+            spec = (row.metadata_json or {}).get("item_spec")
+            charges = spec.get("charges") if isinstance(spec, dict) else None
+            if not isinstance(charges, dict):
+                continue
+            trigger = str(charges.get("recovery_trigger") or "none")
+            if trigger != f"{effective_type}_rest":
+                # ``dawn`` remains a typed world-time trigger and must not be
+                # silently converted into long-rest recovery.
+                continue
+            maximum = int(row.max_charges or charges.get("maximum") or 0)
+            before = int(row.charges or 0)
+            if maximum <= before:
+                continue
+            recovery = charges.get("recovery_amount")
+            amount = maximum - before if recovery in (None, "all") else int(recovery)
+            after = min(maximum, before + max(0, amount))
+            if after != before:
+                changes.append(
+                    {
+                        "equipment_instance_id": row.id,
+                        "name": row.name,
+                        "before": before,
+                        "after": after,
+                        "amount": after - before,
+                        "recovery_trigger": trigger,
+                        "type": "item_charge",
+                        "explanation": f"{trigger} restores typed item charges",
+                    }
+                )
+        return changes
 
     def list_resources(
         self, campaign_id: str, *, character_id: str | None = None
@@ -1033,6 +1085,13 @@ class RestService:
                 }
             ]
             changes.extend(resource_changes)
+            item_charge_changes = self._item_charge_recovery(
+                session,
+                character,
+                effective_type=effective_type,
+                completed=completed,
+            )
+            changes.extend(item_charge_changes)
             if after_fatigue != fatigue:
                 changes.append(
                     {
@@ -1123,6 +1182,7 @@ class RestService:
                         ),
                     },
                     "changes": changes,
+                    "item_charge_changes": item_charge_changes,
                     "hit_dice": hit_die_details,
                 }
             )
@@ -1405,6 +1465,22 @@ class RestService:
                         status="applied",
                     )
                 )
+            for item_change in participant.get("item_charge_changes") or []:
+                equipment = session.get(
+                    EquipmentInstance,
+                    str(item_change.get("equipment_instance_id") or ""),
+                )
+                if equipment is None or equipment.character_id != character.id:
+                    raise StateNotFoundError("item charge recovery equipment not found")
+                if equipment.charges != int(item_change["before"]):
+                    raise VersionConflict(
+                        "equipment_instance",
+                        equipment.id,
+                        int(item_change["before"]),
+                        int(equipment.charges or 0),
+                    )
+                equipment.charges = int(item_change["after"])
+                equipment.version += 1
             character.resources = resources_json
             if participant.get("completed") and str(request_data.get("rest_type") or "") == "long":
                 if "portent_dice" in resources_json:

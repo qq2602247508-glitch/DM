@@ -69,6 +69,83 @@ _CONSUMERS: dict[str, dict[str, Any]] = {
         "idempotency_scope": "campaign_content_ir_and_combat_action",
         "snapshot_effects": ("feature_state", "resources", "timed_modifiers", "audit"),
     },
+    "item.equipment_modifier.v1": {
+        "content_kind": "item",
+        "runtime_schema_version": "item-ir-1",
+        "clause_types": ("equipment", "passive_modifier", "resistance", "immunity"),
+        "required_fields": ("item_id", "character_id", "character_version"),
+        "required_services": ("equipment_instance", "character_snapshot"),
+        "transaction_boundary": "equipment_operation_and_character_snapshot",
+        "cas_entities": ("character", "equipment_instance"),
+        "idempotency_scope": "campaign_item_and_equipment_operation",
+        "snapshot_effects": ("equipment", "armor_class", "passive_modifiers", "audit"),
+    },
+    "item.attunement.v1": {
+        "content_kind": "item",
+        "runtime_schema_version": "item-ir-1",
+        "clause_types": ("attunement", "tattoo_lifecycle"),
+        "required_fields": ("item_id", "character_id", "character_version"),
+        "required_services": ("attunement", "character_snapshot"),
+        "transaction_boundary": "attunement_operation_and_character_snapshot",
+        "cas_entities": ("character", "attunement"),
+        "idempotency_scope": "campaign_item_and_attunement_operation",
+        "snapshot_effects": ("attunement", "item_effects", "audit"),
+    },
+    "item.charge_resource.v1": {
+        "content_kind": "item",
+        "runtime_schema_version": "item-ir-1",
+        "clause_types": ("charge", "charge_recovery", "resource_binding"),
+        "required_fields": ("item_id", "character_id", "character_version", "amount"),
+        "required_services": ("equipment_instance", "operation_transaction"),
+        "transaction_boundary": "charge_operation_and_equipment_instance",
+        "cas_entities": ("character", "equipment_instance"),
+        "idempotency_scope": "campaign_item_and_charge_operation",
+        "snapshot_effects": ("charges", "resource_pool", "audit"),
+    },
+    "item.granted_action.v1": {
+        "content_kind": "item",
+        "runtime_schema_version": "item-ir-1",
+        "clause_types": ("granted_action", "triggered_effect", "damage", "healing", "temporary_hp"),
+        "required_fields": ("item_id", "character_id", "character_version", "action_id"),
+        "required_services": ("rules_kernel", "operation_transaction"),
+        "transaction_boundary": "item_action_and_operation_transaction",
+        "cas_entities": ("character", "equipment_instance", "target"),
+        "idempotency_scope": "campaign_item_action",
+        "snapshot_effects": ("resources", "equipment_instance", "target_effects", "audit"),
+    },
+    "item.granted_spell.v1": {
+        "content_kind": "item",
+        "runtime_schema_version": "item-ir-1",
+        "clause_types": ("granted_spell",),
+        "required_fields": ("item_id", "character_id", "character_version", "spell_id"),
+        "required_services": ("spell_economy", "known_spell"),
+        "transaction_boundary": "item_spell_grant_and_operation_transaction",
+        "cas_entities": ("character", "equipment_instance", "known_spell"),
+        "idempotency_scope": "campaign_item_spell_grant",
+        "snapshot_effects": ("known_spell", "prepared_spell", "audit"),
+    },
+    "item.consumable.v1": {
+        "content_kind": "item",
+        "runtime_schema_version": "item-ir-1",
+        "clause_types": ("consumable",),
+        "required_fields": ("item_id", "character_id", "character_version", "amount"),
+        "required_services": ("equipment_instance", "operation_transaction"),
+        "transaction_boundary": "consume_and_operation_transaction",
+        "cas_entities": ("character", "equipment_instance"),
+        "idempotency_scope": "campaign_item_consume",
+        "snapshot_effects": ("quantity", "equipment_instance", "audit"),
+    },
+    "item.triggered_effect.v1": {
+        "content_kind": "item",
+        "runtime_schema_version": "item-ir-1",
+        "clause_types": ("triggered_effect", "condition"),
+        "required_fields": ("item_id", "character_id", "character_version", "trigger"),
+        "required_services": ("rules_kernel", "operation_transaction"),
+        "transaction_boundary": "item_trigger_and_effect_transaction",
+        "cas_entities": ("character", "equipment_instance", "target"),
+        "idempotency_scope": "campaign_item_trigger",
+        "snapshot_effects": ("conditions", "effects", "audit"),
+    },
 }
 
 _ALLOWED_SPELL_BLOCKS = {
@@ -82,6 +159,27 @@ _ALLOWED_SPELL_BLOCKS = {
     "temporary_hp",
     "upcast",
     "area",
+}
+
+_ALLOWED_ITEM_CLAUSES = {
+    "equipment",
+    "attunement",
+    "passive_modifier",
+    "charge",
+    "charge_recovery",
+    "granted_action",
+    "granted_spell",
+    "consumable",
+    "triggered_effect",
+    "damage",
+    "healing",
+    "temporary_hp",
+    "condition",
+    "resistance",
+    "immunity",
+    "tattoo_lifecycle",
+    "resource_binding",
+    "dm_choice",
 }
 
 
@@ -168,4 +266,39 @@ def resolve_production_consumers(
             )
         raise ValueError("feature runtime has no registered executable consumer")
 
-    raise ValueError("content_kind must be spell or feature")
+    if content_kind == "item":
+        if runtime_schema_version != "item-ir-1":
+            raise ValueError("unsupported Content IR item runtime schema")
+        raw_clauses = blocks.get("clauses")
+        if not isinstance(raw_clauses, list) or not raw_clauses:
+            raise ValueError("item runtime requires typed clauses")
+        clause_types = {
+            str(item.get("clause_type") or "")
+            for item in raw_clauses
+            if isinstance(item, Mapping)
+        }
+        unknown = clause_types - _ALLOWED_ITEM_CLAUSES
+        if unknown:
+            raise ValueError("unknown item clauses: " + ",".join(sorted(unknown)))
+        resolved: list[str] = []
+        if clause_types & {"equipment", "passive_modifier", "resistance", "immunity"}:
+            resolved.append("item.equipment_modifier.v1")
+        if clause_types & {"attunement", "tattoo_lifecycle"}:
+            resolved.append("item.attunement.v1")
+        if clause_types & {"charge", "charge_recovery", "resource_binding"}:
+            resolved.append("item.charge_resource.v1")
+        if clause_types & {"granted_action", "damage", "healing", "temporary_hp"}:
+            resolved.append("item.granted_action.v1")
+        if "granted_spell" in clause_types:
+            resolved.append("item.granted_spell.v1")
+        if "consumable" in clause_types:
+            resolved.append("item.consumable.v1")
+        if clause_types & {"triggered_effect", "condition"}:
+            resolved.append("item.triggered_effect.v1")
+        if "dm_choice" in clause_types:
+            resolved.append("item.triggered_effect.v1")
+        if not resolved:
+            raise ValueError("item runtime has no registered executable consumer")
+        return tuple(dict(_CONSUMERS[item], consumer_id=item) for item in sorted(set(resolved)))
+
+    raise ValueError("content_kind must be spell, feature, or item")

@@ -67,8 +67,8 @@ def test_atomizer_splits_spells_options_items_and_tattoos() -> None:
     assert kinds["maneuver"] >= 6
     assert kinds["invocation"] >= 5
     assert kinds["infusion"] >= 15
-    assert kinds["magic_item"] >= 50
-    assert kinds["magic_tattoo"] >= 30
+    assert kinds["magic_item"] == 36
+    assert kinds["magic_tattoo"] == 11
     assert kinds["companion_profile"] == 3
 
 
@@ -90,10 +90,10 @@ def test_migration_statuses_are_exhaustive_and_content_id_funnel_is_exact() -> N
     assert migration["source_record_scanned"] == migration["source_record_total"] == 144
     assert migration["source_record_unclassified"] == 0
     assert migration["content_id_funnel"]["relation_holds"] is True
-    assert migration["content_id_funnel"]["matched_typed_ir"] == 28
-    assert migration["production_full"] == 18
+    assert migration["content_id_funnel"]["matched_typed_ir"] == 30
+    assert migration["production_full"] == 17
     assert migration["dm_assisted"] == 1
-    assert migration["game_usable"] == 19
+    assert migration["game_usable"] == 18
     assert migration["invalid_source"] == 0
 
 
@@ -107,10 +107,11 @@ def test_duplicate_map_does_not_deduplicate_by_name_only() -> None:
     assert all("relationship" in row for row in duplicate_map["entries"])
 
 
-def test_item_inventory_is_complete_but_not_promoted_without_item_consumer() -> None:
+def test_item_specs_are_typed_with_fail_closed_effect_boundaries() -> None:
     migration = build_migration(ROOT)
 
-    assert migration["item_ir"]["implemented"] is False
-    assert migration["item_ir"]["inventory_atom_count"] >= 80
-    assert migration["item_ir"]["production_count"] == 0
+    assert migration["item_ir"]["implemented"] is True
+    assert migration["item_ir"]["inventory_atom_count"] == 47
+    assert migration["item_ir"]["typed_count"] == 47
+    assert migration["item_ir"]["production_count"] == 41
     assert migration["item_ir"]["dm_assisted_count"] == 0

@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 """Deterministic whole-pack migration inventory for *Tasha's Cauldron*.
 
 The existing Content IR workbench deliberately stops at page-level drafts.  This
@@ -190,6 +191,8 @@ def classify_source_record(record: Mapping[str, Any]) -> dict[str, Any]:
         kind, role = "infusion", "player_facing"
     elif "魔能祈唤" in path:
         kind, role = "invocation", "player_facing"
+    elif "构筑" in path or "构筑" in name:
+        kind, role = "narrative", "dm_reference"
     elif parts[:2] == ["玩家选项", "职业"]:
         kind = "subclass_feature" if len(parts) >= 4 else "class_feature"
         role = "player_facing"
@@ -224,10 +227,24 @@ def classify_source_record(record: Mapping[str, Any]) -> dict[str, Any]:
 
 def _bold_title(lines: list[str], index: int) -> tuple[str, int] | None:
     line = lines[index].strip()
-    if not line.startswith(_BOLD_START):
+    # ``***Foo***`` is a feature clause/italic label, never a page-level
+    # asset heading.  The old parser treated the leading two stars as bold and
+    # promoted the whole clause into an atom.
+    if not line.startswith(_BOLD_START) or line.startswith("***"):
         return None
     close = line.find(_BOLD_START, 2)
     trailing = line[close + 2 :].strip() if close > 2 else ""
+    if close > 2 and trailing.startswith("*"):
+        chunks = [line[2:close]]
+        remainder = trailing
+        while remainder.startswith("**"):
+            next_close = remainder.find("**", 2)
+            if next_close <= 2:
+                break
+            chunks.append(remainder[2:next_close])
+            remainder = remainder[next_close + 2 :]
+        if len(chunks) > 1:
+            return "".join(chunks) + remainder.strip("*"), index
     if close > 2 and (not trailing or trailing.startswith("*")):
         return line[2:close].strip(), index
     if close != -1:
@@ -319,6 +336,7 @@ def _section_rows(markdown: str, *, style: str) -> list[dict[str, str]]:
             {
                 "title": title,
                 "body": body,
+                "heading": heading_text,
                 "anchor": anchor,
                 "has_level_marker": "true" if _LEVEL_RE.search(heading_text) else "false",
             }
@@ -339,27 +357,65 @@ def _feature_sections(record: Mapping[str, Any], info: Mapping[str, Any]) -> lis
             is_stat_label = row["anchor"].startswith("blockquote:") and re.search(
                 r"[：:]$", row["title"]
             )
-            if not is_page_heading and not is_stat_label and (
-                _LEVEL_RE.search(context)
-                or row["has_level_marker"] == "true"
-                or row["anchor"].startswith("blockquote:")
+            is_clause_label = row["title"].lstrip().startswith(("*", "先决", "前置"))
+            if (
+                not is_page_heading
+                and not is_stat_label
+                and not is_clause_label
+                and (
+                    _LEVEL_RE.search(context)
+                    or row["has_level_marker"] == "true"
+                    or row["anchor"].startswith("blockquote:")
+                )
             ):
                 feature_rows.append(row)
         if feature_rows:
             return feature_rows
         return [{"title": _text(record.get("name")), "body": markdown, "anchor": "page"}]
+    if info["source_kind"] in {"magic_item", "magic_tattoo"}:
+        # Item pages mix real item headings with metadata labels, tables,
+        # sidebar prose and individual ability clauses.  A real item heading
+        # is either a CHM level heading or carries the bilingual ``|`` marker;
+        # the latter also survives the malformed multiline headings in the
+        # Chinese export.  Keep the complete body under one item atom so
+        # attunement, charges and item actions remain one lifecycle contract.
+        item_rows = []
+        for row in rows:
+            heading = row.get("heading", "")
+            title = row["title"].strip()
+            normalized_record_name = _normalized_name(record.get("name"))
+            real_heading = (
+                heading.lstrip().startswith("#") or "|" in heading
+            )
+            excluded = (
+                title.startswith("*")
+                or title.startswith(("先决", "前置"))
+                or "表格" in title
+                or "边栏" in title
+                or heading.lstrip().startswith(">") and "边栏" in title
+                or _normalized_name(title) == normalized_record_name
+                or _normalized_name(title) in {"魔法刺青", "魔法物品详述"}
+                or _normalized_name(title).startswith("魔法刺青")
+            )
+            if real_heading and not excluded:
+                item_rows.append(row)
+        return item_rows or [{"title": _text(record.get("name")), "body": markdown, "anchor": "page", "heading": ""}]
     if info["source_kind"] in {
         "feat",
         "maneuver",
         "invocation",
         "infusion",
-        "magic_item",
-        "magic_tattoo",
     }:
-        return rows or [{"title": _text(record.get("name")), "body": markdown, "anchor": "page"}]
+        option_rows = [
+            row
+            for row in rows
+            if not row["title"].lstrip().startswith(("*", "先决", "前置"))
+            and "表格" not in row["title"]
+        ]
+        return option_rows or [{"title": _text(record.get("name")), "body": markdown, "anchor": "page", "heading": ""}]
     if info["source_kind"] == "companion_profile":
-        return [{"title": _text(record.get("name")), "body": markdown, "anchor": "page"}]
-    return [{"title": _text(record.get("name")), "body": markdown, "anchor": "page"}]
+        return [{"title": _text(record.get("name")), "body": markdown, "anchor": "page", "heading": ""}]
+    return [{"title": _text(record.get("name")), "body": markdown, "anchor": "page", "heading": ""}]
 
 
 def _atom_id(record_id: str, title: str, index: int) -> str:
@@ -383,7 +439,7 @@ def _title_parts(title: str) -> tuple[str, str | None]:
     cleaned = re.sub(r"\s+", " ", title).strip()
     latin = _LATIN_RE.search(cleaned)
     if latin and latin.start() > 0:
-        return cleaned[: latin.start()].strip(" -"), latin.group(0).strip(" -")
+        return cleaned[: latin.start()].strip(" -|"), latin.group(0).strip(" -|")
     return cleaned, None
 
 
@@ -420,6 +476,39 @@ def _typed_entries(repo_root: Path) -> dict[str, dict[str, Any]]:
             "review_status": _text(value.get("review_status")),
         }
     return dict(sorted(entries.items()))
+
+
+def _reconcile_typed_provenance(
+    typed: Mapping[str, Mapping[str, Any]],
+    matched_ids: set[str],
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """Resolve legacy authored files that are not independent source assets.
+
+    Two older tool-proficiency specs use a translated alias and are matched by
+    ``_matches_typed``.  The old Precision Attack file points at a Battle
+    Master *build recommendation* page; that page contains a recommendation,
+    not the maneuver's rule text, so the authored file is explicitly retired
+    as ``subclause_not_asset`` rather than attached to the page heading.
+    """
+
+    reconciled: list[dict[str, Any]] = []
+    retired = "content.tashas-cauldron.feature.battle-master.precision-attack"
+    for content_id, entry in sorted(typed.items()):
+        if content_id in matched_ids:
+            continue
+        if content_id == retired:
+            reconciled.append(
+                {
+                    "content_id": content_id,
+                    "status": "explicitly_retired",
+                    "reason": "source page is a Battle Master build recommendation; Precision Attack is not an independent atom on that page",
+                    "replacement": None,
+                    "typed_ir_path": entry.get("typed_ir_path"),
+                }
+            )
+    retired_ids = {str(item["content_id"]) for item in reconciled}
+    orphaned = sorted(set(typed) - matched_ids - retired_ids)
+    return reconciled, orphaned
 
 
 def _production_evidence(repo_root: Path) -> tuple[set[str], dict[str, dict[str, Any]]]:
@@ -461,7 +550,11 @@ def _existing_content_ids(
 def _matches_typed(
     atom: Mapping[str, Any], typed: Mapping[str, Mapping[str, Any]]
 ) -> list[dict[str, Any]]:
-    if atom.get("source_fragment") == "page" and atom.get("parent_atom_id") is None:
+    if (
+        atom.get("source_fragment") == "page"
+        or not atom.get("executable_candidate")
+        or atom.get("qa_status") in {"heading_only", "subclause_not_asset", "table_row_not_asset"}
+    ):
         return []
     atom_source = _text(atom.get("source_record_id"))
     atom_name = _normalized_name(atom.get("localized_name") or atom.get("name"))
@@ -488,6 +581,18 @@ def _matches_typed(
             or entry_name in atom_name
             or local_prefix
         ):
+            candidates.append(dict(entry))
+        elif (
+            _text(entry.get("source_name")).find("工具精通") >= 0
+            and "工具" in _text(atom.get("localized_name"))
+            and "法术" not in _text(atom.get("localized_name"))
+            and atom.get("content_kind") == "subclass_feature"
+        ):
+            # Two authored IR files used the older translated label
+            # ``<subclass>：工具精通`` while the CHM page uses ``本职工具`` or
+            # ``工具精通``.  Source record identity plus this explicit alias
+            # is safer than a free-text name branch and preserves the stable
+            # authored content IDs.
             candidates.append(dict(entry))
     return sorted(candidates, key=lambda item: _text(item.get("content_id")))
 
@@ -551,7 +656,8 @@ def atomize_record(record: Mapping[str, Any]) -> list[dict[str, Any]]:
         body = row["body"].strip()
         is_parent = row.get("parent") == "true"
         effective_kind = kind_for_parent if is_parent else kind
-        if effective_kind == "directory":
+        is_page_heading = row.get("anchor") == "page"
+        if effective_kind == "directory" or is_page_heading:
             player_facing, instantiable, executable = False, False, False
         else:
             player_facing = info["source_role"] == "player_facing"
@@ -607,6 +713,11 @@ def atomize_record(record: Mapping[str, Any]) -> list[dict[str, Any]]:
             "executable_candidate": executable,
             "source_legacy": bool(record.get("legacy")) or "旧版" in row["title"],
             "source_record_fingerprint": source_fingerprint(record),
+            "qa_status": (
+                "heading_only"
+                if is_page_heading or not executable
+                else "confirmed_atom"
+            ),
         }
         atoms.append(atom)
     if len(atoms) > 1 and atoms[0]["source_fragment"] == "page":
@@ -621,6 +732,239 @@ def build_atoms(records: Iterable[Mapping[str, Any]]) -> list[dict[str, Any]]:
     for record in records:
         atoms.extend(atomize_record(record))
     return sorted(atoms, key=lambda item: str(item["atom_id"]))
+
+
+def _removed_atom_qa_status(atom: Mapping[str, Any]) -> str:
+    title = _text(atom.get("localized_name") or atom.get("name"))
+    path = _text(atom.get("source_path"))
+    kind = _text(atom.get("content_kind"))
+    if title.startswith("*") or "表格" in title:
+        return "subclause_not_asset" if "表格" not in title else "table_row_not_asset"
+    if "构筑" in path:
+        return "example_not_rule"
+    if atom.get("source_fragment") == "page":
+        return "heading_only"
+    if kind in {"magic_item", "magic_tattoo"}:
+        return "merge_required"
+    return "wrong_kind"
+
+
+def build_atom_quality_audit(
+    before_atoms: Iterable[Mapping[str, Any]],
+    after_atoms: Iterable[Mapping[str, Any]],
+    records: Iterable[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Audit the atomizer boundary and retain every denominator change."""
+
+    before = list(before_atoms)
+    after = list(after_atoms)
+    record_ids = {
+        _text(item.get("source_record_id")) or _record_id(item)
+        for item in records
+    }
+    after_ids = {str(item.get("atom_id")) for item in after}
+    after_fingerprints = {str(item.get("source_fingerprint")) for item in after}
+    before_by_id = {str(item.get("atom_id")): item for item in before}
+    removed = [
+        before_by_id[key]
+        for key in sorted(set(before_by_id) - after_ids)
+        if str(before_by_id[key].get("source_fingerprint")) not in after_fingerprints
+    ]
+    after_by_fingerprint = {
+        str(item.get("source_fingerprint")): item
+        for item in after
+        if item.get("source_fingerprint")
+    }
+    structural: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for atom in after:
+        atom_id = str(atom.get("atom_id") or "")
+        issues: list[str] = []
+        if not atom_id or atom_id in seen:
+            issues.append("atom_id_not_unique")
+        seen.add(atom_id)
+        if not atom.get("source_fingerprint") or not atom.get("source_record_fingerprint"):
+            issues.append("source_fingerprint_missing")
+        if str(atom.get("source_record_id")) not in record_ids:
+            issues.append("source_record_missing")
+        parent = atom.get("parent_atom_id")
+        if parent and parent not in after_ids:
+            issues.append("parent_missing")
+        fragment = str(atom.get("source_fragment") or "")
+        if fragment.isdigit():
+            record = next(
+                (item for item in records if _record_id(item) == atom.get("source_record_id")),
+                None,
+            )
+            markdown = _text(record.get("content_markdown") or record.get("content_plain_text")) if record else ""
+            if int(fragment) > len(markdown.splitlines() or [""]):
+                issues.append("source_span_out_of_bounds")
+        if issues:
+            structural.append({"atom_id": atom_id, "issues": sorted(set(issues))})
+    removed_rows = [
+        {
+            "atom_id": str(atom.get("atom_id")),
+            "content_kind": atom.get("content_kind"),
+            "name": atom.get("name"),
+            "source_path": atom.get("source_path"),
+            "qa_status": _removed_atom_qa_status(atom),
+            "replacement_policy": "folded_into_parent_or_removed_from_executable_denominator",
+        }
+        for atom in removed
+    ]
+    return {
+        "schema_version": "tashas-atom-quality-audit-1",
+        "pack_id": PACK_ID,
+        "qa_statuses": [
+            "confirmed_atom", "merge_required", "split_required", "wrong_kind", "duplicate",
+            "reprint", "subclause_not_asset", "example_not_rule", "table_row_not_asset",
+            "heading_only", "source_incomplete", "parent_missing", "orphan_atom",
+        ],
+        "before_atom_counts": {
+            "total": len(before),
+            "player_facing": sum(bool(item.get("player_facing")) for item in before),
+            "executable": sum(bool(item.get("executable_candidate")) for item in before),
+            "by_kind": _kind_counts(before),
+        },
+        "after_atom_counts": {
+            "total": len(after),
+            "player_facing": sum(bool(item.get("player_facing")) for item in after),
+            "executable": sum(bool(item.get("executable_candidate")) for item in after),
+            "by_kind": _kind_counts(after),
+        },
+        "qa_status_counts": {
+            status: sum(str(item.get("qa_status")) == status for item in after)
+            for status in (
+                "confirmed_atom", "merge_required", "split_required", "wrong_kind", "duplicate",
+                "reprint", "subclause_not_asset", "example_not_rule", "table_row_not_asset",
+                "heading_only", "source_incomplete", "parent_missing", "orphan_atom",
+            )
+        },
+        "removed_false_atoms": removed_rows,
+        "removed_false_atom_count": len(removed_rows),
+        "merged_atoms": [item for item in removed_rows if item["qa_status"] == "merge_required"],
+        "split_atoms": [],
+        "reclassified_atoms": [
+            {
+                "before_atom_id": str(item.get("atom_id")),
+                "before_kind": item.get("content_kind"),
+                "after_atom_id": str(after_by_fingerprint[item.get("source_fingerprint")].get("atom_id")),
+                "after_kind": after_by_fingerprint[item.get("source_fingerprint")].get("content_kind"),
+                "source_fingerprint": item.get("source_fingerprint"),
+            }
+            for item in before
+            if item.get("source_fingerprint") in after_by_fingerprint
+            and item.get("content_kind") != after_by_fingerprint[item.get("source_fingerprint")].get("content_kind")
+        ],
+        "structural_checks": {
+            "atom_id_unique": len(seen) == len(after),
+            "parent_child_valid": not any("parent_missing" in item["issues"] for item in structural),
+            "source_fingerprint_present": not any("source_fingerprint_missing" in item["issues"] for item in structural),
+            "source_span_in_bounds": not any("source_span_out_of_bounds" in item["issues"] for item in structural),
+            "source_records_resolved": not any("source_record_missing" in item["issues"] for item in structural),
+            "all_atoms_have_qa_status": all(bool(item.get("qa_status")) for item in after),
+        },
+        "structural_anomalies": structural,
+        "audit_fingerprint": fingerprint({"before": before, "after": after, "structural": structural}),
+    }
+
+
+def build_manual_semantic_clusters(
+    atoms: Iterable[Mapping[str, Any]],
+    candidates: Iterable[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Group manual atoms by a full contract signature, never by name alone."""
+
+    candidate_by_id = {str(item["atom_id"]): item for item in candidates}
+    groups: dict[tuple[Any, ...], list[Mapping[str, Any]]] = defaultdict(list)
+    for atom in atoms:
+        if not atom.get("executable_candidate") or atom.get("migration_status") != "manual_authoring":
+            continue
+        candidate = candidate_by_id.get(str(atom["atom_id"]), {})
+        template = candidate.get("matched_template_id") or "missing_template"
+        signature = (
+            atom.get("content_kind"),
+            template,
+            "fixed_grant" if atom.get("level") is not None else "level_unknown",
+            "choice_present" if atom.get("prerequisites") else "choice_unknown",
+            "action_economy_unknown",
+            "trigger_unknown",
+            "resource_shape_unknown",
+            "recovery_shape_unknown",
+            "target_shape_unknown",
+            "attack_or_save_unknown",
+            "success_failure_unknown",
+            "damage_healing_unknown",
+            "condition_shape_unknown",
+            "duration_shape_unknown",
+            "movement_shape_unknown",
+            "summon_shape_unknown",
+            "spell_grant_shape" if atom.get("content_kind") == "spell" else "none",
+            "modifier_shape_unknown",
+            "equipment_shape" if atom.get("content_kind") in {"magic_item", "magic_tattoo"} else "none",
+            "attunement_shape_unknown" if atom.get("content_kind") in {"magic_item", "magic_tattoo"} else "none",
+            "charge_shape_unknown" if atom.get("content_kind") in {"magic_item", "magic_tattoo"} else "none",
+            "scaling_shape_unknown",
+            "persistence_unknown",
+            "runtime_consumer_unknown",
+            "dm_adjudication_unknown",
+        )
+        groups[signature].append(atom)
+    clusters: list[dict[str, Any]] = []
+    for index, (signature, members) in enumerate(sorted(groups.items(), key=lambda item: repr(item[0]))):
+        kind_counts = Counter(str(item.get("content_kind")) for item in members)
+        cluster_id = f"tashas.manual.cluster.{index + 1:03d}"
+        clusters.append(
+            {
+                "cluster_id": cluster_id,
+                "exact_contract_signature": {
+                    "content_kind": signature[0],
+                    "grant_shape": signature[1],
+                    "choice_shape": signature[3],
+                    "action_economy": signature[4],
+                    "trigger": signature[5],
+                    "resource_shape": signature[6],
+                    "recovery_shape": signature[7],
+                    "target_shape": signature[8],
+                    "attack_or_save": signature[9],
+                    "success_failure_shape": signature[10],
+                    "damage_healing_shape": signature[11],
+                    "condition_shape": signature[12],
+                    "duration_shape": signature[13],
+                    "movement_shape": signature[14],
+                    "summon_shape": signature[15],
+                    "spell_grant_shape": signature[16],
+                    "modifier_shape": signature[17],
+                    "equipment_shape": signature[18],
+                    "attunement_shape": signature[19],
+                    "charge_shape": signature[20],
+                    "scaling_shape": signature[21],
+                    "persistence_shape": signature[22],
+                    "runtime_consumer_shape": signature[23],
+                    "dm_adjudication_shape": signature[24],
+                },
+                "content_count": len(members),
+                "feature_count": sum(1 for item in members if str(item.get("content_kind")) in {"class_feature", "subclass_feature", "optional_class_feature"}),
+                "item_count": sum(1 for item in members if str(item.get("content_kind")) in {"magic_item", "magic_tattoo"}),
+                "option_count": sum(1 for item in members if str(item.get("content_kind")) in {"feat", "maneuver", "invocation", "infusion", "character_option"}),
+                "spell_count": kind_counts.get("spell", 0),
+                "representative_atoms": sorted(str(item["atom_id"]) for item in members)[:8],
+                "required_review_fields": sorted(set(candidate_by_id.get(str(members[0]["atom_id"]), {}).get("required_review_fields", []))),
+                "existing_template_match": signature[1] != "missing_template",
+                "missing_template": signature[1] == "missing_template",
+                "missing_capability": ["typed_contract"],
+                "missing_materializer": ["content_ir_runtime"],
+                "missing_runtime_consumer": ["closed_world_consumer"],
+                "complete_content_unlock_count": 0,
+            }
+        )
+    return {
+        "schema_version": "tashas-manual-semantic-clusters-1",
+        "pack_id": PACK_ID,
+        "cluster_count": len(clusters),
+        "clusters": clusters,
+        "cluster_fingerprint": fingerprint(clusters),
+    }
 
 
 def build_duplicate_version_map(atoms: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
@@ -918,7 +1262,9 @@ def build_migration(repo_root: Path) -> dict[str, Any]:
         for atom in enriched
         if atom["migration_status"] in {"production_full", "dm_assisted", "compile_only"}
     ]
-    unmatched_typed_ids = sorted(set(typed) - matched_typed_ids)
+    typed_reconciliation, unmatched_typed_ids = _reconcile_typed_provenance(
+        typed, matched_typed_ids
+    )
     matched_production_ids = sorted(matched_typed_ids.intersection(production))
     dm_content_ids = {
         content_id
@@ -963,6 +1309,41 @@ def build_migration(repo_root: Path) -> dict[str, Any]:
             "atoms": [(item["atom_id"], item["source_fingerprint"]) for item in enriched],
         }
     )
+    # Local import avoids the recovery module importing this atomizer during
+    # module initialization; build_migration still exposes one authoritative
+    # ItemSpec catalog to callers that do not use the report script.
+    from dnd_dm_assistant.application.tashas_recovery import build_item_spec_catalog
+
+    item_spec_catalog = build_item_spec_catalog(atoms=enriched, records=records)
+    item_ir = {
+        "implemented": True,
+        "inventory_atom_count": item_spec_catalog["item_spec_total"],
+        "typed_count": item_spec_catalog["item_spec_typed"],
+        "production_count": item_spec_catalog["production_full"],
+        "dm_assisted_count": 0,
+        "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
+        "unlock_ranking": [
+            {
+                "capability": capability,
+                "unlock_count": sum(
+                    any(
+                        clause.get("clause_type") == clause_type
+                        for clause in spec.get("clauses", [])
+                    )
+                    and spec.get("compile", {}).get("compile_status") == "full"
+                    for spec in item_spec_catalog.get("specs", [])
+                ),
+                "consumer": consumer,
+            }
+            for capability, clause_type, consumer in (
+                ("item.passive_modifier", "equipment", "item.equipment_modifier.v1"),
+                ("item.attunement", "attunement", "item.attunement.v1"),
+                ("item.charge_resource", "charge", "item.charge_resource.v1"),
+                ("item.granted_action", "granted_action", "item.granted_action.v1"),
+                ("item.tattoo_lifecycle", "tattoo_lifecycle", "item.attunement.v1"),
+            )
+        ],
+    }
     return {
         "schema_version": SCHEMA_VERSION,
         "pack_id": PACK_ID,
@@ -1016,6 +1397,8 @@ def build_migration(repo_root: Path) -> dict[str, Any]:
         "current_project_production_full": len(existing_project_production_ids(repo_root)),
         "existing_typed_ir_total": len(typed),
         "existing_typed_ir_unmatched": unmatched_typed_ids,
+        "existing_typed_ir_reconciled": typed_reconciliation,
+        "orphan_authored_ir_count": len(unmatched_typed_ids),
         "content_id_funnel": {
             "matched_typed_ir": len(matched_typed_ids),
             "production_full": content_id_production_full,
@@ -1031,33 +1414,8 @@ def build_migration(repo_root: Path) -> dict[str, Any]:
         "current_project_production_registry_fingerprint": fingerprint(
             sorted(existing_project_production_ids(repo_root))
         ),
-        "item_ir": {
-            "implemented": False,
-            "inventory_atom_count": sum(
-                atom["content_kind"] in {"magic_item", "magic_tattoo"}
-                for atom in enriched
-            ),
-            "production_count": 0,
-            "dm_assisted_count": 0,
-            "blocker": "generic ItemSpec/equipment-attunement consumer is not yet wired",
-            "unlock_ranking": [
-                {
-                    "capability": "item.passive_modifier",
-                    "unlock_count": 0,
-                    "reason": "no ItemSpec authority",
-                },
-                {
-                    "capability": "item.charges_and_recovery",
-                    "unlock_count": 0,
-                    "reason": "no resource-bound item consumer",
-                },
-                {
-                    "capability": "item.granted_action",
-                    "unlock_count": 0,
-                    "reason": "no item action lifecycle",
-                },
-            ],
-        },
+        "item_ir": item_ir,
+        "item_spec_catalog": item_spec_catalog,
         "consumer_unlocks": {
             "existing_generic_consumer": {
                 "content_ids": sorted(production),

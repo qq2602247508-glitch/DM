@@ -4,7 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Sequence
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy import func, select
@@ -18,6 +18,12 @@ from dnd_dm_assistant.domain.equipment_rules import (
     equipment_profile,
     weapon_proficiency_warning,
 )
+from dnd_dm_assistant.domain.item_spec import (
+    ItemSpec,
+    compile_item_spec,
+    item_runtime_projection,
+    materialize_item_effects,
+)
 from dnd_dm_assistant.domain.spell_rules import enrich_spell_action
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.models import (
@@ -29,6 +35,7 @@ from dnd_dm_assistant.infrastructure.database.models import (
     OperationTransaction,
     PlayerRoom,
     PreparedSpell,
+    RulesKernelAdjudicationWindow,
     SceneParticipant,
     ShopInventory,
     Wallet,
@@ -201,19 +208,23 @@ class SpellEconomyService:
                 profile = equipment_profile(
                     row.name, row.category, dict(row.metadata_json), row.armor_class
                 )
-                equipment_rows.append(
-                    {
-                        **serialize(row),
-                        "attuned": row.id in active_ids,
-                        "slot": row.metadata_json.get("equipment_slot"),
-                        "profile": profile,
-                    }
-                )
+                row_payload = {
+                    **serialize(row),
+                    "attuned": row.id in active_ids,
+                    "slot": row.metadata_json.get("equipment_slot"),
+                    "profile": profile,
+                }
+                raw_item_spec = row.metadata_json.get("item_spec")
+                if isinstance(raw_item_spec, dict):
+                    row_payload["item_spec"] = raw_item_spec
+                equipment_rows.append(row_payload)
+            item_effects = materialize_item_effects(equipment_rows, active_ids)
             return {
                 "spells": [
                     {**serialize(row), "prepared": row.id in prepared_ids} for row in spells
                 ],
                 "equipment": equipment_rows,
+                "item_effects": item_effects,
                 "wallet": serialize(wallet) if wallet else None,
             }
 
@@ -347,6 +358,23 @@ class SpellEconomyService:
                 s, cid, str(data.pop("character_id")), int(data.pop("character_version"))
             )
             metadata = dict(data.get("metadata_json") or {})
+            raw_item_spec = metadata.get("item_spec")
+            if raw_item_spec is not None:
+                spec = ItemSpec.from_dict(raw_item_spec, "equipment.metadata_json.item_spec")
+                compiled = compile_item_spec(spec)
+                if compiled["compile_status"] != "full":
+                    raise ValueError(
+                        "ItemSpec is not production-ready: "
+                        + ", ".join(compiled["blockers"])
+                    )
+                metadata["item_spec"] = item_runtime_projection(spec)
+                metadata["item_spec_fingerprint"] = spec.fingerprint()
+                data["metadata_json"] = metadata
+                data["attunement_required"] = spec.requires_attunement
+                if spec.charges:
+                    data["max_charges"] = spec.charges.get("maximum")
+                    data["charges"] = spec.charges.get("current", spec.charges.get("maximum"))
+                data["category"] = str(data.get("category") or spec.item_kind)
             source_record_id = str(metadata.get("source_record_id") or "")
             existing = s.scalar(
                 select(EquipmentInstance).where(
@@ -862,6 +890,29 @@ class SpellEconomyService:
                     raise ValueError("insufficient consumable quantity")
             if op == "use_charge" and (e.charges is None or e.charges < data["amount"]):
                 raise ValueError("insufficient charges")
+            item_spec = e.metadata_json.get("item_spec")
+            if op == "use_action":
+                if not isinstance(item_spec, dict):
+                    raise ValueError("item has no typed granted action")
+                attuned = s.scalar(
+                    select(Attunement).where(
+                        Attunement.character_id == c.id,
+                        Attunement.equipment_instance_id == e.id,
+                        Attunement.status == "active",
+                    )
+                )
+                if not e.equipped and attuned is None:
+                    raise ValueError("item action requires the item to be equipped or attuned")
+                actions = [item for item in item_spec.get("granted_actions", []) if isinstance(item, dict)]
+                action_id = str(data.get("action_id") or "").strip()
+                action = next((item for item in actions if str(item.get("action_id") or item.get("id") or "") == action_id), None)
+                if action is None:
+                    raise ValueError("requested item action is not in the typed ItemSpec")
+                required = int(action.get("charge_cost") or 0)
+                if required and (e.charges is None or e.charges < required):
+                    raise ValueError("insufficient charges for item action")
+            if op == "unattune":
+                item_spec = e.metadata_json.get("item_spec")
             if op == "unequip" and not e.equipped:
                 raise ValueError("item is not equipped")
             if op == "attune":
@@ -922,6 +973,19 @@ class SpellEconomyService:
                 out["after"] = {"quantity": e.quantity - data["amount"]}
             elif op == "use_charge":
                 out["after"] = {"charges": (e.charges or 0) - data["amount"]}
+            elif op == "use_action":
+                action = next(
+                    item
+                    for item in item_spec.get("granted_actions", [])
+                    if str(item.get("action_id") or item.get("id") or "")
+                    == str(data.get("action_id") or "")
+                )
+                cost = int(action.get("charge_cost") or 0)
+                out["after"] = {
+                    "action_id": str(data.get("action_id")),
+                    "charges": (e.charges - cost) if cost and e.charges is not None else e.charges,
+                    "rules_kernel_consumer": "item.granted_action.v1",
+                }
             elif op == "attune":
                 out["after"] = {"attuned": True, "active_attunements": active + 1}
             elif op == "unattune":
@@ -988,6 +1052,20 @@ class SpellEconomyService:
             elif op == "use_charge":
                 assert e.charges is not None
                 e.charges -= amount
+            elif op == "use_action":
+                item_spec = e.metadata_json.get("item_spec")
+                actions = item_spec.get("granted_actions", []) if isinstance(item_spec, dict) else []
+                action = next(
+                    item
+                    for item in actions
+                    if str(item.get("action_id") or item.get("id") or "")
+                    == str(data.get("action_id") or "")
+                )
+                cost = int(action.get("charge_cost") or 0)
+                if cost:
+                    if e.charges is None or e.charges < cost:
+                        raise ValueError("insufficient charges for item action")
+                    e.charges -= cost
             elif op == "attune":
                 old_attunement = s.scalar(
                     select(Attunement).where(Attunement.equipment_instance_id == e.id)
@@ -1032,6 +1110,248 @@ class SpellEconomyService:
                 )
             )
             return out
+
+    @staticmethod
+    def _item_adjudication_clause(
+        equipment: EquipmentInstance, clause_id: str
+    ) -> dict[str, Any]:
+        raw_spec = (equipment.metadata_json or {}).get("item_spec")
+        if not isinstance(raw_spec, dict):
+            raise ValueError("item DM continuation requires a typed ItemSpec")
+        clauses = [item for item in raw_spec.get("clauses", []) if isinstance(item, dict)]
+        clause = next(
+            (item for item in clauses if str(item.get("clause_id") or "") == clause_id),
+            None,
+        )
+        if clause is None:
+            raise StateNotFoundError("typed item clause not found")
+        evidence = clause.get("evidence")
+        if not isinstance(evidence, dict) or not str(
+            evidence.get("source_text") or evidence.get("source_excerpt") or ""
+        ).strip():
+            raise ValueError("item DM continuation requires source text evidence")
+        return clause
+
+    def item_adjudication_preview(self, cid: str, data: dict[str, Any]) -> dict[str, Any]:
+        """Open a durable DM window for one typed-but-ambiguous item clause."""
+
+        key = str(data.get("idempotency_key") or "").strip()
+        if len(key) < 8:
+            raise ValueError("item adjudication idempotency_key is required")
+        operation_key = f"item-dm:{key}"
+        with Session(self.engine) as session, session.begin():
+            existing = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == cid,
+                    OperationTransaction.idempotency_key == operation_key,
+                )
+            )
+            if existing is not None:
+                return dict(existing.after_snapshot or {})
+            character = self._character(
+                session,
+                cid,
+                str(data.get("character_id") or ""),
+                int(data.get("character_version") or 0),
+            )
+            equipment = session.get(EquipmentInstance, str(data.get("equipment_id") or ""))
+            if equipment is None or equipment.character_id != character.id:
+                raise StateNotFoundError("item adjudication equipment not found")
+            clause = self._item_adjudication_clause(
+                equipment, str(data.get("clause_id") or "")
+            )
+            context = data.get("context") or {}
+            if not isinstance(context, dict):
+                raise ValueError("item adjudication context must be an object")
+            allowed = [
+                "approved_targets",
+                "approved_duration",
+                "approved_damage",
+                "approved_condition",
+                "approved_object_profile",
+                "approved_exception",
+            ]
+            window = RulesKernelAdjudicationWindow(
+                campaign_id=cid,
+                source_command_id=f"item:{key}",
+                content_id=str((equipment.metadata_json or {}).get("item_spec", {}).get("item_id") or equipment.name),
+                actor_id=character.id,
+                requested_by=str(data.get("requested_by") or "player"),
+                category="freeform_effect",
+                source_text_evidence=str(
+                    clause.get("evidence", {}).get("source_text")
+                    or clause.get("evidence", {}).get("source_excerpt")
+                ),
+                typed_known_effects=[
+                    item
+                    for item in (equipment.metadata_json or {}).get("item_spec", {}).get("clauses", [])
+                    if isinstance(item, dict) and item.get("clause_id") != clause.get("clause_id")
+                ],
+                open_questions=[str(item) for item in data.get("open_questions", ["target_or_effect_context"])],
+                allowed_decision_schema=allowed,
+                frozen_context={
+                    "character_id": character.id,
+                    "character_version": character.version,
+                    "equipment_id": equipment.id,
+                    "equipment_version": equipment.version,
+                    "item_id": str((equipment.metadata_json or {}).get("item_spec", {}).get("item_id") or ""),
+                    "clause_id": clause.get("clause_id"),
+                    "context": context,
+                },
+                expected_versions={
+                    "character_version": character.version,
+                    "equipment_version": equipment.version,
+                },
+                expires_at=datetime.now(UTC) + timedelta(minutes=30),
+            )
+            session.add(window)
+            session.flush()
+            out = {
+                "schema_version": "item-dm-continuation-1",
+                "adjudication_id": window.id,
+                "status": window.status,
+                "item_id": window.content_id,
+                "equipment_id": equipment.id,
+                "clause_id": clause["clause_id"],
+                "typed_known_effects": window.typed_known_effects,
+                "open_questions": window.open_questions,
+                "allowed_decision_schema": window.allowed_decision_schema,
+                "frozen_context": window.frozen_context,
+                "expected_versions": window.expected_versions,
+            }
+            out["preview_token"] = _token({"data": data, "out": out})
+            session.add(
+                OperationTransaction(
+                    campaign_id=cid,
+                    operation_type="item_dm_adjudication",
+                    idempotency_key=operation_key,
+                    status="pending",
+                    before_snapshot={
+                        "character_id": character.id,
+                        "character_version": character.version,
+                        "equipment_id": equipment.id,
+                        "equipment_version": equipment.version,
+                        "charges": equipment.charges,
+                    },
+                    after_snapshot=out,
+                    source="dm",
+                )
+            )
+            return out
+
+    def item_adjudication_confirm(self, cid: str, data: dict[str, Any]) -> dict[str, Any]:
+        """Resolve the DM window, apply a typed charge cost, and record CAS state."""
+
+        if str(data.get("permission") or "") != "dm":
+            raise ValueError("only DM may resolve item adjudication")
+        key = str(data.get("idempotency_key") or "").strip()
+        if len(key) < 8:
+            raise ValueError("item adjudication idempotency_key is required")
+        operation_key = f"item-dm:{key}"
+        decision = dict(data.get("decision") or {})
+        with Session(self.engine) as session, session.begin():
+            operation = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == cid,
+                    OperationTransaction.idempotency_key == operation_key,
+                )
+            )
+            if operation is None:
+                raise StateNotFoundError("item adjudication transaction not found")
+            if operation.status == "applied":
+                return {**dict(operation.after_snapshot or {}), "idempotent_replay": True}
+            window = session.get(RulesKernelAdjudicationWindow, str(data.get("adjudication_id") or ""))
+            if window is None or window.campaign_id != cid:
+                raise StateNotFoundError("item adjudication window not found")
+            expected_window_version = int(data.get("expected_window_version") or 0)
+            if expected_window_version != window.version:
+                raise VersionConflict("item adjudication", window.id, expected_window_version, window.version)
+            status = str(decision.get("status") or "")
+            if status not in {"approved", "modified", "rejected"}:
+                raise ValueError("item adjudication decision status is invalid")
+            permitted = set(str(item) for item in window.allowed_decision_schema)
+            unexpected = set(decision) - permitted - {"status", "notes"}
+            if unexpected:
+                raise ValueError("item decision contains fields outside allowed_decision_schema")
+            equipment = session.get(EquipmentInstance, str(operation.before_snapshot.get("equipment_id") or ""))
+            character = session.get(Character, str(operation.before_snapshot.get("character_id") or ""))
+            if equipment is None or character is None:
+                raise StateNotFoundError("item adjudication state not found")
+            if character.version != int(operation.before_snapshot.get("character_version") or 0):
+                raise VersionConflict("character", character.id, int(operation.before_snapshot.get("character_version") or 0), character.version)
+            if equipment.version != int(operation.before_snapshot.get("equipment_version") or 0):
+                raise VersionConflict("equipment_instance", equipment.id, int(operation.before_snapshot.get("equipment_version") or 0), equipment.version)
+            clause = self._item_adjudication_clause(equipment, str(window.frozen_context.get("clause_id") or ""))
+            change = {"charges_before": equipment.charges, "charges_after": equipment.charges, "charge_cost": 0}
+            if status != "rejected":
+                cost = int((clause.get("parameters") or {}).get("charge_cost") or 0)
+                if cost and (equipment.charges is None or equipment.charges < cost):
+                    raise ValueError("item adjudication charge is unavailable")
+                if cost:
+                    equipment.charges = int(equipment.charges or 0) - cost
+                    change = {"charges_before": change["charges_before"], "charges_after": equipment.charges, "charge_cost": cost}
+                    equipment.version += 1
+                character.version += 1
+            window.status = status
+            window.dm_decision = decision
+            window.version += 1
+            out = {
+                **dict(operation.after_snapshot or {}),
+                "status": status,
+                "decision": decision,
+                "change": change,
+                "character_version_after": character.version,
+                "equipment_version_after": equipment.version,
+                "confirmed": True,
+            }
+            operation.status = "applied"
+            operation.after_snapshot = out
+            operation.confirmed_at = datetime.now(UTC)
+            return out
+
+    def item_adjudication_rollback(
+        self, cid: str, adjudication_id: str, expected_character_version: int, expected_equipment_version: int
+    ) -> dict[str, Any]:
+        with Session(self.engine) as session, session.begin():
+            window = session.get(RulesKernelAdjudicationWindow, adjudication_id)
+            if window is None or window.campaign_id != cid:
+                raise StateNotFoundError("item adjudication window not found")
+            key = f"item-dm:{str(window.source_command_id).removeprefix('item:')}"
+            operation = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == cid,
+                    OperationTransaction.idempotency_key == key,
+                )
+            )
+            if operation is None:
+                raise StateNotFoundError("item adjudication transaction not found")
+            if operation.status == "reverted":
+                return {"status": "already_reverted", "adjudication_id": adjudication_id}
+            character = session.get(Character, str(operation.before_snapshot.get("character_id") or ""))
+            equipment = session.get(EquipmentInstance, str(operation.before_snapshot.get("equipment_id") or ""))
+            if character is None or equipment is None:
+                raise StateNotFoundError("item rollback state not found")
+            if character.version != expected_character_version or equipment.version != expected_equipment_version:
+                raise VersionConflict("item rollback", adjudication_id, expected_character_version, character.version)
+            equipment.charges = operation.before_snapshot.get("charges")
+            equipment.version += 1
+            character.version += 1
+            operation.status = "reverted"
+            operation.reverted_at = datetime.now(UTC)
+            operation.after_snapshot = {
+                **dict(operation.after_snapshot or {}),
+                "rollback": {
+                    "character_version_after": character.version,
+                    "equipment_version_after": equipment.version,
+                    "charges": equipment.charges,
+                },
+            }
+            return {
+                "status": "reverted",
+                "adjudication_id": adjudication_id,
+                "character_version_after": character.version,
+                "equipment_version_after": equipment.version,
+            }
 
     @staticmethod
     def _player_shop_scope(

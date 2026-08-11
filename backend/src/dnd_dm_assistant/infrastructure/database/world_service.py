@@ -18,6 +18,7 @@ from dnd_dm_assistant.domain.feature_runtime import (
     resolve_feature_speed,
     resolve_unarmored_defense_ac,
 )
+from dnd_dm_assistant.domain.item_spec import materialize_item_effects
 from dnd_dm_assistant.domain.world import GeneratedLocationNode
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.encounter_service import (
@@ -25,6 +26,7 @@ from dnd_dm_assistant.infrastructure.database.encounter_service import (
 )
 from dnd_dm_assistant.infrastructure.database.models import (
     NPC,
+    Attunement,
     AuditLog,
     Campaign,
     Character,
@@ -627,6 +629,26 @@ class WorldService:
                         if row.equipped
                     ]
                     snapshot["equipment"] = equipped_profiles
+                    active_attunement_ids = {
+                        str(item.equipment_instance_id)
+                        for item in session.scalars(
+                            select(Attunement).where(
+                                Attunement.character_id == entity.id,
+                                Attunement.status == "active",
+                            )
+                        )
+                    }
+                    snapshot["item_effects"] = materialize_item_effects(
+                        [
+                            {
+                                "id": row.id,
+                                "equipped": bool(row.equipped),
+                                "item_spec": (row.metadata_json or {}).get("item_spec"),
+                            }
+                            for row in equipment_rows
+                        ],
+                        active_attunement_ids,
+                    )
                     armor_profiles = [
                         profile
                         for profile in equipped_profiles
