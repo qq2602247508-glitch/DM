@@ -6,6 +6,7 @@
 - 新增证据入口：`scripts/validate-tashas-feature-production-consumer-round-V.py`、`reports/tashas-feature-production-consumer-round-V-2026-08-12.json`、`data/content-ir/compiled/production-runtime-results-VII.json`、`docs/tashas-feature-production-consumer-round-V-2026-08-12.md`。Round V validator 两次关键输出 hash 一致；whole-pack migration 两次关键报告/runtime hash 一致。
 - 完整 backend pytest、Round V 与历史 Tasha 定向回归、变更 source Ruff、compileall、`git diff --check` 通过。仓库已有测试 import-order I001 噪音没有做无关格式化。
 - formal apply/database/campaign/character 仍为 false；3D、source corpus、formal 499 audit 未改。受保护的 `backend/tests/integrations/` 和 `backend/tests/ollama.py` 未暂存/提交，database fingerprint 仍为 `f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad`。
+- Round V implementation/evidence 已提交并推送：`2125670a5cda1673e8a3f62522267608fa7c3e4d`，`origin/main` push success，2026-08-12 03:10:24 +0800；ledger receipt 随后单独提交。
 - 下一轮：继续 vessel/entity、exhaustion、spectral object、teleport destination、psionic payment 与 ItemSpec lifecycle；不要把 isolated-only / DM-reference 伪装成 production，也不要迁移下一本扩展包。
 
 # 2026-08-12 Round 4 检查点：Movement / Sight / Choice / Lifecycle consumer 扩展

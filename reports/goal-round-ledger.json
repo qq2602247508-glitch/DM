@@ -38,7 +38,7 @@
         "difference": "Round 5 adds a generic typed advancement consumer and promotes eight compile-only Tasha Feature contracts through real character snapshot growth; formal campaign/character/database rows remain outside the evidence boundary.",
         "prompt_baseline": {"round_target_production_or_dm": 8}
       },
-      "commits": [],
+      "commits": ["2125670"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [
@@ -66,11 +66,11 @@
       "phase": "E",
       "push_receipt": {
         "branch": "main",
-        "commit_hash": "pending",
-        "pushed_at": "pending",
+        "commit_hash": "2125670a5cda1673e8a3f62522267608fa7c3e4d",
+        "pushed_at": "2026-08-12T03:10:24+0800",
         "remote": "origin",
         "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
-        "result": "pending"
+        "result": "success"
       },
       "reports": [
         "reports/tashas-feature-production-consumer-round-V-2026-08-12.json",
