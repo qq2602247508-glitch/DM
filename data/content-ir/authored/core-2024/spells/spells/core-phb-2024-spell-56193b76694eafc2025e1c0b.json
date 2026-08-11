@@ -1,0 +1,113 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "action",
+  "clause_boundaries": {
+    "temp-hp": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "你获得2d4+4点临时生命值",
+      "source_heading": "虚假生命"
+    },
+    "upcast": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "每比一环高一环，临时生命值增加5",
+      "source_heading": "虚假生命"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:56193b76694eafc2025e1c0b:temp-hp",
+    "core-phb-2024:spell:56193b76694eafc2025e1c0b:upcast"
+  ],
+  "clauses": [
+    {
+      "action_economy": "action",
+      "amount": "2d4+4",
+      "clause_id": "temp-hp",
+      "duration": "instant",
+      "evidence_ref": "你获得2d4+4点临时生命值",
+      "target": "self",
+      "trigger": "spell_cast",
+      "type": "temporary_hp"
+    },
+    {
+      "applies_to": "temporary_hp",
+      "clause_id": "upcast",
+      "evidence_ref": "每比一环高一环，临时生命值增加5",
+      "increments": 5,
+      "per_slot": 1,
+      "type": "upcast"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "components": "V,S,M(alcohol)",
+  "concentration": false,
+  "duration": "instant",
+  "edition": "2024",
+  "evidence": [
+    "temp-hp: 你获得2d4+4点临时生命值",
+    "upcast: 每比一环高一环，临时生命值增加5"
+  ],
+  "kind": "spell",
+  "level": 1,
+  "manual_decisions": {
+    "amount": "source text 明确为2d4+4；不是 damage"
+  },
+  "name": "虚假生命",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-00e593509093",
+  "range": "self",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "target",
+    "components",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "死灵",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "你获得2d4+4点临时生命值 每比一环高一环，临时生命值增加5",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "de63eff053a24d62e97dedf1165d43fc0d775959820910521ffeffbfb9460cee",
+    "source_fingerprint": "9e30b35903feab87d652f56f819c9ff28460d8633a254387c1bd1571f7c422fe",
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 虚假生命｜False Life\n\n*一环 死灵（术士、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**自身\n**法术成分：**V、S、M（一滴酒精）\n**持续时间：**立即\n你获得2d4+4点临时生命值。\n**升环施法。**使用的法术位每比一环高一环，其给予的临时生命值就增加5。"
+  },
+  "source_fingerprint": "9e30b35903feab87d652f56f819c9ff28460d8633a254387c1bd1571f7c422fe",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "de63eff053a24d62e97dedf1165d43fc0d775959820910521ffeffbfb9460cee",
+    "source_relative_path": "玩家手册2024/法术详述/1环.htm"
+  },
+  "source_record_id": "56193b76694eafc2025e1c0b",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+  "target": "self"
+}

@@ -1,0 +1,151 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "reaction",
+  "clause_boundaries": {
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半",
+      "source_heading": "炼狱叱喝"
+    },
+    "save": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半",
+      "source_heading": "炼狱叱喝"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半",
+      "source_heading": "炼狱叱喝"
+    },
+    "upcast": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "每比一环高一环，伤害增加1d10",
+      "source_heading": "炼狱叱喝"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:89d9cadae3d9583d0c2dd806:target",
+    "core-phb-2024:spell:89d9cadae3d9583d0c2dd806:save",
+    "core-phb-2024:spell:89d9cadae3d9583d0c2dd806:damage",
+    "core-phb-2024:spell:89d9cadae3d9583d0c2dd806:upcast"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半",
+      "kind": "one_creature",
+      "range": "60 feet",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "reaction",
+      "clause_id": "save",
+      "evidence_ref": "伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半",
+      "half_on_success": true,
+      "range": "60 feet",
+      "save_ability": "dexterity",
+      "target": "one_creature",
+      "trigger": "spell_cast",
+      "type": "saving_throw"
+    },
+    {
+      "applies_to": "save",
+      "clause_id": "damage",
+      "damage_type": "fire",
+      "evidence_ref": "伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半",
+      "expression": "2d10",
+      "on_failure": "full",
+      "on_success": "half",
+      "target": "one_creature",
+      "trigger": "saving_throw",
+      "type": "damage"
+    },
+    {
+      "applies_to": "damage",
+      "clause_id": "upcast",
+      "evidence_ref": "每比一环高一环，伤害增加1d10",
+      "increments": "1d10",
+      "per_slot": 1,
+      "progression": null,
+      "type": "upcast"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "components": "V,S",
+  "concentration": false,
+  "duration": "instant",
+  "edition": "2024",
+  "evidence": [
+    "damage: 伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半",
+    "save: 伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半",
+    "target: 伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半",
+    "upcast: 每比一环高一环，伤害增加1d10"
+  ],
+  "kind": "spell",
+  "level": 1,
+  "manual_decisions": {
+    "save_success": "按 source text 显式记录 half 或 no damage branch",
+    "targeting": "target_selection 与 area clause 共同定义目标集合"
+  },
+  "name": "炼狱叱喝",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-00e593509093",
+  "range": "60 feet",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "target",
+    "components",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "塑能",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半 伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半 伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半 每比一环高一环，伤害增加1d10",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "1df47d34844d2e325139320870a801801f87e289126aa080dbe9f65fbc01bd0f",
+    "source_fingerprint": "594fc581e6d3f46fadf42cc6872f4242aef5b97c8a96530280f808b87668658c",
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 炼狱叱喝｜Hellish Rebuke\n\n*一环 塑能（魔契师）*\n**施法时间：**反应，当你受到来自60尺内你可见生物的伤害时执行。\n**施法距离：**60尺\n**法术成分：**V、S\n**持续时间：**立即\n伤害你的生物立刻被绿色的烈焰席卷。该生物必须进行一次敏捷豁免，豁免失败则受到2d10点火焰伤害，豁免成功则受到一半伤害。\n**升环施法。**使用的法术位每比一环高一环，此法术的伤害就增加1d10点。"
+  },
+  "source_fingerprint": "594fc581e6d3f46fadf42cc6872f4242aef5b97c8a96530280f808b87668658c",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "1df47d34844d2e325139320870a801801f87e289126aa080dbe9f65fbc01bd0f",
+    "source_relative_path": "玩家手册2024/法术详述/1环.htm"
+  },
+  "source_record_id": "89d9cadae3d9583d0c2dd806",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+  "target": "damaging visible creature"
+}

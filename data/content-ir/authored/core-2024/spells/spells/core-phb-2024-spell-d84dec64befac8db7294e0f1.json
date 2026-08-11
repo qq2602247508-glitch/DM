@@ -1,0 +1,183 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "action",
+  "clause_boundaries": {
+    "area": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+      "source_heading": "酸液飞溅"
+    },
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+      "source_heading": "酸液飞溅"
+    },
+    "save": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+      "source_heading": "酸液飞溅"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+      "source_heading": "酸液飞溅"
+    },
+    "upcast": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "戏法强化：5级2d6、11级3d6、17级4d6",
+      "source_heading": "酸液飞溅"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:d84dec64befac8db7294e0f1:target",
+    "core-phb-2024:spell:d84dec64befac8db7294e0f1:save",
+    "core-phb-2024:spell:d84dec64befac8db7294e0f1:damage",
+    "core-phb-2024:spell:d84dec64befac8db7294e0f1:area",
+    "core-phb-2024:spell:d84dec64befac8db7294e0f1:upcast"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": "all_in_area",
+      "evidence_ref": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+      "kind": "area",
+      "range": "60 feet",
+      "shape": "sphere",
+      "size_ft": 5,
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "save",
+      "evidence_ref": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+      "half_on_success": false,
+      "range": "60 feet",
+      "save_ability": "dexterity",
+      "target": "area",
+      "trigger": "spell_cast",
+      "type": "saving_throw"
+    },
+    {
+      "applies_to": "save",
+      "clause_id": "damage",
+      "damage_type": "acid",
+      "evidence_ref": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+      "expression": "1d6",
+      "on_failure": "full",
+      "on_success": "none",
+      "target": "area",
+      "trigger": "saving_throw",
+      "type": "damage"
+    },
+    {
+      "clause_id": "area",
+      "evidence_ref": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+      "origin": "chosen_point",
+      "range": "60 feet",
+      "shape": "sphere",
+      "size_ft": 5,
+      "target": "area",
+      "type": "area"
+    },
+    {
+      "applies_to": "damage",
+      "clause_id": "upcast",
+      "evidence_ref": "戏法强化：5级2d6、11级3d6、17级4d6",
+      "increments": 1,
+      "per_slot": null,
+      "progression": [
+        {
+          "character_level": 5,
+          "expression": "2d6"
+        },
+        {
+          "character_level": 11,
+          "expression": "3d6"
+        },
+        {
+          "character_level": 17,
+          "expression": "4d6"
+        }
+      ],
+      "type": "upcast"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "components": "V,S",
+  "concentration": false,
+  "duration": "instant",
+  "edition": "2024",
+  "evidence": [
+    "area: 5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+    "damage: 5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+    "save: 5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+    "target: 5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+    "upcast: 戏法强化：5级2d6、11级3d6、17级4d6"
+  ],
+  "kind": "spell",
+  "level": 0,
+  "manual_decisions": {
+    "save_success": "按 source text 显式记录 half 或 no damage branch",
+    "targeting": "target_selection 与 area clause 共同定义目标集合"
+  },
+  "name": "酸液飞溅",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-00e593509093",
+  "range": "60 feet",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "target",
+    "components",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "塑能",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害 5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害 5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害 5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害 戏法强化：5级2d6、11级3d6、17级4d6",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "2986ab82214995fdcfec0f0bee9d6ee1be705c1409fcfb0260dc836b9ea76ccd",
+    "source_fingerprint": "a313aa1a2445b55284185910142d31d1cc7b4ca3a1de4aae96b0400bab3e5af4",
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 酸液飞溅｜Acid Splash\n\n*塑能 戏法（术士、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**60 尺\n**法术成分：**V、S\n**持续时间：**立即\n你在施法距离内一点创造出一颗酸液泡，以该点5尺球状范围爆发。该球状区域内的每名生物必须通过一次敏捷豁免，否则受到1d6点强酸伤害。\n**戏法强化。**本法术的伤害会在你达到下列等级时提升1d6：5级（2d6）、11级（3d6）以及17级（4d6）。"
+  },
+  "source_fingerprint": "a313aa1a2445b55284185910142d31d1cc7b4ca3a1de4aae96b0400bab3e5af4",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "2986ab82214995fdcfec0f0bee9d6ee1be705c1409fcfb0260dc836b9ea76ccd",
+    "source_relative_path": "玩家手册2024/法术详述/0环.htm"
+  },
+  "source_record_id": "d84dec64befac8db7294e0f1",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+  "target": "5-foot sphere"
+}

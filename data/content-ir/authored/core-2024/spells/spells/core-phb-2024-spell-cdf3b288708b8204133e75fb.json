@@ -1,0 +1,167 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "action",
+  "clause_boundaries": {
+    "attack": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "命中时目标受到1d8寒冷伤害",
+      "source_heading": "冷冻射线"
+    },
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "命中时目标受到1d8寒冷伤害",
+      "source_heading": "冷冻射线"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "命中时目标受到1d8寒冷伤害",
+      "source_heading": "冷冻射线"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:cdf3b288708b8204133e75fb:target",
+    "core-phb-2024:spell:cdf3b288708b8204133e75fb:attack",
+    "core-phb-2024:spell:cdf3b288708b8204133e75fb:damage",
+    "core-phb-2024:spell:cdf3b288708b8204133e75fb:movement",
+    "core-phb-2024:spell:cdf3b288708b8204133e75fb:upcast"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "命中时目标受到1d8寒冷伤害",
+      "kind": "one_creature",
+      "range": "60 feet",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "attack_ability": "spellcasting",
+      "attack_bonus": "spell_attack_bonus",
+      "clause_id": "attack",
+      "evidence_ref": "命中时目标受到1d8寒冷伤害",
+      "range": "60 feet",
+      "target": "one_creature",
+      "trigger": "spell_cast",
+      "type": "attack_roll"
+    },
+    {
+      "applies_to": "attack",
+      "clause_id": "damage",
+      "damage_type": "cold",
+      "evidence_ref": "命中时目标受到1d8寒冷伤害",
+      "expression": "1d8",
+      "on_success": "full",
+      "target": "one_creature",
+      "trigger": "attack_hit",
+      "type": "damage"
+    },
+    {
+      "applies_to": "target",
+      "clause_id": "movement",
+      "duration": "until_your_next_turn_start",
+      "evidence_ref": "目标速度减少10尺，直到你的下一回合开始",
+      "speed_delta_ft": -10,
+      "target": "one_creature",
+      "trigger": "attack_hit",
+      "type": "movement"
+    },
+    {
+      "applies_to": "damage",
+      "clause_id": "upcast",
+      "evidence_ref": "戏法强化：5级2d8、11级3d8、17级4d8",
+      "increments": 1,
+      "per_slot": null,
+      "progression": [
+        {
+          "character_level": 5,
+          "expression": "2d8"
+        },
+        {
+          "character_level": 11,
+          "expression": "3d8"
+        },
+        {
+          "character_level": 17,
+          "expression": "4d8"
+        }
+      ],
+      "type": "upcast"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "components": "V,S",
+  "concentration": false,
+  "duration": "instant",
+  "edition": "2024",
+  "evidence": [
+    "attack: 命中时目标受到1d8寒冷伤害",
+    "damage: 命中时目标受到1d8寒冷伤害",
+    "target: 命中时目标受到1d8寒冷伤害"
+  ],
+  "kind": "spell",
+  "level": 0,
+  "manual_decisions": {
+    "attack_resolution": "远程法术攻击；命中后执行 damage clause"
+  },
+  "name": "冷冻射线",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-00e593509093",
+  "range": "60 feet",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "target",
+    "components",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "塑能",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "命中时目标受到1d8寒冷伤害 命中时目标受到1d8寒冷伤害 命中时目标受到1d8寒冷伤害",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "9094cd8cd16bdc4f57f3ae6d3f3800c92c18e5e8bd62299339f9b508435a06ed",
+    "source_fingerprint": "38b75fff7f0bf218988354b581932bf9b9c4b1cc38d8145098f5399b6b70fe14",
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 冷冻射线｜Ray of Frost\n\n*塑能 戏法（术士、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**60尺\n**法术成分：**V、S\n**持续时间：**立即\n一道蓝白色的冰冷光束朝施法距离内的一名生物射去。对目标进行一次远程法术攻击。命中时，目标将受到1d8点寒冷伤害，且其速度将被减少10尺，直到你的下一回合开始为止。\n**戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。"
+  },
+  "source_fingerprint": "38b75fff7f0bf218988354b581932bf9b9c4b1cc38d8145098f5399b6b70fe14",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "9094cd8cd16bdc4f57f3ae6d3f3800c92c18e5e8bd62299339f9b508435a06ed",
+    "source_relative_path": "玩家手册2024/法术详述/0环.htm"
+  },
+  "source_record_id": "cdf3b288708b8204133e75fb",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+  "target": "one creature"
+}

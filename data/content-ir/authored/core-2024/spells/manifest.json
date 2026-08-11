@@ -1,0 +1,50 @@
+{
+  "capability_registry_version": "content-capabilities-1",
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "draft_paths": [],
+  "manifest_fingerprint": "88f45a876ead20b6140099fa42acd0ffd8af5688dbcb08353e44bef2e9a25968",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-00e593509093",
+  "production_targets": {
+    "campaign": false,
+    "character": false,
+    "database": false,
+    "feature_registry": false,
+    "spell_registry": false
+  },
+  "replay": {
+    "policy": "same-manifest-fingerprint-is-idempotent"
+  },
+  "ruleset_version": "2024",
+  "schema_version": "content-ir-workbench-manifest-3",
+  "source_book": "玩家手册 2024",
+  "source_fingerprints": {
+    "123b43e9b05ce7fba2082a58": "878e3caffe154ddc3bed0eae70cb3b743e0071ed2a5e668d342e62dd23b18ea8",
+    "25c29e45961513478bcd8bc0": "c8f0900ae39630651f697810ff89b6fa79a008fae40da98ef089ad22c5730396",
+    "3a56665b98f37eed02921de6": "ba856583b125853e6dbbc19253fc8b12b9a4d3884db4f304368d68cc9c67209a",
+    "56193b76694eafc2025e1c0b": "9e30b35903feab87d652f56f819c9ff28460d8633a254387c1bd1571f7c422fe",
+    "5dd11cb3fbb6d21ea53739f2": "d23e86271fc9e1082cc7110c46e7baabdd9282249497a60fd3c20a44e418f197",
+    "80a94afd6beb396baec20560": "52f8622c95fad1ba6d25d3ed43bae56c1fff7e510f9dab2bff9521765178ef42",
+    "82f220a9e3474d8fe1cafd8b": "3b5d93b6755939c7caf839d96dcb32e7fcc2d8839b5551ea7ec6afd115874b38",
+    "89d9cadae3d9583d0c2dd806": "594fc581e6d3f46fadf42cc6872f4242aef5b97c8a96530280f808b87668658c",
+    "cdf3b288708b8204133e75fb": "38b75fff7f0bf218988354b581932bf9b9c4b1cc38d8145098f5399b6b70fe14",
+    "d84dec64befac8db7294e0f1": "a313aa1a2445b55284185910142d31d1cc7b4ca3a1de4aae96b0400bab3e5af4",
+    "f3cf7ceffcf997ce3be9d482": "35f2d1b2ad6cf0c4df63c80dac554cc2edb5ecebe75cb39969c60ccf6a8f661e",
+    "fb279ff13dba2abcce376201": "0c24c6df91e4772c5e77d456bb9ad9f400bf5efbe727e737f61ae6ce3bf2e66e"
+  },
+  "typed_ir_paths": [
+    "spells/core-phb-2024-spell-123b43e9b05ce7fba2082a58.json",
+    "spells/core-phb-2024-spell-25c29e45961513478bcd8bc0.json",
+    "spells/core-phb-2024-spell-3a56665b98f37eed02921de6.json",
+    "spells/core-phb-2024-spell-56193b76694eafc2025e1c0b.json",
+    "spells/core-phb-2024-spell-5dd11cb3fbb6d21ea53739f2.json",
+    "spells/core-phb-2024-spell-80a94afd6beb396baec20560.json",
+    "spells/core-phb-2024-spell-82f220a9e3474d8fe1cafd8b.json",
+    "spells/core-phb-2024-spell-89d9cadae3d9583d0c2dd806.json",
+    "spells/core-phb-2024-spell-cdf3b288708b8204133e75fb.json",
+    "spells/core-phb-2024-spell-d84dec64befac8db7294e0f1.json",
+    "spells/core-phb-2024-spell-f3cf7ceffcf997ce3be9d482.json",
+    "spells/core-phb-2024-spell-fb279ff13dba2abcce376201.json"
+  ]
+}

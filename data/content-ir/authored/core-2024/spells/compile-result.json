@@ -1,0 +1,5192 @@
+{
+  "blocker_counts": {},
+  "capability_counts": {
+    "spell.area.v1": 4,
+    "spell.attack_roll.v1": 3,
+    "spell.damage.v1": 9,
+    "spell.healing.v1": 2,
+    "spell.movement.v1": 1,
+    "spell.saving_throw.v1": 6,
+    "spell.target_selection.v1": 11,
+    "spell.temporary_hp.v1": 1,
+    "spell.upcast.v1": 12
+  },
+  "capability_registry_version": "content-capabilities-1",
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "conflicts": [],
+  "counts": {
+    "full": 12,
+    "invalid": 0,
+    "manual": 0,
+    "partial": 0
+  },
+  "manifest_fingerprint": "88f45a876ead20b6140099fa42acd0ffd8af5688dbcb08353e44bef2e9a25968",
+  "results": [
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.healing.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.healing.v1",
+          "clause_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58:clause:1",
+          "status": "full",
+          "type": "healing"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58:clause:2",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "b6b703be43449af4474fca559385956bfdbf75d6c50c788576cf47488bc2e3c7",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "指定施法距离内一个你能看见的生物",
+            "kind": "one_creature",
+            "range": "60 feet",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.healing.v1",
+          "clause_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "bonus_action",
+            "amount": "2d4 + spellcasting_modifier",
+            "clause_id": "healing",
+            "evidence_ref": "恢复量等于2d4+你的施法属性调整值",
+            "expression": "2d4 + spellcasting_modifier",
+            "healing": "2d4 + spellcasting_modifier",
+            "target": "one_creature",
+            "timing": "immediate",
+            "trigger": "spell_cast",
+            "type": "healing"
+          },
+          "spell_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58",
+          "type": "healing"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "healing",
+            "clause_id": "upcast",
+            "evidence_ref": "每比一环高一环，治疗量增加2d4",
+            "increments": "2d4",
+            "per_slot": 1,
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "bonus_action",
+        "components": "V",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 1,
+        "name": "治愈真言",
+        "range": "60 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "bonus_action",
+              "amount": "2d4 + spellcasting_modifier",
+              "clause_id": "healing",
+              "evidence_ref": "恢复量等于2d4+你的施法属性调整值",
+              "expression": "2d4 + spellcasting_modifier",
+              "healing": "2d4 + spellcasting_modifier",
+              "target": "one_creature",
+              "timing": "immediate",
+              "trigger": "spell_cast",
+              "type": "healing"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "指定施法距离内一个你能看见的生物",
+              "kind": "one_creature",
+              "range": "60 feet",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "healing",
+              "clause_id": "upcast",
+              "evidence_ref": "每比一环高一环，治疗量增加2d4",
+              "increments": "2d4",
+              "per_slot": 1,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "防护",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "878e3caffe154ddc3bed0eae70cb3b743e0071ed2a5e668d342e62dd23b18ea8",
+          "source_path": "玩家手册2024/法术详述/1环.htm",
+          "source_record_id": "123b43e9b05ce7fba2082a58",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58",
+        "target": "one visible creature"
+      },
+      "source_fingerprint": "878e3caffe154ddc3bed0eae70cb3b743e0071ed2a5e668d342e62dd23b18ea8",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "b2d7ca277d5487894a04097960b2788710911762fac30c7a71fae008be68ba32",
+      "spell_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0:clause:4",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "32f278d458106ab1449eb7e3309fd85e53ccf7906ba2b082035c2e7fd3a8c8d1",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+            "kind": "area",
+            "range": "self",
+            "shape": "line",
+            "size_ft": 100,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+            "half_on_success": true,
+            "range": "self",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "lightning",
+            "evidence_ref": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+            "expression": "8d6",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+            "origin": "self",
+            "range": "self",
+            "shape": "line",
+            "size_ft": 100,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每比三环高一环，伤害增加1d6",
+            "increments": "1d6",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S,M(fur and crystal rod)",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 3,
+        "name": "闪电束",
+        "range": "self",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "lightning",
+              "evidence_ref": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+              "expression": "8d6",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+              "origin": "self",
+              "range": "self",
+              "shape": "line",
+              "size_ft": 100,
+              "target": "area",
+              "type": "area"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+              "half_on_success": true,
+              "range": "self",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+              "kind": "area",
+              "range": "self",
+              "shape": "line",
+              "size_ft": 100,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每比三环高一环，伤害增加1d6",
+              "increments": "1d6",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "c8f0900ae39630651f697810ff89b6fa79a008fae40da98ef089ad22c5730396",
+          "source_path": "玩家手册2024/法术详述/3环.htm",
+          "source_record_id": "25c29e45961513478bcd8bc0",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0",
+        "target": "100-foot line"
+      },
+      "source_fingerprint": "c8f0900ae39630651f697810ff89b6fa79a008fae40da98ef089ad22c5730396",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "7f9dea40cc273f24791243ba1b9998b79ad0686a801d441c424ec7e9fd2737d7",
+      "spell_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0",
+      "typed_clause_count": 5,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:3a56665b98f37eed02921de6:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:3a56665b98f37eed02921de6:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:3a56665b98f37eed02921de6:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:3a56665b98f37eed02921de6:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:3a56665b98f37eed02921de6:clause:4",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "f766a32b95c61ec3884ad2a9eda3f7e96458813b60254448ca11431927c3af18",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:3a56665b98f37eed02921de6:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+            "kind": "area",
+            "range": "150 feet",
+            "shape": "sphere",
+            "size_ft": 20,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:3a56665b98f37eed02921de6",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:3a56665b98f37eed02921de6:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+            "half_on_success": true,
+            "range": "150 feet",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "core-phb-2024:spell:3a56665b98f37eed02921de6",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:3a56665b98f37eed02921de6:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "fire",
+            "evidence_ref": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+            "expression": "8d6",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:3a56665b98f37eed02921de6",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:3a56665b98f37eed02921de6:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+            "origin": "chosen_point",
+            "range": "150 feet",
+            "shape": "sphere",
+            "size_ft": 20,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "core-phb-2024:spell:3a56665b98f37eed02921de6",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:3a56665b98f37eed02921de6:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每比三环高一环，伤害增加1d6",
+            "increments": "1d6",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:3a56665b98f37eed02921de6",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S,M(bat guano and sulfur)",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 3,
+        "name": "火球术",
+        "range": "150 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "fire",
+              "evidence_ref": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+              "expression": "8d6",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+              "origin": "chosen_point",
+              "range": "150 feet",
+              "shape": "sphere",
+              "size_ft": 20,
+              "target": "area",
+              "type": "area"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+              "half_on_success": true,
+              "range": "150 feet",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+              "kind": "area",
+              "range": "150 feet",
+              "shape": "sphere",
+              "size_ft": 20,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每比三环高一环，伤害增加1d6",
+              "increments": "1d6",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "ba856583b125853e6dbbc19253fc8b12b9a4d3884db4f304368d68cc9c67209a",
+          "source_path": "玩家手册2024/法术详述/3环.htm",
+          "source_record_id": "3a56665b98f37eed02921de6",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:3a56665b98f37eed02921de6",
+        "target": "20-foot sphere"
+      },
+      "source_fingerprint": "ba856583b125853e6dbbc19253fc8b12b9a4d3884db4f304368d68cc9c67209a",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "12b0789a5c1e1d291ac0abcc44cdd669351a547608e8c38eec675f9053a4344a",
+      "spell_id": "core-phb-2024:spell:3a56665b98f37eed02921de6",
+      "typed_clause_count": 5,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.temporary_hp.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.temporary_hp.v1",
+          "clause_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b:clause:0",
+          "status": "full",
+          "type": "temporary_hp"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b:clause:1",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "6af76ce4f58d869562bbe26f7b686300bfd3a2373bffef7d1481462c1332565a",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.temporary_hp.v1",
+          "clause_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "amount": "2d4+4",
+            "clause_id": "temp-hp",
+            "duration": "instant",
+            "evidence_ref": "你获得2d4+4点临时生命值",
+            "target": "self",
+            "trigger": "spell_cast",
+            "type": "temporary_hp"
+          },
+          "spell_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+          "type": "temporary_hp"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "temporary_hp",
+            "clause_id": "upcast",
+            "evidence_ref": "每比一环高一环，临时生命值增加5",
+            "increments": 5,
+            "per_slot": 1,
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S,M(alcohol)",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 1,
+        "name": "虚假生命",
+        "range": "self",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "amount": "2d4+4",
+              "clause_id": "temp-hp",
+              "duration": "instant",
+              "evidence_ref": "你获得2d4+4点临时生命值",
+              "target": "self",
+              "trigger": "spell_cast",
+              "type": "temporary_hp"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [],
+          "upcast": [
+            {
+              "applies_to": "temporary_hp",
+              "clause_id": "upcast",
+              "evidence_ref": "每比一环高一环，临时生命值增加5",
+              "increments": 5,
+              "per_slot": 1,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "死灵",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "9e30b35903feab87d652f56f819c9ff28460d8633a254387c1bd1571f7c422fe",
+          "source_path": "玩家手册2024/法术详述/1环.htm",
+          "source_record_id": "56193b76694eafc2025e1c0b",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+        "target": "self"
+      },
+      "source_fingerprint": "9e30b35903feab87d652f56f819c9ff28460d8633a254387c1bd1571f7c422fe",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "d61d1983b2bcb46867796e5f57b48e7137087a752a026918527dffd2b1903c8e",
+      "spell_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+      "typed_clause_count": 2,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.healing.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.healing.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:1",
+          "status": "full",
+          "type": "healing"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:2",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "994011f325363073b1cf89b0c38fb6bf24a2f3e97b23ee2173c11dbb5f41db20",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "你触碰的一名生物",
+            "kind": "one_creature",
+            "range": "touch",
+            "type": "target_selection"
+          },
+          "spell_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.healing.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "amount": "2d8 + spellcasting_modifier",
+            "clause_id": "healing",
+            "evidence_ref": "恢复等同于2d8+施法属性调整值点生命值",
+            "expression": "2d8 + spellcasting_modifier",
+            "healing": "2d8 + spellcasting_modifier",
+            "target": "one_creature",
+            "timing": "immediate",
+            "trigger": "spell_cast",
+            "type": "healing"
+          },
+          "spell_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+          "type": "healing"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "healing",
+            "clause_id": "upcast",
+            "evidence_ref": "每比一环高一环，治疗量增加2d8",
+            "increments": "2d8",
+            "per_slot": 1,
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 1,
+        "name": "疗伤术",
+        "range": "touch",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "amount": "2d8 + spellcasting_modifier",
+              "clause_id": "healing",
+              "evidence_ref": "恢复等同于2d8+施法属性调整值点生命值",
+              "expression": "2d8 + spellcasting_modifier",
+              "healing": "2d8 + spellcasting_modifier",
+              "target": "one_creature",
+              "timing": "immediate",
+              "trigger": "spell_cast",
+              "type": "healing"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "你触碰的一名生物",
+              "kind": "one_creature",
+              "range": "touch",
+              "type": "target_selection"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "healing",
+              "clause_id": "upcast",
+              "evidence_ref": "每比一环高一环，治疗量增加2d8",
+              "increments": "2d8",
+              "per_slot": 1,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "防护",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "d23e86271fc9e1082cc7110c46e7baabdd9282249497a60fd3c20a44e418f197",
+          "source_path": "玩家手册2024/法术详述/1环.htm",
+          "source_record_id": "5dd11cb3fbb6d21ea53739f2",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+        "target": "one creature"
+      },
+      "source_fingerprint": "d23e86271fc9e1082cc7110c46e7baabdd9282249497a60fd3c20a44e418f197",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "f8de1d400b65a4d1ddd603a21a0fa2dc16966fdd64d0bf29249fcf51ed839a10",
+      "spell_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.attack_roll.v1",
+        "spell.damage.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:80a94afd6beb396baec20560:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.attack_roll.v1",
+          "clause_id": "core-phb-2024:spell:80a94afd6beb396baec20560:clause:1",
+          "status": "full",
+          "type": "attack_roll"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:80a94afd6beb396baec20560:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:80a94afd6beb396baec20560:clause:3",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "b7040e3c57db612e8aa8a85f2a0ceaabc36715d7a003acf64d72f6e82eaa2e50",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:80a94afd6beb396baec20560:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "命中时目标受到1d10点力场伤害",
+            "kind": "one_creature",
+            "range": "120 feet",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:80a94afd6beb396baec20560",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.attack_roll.v1",
+          "clause_id": "core-phb-2024:spell:80a94afd6beb396baec20560:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "attack_ability": "spellcasting",
+            "attack_bonus": "spell_attack_bonus",
+            "clause_id": "attack",
+            "evidence_ref": "命中时目标受到1d10点力场伤害",
+            "range": "120 feet",
+            "target": "one_creature",
+            "trigger": "spell_cast",
+            "type": "attack_roll"
+          },
+          "spell_id": "core-phb-2024:spell:80a94afd6beb396baec20560",
+          "type": "attack_roll"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:80a94afd6beb396baec20560:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "attack",
+            "clause_id": "damage",
+            "damage_type": "force",
+            "evidence_ref": "命中时目标受到1d10点力场伤害",
+            "expression": "1d10",
+            "on_success": "full",
+            "target": "one_creature",
+            "trigger": "attack_hit",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:80a94afd6beb396baec20560",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:80a94afd6beb396baec20560:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "attack_and_damage",
+            "clause_id": "upcast",
+            "evidence_ref": "戏法强化：5级两条射线，11级三条，17级四条，分别进行攻击检定",
+            "increments": 1,
+            "per_slot": null,
+            "progression": [
+              {
+                "character_level": 5,
+                "ray_count": 2
+              },
+              {
+                "character_level": 11,
+                "ray_count": 3
+              },
+              {
+                "character_level": 17,
+                "ray_count": 4
+              }
+            ],
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:80a94afd6beb396baec20560",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 0,
+        "name": "魔能爆",
+        "range": "120 feet",
+        "resolution": {
+          "attack_roll": [
+            {
+              "action_economy": "action",
+              "attack_ability": "spellcasting",
+              "attack_bonus": "spell_attack_bonus",
+              "clause_id": "attack",
+              "evidence_ref": "命中时目标受到1d10点力场伤害",
+              "range": "120 feet",
+              "target": "one_creature",
+              "trigger": "spell_cast",
+              "type": "attack_roll"
+            }
+          ],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "attack",
+              "clause_id": "damage",
+              "damage_type": "force",
+              "evidence_ref": "命中时目标受到1d10点力场伤害",
+              "expression": "1d10",
+              "on_success": "full",
+              "target": "one_creature",
+              "trigger": "attack_hit",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "命中时目标受到1d10点力场伤害",
+              "kind": "one_creature",
+              "range": "120 feet",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "attack_and_damage",
+              "clause_id": "upcast",
+              "evidence_ref": "戏法强化：5级两条射线，11级三条，17级四条，分别进行攻击检定",
+              "increments": 1,
+              "per_slot": null,
+              "progression": [
+                {
+                  "character_level": 5,
+                  "ray_count": 2
+                },
+                {
+                  "character_level": 11,
+                  "ray_count": 3
+                },
+                {
+                  "character_level": 17,
+                  "ray_count": 4
+                }
+              ],
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "52f8622c95fad1ba6d25d3ed43bae56c1fff7e510f9dab2bff9521765178ef42",
+          "source_path": "玩家手册2024/法术详述/0环.htm",
+          "source_record_id": "80a94afd6beb396baec20560",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:80a94afd6beb396baec20560",
+        "target": "one creature or object"
+      },
+      "source_fingerprint": "52f8622c95fad1ba6d25d3ed43bae56c1fff7e510f9dab2bff9521765178ef42",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "c01374dede141d7d7c11d45f831328f4d48e6dc4009762fa116e746054245589",
+      "spell_id": "core-phb-2024:spell:80a94afd6beb396baec20560",
+      "typed_clause_count": 4,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b:clause:3",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "19a46a11a2c8f0d17aed18852435745cd9ff432855741033f637a899f04b282f",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "目标必须通过敏捷豁免，否则受到1d8点光耀伤害",
+            "kind": "one_creature",
+            "range": "60 feet",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "目标必须通过敏捷豁免，否则受到1d8点光耀伤害",
+            "half_on_success": false,
+            "ignores_cover": true,
+            "range": "60 feet",
+            "save_ability": "dexterity",
+            "target": "one_creature",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "radiant",
+            "evidence_ref": "目标必须通过敏捷豁免，否则受到1d8点光耀伤害",
+            "expression": "1d8",
+            "on_failure": "full",
+            "on_success": "none",
+            "target": "one_creature",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "戏法强化：5级2d8、11级3d8、17级4d8",
+            "increments": 1,
+            "per_slot": null,
+            "progression": [
+              {
+                "character_level": 5,
+                "expression": "2d8"
+              },
+              {
+                "character_level": 11,
+                "expression": "3d8"
+              },
+              {
+                "character_level": 17,
+                "expression": "4d8"
+              }
+            ],
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 0,
+        "name": "圣火术",
+        "range": "60 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "radiant",
+              "evidence_ref": "目标必须通过敏捷豁免，否则受到1d8点光耀伤害",
+              "expression": "1d8",
+              "on_failure": "full",
+              "on_success": "none",
+              "target": "one_creature",
+              "trigger": "saving_throw",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "目标必须通过敏捷豁免，否则受到1d8点光耀伤害",
+              "half_on_success": false,
+              "ignores_cover": true,
+              "range": "60 feet",
+              "save_ability": "dexterity",
+              "target": "one_creature",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "目标必须通过敏捷豁免，否则受到1d8点光耀伤害",
+              "kind": "one_creature",
+              "range": "60 feet",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "戏法强化：5级2d8、11级3d8、17级4d8",
+              "increments": 1,
+              "per_slot": null,
+              "progression": [
+                {
+                  "character_level": 5,
+                  "expression": "2d8"
+                },
+                {
+                  "character_level": 11,
+                  "expression": "3d8"
+                },
+                {
+                  "character_level": 17,
+                  "expression": "4d8"
+                }
+              ],
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "3b5d93b6755939c7caf839d96dcb32e7fcc2d8839b5551ea7ec6afd115874b38",
+          "source_path": "玩家手册2024/法术详述/0环.htm",
+          "source_record_id": "82f220a9e3474d8fe1cafd8b",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b",
+        "target": "one visible creature"
+      },
+      "source_fingerprint": "3b5d93b6755939c7caf839d96dcb32e7fcc2d8839b5551ea7ec6afd115874b38",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "6058d5ce956398c4770dc15507fddd1b300cce2f3d853a17d399012e1d60fb30",
+      "spell_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b",
+      "typed_clause_count": 4,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806:clause:3",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "3cce9176abd839d0a76bdeae07ee9594080a58c49aa492692835d34053633e4c",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半",
+            "kind": "one_creature",
+            "range": "60 feet",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "reaction",
+            "clause_id": "save",
+            "evidence_ref": "伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半",
+            "half_on_success": true,
+            "range": "60 feet",
+            "save_ability": "dexterity",
+            "target": "one_creature",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "fire",
+            "evidence_ref": "伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半",
+            "expression": "2d10",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "one_creature",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每比一环高一环，伤害增加1d10",
+            "increments": "1d10",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "reaction",
+        "components": "V,S",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 1,
+        "name": "炼狱叱喝",
+        "range": "60 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "fire",
+              "evidence_ref": "伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半",
+              "expression": "2d10",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "one_creature",
+              "trigger": "saving_throw",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "reaction",
+              "clause_id": "save",
+              "evidence_ref": "伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半",
+              "half_on_success": true,
+              "range": "60 feet",
+              "save_ability": "dexterity",
+              "target": "one_creature",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半",
+              "kind": "one_creature",
+              "range": "60 feet",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每比一环高一环，伤害增加1d10",
+              "increments": "1d10",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "594fc581e6d3f46fadf42cc6872f4242aef5b97c8a96530280f808b87668658c",
+          "source_path": "玩家手册2024/法术详述/1环.htm",
+          "source_record_id": "89d9cadae3d9583d0c2dd806",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+        "target": "damaging visible creature"
+      },
+      "source_fingerprint": "594fc581e6d3f46fadf42cc6872f4242aef5b97c8a96530280f808b87668658c",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "900817bc5e9d709f72d4c57e1cf73c002b0b9ede2b4b9a4de1a229bdbde8a776",
+      "spell_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+      "typed_clause_count": 4,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.attack_roll.v1",
+        "spell.damage.v1",
+        "spell.movement.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.attack_roll.v1",
+          "clause_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb:clause:1",
+          "status": "full",
+          "type": "attack_roll"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.movement.v1",
+          "clause_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb:clause:3",
+          "status": "full",
+          "type": "movement"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb:clause:4",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "fbd728acf8a5e2ea68754d2f5041047d95b9438c7ba42e0f6bda277fb453c858",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "命中时目标受到1d8寒冷伤害",
+            "kind": "one_creature",
+            "range": "60 feet",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.attack_roll.v1",
+          "clause_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "attack_ability": "spellcasting",
+            "attack_bonus": "spell_attack_bonus",
+            "clause_id": "attack",
+            "evidence_ref": "命中时目标受到1d8寒冷伤害",
+            "range": "60 feet",
+            "target": "one_creature",
+            "trigger": "spell_cast",
+            "type": "attack_roll"
+          },
+          "spell_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+          "type": "attack_roll"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "attack",
+            "clause_id": "damage",
+            "damage_type": "cold",
+            "evidence_ref": "命中时目标受到1d8寒冷伤害",
+            "expression": "1d8",
+            "on_success": "full",
+            "target": "one_creature",
+            "trigger": "attack_hit",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.movement.v1",
+          "clause_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "target",
+            "clause_id": "movement",
+            "duration": "until_your_next_turn_start",
+            "evidence_ref": "目标速度减少10尺，直到你的下一回合开始",
+            "speed_delta_ft": -10,
+            "target": "one_creature",
+            "trigger": "attack_hit",
+            "type": "movement"
+          },
+          "spell_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+          "type": "movement"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "戏法强化：5级2d8、11级3d8、17级4d8",
+            "increments": 1,
+            "per_slot": null,
+            "progression": [
+              {
+                "character_level": 5,
+                "expression": "2d8"
+              },
+              {
+                "character_level": 11,
+                "expression": "3d8"
+              },
+              {
+                "character_level": 17,
+                "expression": "4d8"
+              }
+            ],
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 0,
+        "name": "冷冻射线",
+        "range": "60 feet",
+        "resolution": {
+          "attack_roll": [
+            {
+              "action_economy": "action",
+              "attack_ability": "spellcasting",
+              "attack_bonus": "spell_attack_bonus",
+              "clause_id": "attack",
+              "evidence_ref": "命中时目标受到1d8寒冷伤害",
+              "range": "60 feet",
+              "target": "one_creature",
+              "trigger": "spell_cast",
+              "type": "attack_roll"
+            }
+          ],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "attack",
+              "clause_id": "damage",
+              "damage_type": "cold",
+              "evidence_ref": "命中时目标受到1d8寒冷伤害",
+              "expression": "1d8",
+              "on_success": "full",
+              "target": "one_creature",
+              "trigger": "attack_hit",
+              "type": "damage"
+            },
+            {
+              "applies_to": "target",
+              "clause_id": "movement",
+              "duration": "until_your_next_turn_start",
+              "evidence_ref": "目标速度减少10尺，直到你的下一回合开始",
+              "speed_delta_ft": -10,
+              "target": "one_creature",
+              "trigger": "attack_hit",
+              "type": "movement"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "命中时目标受到1d8寒冷伤害",
+              "kind": "one_creature",
+              "range": "60 feet",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "戏法强化：5级2d8、11级3d8、17级4d8",
+              "increments": 1,
+              "per_slot": null,
+              "progression": [
+                {
+                  "character_level": 5,
+                  "expression": "2d8"
+                },
+                {
+                  "character_level": 11,
+                  "expression": "3d8"
+                },
+                {
+                  "character_level": 17,
+                  "expression": "4d8"
+                }
+              ],
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "38b75fff7f0bf218988354b581932bf9b9c4b1cc38d8145098f5399b6b70fe14",
+          "source_path": "玩家手册2024/法术详述/0环.htm",
+          "source_record_id": "cdf3b288708b8204133e75fb",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+        "target": "one creature"
+      },
+      "source_fingerprint": "38b75fff7f0bf218988354b581932bf9b9c4b1cc38d8145098f5399b6b70fe14",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "e351f204450366c06dbaa6bd6c922ad4305e026223f2eef20bb8d85efad803f0",
+      "spell_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+      "typed_clause_count": 5,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:4",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "c18c0e4b92329125a9ec9810f01c895f750dc327de27fff33cb34a5d2ef73d8f",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+            "kind": "area",
+            "range": "60 feet",
+            "shape": "sphere",
+            "size_ft": 5,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+            "half_on_success": false,
+            "range": "60 feet",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "acid",
+            "evidence_ref": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+            "expression": "1d6",
+            "on_failure": "full",
+            "on_success": "none",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+            "origin": "chosen_point",
+            "range": "60 feet",
+            "shape": "sphere",
+            "size_ft": 5,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "戏法强化：5级2d6、11级3d6、17级4d6",
+            "increments": 1,
+            "per_slot": null,
+            "progression": [
+              {
+                "character_level": 5,
+                "expression": "2d6"
+              },
+              {
+                "character_level": 11,
+                "expression": "3d6"
+              },
+              {
+                "character_level": 17,
+                "expression": "4d6"
+              }
+            ],
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 0,
+        "name": "酸液飞溅",
+        "range": "60 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "acid",
+              "evidence_ref": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+              "expression": "1d6",
+              "on_failure": "full",
+              "on_success": "none",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+              "origin": "chosen_point",
+              "range": "60 feet",
+              "shape": "sphere",
+              "size_ft": 5,
+              "target": "area",
+              "type": "area"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+              "half_on_success": false,
+              "range": "60 feet",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+              "kind": "area",
+              "range": "60 feet",
+              "shape": "sphere",
+              "size_ft": 5,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "戏法强化：5级2d6、11级3d6、17级4d6",
+              "increments": 1,
+              "per_slot": null,
+              "progression": [
+                {
+                  "character_level": 5,
+                  "expression": "2d6"
+                },
+                {
+                  "character_level": 11,
+                  "expression": "3d6"
+                },
+                {
+                  "character_level": 17,
+                  "expression": "4d6"
+                }
+              ],
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "a313aa1a2445b55284185910142d31d1cc7b4ca3a1de4aae96b0400bab3e5af4",
+          "source_path": "玩家手册2024/法术详述/0环.htm",
+          "source_record_id": "d84dec64befac8db7294e0f1",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+        "target": "5-foot sphere"
+      },
+      "source_fingerprint": "a313aa1a2445b55284185910142d31d1cc7b4ca3a1de4aae96b0400bab3e5af4",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "e435634fc85998ee872ed1989357996649f534e49af710a8c2c11184ec458160",
+      "spell_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+      "typed_clause_count": 5,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.attack_roll.v1",
+        "spell.damage.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.attack_roll.v1",
+          "clause_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482:clause:1",
+          "status": "full",
+          "type": "attack_roll"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482:clause:3",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "733c39f3d4a4304ec2fd24d4875abea078a4466927ab0b030c93ed291c8affb0",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "命中则目标受到1d10火焰伤害",
+            "kind": "one_creature",
+            "range": "120 feet",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.attack_roll.v1",
+          "clause_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "attack_ability": "spellcasting",
+            "attack_bonus": "spell_attack_bonus",
+            "clause_id": "attack",
+            "evidence_ref": "命中则目标受到1d10火焰伤害",
+            "range": "120 feet",
+            "target": "one_creature",
+            "trigger": "spell_cast",
+            "type": "attack_roll"
+          },
+          "spell_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+          "type": "attack_roll"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "attack",
+            "clause_id": "damage",
+            "damage_type": "fire",
+            "evidence_ref": "命中则目标受到1d10火焰伤害",
+            "expression": "1d10",
+            "on_success": "full",
+            "target": "one_creature",
+            "trigger": "attack_hit",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "戏法强化：5级2d10、11级3d10、17级4d10",
+            "increments": 1,
+            "per_slot": null,
+            "progression": [
+              {
+                "character_level": 5,
+                "expression": "2d10"
+              },
+              {
+                "character_level": 11,
+                "expression": "3d10"
+              },
+              {
+                "character_level": 17,
+                "expression": "4d10"
+              }
+            ],
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 0,
+        "name": "火焰箭",
+        "range": "120 feet",
+        "resolution": {
+          "attack_roll": [
+            {
+              "action_economy": "action",
+              "attack_ability": "spellcasting",
+              "attack_bonus": "spell_attack_bonus",
+              "clause_id": "attack",
+              "evidence_ref": "命中则目标受到1d10火焰伤害",
+              "range": "120 feet",
+              "target": "one_creature",
+              "trigger": "spell_cast",
+              "type": "attack_roll"
+            }
+          ],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "attack",
+              "clause_id": "damage",
+              "damage_type": "fire",
+              "evidence_ref": "命中则目标受到1d10火焰伤害",
+              "expression": "1d10",
+              "on_success": "full",
+              "target": "one_creature",
+              "trigger": "attack_hit",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "命中则目标受到1d10火焰伤害",
+              "kind": "one_creature",
+              "range": "120 feet",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "戏法强化：5级2d10、11级3d10、17级4d10",
+              "increments": 1,
+              "per_slot": null,
+              "progression": [
+                {
+                  "character_level": 5,
+                  "expression": "2d10"
+                },
+                {
+                  "character_level": 11,
+                  "expression": "3d10"
+                },
+                {
+                  "character_level": 17,
+                  "expression": "4d10"
+                }
+              ],
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "35f2d1b2ad6cf0c4df63c80dac554cc2edb5ecebe75cb39969c60ccf6a8f661e",
+          "source_path": "玩家手册2024/法术详述/0环.htm",
+          "source_record_id": "f3cf7ceffcf997ce3be9d482",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+        "target": "one creature or object"
+      },
+      "source_fingerprint": "35f2d1b2ad6cf0c4df63c80dac554cc2edb5ecebe75cb39969c60ccf6a8f661e",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "719430703fdde9c785754d1b4050081bf8bacc4b1191d8de39c3ac42217aa4b2",
+      "spell_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+      "typed_clause_count": 4,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:fb279ff13dba2abcce376201:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:fb279ff13dba2abcce376201:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:fb279ff13dba2abcce376201:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:fb279ff13dba2abcce376201:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:fb279ff13dba2abcce376201:clause:4",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "bf286426be3ff852d3ddafe39af081cf2f9827d23fbeb7a5ffb0029c09e42bfa",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:fb279ff13dba2abcce376201:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+            "kind": "area",
+            "range": "self",
+            "shape": "cone",
+            "size_ft": 15,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:fb279ff13dba2abcce376201",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:fb279ff13dba2abcce376201:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+            "half_on_success": true,
+            "range": "self",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "core-phb-2024:spell:fb279ff13dba2abcce376201",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:fb279ff13dba2abcce376201:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "fire",
+            "evidence_ref": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+            "expression": "3d6",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:fb279ff13dba2abcce376201",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:fb279ff13dba2abcce376201:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+            "origin": "self",
+            "range": "self",
+            "shape": "cone",
+            "size_ft": 15,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "core-phb-2024:spell:fb279ff13dba2abcce376201",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:fb279ff13dba2abcce376201:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每比一环高一环，伤害提升1d6",
+            "increments": "1d6",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:fb279ff13dba2abcce376201",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 1,
+        "name": "燃烧之手",
+        "range": "self",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "fire",
+              "evidence_ref": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+              "expression": "3d6",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+              "origin": "self",
+              "range": "self",
+              "shape": "cone",
+              "size_ft": 15,
+              "target": "area",
+              "type": "area"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+              "half_on_success": true,
+              "range": "self",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+              "kind": "area",
+              "range": "self",
+              "shape": "cone",
+              "size_ft": 15,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每比一环高一环，伤害提升1d6",
+              "increments": "1d6",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "0c24c6df91e4772c5e77d456bb9ad9f400bf5efbe727e737f61ae6ce3bf2e66e",
+          "source_path": "玩家手册2024/法术详述/1环.htm",
+          "source_record_id": "fb279ff13dba2abcce376201",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:fb279ff13dba2abcce376201",
+        "target": "15-foot cone"
+      },
+      "source_fingerprint": "0c24c6df91e4772c5e77d456bb9ad9f400bf5efbe727e737f61ae6ce3bf2e66e",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "fc090557d13237d2a94889322756768e9f0e30216b544e6574e87fc311ebbda2",
+      "spell_id": "core-phb-2024:spell:fb279ff13dba2abcce376201",
+      "typed_clause_count": 5,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    }
+  ],
+  "runtime_preview": [
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.healing.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.healing.v1",
+          "clause_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58:clause:1",
+          "status": "full",
+          "type": "healing"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58:clause:2",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "b6b703be43449af4474fca559385956bfdbf75d6c50c788576cf47488bc2e3c7",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "指定施法距离内一个你能看见的生物",
+            "kind": "one_creature",
+            "range": "60 feet",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.healing.v1",
+          "clause_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "bonus_action",
+            "amount": "2d4 + spellcasting_modifier",
+            "clause_id": "healing",
+            "evidence_ref": "恢复量等于2d4+你的施法属性调整值",
+            "expression": "2d4 + spellcasting_modifier",
+            "healing": "2d4 + spellcasting_modifier",
+            "target": "one_creature",
+            "timing": "immediate",
+            "trigger": "spell_cast",
+            "type": "healing"
+          },
+          "spell_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58",
+          "type": "healing"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "healing",
+            "clause_id": "upcast",
+            "evidence_ref": "每比一环高一环，治疗量增加2d4",
+            "increments": "2d4",
+            "per_slot": 1,
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "bonus_action",
+        "components": "V",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 1,
+        "name": "治愈真言",
+        "range": "60 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "bonus_action",
+              "amount": "2d4 + spellcasting_modifier",
+              "clause_id": "healing",
+              "evidence_ref": "恢复量等于2d4+你的施法属性调整值",
+              "expression": "2d4 + spellcasting_modifier",
+              "healing": "2d4 + spellcasting_modifier",
+              "target": "one_creature",
+              "timing": "immediate",
+              "trigger": "spell_cast",
+              "type": "healing"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "指定施法距离内一个你能看见的生物",
+              "kind": "one_creature",
+              "range": "60 feet",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "healing",
+              "clause_id": "upcast",
+              "evidence_ref": "每比一环高一环，治疗量增加2d4",
+              "increments": "2d4",
+              "per_slot": 1,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "防护",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "878e3caffe154ddc3bed0eae70cb3b743e0071ed2a5e668d342e62dd23b18ea8",
+          "source_path": "玩家手册2024/法术详述/1环.htm",
+          "source_record_id": "123b43e9b05ce7fba2082a58",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58",
+        "target": "one visible creature"
+      },
+      "source_fingerprint": "878e3caffe154ddc3bed0eae70cb3b743e0071ed2a5e668d342e62dd23b18ea8",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "b2d7ca277d5487894a04097960b2788710911762fac30c7a71fae008be68ba32",
+      "spell_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0:clause:4",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "32f278d458106ab1449eb7e3309fd85e53ccf7906ba2b082035c2e7fd3a8c8d1",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+            "kind": "area",
+            "range": "self",
+            "shape": "line",
+            "size_ft": 100,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+            "half_on_success": true,
+            "range": "self",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "lightning",
+            "evidence_ref": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+            "expression": "8d6",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+            "origin": "self",
+            "range": "self",
+            "shape": "line",
+            "size_ft": 100,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每比三环高一环，伤害增加1d6",
+            "increments": "1d6",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S,M(fur and crystal rod)",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 3,
+        "name": "闪电束",
+        "range": "self",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "lightning",
+              "evidence_ref": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+              "expression": "8d6",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+              "origin": "self",
+              "range": "self",
+              "shape": "line",
+              "size_ft": 100,
+              "target": "area",
+              "type": "area"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+              "half_on_success": true,
+              "range": "self",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+              "kind": "area",
+              "range": "self",
+              "shape": "line",
+              "size_ft": 100,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每比三环高一环，伤害增加1d6",
+              "increments": "1d6",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "c8f0900ae39630651f697810ff89b6fa79a008fae40da98ef089ad22c5730396",
+          "source_path": "玩家手册2024/法术详述/3环.htm",
+          "source_record_id": "25c29e45961513478bcd8bc0",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0",
+        "target": "100-foot line"
+      },
+      "source_fingerprint": "c8f0900ae39630651f697810ff89b6fa79a008fae40da98ef089ad22c5730396",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "7f9dea40cc273f24791243ba1b9998b79ad0686a801d441c424ec7e9fd2737d7",
+      "spell_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0",
+      "typed_clause_count": 5,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:3a56665b98f37eed02921de6:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:3a56665b98f37eed02921de6:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:3a56665b98f37eed02921de6:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:3a56665b98f37eed02921de6:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:3a56665b98f37eed02921de6:clause:4",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "f766a32b95c61ec3884ad2a9eda3f7e96458813b60254448ca11431927c3af18",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:3a56665b98f37eed02921de6:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+            "kind": "area",
+            "range": "150 feet",
+            "shape": "sphere",
+            "size_ft": 20,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:3a56665b98f37eed02921de6",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:3a56665b98f37eed02921de6:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+            "half_on_success": true,
+            "range": "150 feet",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "core-phb-2024:spell:3a56665b98f37eed02921de6",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:3a56665b98f37eed02921de6:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "fire",
+            "evidence_ref": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+            "expression": "8d6",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:3a56665b98f37eed02921de6",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:3a56665b98f37eed02921de6:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+            "origin": "chosen_point",
+            "range": "150 feet",
+            "shape": "sphere",
+            "size_ft": 20,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "core-phb-2024:spell:3a56665b98f37eed02921de6",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:3a56665b98f37eed02921de6:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每比三环高一环，伤害增加1d6",
+            "increments": "1d6",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:3a56665b98f37eed02921de6",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S,M(bat guano and sulfur)",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 3,
+        "name": "火球术",
+        "range": "150 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "fire",
+              "evidence_ref": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+              "expression": "8d6",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+              "origin": "chosen_point",
+              "range": "150 feet",
+              "shape": "sphere",
+              "size_ft": 20,
+              "target": "area",
+              "type": "area"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+              "half_on_success": true,
+              "range": "150 feet",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+              "kind": "area",
+              "range": "150 feet",
+              "shape": "sphere",
+              "size_ft": 20,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每比三环高一环，伤害增加1d6",
+              "increments": "1d6",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "ba856583b125853e6dbbc19253fc8b12b9a4d3884db4f304368d68cc9c67209a",
+          "source_path": "玩家手册2024/法术详述/3环.htm",
+          "source_record_id": "3a56665b98f37eed02921de6",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:3a56665b98f37eed02921de6",
+        "target": "20-foot sphere"
+      },
+      "source_fingerprint": "ba856583b125853e6dbbc19253fc8b12b9a4d3884db4f304368d68cc9c67209a",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "12b0789a5c1e1d291ac0abcc44cdd669351a547608e8c38eec675f9053a4344a",
+      "spell_id": "core-phb-2024:spell:3a56665b98f37eed02921de6",
+      "typed_clause_count": 5,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.temporary_hp.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.temporary_hp.v1",
+          "clause_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b:clause:0",
+          "status": "full",
+          "type": "temporary_hp"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b:clause:1",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "6af76ce4f58d869562bbe26f7b686300bfd3a2373bffef7d1481462c1332565a",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.temporary_hp.v1",
+          "clause_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "amount": "2d4+4",
+            "clause_id": "temp-hp",
+            "duration": "instant",
+            "evidence_ref": "你获得2d4+4点临时生命值",
+            "target": "self",
+            "trigger": "spell_cast",
+            "type": "temporary_hp"
+          },
+          "spell_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+          "type": "temporary_hp"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "temporary_hp",
+            "clause_id": "upcast",
+            "evidence_ref": "每比一环高一环，临时生命值增加5",
+            "increments": 5,
+            "per_slot": 1,
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S,M(alcohol)",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 1,
+        "name": "虚假生命",
+        "range": "self",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "amount": "2d4+4",
+              "clause_id": "temp-hp",
+              "duration": "instant",
+              "evidence_ref": "你获得2d4+4点临时生命值",
+              "target": "self",
+              "trigger": "spell_cast",
+              "type": "temporary_hp"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [],
+          "upcast": [
+            {
+              "applies_to": "temporary_hp",
+              "clause_id": "upcast",
+              "evidence_ref": "每比一环高一环，临时生命值增加5",
+              "increments": 5,
+              "per_slot": 1,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "死灵",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "9e30b35903feab87d652f56f819c9ff28460d8633a254387c1bd1571f7c422fe",
+          "source_path": "玩家手册2024/法术详述/1环.htm",
+          "source_record_id": "56193b76694eafc2025e1c0b",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+        "target": "self"
+      },
+      "source_fingerprint": "9e30b35903feab87d652f56f819c9ff28460d8633a254387c1bd1571f7c422fe",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "d61d1983b2bcb46867796e5f57b48e7137087a752a026918527dffd2b1903c8e",
+      "spell_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+      "typed_clause_count": 2,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.healing.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.healing.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:1",
+          "status": "full",
+          "type": "healing"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:2",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "994011f325363073b1cf89b0c38fb6bf24a2f3e97b23ee2173c11dbb5f41db20",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "你触碰的一名生物",
+            "kind": "one_creature",
+            "range": "touch",
+            "type": "target_selection"
+          },
+          "spell_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.healing.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "amount": "2d8 + spellcasting_modifier",
+            "clause_id": "healing",
+            "evidence_ref": "恢复等同于2d8+施法属性调整值点生命值",
+            "expression": "2d8 + spellcasting_modifier",
+            "healing": "2d8 + spellcasting_modifier",
+            "target": "one_creature",
+            "timing": "immediate",
+            "trigger": "spell_cast",
+            "type": "healing"
+          },
+          "spell_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+          "type": "healing"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "healing",
+            "clause_id": "upcast",
+            "evidence_ref": "每比一环高一环，治疗量增加2d8",
+            "increments": "2d8",
+            "per_slot": 1,
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 1,
+        "name": "疗伤术",
+        "range": "touch",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "amount": "2d8 + spellcasting_modifier",
+              "clause_id": "healing",
+              "evidence_ref": "恢复等同于2d8+施法属性调整值点生命值",
+              "expression": "2d8 + spellcasting_modifier",
+              "healing": "2d8 + spellcasting_modifier",
+              "target": "one_creature",
+              "timing": "immediate",
+              "trigger": "spell_cast",
+              "type": "healing"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "你触碰的一名生物",
+              "kind": "one_creature",
+              "range": "touch",
+              "type": "target_selection"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "healing",
+              "clause_id": "upcast",
+              "evidence_ref": "每比一环高一环，治疗量增加2d8",
+              "increments": "2d8",
+              "per_slot": 1,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "防护",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "d23e86271fc9e1082cc7110c46e7baabdd9282249497a60fd3c20a44e418f197",
+          "source_path": "玩家手册2024/法术详述/1环.htm",
+          "source_record_id": "5dd11cb3fbb6d21ea53739f2",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+        "target": "one creature"
+      },
+      "source_fingerprint": "d23e86271fc9e1082cc7110c46e7baabdd9282249497a60fd3c20a44e418f197",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "f8de1d400b65a4d1ddd603a21a0fa2dc16966fdd64d0bf29249fcf51ed839a10",
+      "spell_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.attack_roll.v1",
+        "spell.damage.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:80a94afd6beb396baec20560:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.attack_roll.v1",
+          "clause_id": "core-phb-2024:spell:80a94afd6beb396baec20560:clause:1",
+          "status": "full",
+          "type": "attack_roll"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:80a94afd6beb396baec20560:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:80a94afd6beb396baec20560:clause:3",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "b7040e3c57db612e8aa8a85f2a0ceaabc36715d7a003acf64d72f6e82eaa2e50",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:80a94afd6beb396baec20560:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "命中时目标受到1d10点力场伤害",
+            "kind": "one_creature",
+            "range": "120 feet",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:80a94afd6beb396baec20560",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.attack_roll.v1",
+          "clause_id": "core-phb-2024:spell:80a94afd6beb396baec20560:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "attack_ability": "spellcasting",
+            "attack_bonus": "spell_attack_bonus",
+            "clause_id": "attack",
+            "evidence_ref": "命中时目标受到1d10点力场伤害",
+            "range": "120 feet",
+            "target": "one_creature",
+            "trigger": "spell_cast",
+            "type": "attack_roll"
+          },
+          "spell_id": "core-phb-2024:spell:80a94afd6beb396baec20560",
+          "type": "attack_roll"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:80a94afd6beb396baec20560:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "attack",
+            "clause_id": "damage",
+            "damage_type": "force",
+            "evidence_ref": "命中时目标受到1d10点力场伤害",
+            "expression": "1d10",
+            "on_success": "full",
+            "target": "one_creature",
+            "trigger": "attack_hit",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:80a94afd6beb396baec20560",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:80a94afd6beb396baec20560:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "attack_and_damage",
+            "clause_id": "upcast",
+            "evidence_ref": "戏法强化：5级两条射线，11级三条，17级四条，分别进行攻击检定",
+            "increments": 1,
+            "per_slot": null,
+            "progression": [
+              {
+                "character_level": 5,
+                "ray_count": 2
+              },
+              {
+                "character_level": 11,
+                "ray_count": 3
+              },
+              {
+                "character_level": 17,
+                "ray_count": 4
+              }
+            ],
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:80a94afd6beb396baec20560",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 0,
+        "name": "魔能爆",
+        "range": "120 feet",
+        "resolution": {
+          "attack_roll": [
+            {
+              "action_economy": "action",
+              "attack_ability": "spellcasting",
+              "attack_bonus": "spell_attack_bonus",
+              "clause_id": "attack",
+              "evidence_ref": "命中时目标受到1d10点力场伤害",
+              "range": "120 feet",
+              "target": "one_creature",
+              "trigger": "spell_cast",
+              "type": "attack_roll"
+            }
+          ],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "attack",
+              "clause_id": "damage",
+              "damage_type": "force",
+              "evidence_ref": "命中时目标受到1d10点力场伤害",
+              "expression": "1d10",
+              "on_success": "full",
+              "target": "one_creature",
+              "trigger": "attack_hit",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "命中时目标受到1d10点力场伤害",
+              "kind": "one_creature",
+              "range": "120 feet",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "attack_and_damage",
+              "clause_id": "upcast",
+              "evidence_ref": "戏法强化：5级两条射线，11级三条，17级四条，分别进行攻击检定",
+              "increments": 1,
+              "per_slot": null,
+              "progression": [
+                {
+                  "character_level": 5,
+                  "ray_count": 2
+                },
+                {
+                  "character_level": 11,
+                  "ray_count": 3
+                },
+                {
+                  "character_level": 17,
+                  "ray_count": 4
+                }
+              ],
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "52f8622c95fad1ba6d25d3ed43bae56c1fff7e510f9dab2bff9521765178ef42",
+          "source_path": "玩家手册2024/法术详述/0环.htm",
+          "source_record_id": "80a94afd6beb396baec20560",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:80a94afd6beb396baec20560",
+        "target": "one creature or object"
+      },
+      "source_fingerprint": "52f8622c95fad1ba6d25d3ed43bae56c1fff7e510f9dab2bff9521765178ef42",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "c01374dede141d7d7c11d45f831328f4d48e6dc4009762fa116e746054245589",
+      "spell_id": "core-phb-2024:spell:80a94afd6beb396baec20560",
+      "typed_clause_count": 4,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b:clause:3",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "19a46a11a2c8f0d17aed18852435745cd9ff432855741033f637a899f04b282f",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "目标必须通过敏捷豁免，否则受到1d8点光耀伤害",
+            "kind": "one_creature",
+            "range": "60 feet",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "目标必须通过敏捷豁免，否则受到1d8点光耀伤害",
+            "half_on_success": false,
+            "ignores_cover": true,
+            "range": "60 feet",
+            "save_ability": "dexterity",
+            "target": "one_creature",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "radiant",
+            "evidence_ref": "目标必须通过敏捷豁免，否则受到1d8点光耀伤害",
+            "expression": "1d8",
+            "on_failure": "full",
+            "on_success": "none",
+            "target": "one_creature",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "戏法强化：5级2d8、11级3d8、17级4d8",
+            "increments": 1,
+            "per_slot": null,
+            "progression": [
+              {
+                "character_level": 5,
+                "expression": "2d8"
+              },
+              {
+                "character_level": 11,
+                "expression": "3d8"
+              },
+              {
+                "character_level": 17,
+                "expression": "4d8"
+              }
+            ],
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 0,
+        "name": "圣火术",
+        "range": "60 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "radiant",
+              "evidence_ref": "目标必须通过敏捷豁免，否则受到1d8点光耀伤害",
+              "expression": "1d8",
+              "on_failure": "full",
+              "on_success": "none",
+              "target": "one_creature",
+              "trigger": "saving_throw",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "目标必须通过敏捷豁免，否则受到1d8点光耀伤害",
+              "half_on_success": false,
+              "ignores_cover": true,
+              "range": "60 feet",
+              "save_ability": "dexterity",
+              "target": "one_creature",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "目标必须通过敏捷豁免，否则受到1d8点光耀伤害",
+              "kind": "one_creature",
+              "range": "60 feet",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "戏法强化：5级2d8、11级3d8、17级4d8",
+              "increments": 1,
+              "per_slot": null,
+              "progression": [
+                {
+                  "character_level": 5,
+                  "expression": "2d8"
+                },
+                {
+                  "character_level": 11,
+                  "expression": "3d8"
+                },
+                {
+                  "character_level": 17,
+                  "expression": "4d8"
+                }
+              ],
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "3b5d93b6755939c7caf839d96dcb32e7fcc2d8839b5551ea7ec6afd115874b38",
+          "source_path": "玩家手册2024/法术详述/0环.htm",
+          "source_record_id": "82f220a9e3474d8fe1cafd8b",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b",
+        "target": "one visible creature"
+      },
+      "source_fingerprint": "3b5d93b6755939c7caf839d96dcb32e7fcc2d8839b5551ea7ec6afd115874b38",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "6058d5ce956398c4770dc15507fddd1b300cce2f3d853a17d399012e1d60fb30",
+      "spell_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b",
+      "typed_clause_count": 4,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806:clause:3",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "3cce9176abd839d0a76bdeae07ee9594080a58c49aa492692835d34053633e4c",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半",
+            "kind": "one_creature",
+            "range": "60 feet",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "reaction",
+            "clause_id": "save",
+            "evidence_ref": "伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半",
+            "half_on_success": true,
+            "range": "60 feet",
+            "save_ability": "dexterity",
+            "target": "one_creature",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "fire",
+            "evidence_ref": "伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半",
+            "expression": "2d10",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "one_creature",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每比一环高一环，伤害增加1d10",
+            "increments": "1d10",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "reaction",
+        "components": "V,S",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 1,
+        "name": "炼狱叱喝",
+        "range": "60 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "fire",
+              "evidence_ref": "伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半",
+              "expression": "2d10",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "one_creature",
+              "trigger": "saving_throw",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "reaction",
+              "clause_id": "save",
+              "evidence_ref": "伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半",
+              "half_on_success": true,
+              "range": "60 feet",
+              "save_ability": "dexterity",
+              "target": "one_creature",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "伤害你的生物必须进行敏捷豁免，失败2d10火焰，成功一半",
+              "kind": "one_creature",
+              "range": "60 feet",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每比一环高一环，伤害增加1d10",
+              "increments": "1d10",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "594fc581e6d3f46fadf42cc6872f4242aef5b97c8a96530280f808b87668658c",
+          "source_path": "玩家手册2024/法术详述/1环.htm",
+          "source_record_id": "89d9cadae3d9583d0c2dd806",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+        "target": "damaging visible creature"
+      },
+      "source_fingerprint": "594fc581e6d3f46fadf42cc6872f4242aef5b97c8a96530280f808b87668658c",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "900817bc5e9d709f72d4c57e1cf73c002b0b9ede2b4b9a4de1a229bdbde8a776",
+      "spell_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+      "typed_clause_count": 4,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.attack_roll.v1",
+        "spell.damage.v1",
+        "spell.movement.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.attack_roll.v1",
+          "clause_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb:clause:1",
+          "status": "full",
+          "type": "attack_roll"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.movement.v1",
+          "clause_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb:clause:3",
+          "status": "full",
+          "type": "movement"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb:clause:4",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "fbd728acf8a5e2ea68754d2f5041047d95b9438c7ba42e0f6bda277fb453c858",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "命中时目标受到1d8寒冷伤害",
+            "kind": "one_creature",
+            "range": "60 feet",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.attack_roll.v1",
+          "clause_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "attack_ability": "spellcasting",
+            "attack_bonus": "spell_attack_bonus",
+            "clause_id": "attack",
+            "evidence_ref": "命中时目标受到1d8寒冷伤害",
+            "range": "60 feet",
+            "target": "one_creature",
+            "trigger": "spell_cast",
+            "type": "attack_roll"
+          },
+          "spell_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+          "type": "attack_roll"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "attack",
+            "clause_id": "damage",
+            "damage_type": "cold",
+            "evidence_ref": "命中时目标受到1d8寒冷伤害",
+            "expression": "1d8",
+            "on_success": "full",
+            "target": "one_creature",
+            "trigger": "attack_hit",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.movement.v1",
+          "clause_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "target",
+            "clause_id": "movement",
+            "duration": "until_your_next_turn_start",
+            "evidence_ref": "目标速度减少10尺，直到你的下一回合开始",
+            "speed_delta_ft": -10,
+            "target": "one_creature",
+            "trigger": "attack_hit",
+            "type": "movement"
+          },
+          "spell_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+          "type": "movement"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "戏法强化：5级2d8、11级3d8、17级4d8",
+            "increments": 1,
+            "per_slot": null,
+            "progression": [
+              {
+                "character_level": 5,
+                "expression": "2d8"
+              },
+              {
+                "character_level": 11,
+                "expression": "3d8"
+              },
+              {
+                "character_level": 17,
+                "expression": "4d8"
+              }
+            ],
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 0,
+        "name": "冷冻射线",
+        "range": "60 feet",
+        "resolution": {
+          "attack_roll": [
+            {
+              "action_economy": "action",
+              "attack_ability": "spellcasting",
+              "attack_bonus": "spell_attack_bonus",
+              "clause_id": "attack",
+              "evidence_ref": "命中时目标受到1d8寒冷伤害",
+              "range": "60 feet",
+              "target": "one_creature",
+              "trigger": "spell_cast",
+              "type": "attack_roll"
+            }
+          ],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "attack",
+              "clause_id": "damage",
+              "damage_type": "cold",
+              "evidence_ref": "命中时目标受到1d8寒冷伤害",
+              "expression": "1d8",
+              "on_success": "full",
+              "target": "one_creature",
+              "trigger": "attack_hit",
+              "type": "damage"
+            },
+            {
+              "applies_to": "target",
+              "clause_id": "movement",
+              "duration": "until_your_next_turn_start",
+              "evidence_ref": "目标速度减少10尺，直到你的下一回合开始",
+              "speed_delta_ft": -10,
+              "target": "one_creature",
+              "trigger": "attack_hit",
+              "type": "movement"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "命中时目标受到1d8寒冷伤害",
+              "kind": "one_creature",
+              "range": "60 feet",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "戏法强化：5级2d8、11级3d8、17级4d8",
+              "increments": 1,
+              "per_slot": null,
+              "progression": [
+                {
+                  "character_level": 5,
+                  "expression": "2d8"
+                },
+                {
+                  "character_level": 11,
+                  "expression": "3d8"
+                },
+                {
+                  "character_level": 17,
+                  "expression": "4d8"
+                }
+              ],
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "38b75fff7f0bf218988354b581932bf9b9c4b1cc38d8145098f5399b6b70fe14",
+          "source_path": "玩家手册2024/法术详述/0环.htm",
+          "source_record_id": "cdf3b288708b8204133e75fb",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+        "target": "one creature"
+      },
+      "source_fingerprint": "38b75fff7f0bf218988354b581932bf9b9c4b1cc38d8145098f5399b6b70fe14",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "e351f204450366c06dbaa6bd6c922ad4305e026223f2eef20bb8d85efad803f0",
+      "spell_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+      "typed_clause_count": 5,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:4",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "c18c0e4b92329125a9ec9810f01c895f750dc327de27fff33cb34a5d2ef73d8f",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+            "kind": "area",
+            "range": "60 feet",
+            "shape": "sphere",
+            "size_ft": 5,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+            "half_on_success": false,
+            "range": "60 feet",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "acid",
+            "evidence_ref": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+            "expression": "1d6",
+            "on_failure": "full",
+            "on_success": "none",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+            "origin": "chosen_point",
+            "range": "60 feet",
+            "shape": "sphere",
+            "size_ft": 5,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "戏法强化：5级2d6、11级3d6、17级4d6",
+            "increments": 1,
+            "per_slot": null,
+            "progression": [
+              {
+                "character_level": 5,
+                "expression": "2d6"
+              },
+              {
+                "character_level": 11,
+                "expression": "3d6"
+              },
+              {
+                "character_level": 17,
+                "expression": "4d6"
+              }
+            ],
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 0,
+        "name": "酸液飞溅",
+        "range": "60 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "acid",
+              "evidence_ref": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+              "expression": "1d6",
+              "on_failure": "full",
+              "on_success": "none",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+              "origin": "chosen_point",
+              "range": "60 feet",
+              "shape": "sphere",
+              "size_ft": 5,
+              "target": "area",
+              "type": "area"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+              "half_on_success": false,
+              "range": "60 feet",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害",
+              "kind": "area",
+              "range": "60 feet",
+              "shape": "sphere",
+              "size_ft": 5,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "戏法强化：5级2d6、11级3d6、17级4d6",
+              "increments": 1,
+              "per_slot": null,
+              "progression": [
+                {
+                  "character_level": 5,
+                  "expression": "2d6"
+                },
+                {
+                  "character_level": 11,
+                  "expression": "3d6"
+                },
+                {
+                  "character_level": 17,
+                  "expression": "4d6"
+                }
+              ],
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "a313aa1a2445b55284185910142d31d1cc7b4ca3a1de4aae96b0400bab3e5af4",
+          "source_path": "玩家手册2024/法术详述/0环.htm",
+          "source_record_id": "d84dec64befac8db7294e0f1",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+        "target": "5-foot sphere"
+      },
+      "source_fingerprint": "a313aa1a2445b55284185910142d31d1cc7b4ca3a1de4aae96b0400bab3e5af4",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "e435634fc85998ee872ed1989357996649f534e49af710a8c2c11184ec458160",
+      "spell_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+      "typed_clause_count": 5,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.attack_roll.v1",
+        "spell.damage.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.attack_roll.v1",
+          "clause_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482:clause:1",
+          "status": "full",
+          "type": "attack_roll"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482:clause:3",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "733c39f3d4a4304ec2fd24d4875abea078a4466927ab0b030c93ed291c8affb0",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "命中则目标受到1d10火焰伤害",
+            "kind": "one_creature",
+            "range": "120 feet",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.attack_roll.v1",
+          "clause_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "attack_ability": "spellcasting",
+            "attack_bonus": "spell_attack_bonus",
+            "clause_id": "attack",
+            "evidence_ref": "命中则目标受到1d10火焰伤害",
+            "range": "120 feet",
+            "target": "one_creature",
+            "trigger": "spell_cast",
+            "type": "attack_roll"
+          },
+          "spell_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+          "type": "attack_roll"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "attack",
+            "clause_id": "damage",
+            "damage_type": "fire",
+            "evidence_ref": "命中则目标受到1d10火焰伤害",
+            "expression": "1d10",
+            "on_success": "full",
+            "target": "one_creature",
+            "trigger": "attack_hit",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "戏法强化：5级2d10、11级3d10、17级4d10",
+            "increments": 1,
+            "per_slot": null,
+            "progression": [
+              {
+                "character_level": 5,
+                "expression": "2d10"
+              },
+              {
+                "character_level": 11,
+                "expression": "3d10"
+              },
+              {
+                "character_level": 17,
+                "expression": "4d10"
+              }
+            ],
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 0,
+        "name": "火焰箭",
+        "range": "120 feet",
+        "resolution": {
+          "attack_roll": [
+            {
+              "action_economy": "action",
+              "attack_ability": "spellcasting",
+              "attack_bonus": "spell_attack_bonus",
+              "clause_id": "attack",
+              "evidence_ref": "命中则目标受到1d10火焰伤害",
+              "range": "120 feet",
+              "target": "one_creature",
+              "trigger": "spell_cast",
+              "type": "attack_roll"
+            }
+          ],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "attack",
+              "clause_id": "damage",
+              "damage_type": "fire",
+              "evidence_ref": "命中则目标受到1d10火焰伤害",
+              "expression": "1d10",
+              "on_success": "full",
+              "target": "one_creature",
+              "trigger": "attack_hit",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "命中则目标受到1d10火焰伤害",
+              "kind": "one_creature",
+              "range": "120 feet",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "戏法强化：5级2d10、11级3d10、17级4d10",
+              "increments": 1,
+              "per_slot": null,
+              "progression": [
+                {
+                  "character_level": 5,
+                  "expression": "2d10"
+                },
+                {
+                  "character_level": 11,
+                  "expression": "3d10"
+                },
+                {
+                  "character_level": 17,
+                  "expression": "4d10"
+                }
+              ],
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "35f2d1b2ad6cf0c4df63c80dac554cc2edb5ecebe75cb39969c60ccf6a8f661e",
+          "source_path": "玩家手册2024/法术详述/0环.htm",
+          "source_record_id": "f3cf7ceffcf997ce3be9d482",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+        "target": "one creature or object"
+      },
+      "source_fingerprint": "35f2d1b2ad6cf0c4df63c80dac554cc2edb5ecebe75cb39969c60ccf6a8f661e",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "719430703fdde9c785754d1b4050081bf8bacc4b1191d8de39c3ac42217aa4b2",
+      "spell_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+      "typed_clause_count": 4,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:fb279ff13dba2abcce376201:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:fb279ff13dba2abcce376201:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:fb279ff13dba2abcce376201:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:fb279ff13dba2abcce376201:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:fb279ff13dba2abcce376201:clause:4",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "bf286426be3ff852d3ddafe39af081cf2f9827d23fbeb7a5ffb0029c09e42bfa",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:fb279ff13dba2abcce376201:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+            "kind": "area",
+            "range": "self",
+            "shape": "cone",
+            "size_ft": 15,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:fb279ff13dba2abcce376201",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:fb279ff13dba2abcce376201:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+            "half_on_success": true,
+            "range": "self",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "core-phb-2024:spell:fb279ff13dba2abcce376201",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:fb279ff13dba2abcce376201:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "fire",
+            "evidence_ref": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+            "expression": "3d6",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:fb279ff13dba2abcce376201",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:fb279ff13dba2abcce376201:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+            "origin": "self",
+            "range": "self",
+            "shape": "cone",
+            "size_ft": 15,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "core-phb-2024:spell:fb279ff13dba2abcce376201",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:fb279ff13dba2abcce376201:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每比一环高一环，伤害提升1d6",
+            "increments": "1d6",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:fb279ff13dba2abcce376201",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 1,
+        "name": "燃烧之手",
+        "range": "self",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "fire",
+              "evidence_ref": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+              "expression": "3d6",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+              "origin": "self",
+              "range": "self",
+              "shape": "cone",
+              "size_ft": 15,
+              "target": "area",
+              "type": "area"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+              "half_on_success": true,
+              "range": "self",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+              "kind": "area",
+              "range": "self",
+              "shape": "cone",
+              "size_ft": 15,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每比一环高一环，伤害提升1d6",
+              "increments": "1d6",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "0c24c6df91e4772c5e77d456bb9ad9f400bf5efbe727e737f61ae6ce3bf2e66e",
+          "source_path": "玩家手册2024/法术详述/1环.htm",
+          "source_record_id": "fb279ff13dba2abcce376201",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:fb279ff13dba2abcce376201",
+        "target": "15-foot cone"
+      },
+      "source_fingerprint": "0c24c6df91e4772c5e77d456bb9ad9f400bf5efbe727e737f61ae6ce3bf2e66e",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "fc090557d13237d2a94889322756768e9f0e30216b544e6574e87fc311ebbda2",
+      "spell_id": "core-phb-2024:spell:fb279ff13dba2abcce376201",
+      "typed_clause_count": 5,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    }
+  ],
+  "schema_version": "content-ir-compile-result-1",
+  "typed_ir_count": 12
+}

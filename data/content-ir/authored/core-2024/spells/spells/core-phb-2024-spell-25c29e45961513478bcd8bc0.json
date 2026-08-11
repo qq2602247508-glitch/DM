@@ -1,0 +1,170 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "action",
+  "clause_boundaries": {
+    "area": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+      "source_heading": "闪电束"
+    },
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+      "source_heading": "闪电束"
+    },
+    "save": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+      "source_heading": "闪电束"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+      "source_heading": "闪电束"
+    },
+    "upcast": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "每比三环高一环，伤害增加1d6",
+      "source_heading": "闪电束"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:25c29e45961513478bcd8bc0:target",
+    "core-phb-2024:spell:25c29e45961513478bcd8bc0:save",
+    "core-phb-2024:spell:25c29e45961513478bcd8bc0:damage",
+    "core-phb-2024:spell:25c29e45961513478bcd8bc0:area",
+    "core-phb-2024:spell:25c29e45961513478bcd8bc0:upcast"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": "all_in_area",
+      "evidence_ref": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+      "kind": "area",
+      "range": "self",
+      "shape": "line",
+      "size_ft": 100,
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "save",
+      "evidence_ref": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+      "half_on_success": true,
+      "range": "self",
+      "save_ability": "dexterity",
+      "target": "area",
+      "trigger": "spell_cast",
+      "type": "saving_throw"
+    },
+    {
+      "applies_to": "save",
+      "clause_id": "damage",
+      "damage_type": "lightning",
+      "evidence_ref": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+      "expression": "8d6",
+      "on_failure": "full",
+      "on_success": "half",
+      "target": "area",
+      "trigger": "saving_throw",
+      "type": "damage"
+    },
+    {
+      "clause_id": "area",
+      "evidence_ref": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+      "origin": "self",
+      "range": "self",
+      "shape": "line",
+      "size_ft": 100,
+      "target": "area",
+      "type": "area"
+    },
+    {
+      "applies_to": "damage",
+      "clause_id": "upcast",
+      "evidence_ref": "每比三环高一环，伤害增加1d6",
+      "increments": "1d6",
+      "per_slot": 1,
+      "progression": null,
+      "type": "upcast"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "components": "V,S,M(fur and crystal rod)",
+  "concentration": false,
+  "duration": "instant",
+  "edition": "2024",
+  "evidence": [
+    "area: 100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+    "damage: 100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+    "save: 100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+    "target: 100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半",
+    "upcast: 每比三环高一环，伤害增加1d6"
+  ],
+  "kind": "spell",
+  "level": 3,
+  "manual_decisions": {
+    "save_success": "按 source text 显式记录 half 或 no damage branch",
+    "targeting": "target_selection 与 area clause 共同定义目标集合"
+  },
+  "name": "闪电束",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-00e593509093",
+  "range": "self",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "target",
+    "components",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "塑能",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半 100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半 100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半 100尺长5尺宽线状区域内每个生物敏捷豁免，失败8d6闪电，成功一半 每比三环高一环，伤害增加1d6",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "d0c31b08cff9e20236ed8f90128f5e153566d693bbf0c9fb8fd4d4bcb7e2bc99",
+    "source_fingerprint": "c8f0900ae39630651f697810ff89b6fa79a008fae40da98ef089ad22c5730396",
+    "source_path": "玩家手册2024/法术详述/3环.htm",
+    "source_text": "#### 闪电束｜Lightning Bolt\n\n*三环 塑能（术士、法师）*\n**施法时间：**动作\n**施法距离：**自身\n**法术成分：**V、S、M（一些毛皮和一把水晶权杖）\n**持续时间：**立即\n一束100\n尺长，5尺宽的线状闪电从你的位置向你指定的方向爆发迸出。在线状区域内的每个生物必须进行一次敏捷豁免，豁免失败者将受到8d6点闪电伤害，豁免成功则受到一半伤害。\n**升环施法。**使用的法术位每比三环高一环，此法术的伤害就增加1d6。"
+  },
+  "source_fingerprint": "c8f0900ae39630651f697810ff89b6fa79a008fae40da98ef089ad22c5730396",
+  "source_path": "玩家手册2024/法术详述/3环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "d0c31b08cff9e20236ed8f90128f5e153566d693bbf0c9fb8fd4d4bcb7e2bc99",
+    "source_relative_path": "玩家手册2024/法术详述/3环.htm"
+  },
+  "source_record_id": "25c29e45961513478bcd8bc0",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:25c29e45961513478bcd8bc0",
+  "target": "100-foot line"
+}

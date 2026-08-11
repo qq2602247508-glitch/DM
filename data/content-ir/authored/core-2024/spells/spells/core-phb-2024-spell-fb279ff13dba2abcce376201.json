@@ -1,0 +1,170 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "action",
+  "clause_boundaries": {
+    "area": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+      "source_heading": "燃烧之手"
+    },
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+      "source_heading": "燃烧之手"
+    },
+    "save": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+      "source_heading": "燃烧之手"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+      "source_heading": "燃烧之手"
+    },
+    "upcast": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "每比一环高一环，伤害提升1d6",
+      "source_heading": "燃烧之手"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:fb279ff13dba2abcce376201:target",
+    "core-phb-2024:spell:fb279ff13dba2abcce376201:save",
+    "core-phb-2024:spell:fb279ff13dba2abcce376201:damage",
+    "core-phb-2024:spell:fb279ff13dba2abcce376201:area",
+    "core-phb-2024:spell:fb279ff13dba2abcce376201:upcast"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": "all_in_area",
+      "evidence_ref": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+      "kind": "area",
+      "range": "self",
+      "shape": "cone",
+      "size_ft": 15,
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "save",
+      "evidence_ref": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+      "half_on_success": true,
+      "range": "self",
+      "save_ability": "dexterity",
+      "target": "area",
+      "trigger": "spell_cast",
+      "type": "saving_throw"
+    },
+    {
+      "applies_to": "save",
+      "clause_id": "damage",
+      "damage_type": "fire",
+      "evidence_ref": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+      "expression": "3d6",
+      "on_failure": "full",
+      "on_success": "half",
+      "target": "area",
+      "trigger": "saving_throw",
+      "type": "damage"
+    },
+    {
+      "clause_id": "area",
+      "evidence_ref": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+      "origin": "self",
+      "range": "self",
+      "shape": "cone",
+      "size_ft": 15,
+      "target": "area",
+      "type": "area"
+    },
+    {
+      "applies_to": "damage",
+      "clause_id": "upcast",
+      "evidence_ref": "每比一环高一环，伤害提升1d6",
+      "increments": "1d6",
+      "per_slot": 1,
+      "progression": null,
+      "type": "upcast"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "components": "V,S",
+  "concentration": false,
+  "duration": "instant",
+  "edition": "2024",
+  "evidence": [
+    "area: 15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+    "damage: 15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+    "save: 15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+    "target: 15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半",
+    "upcast: 每比一环高一环，伤害提升1d6"
+  ],
+  "kind": "spell",
+  "level": 1,
+  "manual_decisions": {
+    "save_success": "按 source text 显式记录 half 或 no damage branch",
+    "targeting": "target_selection 与 area clause 共同定义目标集合"
+  },
+  "name": "燃烧之手",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-00e593509093",
+  "range": "self",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "target",
+    "components",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "塑能",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半 15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半 15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半 15尺锥状区域内生物敏捷豁免，失败3d6火焰，成功一半 每比一环高一环，伤害提升1d6",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "b7be406cd2fa9799a3fd099113c8b082ed59660f22b470756989e8b086fb298e",
+    "source_fingerprint": "0c24c6df91e4772c5e77d456bb9ad9f400bf5efbe727e737f61ae6ce3bf2e66e",
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 燃烧之手｜Burning Hands\n\n*一环 塑能（术士、法师）*\n**施法时间：**动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**立即\n你向前喷射出一片火焰。处于15尺锥状区域内的生物必须进行一次敏捷豁免。豁免失败者受到3d6火焰伤害，豁免成功者受到一半伤害。\n在此锥状区域内的未被着装或携带的易燃物件会开始燃烧。\n**升环施法。**你使用的法术位每比一环高一环，此法术的伤害就会提升1d6。"
+  },
+  "source_fingerprint": "0c24c6df91e4772c5e77d456bb9ad9f400bf5efbe727e737f61ae6ce3bf2e66e",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "b7be406cd2fa9799a3fd099113c8b082ed59660f22b470756989e8b086fb298e",
+    "source_relative_path": "玩家手册2024/法术详述/1环.htm"
+  },
+  "source_record_id": "fb279ff13dba2abcce376201",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:fb279ff13dba2abcce376201",
+  "target": "15-foot cone"
+}

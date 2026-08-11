@@ -1,0 +1,170 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "action",
+  "clause_boundaries": {
+    "area": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+      "source_heading": "火球术"
+    },
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+      "source_heading": "火球术"
+    },
+    "save": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+      "source_heading": "火球术"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+      "source_heading": "火球术"
+    },
+    "upcast": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "每比三环高一环，伤害增加1d6",
+      "source_heading": "火球术"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:3a56665b98f37eed02921de6:target",
+    "core-phb-2024:spell:3a56665b98f37eed02921de6:save",
+    "core-phb-2024:spell:3a56665b98f37eed02921de6:damage",
+    "core-phb-2024:spell:3a56665b98f37eed02921de6:area",
+    "core-phb-2024:spell:3a56665b98f37eed02921de6:upcast"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": "all_in_area",
+      "evidence_ref": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+      "kind": "area",
+      "range": "150 feet",
+      "shape": "sphere",
+      "size_ft": 20,
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "save",
+      "evidence_ref": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+      "half_on_success": true,
+      "range": "150 feet",
+      "save_ability": "dexterity",
+      "target": "area",
+      "trigger": "spell_cast",
+      "type": "saving_throw"
+    },
+    {
+      "applies_to": "save",
+      "clause_id": "damage",
+      "damage_type": "fire",
+      "evidence_ref": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+      "expression": "8d6",
+      "on_failure": "full",
+      "on_success": "half",
+      "target": "area",
+      "trigger": "saving_throw",
+      "type": "damage"
+    },
+    {
+      "clause_id": "area",
+      "evidence_ref": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+      "origin": "chosen_point",
+      "range": "150 feet",
+      "shape": "sphere",
+      "size_ft": 20,
+      "target": "area",
+      "type": "area"
+    },
+    {
+      "applies_to": "damage",
+      "clause_id": "upcast",
+      "evidence_ref": "每比三环高一环，伤害增加1d6",
+      "increments": "1d6",
+      "per_slot": 1,
+      "progression": null,
+      "type": "upcast"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "components": "V,S,M(bat guano and sulfur)",
+  "concentration": false,
+  "duration": "instant",
+  "edition": "2024",
+  "evidence": [
+    "area: 半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+    "damage: 半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+    "save: 半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+    "target: 半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半",
+    "upcast: 每比三环高一环，伤害增加1d6"
+  ],
+  "kind": "spell",
+  "level": 3,
+  "manual_decisions": {
+    "save_success": "按 source text 显式记录 half 或 no damage branch",
+    "targeting": "target_selection 与 area clause 共同定义目标集合"
+  },
+  "name": "火球术",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-00e593509093",
+  "range": "150 feet",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "target",
+    "components",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "塑能",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半 半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半 半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半 半径20尺球状区域内每个生物敏捷豁免，失败8d6火焰，成功一半 每比三环高一环，伤害增加1d6",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "0c77797ce418f674247e6b4d8d6ba7e516392f0bdc3c86ae6ce91071e68161d7",
+    "source_fingerprint": "ba856583b125853e6dbbc19253fc8b12b9a4d3884db4f304368d68cc9c67209a",
+    "source_path": "玩家手册2024/法术详述/3环.htm",
+    "source_text": "#### 火球术｜Fireball\n\n*三环 塑能（术士、法师）*\n**施法时间：**动作\n**施法距离：**150尺\n**法术成分：**V、S、M（一颗蝙蝠粪和硫磺搓成的小球）\n**持续时间：**立即\n明亮的闪光从你的指间飞驰向施法距离内你指定的一点，并随着一声低吼迸成一片烈焰。目标点周围半径20尺球状区域内的每个生物必须进行一次敏捷豁免。豁免失败者将受到8d6点火焰伤害，豁免成功则伤害减半。\n区域内所有未被着装或携带的可燃物件会开始燃烧。\n**升环施法。**使用的法术位每比三环高一环，此伤害就增加1d6。"
+  },
+  "source_fingerprint": "ba856583b125853e6dbbc19253fc8b12b9a4d3884db4f304368d68cc9c67209a",
+  "source_path": "玩家手册2024/法术详述/3环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "0c77797ce418f674247e6b4d8d6ba7e516392f0bdc3c86ae6ce91071e68161d7",
+    "source_relative_path": "玩家手册2024/法术详述/3环.htm"
+  },
+  "source_record_id": "3a56665b98f37eed02921de6",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:3a56665b98f37eed02921de6",
+  "target": "20-foot sphere"
+}
