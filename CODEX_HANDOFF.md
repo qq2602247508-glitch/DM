@@ -1,3 +1,12 @@
+# 2026-08-12 Round 10 检查点：ItemSpec Equipment Consumer Production Evidence
+
+- Round 10 在隔离 SQLite 上完成 8 条 `compile_full` ItemSpec 的真实 equipment create、attune/equip、granted action、charge operation preview→confirm→幂等 replay；14 个 operation transaction 均持久化，守护者纹章与炼金总纲充能均落到 2。
+- 新增 `load_item_production_evidence()`，将声明 `content_kind=item` 且通过整批生命周期 gate 的 `production-runtime-results-XII.json` 回填 ItemSpec catalog 的 registered layer；不把 isolated pack 自动写入正式 registry/database。
+- ItemSpec status layers：`47 total / 41 compile_full / 41 isolated_runtime_validated / 8 registered_production_full / 8 game_usable`；Feature status 不混计，仍 `74 production / 2 dm-assisted / 76 game-usable`，name branch=0。
+- 证据入口：`scripts/validate-tashas-item-production-consumer-round-X.py`、`backend/tests/test_tashas_item_production_consumer_round_X.py`、`reports/tashas-item-production-consumer-round-X-2026-08-12.json`、`data/content-ir/compiled/production-runtime-results-XII.json`、`docs/tashas-item-production-consumer-round-X-2026-08-12.md`。
+- Round X validator report/result 两次 hash 一致；whole-pack migration 两次 stdout 与关键 ItemSpec/catalog/runtime hashes 一致。正式 campaign/character、database、3D、source corpus、499 audit 与永久保护路径不在本轮修改范围。
+- 下一步继续 unresolved ItemSpec granted-spell/tattoo lifecycle 和真实 event producer，不将 projection-only、isolated-only、DM-reference 计入 production。
+
 # 2026-08-12 Round 9 检查点：Resource Profile / Exchange / Event Window Consumer 扩展
 
 - Round 9 作为 platform/core growth round，完成剩余 6 条 full Feature contract 的真实 production evidence：Psi Warrior Psionic Power resource profile、Battle Master Brace/Quick Toss triggered attack windows、Paladin Harness Divine Power resource exchange、Paladin Interception/ Rune Knight Runic Shield reaction windows。

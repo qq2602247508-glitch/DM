@@ -1,7 +1,100 @@
 {
-  "current_round": "round-9",
+  "current_round": "round-10",
   "goal": "Local AI D&D DM Assistant complete official-content rules platform",
   "rounds": [
+    {
+      "authored_count": 0,
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 134,
+            "unique_compiled": 111
+          },
+          "formal_499": {
+            "dm_only": 61,
+            "full": 328,
+            "partial": 110,
+            "total": 499
+          },
+          "protected_fingerprints": {
+            "database": "f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad",
+            "formal_registry": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+            "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+            "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+          },
+          "tashas": {
+            "authored_typed_ir": 94,
+            "compile_only": 17,
+            "content_atoms_after_qa": 524,
+            "executable": 407,
+            "game_usable": 76,
+            "item_spec_compile_full": 41,
+            "item_spec_registered_production_full": 0,
+            "manual_authoring": 314,
+            "production_full": 74,
+            "runtime_preview_full": 93,
+            "source_records": 144
+          }
+        },
+        "difference": "Round 10 starts from the accepted Round 9 state and promotes a bounded batch of complete ItemSpec contracts through the existing equipment, attunement, charge and granted-action consumers; item production remains separate from Feature status layers.",
+        "prompt_baseline": {"round_target_item_production": 8}
+      },
+      "commits": [],
+      "compile_full_delta": 0,
+      "dm_assisted_delta": 0,
+      "files_changed": [
+        "backend/src/dnd_dm_assistant/application/tashas_recovery.py",
+        "scripts/migrate-tashas-whole-pack.py",
+        "scripts/validate-tashas-item-production-consumer-round-X.py",
+        "backend/tests/test_tashas_item_production_consumer_round_X.py",
+        "reports/tashas-item-production-consumer-round-X-2026-08-12.json",
+        "data/content-ir/compiled/production-runtime-results-XII.json",
+        "reports/tashas-item-spec-catalog-2026-08-11.json",
+        "docs/tashas-item-production-consumer-round-X-2026-08-12.md"
+      ],
+      "manual_delta": 0,
+      "next_round_reason": "Continue unresolved ItemSpec granted-spell/tattoo lifecycle and other explicit item clauses only after generic evidence is available; keep Feature and item status counters separate.",
+      "objective": "Register the first real ItemSpec equipment-consumer batch with preview-confirm-replay evidence and preserve the typed item lifecycle boundary.",
+      "pack_coverage_delta": {
+        "content_ir_production_full_before": 134,
+        "content_ir_production_full_after": 142,
+        "item_game_usable_after": 8,
+        "item_compile_full_before": 41,
+        "item_production_evidence_selected": 8,
+        "item_registered_production_full_before": 0,
+        "item_registered_production_full_after": 8,
+        "item_game_usable_before": 0,
+        "tasha_feature_game_usable_unchanged": 76,
+        "tasha_feature_registered_production_unchanged": 74
+      },
+      "phase": "I",
+      "push_receipt": null,
+      "reports": [],
+      "reviewed_count": 0,
+      "selected_clusters": [
+        "item.equipment_modifier",
+        "item.attunement",
+        "item.charge_resource",
+        "item.granted_action"
+      ],
+      "selected_platforms": [
+        "spell_economy.create_equipment",
+        "spell_economy.equipment_preview",
+        "spell_economy.equipment_confirm",
+        "operation_transaction",
+        "character_version_cas"
+      ],
+      "status": "accepted",
+      "tests": [
+        "Round X validator: 8/8 ItemSpec create/preview/confirm/replay",
+        "Round X report/result twice: byte-identical hashes",
+        "whole-pack migration twice: stdout and key ItemSpec/catalog/runtime hashes byte-identical",
+        "backend/tests/test_tashas_item_production_consumer_round_X.py",
+        "backend/tests/test_tashas_recovery.py",
+        "backend/tests/test_tashas_whole_pack_migration.py"
+      ]
+    },
     {
       "authored_count": 0,
       "baseline": {

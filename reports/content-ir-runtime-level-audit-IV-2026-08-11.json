@@ -1,7 +1,7 @@
 {
   "after": {
     "compile_only": 35,
-    "production_full": 134,
+    "production_full": 142,
     "tasha_atom_pack": {
       "authored_typed_ir": 94,
       "candidate_generated": 407,
@@ -25,6 +25,14 @@
             "content.tashas-cauldron.feature.way-of-mercy-hand-harm",
             "content.tashas-cauldron.feature.way-of-mercy-hand-healing",
             "content.tashas-cauldron.feature.way-of-mercy-physicians-touch",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-amulet-of-the-devout-001",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-arcane-grimoire-002",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-bloodwell-vial-003",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-guardian-emblem-005",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-far-realm-shard-008",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-lyre-of-building-012",
             "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list",
             "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech",
             "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant",
@@ -102,8 +110,8 @@
       },
       "current_project_compile_only": 35,
       "current_project_compiled_unique": 111,
-      "current_project_production_full": 134,
-      "current_project_production_registry_fingerprint": "79ba2b436a4b605e163330e90aaf7547fd0ecbafbb871dab92414270535054b2",
+      "current_project_production_full": 142,
+      "current_project_production_registry_fingerprint": "f4876bc6d7501ebe7c6e3d2bbf5270c75c1168f2afba6479a8c44cd0981aa598",
       "dm_assisted": 2,
       "dm_reference": 107,
       "draft_total": 407,
@@ -128,7 +136,7 @@
         "implemented": true,
         "inventory_atom_count": 47,
         "isolated_runtime_validated_count": 41,
-        "production_count": 0,
+        "production_count": 8,
         "typed_count": 47,
         "unlock_ranking": [
           {
@@ -218,7 +226,7 @@
   },
   "baseline": {
     "compile_only": 35,
-    "production_full": 134,
+    "production_full": 142,
     "unique_compiled": 111
   },
   "existing_production_full_not_retracted": true,

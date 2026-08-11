@@ -44,7 +44,7 @@
     "item.granted_action.v1",
     "item.granted_spell.v1"
   ],
-  "game_usable": 0,
+  "game_usable": 8,
   "isolated_registry_reload": {
     "blocked": 6,
     "compile_full": 41,
@@ -169,7 +169,7 @@
   "isolated_runtime_validated": 41,
   "item_spec_total": 47,
   "pack_id": "tashas-cauldron",
-  "registered_production_full": 0,
+  "registered_production_full": 8,
   "runtime_preview_full": 41,
   "schema_version": "tashas-item-runtime-validation-II-1",
   "temporary_db_validation": "passed:test_tashas_recovery.py::test_typed_item_api_uses_attunement_action_and_idempotency",

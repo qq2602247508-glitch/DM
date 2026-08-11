@@ -23,6 +23,14 @@
         "content.tashas-cauldron.feature.way-of-mercy-hand-harm",
         "content.tashas-cauldron.feature.way-of-mercy-hand-healing",
         "content.tashas-cauldron.feature.way-of-mercy-physicians-touch",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-amulet-of-the-devout-001",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-arcane-grimoire-002",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-bloodwell-vial-003",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-guardian-emblem-005",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-far-realm-shard-008",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-lyre-of-building-012",
         "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list",
         "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech",
         "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant",
@@ -170,7 +178,7 @@
     "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:arcane-firearm:004",
     "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:explosive-cannon:005"
   ],
-  "registry_production_runtime_full_count": 77,
+  "registry_production_runtime_full_count": 85,
   "runtime_evidence": {
     "content.tashas-cauldron.feature.alchemist-chemical-mastery": {
       "confirm_status": 200,
@@ -341,6 +349,615 @@
       "preview_status": 200,
       "production_runtime_full": true,
       "runtime_id": "content.tashas-cauldron.feature.way-of-mercy-physicians-touch"
+    },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-amulet-of-the-devout-001": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-amulet-of-the-devout-001",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XII.json",
+      "item_name": "虔信护符 Amulet of the Devout",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": null,
+        "item_fingerprint": "872a2f47d3e714f368b2e9b3cec331cfabac1b88e3d7d2125144bb58b3942ecc",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-amulet-of-the-devout-001",
+        "operation_transaction_count": 1,
+        "version": 2
+      },
+      "preview_confirm_replay": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1"
+      ]
+    },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-arcane-grimoire-002": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-arcane-grimoire-002",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XII.json",
+      "item_name": "奥法秘典 Arcane Grimoire",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": null,
+        "item_fingerprint": "17878527745fdab0882b4be2552c7f51f3de4e6a066c6726f5dcaba2c5d86279",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-arcane-grimoire-002",
+        "operation_transaction_count": 1,
+        "version": 2
+      },
+      "preview_confirm_replay": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1"
+      ]
+    },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-bloodwell-vial-003": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-bloodwell-vial-003",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XII.json",
+      "item_name": "血源瓶 Bloodwell Vial",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": null,
+        "item_fingerprint": "8302349dd010f110ba0b7e8357c27897d379db6eee842aa56015ea4cf2e0149b",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-bloodwell-vial-003",
+        "operation_transaction_count": 1,
+        "version": 2
+      },
+      "preview_confirm_replay": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1"
+      ]
+    },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-guardian-emblem-005": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-guardian-emblem-005",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XII.json",
+      "item_name": "守护者纹章 Guardian Emblem",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_action",
+          "output": {
+            "after": {
+              "action_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:guardian-emblem:005:action:1",
+              "armor_class": 10,
+              "charges": 2,
+              "rules_kernel_consumer": "item.granted_action.v1"
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_action",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": 2,
+        "item_fingerprint": "eac1d9d6f53ee6838a2886db9cdbaf4219095d961030bd6b3debc9d4f8e2c94e",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-guardian-emblem-005",
+        "operation_transaction_count": 2,
+        "version": 3
+      },
+      "preview_confirm_replay": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ]
+    },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XII.json",
+      "item_name": "调律者之鼓 Rhythm-Maker's Drum",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_action",
+          "output": {
+            "after": {
+              "action_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:rhythm-maker-s-drum:008:action:1",
+              "armor_class": 10,
+              "charges": null,
+              "rules_kernel_consumer": "item.granted_action.v1"
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_action",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": null,
+        "item_fingerprint": "1e5cecea15e9be0e5ed9e9904e76a63a659bc5a301497cb5149d1580ea303cfd",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
+        "operation_transaction_count": 2,
+        "version": 3
+      },
+      "preview_confirm_replay": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ]
+    },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XII.json",
+      "item_name": "炼金总纲|Alchemical Compendium",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "equip",
+          "output": {
+            "after": {
+              "armor_class": 10,
+              "equipment_ac_baseline": 10,
+              "equipped": true,
+              "slot": "main_hand"
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "equip",
+            "slot": "main_hand",
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_action",
+          "output": {
+            "after": {
+              "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:alchemical-compendium:000:action:1",
+              "armor_class": 10,
+              "charges": 3,
+              "rules_kernel_consumer": "item.granted_action.v1"
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": true,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_action",
+            "slot": "main_hand",
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_charge",
+          "output": {
+            "after": {
+              "armor_class": 10,
+              "charges": 2
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": true,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_charge",
+            "slot": "main_hand",
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": false,
+        "charges": 2,
+        "item_fingerprint": "a7375a36702e39b4f518b095f1f6cdafd0f6d5eec73c685bbcfc44db07d7a9d2",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000",
+        "operation_transaction_count": 3,
+        "version": 4
+      },
+      "preview_confirm_replay": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ]
+    },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-far-realm-shard-008": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-far-realm-shard-008",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XII.json",
+      "item_name": "遥远国度碎晶|Far Realm Shard",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_action",
+          "output": {
+            "after": {
+              "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:far-realm-shard:008:action:1",
+              "armor_class": 10,
+              "charges": null,
+              "rules_kernel_consumer": "item.granted_action.v1"
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_action",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": null,
+        "item_fingerprint": "4496714460256129316e79faceaeb9c4468d6a530e9986a4560ab060cefe3be8",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-far-realm-shard-008",
+        "operation_transaction_count": 2,
+        "version": 3
+      },
+      "preview_confirm_replay": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ]
+    },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-lyre-of-building-012": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-lyre-of-building-012",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XII.json",
+      "item_name": "建筑里拉琴|Lyre of Building",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_action",
+          "output": {
+            "after": {
+              "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:lyre-of-building:012:action:1",
+              "armor_class": 10,
+              "charges": null,
+              "rules_kernel_consumer": "item.granted_action.v1"
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_action",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": null,
+        "item_fingerprint": "f0dc7ecc39c32a53629c93adfba4b30cdb4b1b5bd9159a738423c9c99a5cfd6a",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-lyre-of-building-012",
+        "operation_transaction_count": 2,
+        "version": 3
+      },
+      "preview_confirm_replay": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ]
     },
     "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list": {
       "character_cas": true,
@@ -1511,5 +2128,14 @@
   },
   "runtime_preview_full_count": 93,
   "schema_version": "tashas-production-runtime-report-1",
-  "unmatched_production_runtime_ids": []
+  "unmatched_production_runtime_ids": [
+    "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-amulet-of-the-devout-001",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-arcane-grimoire-002",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-bloodwell-vial-003",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-guardian-emblem-005",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-far-realm-shard-008",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-lyre-of-building-012"
+  ]
 }

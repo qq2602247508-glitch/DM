@@ -3,7 +3,7 @@
   "compile_full": 41,
   "compile_only": 6,
   "dm_assisted": 0,
-  "game_usable": 0,
+  "game_usable": 8,
   "inventory": [
     {
       "atom_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000",
@@ -2645,8 +2645,8 @@
   "magic_tattoo_atom_total": 11,
   "name_branch_count": 0,
   "pack_id": "tashas-cauldron",
-  "production_full": 0,
-  "registered_production_full": 0,
+  "production_full": 8,
+  "registered_production_full": 8,
   "requires_dm": 6,
   "reviewed": 47,
   "runtime_preview_full": 41,

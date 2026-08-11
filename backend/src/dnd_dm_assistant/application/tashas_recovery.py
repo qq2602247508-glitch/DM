@@ -3,9 +3,11 @@
 
 from __future__ import annotations
 
+import json
 import re
 from collections import Counter
 from collections.abc import Iterable, Mapping
+from pathlib import Path
 from typing import Any
 
 from dnd_dm_assistant.application.tashas_whole_pack import (
@@ -485,6 +487,43 @@ def apply_isolated_runtime_validation(
             "catalog_fingerprint": __import__("dnd_dm_assistant.domain.item_spec", fromlist=["fingerprint"]).fingerprint(specs),
         }
     )
+    return result
+
+
+def load_item_production_evidence(repo_root: Path, pack_id: str = PACK_ID) -> set[str]:
+    """Load only item IDs backed by a persisted production-runtime result.
+
+    The isolated pack remains ``formal_apply=false``.  This separate evidence
+    channel mirrors the feature funnel: a real equipment consumer run may
+    promote an ItemSpec's registered-production layer, while an isolated
+    registry reload alone may only promote ``isolated_runtime_validated``.
+    """
+
+    prefix = f"content.{pack_id}.item."
+    result: set[str] = set()
+    root = repo_root / "data" / "content-ir" / "compiled"
+    for path in sorted(root.glob("production-runtime-results*.json")):
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError, json.JSONDecodeError):
+            continue
+        if value.get("content_kind") != "item":
+            continue
+        checks = value.get("checks")
+        if not isinstance(checks, Mapping) or not all(
+            checks.get(key)
+            for key in (
+                "all_create_preview_confirm_replay",
+                "all_typed_consumers",
+                "all_item_state_persisted",
+                "all_attunement_cas",
+            )
+        ) or checks.get("name_branch_count") != 0:
+            continue
+        for raw_id in value.get("production_runtime_full_ids") or []:
+            item_id = str(raw_id).strip()
+            if item_id.startswith(prefix):
+                result.add(item_id)
     return result
 
 

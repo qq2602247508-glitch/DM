@@ -19,6 +19,7 @@ from dnd_dm_assistant.application.tashas_recovery import (
     build_feature_option_batch,
     build_item_spec_catalog,
     build_template_catalog,
+    load_item_production_evidence,
 )
 from dnd_dm_assistant.application.tashas_whole_pack import (
     PACK_ID,
@@ -928,7 +929,11 @@ def main() -> int:
     isolated_registry_summary = isolated_registry.reload()
     migration["isolated_runtime_registry"] = isolated_registry_summary
     migration["item_spec_catalog"] = apply_isolated_runtime_validation(
-        migration["item_spec_catalog"], isolated_registry_summary
+        migration["item_spec_catalog"],
+        {
+            **isolated_registry_summary,
+            "registered_production_full_ids": sorted(load_item_production_evidence(ROOT)),
+        },
     )
     migration["item_ir"] = {
         **migration["item_ir"],

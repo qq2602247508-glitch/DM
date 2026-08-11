@@ -18,6 +18,18 @@
 - 证据：`docs/tashas-feature-production-consumer-round-IX-2026-08-12.md`、Round IX report/result、`reports/tashas-status-layer-audit-2026-08-11.json` 和 whole-pack report。
 - 下一步：继续处理 unresolved ItemSpec consumer 与 vessel/entity、exhaustion、spectral object、teleport destination、psionic payment 的真实 event producer/consumer；已补齐的 generic window/resource consumer 继续复用。
 
+## Round 10：ItemSpec Equipment Consumer Production Evidence
+
+当前状态：`accepted`；本轮完成 8 条真实 ItemSpec API evidence，ItemSpec registered production 从 0 增至 8，ItemSpec game usable 达到 8；Feature status layers 保持不变。
+
+- 8/8 条 `compile_full` ItemSpec 通过真实 equipment create，以及 attune/equip、granted action、charge operation 的 preview→confirm→幂等 replay；14 个 operation transaction 均落在临时迁移 SQLite。
+- 通用 consumer 覆盖 `item.equipment_modifier.v1`、`item.attunement.v1`、`item.charge_resource.v1`、`item.granted_action.v1`。守护者纹章与炼金总纲实际完成充能扣减；所有 ItemSpec projection、同调状态、角色 CAS、幂等 replay 均通过，name branch=0。
+- ItemSpec 状态：`47 total / 41 compile_full / 41 isolated_runtime_validated / 8 registered_production_full / 8 game_usable`；6 个 partial blocker 继续保留。Feature 的 Tasha status 仍为 `production_full=74`、`dm_assisted=2`、`game_usable=76`。
+- 新增 `load_item_production_evidence()`：只有带 `content_kind=item` 且整批 create/preview/confirm/replay gate 通过的 persisted result 才能回填 ItemSpec registered 层；隔离 pack 仍 `formal_apply=false`，不写正式数据库。
+- validator、round test、ItemSpec catalog、whole-pack migration 两次确定性验证、backend 定向测试已通过；完整 backend pytest、Ruff、compileall、保护指纹和 push receipt 在本轮收尾门禁中确认。
+- 证据：`docs/tashas-item-production-consumer-round-X-2026-08-12.md`、Round X report/result、`reports/tashas-item-spec-catalog-2026-08-11.json`。
+- 下一步：继续 unresolved ItemSpec granted-spell/tattoo lifecycle 与需要真实 event producer 的 clauses；不把 projection-only、isolated-only 或 DM-reference 伪装成 production。
+
 ## Round 8：Trigger-bound Modifier / Activation Consumer Expansion
 
 当前状态：`accepted`；本轮完成 8 条真实 API evidence，已提交并推送，整包 game usable 达到 70。
