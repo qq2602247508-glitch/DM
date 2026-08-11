@@ -121,4 +121,3 @@ def downgrade() -> None:
     op.drop_table("rules_kernel_choice_windows")
     op.drop_index("ix_rules_kernel_commands_campaign_created", table_name="rules_kernel_commands")
     op.drop_table("rules_kernel_commands")
-
