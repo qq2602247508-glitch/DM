@@ -1085,6 +1085,154 @@ class OperationTransaction(Timestamped, Base):
     )
 
 
+class RulesKernelCommandRecord(Timestamped, Base):
+    """Durable command/preview/result envelope for the authoritative kernel."""
+
+    __tablename__ = "rules_kernel_commands"
+    command_id: Mapped[str] = mapped_column(String(120), nullable=False, unique=True)
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    scene_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("scenes.id", ondelete="SET NULL")
+    )
+    combat_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("combats.id", ondelete="SET NULL")
+    )
+    idempotency_key: Mapped[str] = mapped_column(String(160), nullable=False)
+    action_kind: Mapped[str] = mapped_column(String(50), nullable=False)
+    command_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    preview_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    result_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    status: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="previewed", server_default="previewed"
+    )
+    __table_args__ = (
+        UniqueConstraint(
+            "campaign_id", "idempotency_key", name="uq_rules_kernel_command_idempotency"
+        ),
+        Index(
+            "ix_rules_kernel_commands_campaign_created", "campaign_id", "created_at", "id"
+        ),
+    )
+
+
+class RulesKernelChoiceWindow(Timestamped, Base):
+    __tablename__ = "rules_kernel_choice_windows"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    source_command_id: Mapped[str] = mapped_column(String(120), nullable=False)
+    actor_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    content_id: Mapped[str | None] = mapped_column(String(200))
+    choice_kind: Mapped[str] = mapped_column(String(40), nullable=False)
+    option_source: Mapped[str] = mapped_column(String(40), nullable=False)
+    frozen_options: Mapped[list[object]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    minimum_choices: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=1, server_default="1"
+    )
+    maximum_choices: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=1, server_default="1"
+    )
+    replacement_policy: Mapped[str] = mapped_column(
+        String(40), nullable=False, default="reject", server_default="reject"
+    )
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    expected_versions: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    status: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="pending", server_default="pending"
+    )
+    resolution: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    __table_args__ = (
+        Index(
+            "ix_rules_kernel_choices_campaign_status",
+            "campaign_id",
+            "status",
+            "created_at",
+            "id",
+        ),
+    )
+
+
+class RulesKernelAdjudicationWindow(Timestamped, Base):
+    __tablename__ = "rules_kernel_adjudications"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    source_command_id: Mapped[str] = mapped_column(String(120), nullable=False)
+    content_id: Mapped[str | None] = mapped_column(String(200))
+    actor_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    requested_by: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="player", server_default="player"
+    )
+    category: Mapped[str] = mapped_column(String(50), nullable=False)
+    source_text_evidence: Mapped[str] = mapped_column(Text, nullable=False)
+    typed_known_effects: Mapped[list[object]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    open_questions: Mapped[list[object]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    allowed_decision_schema: Mapped[list[object]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    frozen_context: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    expected_versions: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    status: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="pending_dm", server_default="pending_dm"
+    )
+    dm_decision: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    __table_args__ = (
+        Index(
+            "ix_rules_kernel_adjudications_campaign_status",
+            "campaign_id",
+            "status",
+            "created_at",
+            "id",
+        ),
+    )
+
+
+class RulesKernelSceneDeltaRecord(Timestamped, Base):
+    __tablename__ = "rules_kernel_scene_deltas"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    scene_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("scenes.id", ondelete="SET NULL")
+    )
+    source_command_id: Mapped[str] = mapped_column(String(120), nullable=False)
+    delta_id: Mapped[str] = mapped_column(String(160), nullable=False, unique=True)
+    sequence: Mapped[int] = mapped_column(Integer, nullable=False)
+    delta_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    delta_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    __table_args__ = (
+        UniqueConstraint("campaign_id", "sequence", name="uq_rules_kernel_scene_delta_cursor"),
+        Index("ix_rules_kernel_scene_deltas_scene_sequence", "scene_id", "sequence", "id"),
+    )
+
+
 class ResourcePool(Timestamped, Base):
     __tablename__ = "resource_pools"
     campaign_id: Mapped[str] = mapped_column(

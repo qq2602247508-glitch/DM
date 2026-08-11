@@ -31,6 +31,7 @@ from dnd_dm_assistant.api.routes.realtime import router as realtime_router
 from dnd_dm_assistant.api.routes.reliability import router as reliability_router
 from dnd_dm_assistant.api.routes.rests import router as rests_router
 from dnd_dm_assistant.api.routes.rule_extensions import router as rule_extensions_router
+from dnd_dm_assistant.api.routes.rules_kernel import router as rules_kernel_router
 from dnd_dm_assistant.api.routes.session_checkpoints import router as session_checkpoints_router
 from dnd_dm_assistant.api.routes.simulations import router as simulations_router
 from dnd_dm_assistant.api.routes.spells_economy import router as spells_economy_router
@@ -79,6 +80,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(monster_ai_router, prefix=app_settings.api_prefix)
     app.include_router(compendium_router, prefix=app_settings.api_prefix)
     app.include_router(content_ir_runtime_router, prefix=app_settings.api_prefix)
+    app.include_router(rules_kernel_router, prefix=app_settings.api_prefix)
     app.include_router(merchants_router, prefix=app_settings.api_prefix)
     app.include_router(encounters_router, prefix=app_settings.api_prefix)
     app.include_router(rests_router, prefix=app_settings.api_prefix)

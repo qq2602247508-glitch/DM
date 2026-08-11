@@ -12,6 +12,7 @@ from dnd_dm_assistant.application.content_ir_runtime import ContentIRRuntimeServ
 from dnd_dm_assistant.application.health import HealthService
 from dnd_dm_assistant.application.player_rules_search import PlayerRulesSearch
 from dnd_dm_assistant.application.reliability import ReliabilityService
+from dnd_dm_assistant.application.rules_kernel import RulesKernelService
 from dnd_dm_assistant.application.world_generation import WorldGenerationService
 from dnd_dm_assistant.config import Settings
 from dnd_dm_assistant.infrastructure.database.advancement_service import (
@@ -144,6 +145,10 @@ def get_spell_economy_service(request: Request) -> SpellEconomyService:
 
 def get_content_ir_runtime_service(request: Request) -> ContentIRRuntimeService:
     return ContentIRRuntimeService(cast(Engine, request.app.state.database_engine))
+
+
+def get_rules_kernel_service(request: Request) -> RulesKernelService:
+    return RulesKernelService(cast(Engine, request.app.state.database_engine))
 
 
 def get_narrative_service(request: Request) -> NarrativeService:
