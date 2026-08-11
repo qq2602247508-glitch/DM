@@ -416,6 +416,20 @@
   "stack_policy": {
     "mode": "unique_instance"
   },
+  "status_layers": {
+    "authored_typed_ir": true,
+    "candidate": true,
+    "compile_full": true,
+    "dm_assisted": false,
+    "draft": true,
+    "game_usable": false,
+    "highest_status": "isolated_runtime_validated",
+    "isolated_runtime_validated": true,
+    "registered_production_full": false,
+    "reviewed": true,
+    "runtime_preview_full": true,
+    "source_identified": true
+  },
   "temporary_hp": null,
   "triggered_effects": []
 }

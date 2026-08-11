@@ -69,6 +69,19 @@
     "out_of_scope_with_reason": 0,
     "production_full": 17
   },
+  "status_layers": {
+    "authored_typed_ir": 29,
+    "candidate": 407,
+    "compile_full": 29,
+    "dm_assisted": 1,
+    "draft": 407,
+    "game_usable": 18,
+    "isolated_runtime_validated": 18,
+    "registered_production_full": 17,
+    "reviewed": 407,
+    "runtime_preview_full": 29,
+    "source_identified": 524
+  },
   "usable_coverage": {
     "dm_assisted_rate": 0.002457,
     "game_usable_rate": 0.044226,

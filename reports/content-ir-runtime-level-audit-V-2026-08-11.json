@@ -69,7 +69,8 @@
         "dm_assisted_count": 0,
         "implemented": true,
         "inventory_atom_count": 47,
-        "production_count": 41,
+        "isolated_runtime_validated_count": 41,
+        "production_count": 0,
         "typed_count": 47,
         "unlock_ranking": [
           {

@@ -12,6 +12,7 @@
   "requires_legacy_opt_in": true,
   "review_index": "review-index.json",
   "runtime_definitions": "runtime-definitions.json",
+  "runtime_registry": "runtime-registry.json",
   "schema_version": "content-pack-manifest-1",
   "source_book": "塔莎的万事坩埚",
   "source_edition": "2014-compatible",

@@ -1,24 +1,31 @@
 {
-  "catalog_fingerprint": "c30de56e532bda40967fd2a4092bf4cc97b5764c212b836c6409e26306f6d204",
+  "catalog_fingerprint": "59a713ecf21c88ebb7a6b71dd5331627b78f46764741701e3cfaa4a84f3ec795",
   "compile_status_counts": {
     "full": 41,
     "partial": 6
   },
+  "game_usable": 0,
+  "isolated_runtime_validated": 41,
   "item_spec_compile_full": 41,
   "item_spec_compile_only": 6,
   "item_spec_reviewed": 47,
+  "item_spec_runtime_preview_full": 41,
   "item_spec_total": 47,
   "item_spec_typed": 47,
   "name_branch_count": 0,
   "pack_id": "tashas-cauldron",
-  "production_full": 41,
+  "production_full": 0,
   "rates": {
     "compile_full": 0.8723404255319149,
-    "game_usable": 0.8723404255319149,
-    "production_full": 0.8723404255319149,
+    "game_usable": 0.0,
+    "isolated_runtime_validated": 0.8723404255319149,
+    "production_full": 0.0,
+    "registered_production_full": 0.0,
     "reviewed": 1.0,
+    "runtime_preview_full": 0.8723404255319149,
     "typed": 1.0
   },
+  "registered_production_full": 0,
   "requires_dm": 6,
   "schema_version": "tashas-item-spec-catalog-1",
   "specs": [
@@ -300,6 +307,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": false,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": false,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -431,6 +452,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -564,6 +599,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -695,6 +744,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -876,6 +939,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": false,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": false,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -1120,6 +1197,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -1334,6 +1425,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -1569,6 +1674,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -1748,6 +1867,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -1896,6 +2029,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -3329,6 +3476,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": false,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": false,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -3664,6 +3825,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -4007,6 +4182,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -4390,6 +4579,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -4897,6 +5100,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -5476,6 +5693,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": false,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": false,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -5688,6 +5919,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -5923,6 +6168,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -6119,6 +6378,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -6314,6 +6587,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -6558,6 +6845,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -6736,6 +7037,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -7080,6 +7395,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -7261,6 +7590,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": false,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": false,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -7439,6 +7782,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -7738,6 +8095,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -7933,6 +8304,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -8176,6 +8561,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -8446,6 +8845,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -8626,6 +9039,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": false,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": false,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -8822,6 +9249,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -9066,6 +9507,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -9244,6 +9699,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -9424,6 +9893,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -9581,6 +10064,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -9904,6 +10401,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -10061,6 +10572,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -10283,6 +10808,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -10589,6 +11128,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -10793,6 +11346,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -11135,6 +11702,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -11340,6 +11921,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -11537,6 +12132,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -11743,6 +12352,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -11926,6 +12549,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -12239,6 +12876,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -12661,15 +13312,36 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     }
   ],
-  "threshold_gate": true,
+  "status_layer_semantics": {
+    "game_usable": "registered_production_full + dm_assisted",
+    "isolated_runtime_validated": "reloaded isolated pack with generic consumers",
+    "production_full": "registered_production_full; formal registry only"
+  },
+  "threshold_gate": false,
   "thresholds": {
     "compile_full": 0.65,
     "game_usable": 0.6,
+    "isolated_runtime_validated": 0.65,
     "production_full": 0.45,
+    "registered_production_full": 0.45,
     "reviewed": 0.8,
     "typed": 0.7
   }

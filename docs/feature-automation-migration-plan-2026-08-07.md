@@ -1,5 +1,11 @@
 # 特性自动化迁移预审报告
 
+## 持续 Goal Round 1：状态层与 Item isolated registry（2026-08-11）
+
+- 已统一 Content IR 状态层：`source_identified`、`draft`、`candidate`、`reviewed`、`authored_typed_ir`、`compile_full`、`runtime_preview_full`、`isolated_runtime_validated`、`registered_production_full`、`dm_assisted`、`game_usable`。
+- 塔莎 ItemSpec 现在通过独立 `ContentPackRuntimeRegistry` reload 验证；47 条中 41 条达到 isolated runtime validated，6 条仍保持手工/DM blocker。该结果不计入正式 production registry，避免把 isolated capability 冒充正式生产。
+- 下一生产批次应选择 Feature/Option 的高扇出 semantic contract，而不是继续扩张 inventory 或 Candidate；目标为至少 30 reviewed、25 authored Typed IR、20 compile full。
+
 ## 2026-08-10 真实语料批量编译吞吐恢复（未达生产收割门槛）
 
 - 当前严格审计仍为 `full 320 / partial 118 / dm_only 61`，固定分母 499。本阶段修复

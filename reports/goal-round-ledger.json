@@ -1,0 +1,93 @@
+{
+  "current_round": "round-1",
+  "goal": "Local AI D&D DM Assistant complete official-content rules platform",
+  "rounds": [
+    {
+      "authored_count": 0,
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 76,
+            "unique_compiled": 111
+          },
+          "formal_499": {
+            "dm_only": 61,
+            "full": 328,
+            "partial": 110,
+            "total": 499
+          },
+          "protected_fingerprints": {
+            "database": "f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad",
+            "formal_registry": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+            "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+            "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+          },
+          "tashas": {
+            "content_atoms_after_qa": 524,
+            "content_atoms_before_qa": 625,
+            "executable": 407,
+            "isolated_item_compile_full": 41,
+            "isolated_item_total": 47,
+            "isolated_item_validated_before_round": 0,
+            "production_full": 17,
+            "source_records": 144
+          }
+        },
+        "prompt_baseline": {
+          "tashas_item_production_full": 41,
+          "tashas_production_full": 17,
+          "whole_project_production_full": 76
+        },
+        "difference": "41 was ItemSpec compile/preview capability, not formal or whole-pack registered production; this round makes the isolated-runtime boundary explicit."
+      },
+      "commits": [],
+      "compile_full_delta": 0,
+      "dm_assisted_delta": 0,
+      "files_changed": [
+        "backend/src/dnd_dm_assistant/application/content_pack_runtime_registry.py",
+        "backend/src/dnd_dm_assistant/application/tashas_recovery.py",
+        "backend/src/dnd_dm_assistant/application/tashas_whole_pack.py",
+        "backend/src/dnd_dm_assistant/domain/content_ir_status.py",
+        "backend/tests/test_tashas_recovery.py",
+        "backend/tests/test_tashas_whole_pack_migration.py",
+        "scripts/migrate-tashas-whole-pack.py",
+        "data/content-ir/isolated-packs/tashas-cauldron-2026-08-11/",
+        "reports/tashas-status-layer-audit-2026-08-11.json"
+      ],
+      "manual_delta": 0,
+      "next_round_reason": "Round 2 must harvest the highest-fanout Feature/Option semantic contracts; Item formal registration remains prohibited until formal apply criteria are separately met.",
+      "objective": "Unify Content IR state layers and close the Tasha ItemSpec isolated whole-pack registry boundary without changing the formal registry.",
+      "pack_coverage_delta": {
+        "item_isolated_runtime_validated": 41,
+        "item_registered_production_full": 0,
+        "item_game_usable": 0
+      },
+      "phase": "A",
+      "push_receipt": null,
+      "reports": [
+        "reports/tashas-status-layer-audit-2026-08-11.json",
+        "reports/tashas-item-spec-catalog-2026-08-11.json",
+        "reports/tashas-item-runtime-validation-2026-08-11.json",
+        "reports/tashas-isolated-pack-validation-2026-08-11.json",
+        "data/content-ir/isolated-packs/tashas-cauldron-2026-08-11/runtime-registry.json"
+      ],
+      "reviewed_count": 0,
+      "selected_clusters": [],
+      "selected_platforms": [
+        "content_ir_status_layers",
+        "isolated_content_pack_runtime_registry",
+        "item_spec_generic_consumers"
+      ],
+      "status": "in_progress",
+      "tests": [
+        "PYTHONPATH=backend/src backend/.venv/bin/pytest -q backend/tests/test_tashas_recovery.py backend/tests/test_tashas_whole_pack_migration.py",
+        "backend/.venv/bin/ruff check backend/src backend/tests scripts/migrate-tashas-whole-pack.py",
+        "backend/.venv/bin/python -m compileall -q backend/src scripts backend/tests/*.py",
+        "git diff --check",
+        "migration script twice: stdout byte-identical"
+      ]
+    }
+  ],
+  "schema_version": "goal-round-ledger-1"
+}

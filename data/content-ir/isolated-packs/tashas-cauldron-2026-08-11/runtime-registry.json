@@ -1,5 +1,5 @@
 {
-  "definitions": [
+  "content_entries": [
     {
       "atom_id": "tashas-cauldron:atom:0036d7dc058c496ef08fe340:a27f6b57964b:000",
       "content_id": "tashas-cauldron:spell:0036d7dc058c496ef08fe340",
@@ -292,7 +292,8 @@
       ]
     }
   ],
-  "item_definitions": [
+  "formal_apply": false,
+  "item_entries": [
     {
       "compile_status": "partial",
       "consumer_ids": [
@@ -1581,5 +1582,13 @@
       },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-953875067ac4d9a793c844f0-771dcd20c4dc-001.json"
     }
-  ]
+  ],
+  "pack_id": "tashas-cauldron",
+  "pack_version": "whole-pack-2026-08-11",
+  "schema_version": "content-pack-runtime-registry-1",
+  "state_semantics": {
+    "game_usable": "registered_production_full + dm_assisted",
+    "isolated_runtime_validated": "reloaded isolated pack with generic consumers",
+    "production_full": "registered_production_full; formal registry only"
+  }
 }

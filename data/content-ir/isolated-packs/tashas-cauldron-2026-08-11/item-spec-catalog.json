@@ -1,24 +1,31 @@
 {
-  "catalog_fingerprint": "c30de56e532bda40967fd2a4092bf4cc97b5764c212b836c6409e26306f6d204",
+  "catalog_fingerprint": "59a713ecf21c88ebb7a6b71dd5331627b78f46764741701e3cfaa4a84f3ec795",
   "compile_status_counts": {
     "full": 41,
     "partial": 6
   },
+  "game_usable": 0,
+  "isolated_runtime_validated": 41,
   "item_spec_compile_full": 41,
   "item_spec_compile_only": 6,
   "item_spec_reviewed": 47,
+  "item_spec_runtime_preview_full": 41,
   "item_spec_total": 47,
   "item_spec_typed": 47,
   "name_branch_count": 0,
   "pack_id": "tashas-cauldron",
-  "production_full": 41,
+  "production_full": 0,
   "rates": {
     "compile_full": 0.8723404255319149,
-    "game_usable": 0.8723404255319149,
-    "production_full": 0.8723404255319149,
+    "game_usable": 0.0,
+    "isolated_runtime_validated": 0.8723404255319149,
+    "production_full": 0.0,
+    "registered_production_full": 0.0,
     "reviewed": 1.0,
+    "runtime_preview_full": 0.8723404255319149,
     "typed": 1.0
   },
+  "registered_production_full": 0,
   "requires_dm": 6,
   "runtime_definitions": [
     {
@@ -33,6 +40,20 @@
       "item_kind": "tool",
       "localized_name": "万能工具",
       "source_fingerprint": "43fa14a51443bf482f83124614fbe03c978550d012b492f3529bc018c8cac27c",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": false,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": false,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-all-purpose-tool-000.json"
     },
     {
@@ -45,6 +66,20 @@
       "item_kind": "spellcasting_focus",
       "localized_name": "虔信护符",
       "source_fingerprint": "b132afdbef41359667368e00f8e290b93b667ebc576e1e063901df790c6ea6be",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-amulet-of-the-devout-001.json"
     },
     {
@@ -57,6 +92,20 @@
       "item_kind": "spellcasting_focus",
       "localized_name": "奥法秘典",
       "source_fingerprint": "b46b7d9ddc93a4f4c3505bb71f3026ba430868479c62982a65c940af0f6a962a",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-arcane-grimoire-002.json"
     },
     {
@@ -69,6 +118,20 @@
       "item_kind": "spellcasting_focus",
       "localized_name": "血源瓶",
       "source_fingerprint": "9d7db9ef12acd6898a77e25243ac2312dba6d1a9838c986aa47fac04e63d5922",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-bloodwell-vial-003.json"
     },
     {
@@ -82,6 +145,20 @@
       "item_kind": "weapon",
       "localized_name": "妖精荒野碎晶",
       "source_fingerprint": "4eb031c6da5923fa880ceba56c730f758ec4516231b817d91c73eb79204fbd76",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": false,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": false,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-feywild-shard-004.json"
     },
     {
@@ -96,6 +173,20 @@
       "item_kind": "armor",
       "localized_name": "守护者纹章",
       "source_fingerprint": "12881e86e9cc5918abd6f9eeb6a5cd406003ede9ce87543f19ed99ece7f322fa",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-guardian-emblem-005.json"
     },
     {
@@ -109,6 +200,20 @@
       "item_kind": "weapon",
       "localized_name": "月镰",
       "source_fingerprint": "bff6fb35f513660517feb8be644c71be1b4d062be0bb6042570e47d28690c3f8",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-moon-sickle-006.json"
     },
     {
@@ -123,6 +228,20 @@
       "item_kind": "spellcasting_focus",
       "localized_name": "自然斗篷",
       "source_fingerprint": "92f9efb1d3203914d5e538b293facdb9dd29c16bbc106f2bd7d2b94d4567dad4",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007.json"
     },
     {
@@ -136,6 +255,20 @@
       "item_kind": "wondrous_item",
       "localized_name": "调律者之鼓",
       "source_fingerprint": "bfdd614b8a69a1cf311c77043e8a8963f5cffc0a7ba51fd462434531ef932035",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008.json"
     },
     {
@@ -148,6 +281,20 @@
       "item_kind": "wondrous_item",
       "localized_name": "假肢",
       "source_fingerprint": "8366e513bc325787ee9c7abafcedfc644ff36bbe696a2487a3fec0440b907c6b",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-62c7a0c6a042e571b17d35e3-dfaab0b0f93c-000.json"
     },
     {
@@ -163,6 +310,20 @@
       "item_kind": "weapon",
       "localized_name": "琉克欧",
       "source_fingerprint": "7350e9813ff4d643fb748c72c336331e144c2dc4429ee54c92d7060fb151045b",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": false,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": false,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-23eee2e4e70e-004.json"
     },
     {
@@ -177,6 +338,20 @@
       "item_kind": "wondrous_item",
       "localized_name": "鲁芭的灵魂塔罗卡",
       "source_fingerprint": "2dbf3be19bb0032f3fd445f6074e2b7a8cfde1c4c747ece0b0f68ac1441b52e9",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003.json"
     },
     {
@@ -192,6 +367,20 @@
       "item_kind": "weapon",
       "localized_name": "芭芭",
       "source_fingerprint": "b5baaab02bb3a82bc796cfeb427b3effe79233ba8fa3ab36226577dca4af8463",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000.json"
     },
     {
@@ -207,6 +396,20 @@
       "item_kind": "tool",
       "localized_name": "拉奥圣杖",
       "source_fingerprint": "a4d218ae69049e4019a4bec4f67ac36a91f7fdde2e689e711958eec99b36f82c",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001.json"
     },
     {
@@ -222,6 +425,20 @@
       "item_kind": "wondrous_item",
       "localized_name": "伊格薇尔伏恶魔志",
       "source_fingerprint": "bb7e27ecdf9df5d155bae20e97ccdf874f78fd2589eff065d20f310786f25527",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002.json"
     },
     {
@@ -235,6 +452,20 @@
       "item_kind": "weapon",
       "localized_name": "达文-纳之牙",
       "source_fingerprint": "0652aff69f6adbfba37dee5ab0ba42795dba5811b2238d959c04b266ea518c01",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": false,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": false,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-teeth-ofdahlver-nar-005.json"
     },
     {
@@ -248,6 +479,20 @@
       "item_kind": "weapon",
       "localized_name": "炼金总纲",
       "source_fingerprint": "9486082f1313eb42a5230129a94d7f5654055efff6752570055daf33cfa970f7",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000.json"
     },
     {
@@ -262,6 +507,20 @@
       "item_kind": "weapon",
       "localized_name": "星界碎晶",
       "source_fingerprint": "5d55277b4302de2655699eed3531e9666851ae630795a0d39a6edbcf92f05f10",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001.json"
     },
     {
@@ -275,6 +534,20 @@
       "item_kind": "spellcasting_focus",
       "localized_name": "星卜编集",
       "source_fingerprint": "faa8203793abb426328cb6cf194fd8d463738b48fb96a081d88ef99d7ef7ea00",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astromancy-archive-002.json"
     },
     {
@@ -288,6 +561,20 @@
       "item_kind": "spellcasting_focus",
       "localized_name": "寰宇图纂",
       "source_fingerprint": "4bc86e7d967cf4936979cf366b696d92d744ee37708490af92fb66e19599d532",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-atlas-of-endless-horizons-003.json"
     },
     {
@@ -302,6 +589,20 @@
       "item_kind": "spellcasting_focus",
       "localized_name": "钟铃圣枝",
       "source_fingerprint": "68b0aa64c7359b51c1fd9b55c0d1d872413d3ab704ed0c4ba1954f4c2a51ec1b",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-bell-branch-004.json"
     },
     {
@@ -315,6 +616,20 @@
       "item_kind": "weapon",
       "localized_name": "奉献香炉",
       "source_fingerprint": "f89ed8e6f076eff15625d1f98e708b09cb19128133e9864936b39240ad5ac8e0",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-devotee-s-censer-005.json"
     },
     {
@@ -330,6 +645,20 @@
       "item_kind": "spellcasting_focus",
       "localized_name": "两面花言",
       "source_fingerprint": "5d68d9a918e844c504d463c0bc38a41e117f63b91c46fbfb8edf04de3a43b283",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-duplicitous-manuscript-006.json"
     },
     {
@@ -343,6 +672,20 @@
       "item_kind": "weapon",
       "localized_name": "元素精粹碎晶",
       "source_fingerprint": "5a7349060d16038b80c0d576c42b755f1eaa5208bde98d8bb0cf6aa7a3a3ec68",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": false,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": false,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-elemental-essence-shard-007.json"
     },
     {
@@ -356,6 +699,20 @@
       "item_kind": "weapon",
       "localized_name": "遥远国度碎晶",
       "source_fingerprint": "8dfd516a5d7b8df49b1b571c5bb0770aea681b590aa34cb0fffe9f52ffe5aea2",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-far-realm-shard-008.json"
     },
     {
@@ -371,6 +728,20 @@
       "item_kind": "spellcasting_focus",
       "localized_name": "爆鸣专论",
       "source_fingerprint": "b7a35f50eb6f8085a97fb30098484ec97c099fb8178cb3ef4cf226f1d3c781a7",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-fulminating-treatise-009.json"
     },
     {
@@ -384,6 +755,20 @@
       "item_kind": "spellcasting_focus",
       "localized_name": "织心入门",
       "source_fingerprint": "1271b9647ae374142c458528bbaccac136b2ab2c312235835d54534ef8d1040d",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-heart-weaver-s-primer-010.json"
     },
     {
@@ -398,6 +783,20 @@
       "item_kind": "spellcasting_focus",
       "localized_name": "灵肉圣契",
       "source_fingerprint": "d09a938f348f6497c9891ae3e0710042879d542d8209b92789db0911ee9fbda4",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-libram-of-souls-and-flesh-011.json"
     },
     {
@@ -411,6 +810,20 @@
       "item_kind": "wondrous_item",
       "localized_name": "建筑里拉琴",
       "source_fingerprint": "2a8a41a6aaa61697aaa407ad854fdaf8953667f463fb259c07c8b916487bccd4",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-lyre-of-building-012.json"
     },
     {
@@ -424,6 +837,20 @@
       "item_kind": "weapon",
       "localized_name": "外界精粹碎晶",
       "source_fingerprint": "13d8dd96dbf2b19aea09baa49c0ae659f93ccd66a1bdefc4fe6fea473f6ba8aa",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": false,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": false,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-outer-essence-shard-013.json"
     },
     {
@@ -437,6 +864,20 @@
       "item_kind": "spellcasting_focus",
       "localized_name": "异界行访录",
       "source_fingerprint": "58f8e5f59ac899459c323c2f1ebe8daf25e2af4860c22f895c31a5f234f67dda",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-planecaller-s-codex-014.json"
     },
     {
@@ -451,6 +892,20 @@
       "item_kind": "spellcasting_focus",
       "localized_name": "守御诗篇",
       "source_fingerprint": "6f451bade7bb0a77d6c654ca564696ebf3888698decc2eca12a7458271937186",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-protective-verses-015.json"
     },
     {
@@ -464,6 +919,20 @@
       "item_kind": "wondrous_item",
       "localized_name": "狂宴手风琴",
       "source_fingerprint": "90871fb4c9ac181601e045e66849da7abc000e703824f4a35df825c8b73b8451",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-reveler-s-concertina-016.json"
     },
     {
@@ -477,6 +946,20 @@
       "item_kind": "weapon",
       "localized_name": "堕影冥界碎晶",
       "source_fingerprint": "715c2c9bdfb1308694f08c3314f6b1099d866a0332af6862679d12ebde6b6ee8",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-shadowfell-shard-017.json"
     },
     {
@@ -489,6 +972,20 @@
       "item_kind": "magic_tattoo",
       "localized_name": "屏障刺青",
       "source_fingerprint": "ea52073b66af5ff060749bab3143473478f3916cf61aa0c1f74e158c12aa3fca",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-8d7814d75b94-003.json"
     },
     {
@@ -503,6 +1000,20 @@
       "item_kind": "magic_tattoo",
       "localized_name": "伪装刺青",
       "source_fingerprint": "58dd194a29941b722821be470ad1a0aef02eeb2d7c60431c719a5bc1277681de",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-a92dd000492e-001.json"
     },
     {
@@ -515,6 +1026,20 @@
       "item_kind": "magic_tattoo",
       "localized_name": "吸收刺青",
       "source_fingerprint": "8ad76330bdffe7775ebbe2f07e3e03382966fefdaaf4c90e2b0b717de26e3a4c",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-b9cb8e43543d-007.json"
     },
     {
@@ -528,6 +1053,20 @@
       "item_kind": "magic_tattoo",
       "localized_name": "血怒刺青",
       "source_fingerprint": "5f0d18ff37fe6f5ea95c15e3e485e35cff326b63654077fc2c547e40e0b7599c",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-c27398cf29fe-010.json"
     },
     {
@@ -542,6 +1081,20 @@
       "item_kind": "magic_tattoo",
       "localized_name": "缠爪刺青",
       "source_fingerprint": "c72be2e4fb0f73fc32e5f0982b12ae89c440788c2f52cf7796ead7c722480403",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-coiling-004.json"
     },
     {
@@ -555,6 +1108,20 @@
       "item_kind": "magic_tattoo",
       "localized_name": "魔能爪刺青",
       "source_fingerprint": "882735dae8b4102e8a0e08e8325d4635535ee85e6bf0ec48009d2bcf74283223",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-eldritch-005.json"
     },
     {
@@ -570,6 +1137,20 @@
       "item_kind": "magic_tattoo",
       "localized_name": "鬼步刺青",
       "source_fingerprint": "6a9aee27b8932007d7657f12ab5ae118e0092d07f462cfcb609f6c4c71e73ce6",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-ghost-step-tattoo-008.json"
     },
     {
@@ -583,6 +1164,20 @@
       "item_kind": "magic_tattoo",
       "localized_name": "解文刺青",
       "source_fingerprint": "ba1da26a67f4ad3eb2e40125be3bcec2a8052e3ba5667b8d42e456dde88b659f",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-illuminator-s-tattoo-000.json"
     },
     {
@@ -595,6 +1190,20 @@
       "item_kind": "magic_tattoo",
       "localized_name": "命源刺青",
       "source_fingerprint": "30850bad009ed2cefd63f0b4ca201d8cec3db6f181210c71d103a587d0e26744",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-lifewell-tattoo-009.json"
     },
     {
@@ -608,6 +1217,20 @@
       "item_kind": "magic_tattoo",
       "localized_name": "堕影冥界印记刺青",
       "source_fingerprint": "d5a5567111ce3196757d97ad46e278200321f7d82e200710ea2b7cd1a9648d44",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-shadowfellbrand-tattoo-006.json"
     },
     {
@@ -621,6 +1244,20 @@
       "item_kind": "magic_tattoo",
       "localized_name": "蕴法刺青",
       "source_fingerprint": "0622645595cf40747e3ec9f82ddcad58175e17bd21b507fca80c9cd3b00e2913",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-spell-wrought-tattoo-002.json"
     },
     {
@@ -635,6 +1272,20 @@
       "item_kind": "spellcasting_focus",
       "localized_name": "重生坩埚",
       "source_fingerprint": "d2e4822f7f9861c9cb85999335808d9eaa0f89b70057003f89fb10f335515171",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-953875067ac4d9a793c844f0-6ad29778c06b-000.json"
     },
     {
@@ -649,6 +1300,20 @@
       "item_kind": "spellcasting_focus",
       "localized_name": "凝晶年纪",
       "source_fingerprint": "d6174e8770e1a7793e15caf7cf131aeb51b6c5980e9f73b8f2a3b51a329a5ae4",
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-953875067ac4d9a793c844f0-771dcd20c4dc-001.json"
     }
   ],
@@ -932,6 +1597,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": false,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": false,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -1063,6 +1742,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -1196,6 +1889,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -1327,6 +2034,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -1508,6 +2229,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": false,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": false,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -1752,6 +2487,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -1966,6 +2715,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -2201,6 +2964,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -2380,6 +3157,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -2528,6 +3319,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -3961,6 +4766,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": false,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": false,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -4296,6 +5115,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -4639,6 +5472,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -5022,6 +5869,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -5529,6 +6390,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -6108,6 +6983,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": false,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": false,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -6320,6 +7209,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -6555,6 +7458,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -6751,6 +7668,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -6946,6 +7877,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -7190,6 +8135,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -7368,6 +8327,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -7712,6 +8685,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -7893,6 +8880,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": false,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": false,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -8071,6 +9072,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -8370,6 +9385,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -8565,6 +9594,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -8808,6 +9851,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -9078,6 +10135,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -9258,6 +10329,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": false,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": false,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -9454,6 +10539,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -9698,6 +10797,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -9876,6 +10989,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -10056,6 +11183,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -10213,6 +11354,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -10536,6 +11691,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -10693,6 +11862,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -10915,6 +12098,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -11221,6 +12418,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -11425,6 +12636,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -11767,6 +12992,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -11972,6 +13211,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -12169,6 +13422,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -12375,6 +13642,20 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     },
@@ -12558,6 +13839,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -12871,6 +14166,20 @@
       "source_trust": "authored_ir",
       "stack_policy": {
         "mode": "unique_instance"
+      },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
       },
       "temporary_hp": null,
       "triggered_effects": []
@@ -13293,15 +14602,36 @@
       "stack_policy": {
         "mode": "unique_instance"
       },
+      "status_layers": {
+        "authored_typed_ir": true,
+        "candidate": true,
+        "compile_full": true,
+        "dm_assisted": false,
+        "draft": true,
+        "game_usable": false,
+        "highest_status": "isolated_runtime_validated",
+        "isolated_runtime_validated": true,
+        "registered_production_full": false,
+        "reviewed": true,
+        "runtime_preview_full": true,
+        "source_identified": true
+      },
       "temporary_hp": null,
       "triggered_effects": []
     }
   ],
-  "threshold_gate": true,
+  "status_layer_semantics": {
+    "game_usable": "registered_production_full + dm_assisted",
+    "isolated_runtime_validated": "reloaded isolated pack with generic consumers",
+    "production_full": "registered_production_full; formal registry only"
+  },
+  "threshold_gate": false,
   "thresholds": {
     "compile_full": 0.65,
     "game_usable": 0.6,
+    "isolated_runtime_validated": 0.65,
     "production_full": 0.45,
+    "registered_production_full": 0.45,
     "reviewed": 0.8,
     "typed": 0.7
   }
