@@ -1,0 +1,28 @@
+{
+  "capability_registry_version": "content-capabilities-1",
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "draft_paths": [],
+  "manifest_fingerprint": "9165085122f40904cb6fb523decaf18f1d52769e57388d6f296e3de9602c7308",
+  "namespace": "content.book-of-many-things",
+  "pack_id": "book-of-many-things",
+  "pack_version": "source-d6806d375807",
+  "production_targets": {
+    "campaign": false,
+    "character": false,
+    "database": false,
+    "feature_registry": false,
+    "spell_registry": false
+  },
+  "replay": {
+    "policy": "same-manifest-fingerprint-is-idempotent"
+  },
+  "ruleset_version": "2014",
+  "schema_version": "content-ir-workbench-manifest-3",
+  "source_book": "万象无常书",
+  "source_fingerprints": {
+    "69822f264262f10066c621b3": "04503730c3ea0119d17b2bde803d307413328d4a88f46c49718277fba6909f5c"
+  },
+  "typed_ir_paths": [
+    "spells/book-of-many-things-spell-69822f264262f10066c621b3.json"
+  ]
+}

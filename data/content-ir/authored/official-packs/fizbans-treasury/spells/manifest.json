@@ -1,0 +1,30 @@
+{
+  "capability_registry_version": "content-capabilities-1",
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "draft_paths": [],
+  "manifest_fingerprint": "01f606a2a231149de26e7ea220baacc3e60c7073f9070dc890ac719cf16aa1df",
+  "namespace": "content.fizbans-treasury",
+  "pack_id": "fizbans-treasury",
+  "pack_version": "source-ffa95fd541bc",
+  "production_targets": {
+    "campaign": false,
+    "character": false,
+    "database": false,
+    "feature_registry": false,
+    "spell_registry": false
+  },
+  "replay": {
+    "policy": "same-manifest-fingerprint-is-idempotent"
+  },
+  "ruleset_version": "2014",
+  "schema_version": "content-ir-workbench-manifest-3",
+  "source_book": "费资本的巨龙宝库",
+  "source_fingerprints": {
+    "49a5bacc752aa90fbbfbf316": "45786e6c57e4c56a29800259cf32e1d236b08990ffc7d61efc793cb30a5fbbdc",
+    "cadce71b1ba7a42354f785dc": "be9cd13062116e1928605e32a9742d1303e5b12f8899b6f91d06b612278a211b"
+  },
+  "typed_ir_paths": [
+    "spells/fizbans-treasury-spell-49a5bacc752aa90fbbfbf316.json",
+    "spells/fizbans-treasury-spell-cadce71b1ba7a42354f785dc.json"
+  ]
+}

@@ -1,0 +1,191 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "action",
+  "clause_boundaries": {
+    "area": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+      "source_heading": "卡牌喷射"
+    },
+    "condition": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+      "source_heading": "卡牌喷射"
+    },
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+      "source_heading": "卡牌喷射"
+    },
+    "save": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+      "source_heading": "卡牌喷射"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+      "source_heading": "卡牌喷射"
+    },
+    "upcast": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "每比二环高一环，伤害增加1d10",
+      "source_heading": "卡牌喷射"
+    }
+  },
+  "clause_identity": [
+    "book-of-many-things:spell:69822f264262f10066c621b3:target",
+    "book-of-many-things:spell:69822f264262f10066c621b3:save",
+    "book-of-many-things:spell:69822f264262f10066c621b3:damage",
+    "book-of-many-things:spell:69822f264262f10066c621b3:area",
+    "book-of-many-things:spell:69822f264262f10066c621b3:condition",
+    "book-of-many-things:spell:69822f264262f10066c621b3:upcast"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": "all_in_area",
+      "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+      "kind": "area",
+      "range": "self 15-foot cone",
+      "shape": "cone",
+      "size_ft": 15,
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "save",
+      "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+      "half_on_success": true,
+      "range": "self 15-foot cone",
+      "save_ability": "dexterity",
+      "target": "area",
+      "trigger": "spell_cast",
+      "type": "saving_throw"
+    },
+    {
+      "applies_to": "save",
+      "clause_id": "damage",
+      "damage_type": "force",
+      "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+      "expression": "2d10",
+      "on_failure": "full",
+      "on_success": "half",
+      "target": "area",
+      "trigger": "saving_throw",
+      "type": "damage"
+    },
+    {
+      "clause_id": "area",
+      "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+      "origin": "self",
+      "range": "self 15-foot cone",
+      "shape": "cone",
+      "size_ft": 15,
+      "target": "area",
+      "type": "area"
+    },
+    {
+      "break_action": null,
+      "clause_id": "condition",
+      "condition": "blinded",
+      "condition_effect": {
+        "blinded": true
+      },
+      "duration": "until_target_next_turn_end",
+      "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+      "on_failure": "apply",
+      "save_ability": "dexterity",
+      "target": "area",
+      "type": "apply_condition"
+    },
+    {
+      "applies_to": "damage",
+      "clause_id": "upcast",
+      "evidence_ref": "每比二环高一环，伤害增加1d10",
+      "increments": "1d10",
+      "per_slot": 1,
+      "progression": null,
+      "type": "upcast"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "components": "V,S,M(deck of cards)",
+  "concentration": false,
+  "duration": "instant",
+  "edition": "2014",
+  "evidence": [
+    "area: 15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+    "condition: 15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+    "damage: 15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+    "save: 15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+    "target: 15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+    "upcast: 每比二环高一环，伤害增加1d10"
+  ],
+  "kind": "spell",
+  "level": 2,
+  "manual_decisions": {
+    "save_success": "按 source text 显式记录 half 或 no damage branch",
+    "targeting": "target_selection 与 area clause 共同定义目标集合"
+  },
+  "name": "卡牌喷射",
+  "namespace": "content.book-of-many-things",
+  "pack_id": "book-of-many-things",
+  "pack_version": "source-d6806d375807",
+  "range": "self 15-foot cone",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "target",
+    "components",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "spell-ir-1",
+  "school": "咒法",
+  "source_book": "万象无常书",
+  "source_evidence": {
+    "selected_clause_excerpt": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半 15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半 15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半 15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半 15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半 每比二环高一环，伤害增加1d10",
+    "source_book": "万象无常书",
+    "source_checksum": "e78f0a9d1f54cd91177d9da4399afb090b4145caf7c7d0d04b0e712c53617391",
+    "source_fingerprint": "04503730c3ea0119d17b2bde803d307413328d4a88f46c49718277fba6909f5c",
+    "source_path": "万象无常书/贤者/卡牌法术详述.htm",
+    "source_text": "#### 卡牌喷射｜Spray of Cards\n\n*二环 咒法（吟游诗人、术士、魔契师、法师）*\n**施法时间：**1动作\n**施法距离：**自身（15尺锥形）\n**法术成分：**V、S、M（一副牌组）\n**持续时间：**立即\n你向一处15尺锥状区域喷射卡牌，该区域内的生物必须进行一次敏捷豁免。豁免失败的生物受到2d10\n点力场伤害伤害并陷入目盲，持续直至其下一个回合结束。豁免成功则仅会受到一半伤害。\n**升环施法。**当你使用3环或更高法术位施放本法术时，你使用的法术位每比2环高一环，法术的伤害就增加1d10。"
+  },
+  "source_fingerprint": "04503730c3ea0119d17b2bde803d307413328d4a88f46c49718277fba6909f5c",
+  "source_path": "万象无常书/贤者/卡牌法术详述.htm",
+  "source_provenance": {
+    "officiality": "unknown",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "万象无常书",
+    "source_checksum": "e78f0a9d1f54cd91177d9da4399afb090b4145caf7c7d0d04b0e712c53617391",
+    "source_relative_path": "万象无常书/贤者/卡牌法术详述.htm"
+  },
+  "source_record_id": "69822f264262f10066c621b3",
+  "source_trust": "authored_ir",
+  "spell_id": "book-of-many-things:spell:69822f264262f10066c621b3",
+  "target": "15-foot cone"
+}

@@ -1,0 +1,1085 @@
+{
+  "blocker_counts": {},
+  "capability_counts": {
+    "spell.apply_condition.v1": 2,
+    "spell.area.v1": 1,
+    "spell.damage.v1": 2,
+    "spell.saving_throw.v1": 2,
+    "spell.target_selection.v1": 2,
+    "spell.upcast.v1": 2
+  },
+  "capability_registry_version": "content-capabilities-1",
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "conflicts": [],
+  "counts": {
+    "full": 2,
+    "invalid": 0,
+    "manual": 0,
+    "partial": 0
+  },
+  "manifest_fingerprint": "01f606a2a231149de26e7ea220baacc3e60c7073f9070dc890ac719cf16aa1df",
+  "results": [
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.apply_condition.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:3",
+          "status": "full",
+          "type": "apply_condition"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:4",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "b12761c829a000ee47119b9fbfb8873aae10905ad99900b36ebcbb9ecb652fbd",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "目标智力豁免，失败7d6心灵伤害并失能至施法者下回合开始，成功一半且不失能",
+            "kind": "one_creature",
+            "range": "120 feet",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "目标智力豁免，失败7d6心灵伤害并失能至施法者下回合开始，成功一半且不失能",
+            "half_on_success": true,
+            "range": "120 feet",
+            "save_ability": "intelligence",
+            "target": "one_creature",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "psychic",
+            "evidence_ref": "目标智力豁免，失败7d6心灵伤害并失能至施法者下回合开始，成功一半且不失能",
+            "expression": "7d6",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "one_creature",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "break_action": null,
+            "clause_id": "condition",
+            "condition": "incapacitated",
+            "condition_effect": {
+              "incapacitated": true
+            },
+            "duration": "until_caster_next_turn_start",
+            "evidence_ref": "目标智力豁免，失败7d6心灵伤害并失能至施法者下回合开始，成功一半且不失能",
+            "on_failure": "apply",
+            "save_ability": "intelligence",
+            "target": "one_creature",
+            "type": "apply_condition"
+          },
+          "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+          "type": "apply_condition"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每比四环高一环，伤害增加1d6",
+            "increments": "1d6",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 4,
+        "name": "劳洛希姆心灵长枪",
+        "range": "120 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "psychic",
+              "evidence_ref": "目标智力豁免，失败7d6心灵伤害并失能至施法者下回合开始，成功一半且不失能",
+              "expression": "7d6",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "one_creature",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "break_action": null,
+              "clause_id": "condition",
+              "condition": "incapacitated",
+              "condition_effect": {
+                "incapacitated": true
+              },
+              "duration": "until_caster_next_turn_start",
+              "evidence_ref": "目标智力豁免，失败7d6心灵伤害并失能至施法者下回合开始，成功一半且不失能",
+              "on_failure": "apply",
+              "save_ability": "intelligence",
+              "target": "one_creature",
+              "type": "apply_condition"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "目标智力豁免，失败7d6心灵伤害并失能至施法者下回合开始，成功一半且不失能",
+              "half_on_success": true,
+              "range": "120 feet",
+              "save_ability": "intelligence",
+              "target": "one_creature",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "目标智力豁免，失败7d6心灵伤害并失能至施法者下回合开始，成功一半且不失能",
+              "kind": "one_creature",
+              "range": "120 feet",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每比四环高一环，伤害增加1d6",
+              "increments": "1d6",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "惑控",
+        "source": {
+          "source_book": "费资本的巨龙宝库",
+          "source_fingerprint": "45786e6c57e4c56a29800259cf32e1d236b08990ffc7d61efc793cb30a5fbbdc",
+          "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+          "source_record_id": "49a5bacc752aa90fbbfbf316",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+        "target": "one visible or named creature"
+      },
+      "source_fingerprint": "45786e6c57e4c56a29800259cf32e1d236b08990ffc7d61efc793cb30a5fbbdc",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "043e74021571228f1d3d8e6202a31139ac96abee0b26e6220fe8676e586e9c97",
+      "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+      "typed_clause_count": 5,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.apply_condition.v1",
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:4",
+          "status": "full",
+          "type": "apply_condition"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:5",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "4a4847e5b09015107cbd9e029cdfebfefee463302e636c1ed3dd266c0ac41d22",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+            "kind": "area",
+            "range": "self 30-foot cone",
+            "shape": "cone",
+            "size_ft": 30,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+            "half_on_success": true,
+            "range": "self 30-foot cone",
+            "save_ability": "constitution",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "cold",
+            "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+            "expression": "3d8",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+            "origin": "self",
+            "range": "self 30-foot cone",
+            "shape": "cone",
+            "size_ft": 30,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "break_action": "action:break_free",
+            "clause_id": "condition",
+            "condition": "frost_bound",
+            "condition_effect": {
+              "speed": 0
+            },
+            "duration": "1 minute or until broken",
+            "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+            "on_failure": "apply",
+            "save_ability": "constitution",
+            "target": "area",
+            "type": "apply_condition"
+          },
+          "spell_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+          "type": "apply_condition"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:5",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每比二环高一环，伤害增加1d8",
+            "increments": "1d8",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "S,M(melted snow water)",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 2,
+        "name": "雾凇霜缚",
+        "range": "self 30-foot cone",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "cold",
+              "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+              "expression": "3d8",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+              "origin": "self",
+              "range": "self 30-foot cone",
+              "shape": "cone",
+              "size_ft": 30,
+              "target": "area",
+              "type": "area"
+            },
+            {
+              "break_action": "action:break_free",
+              "clause_id": "condition",
+              "condition": "frost_bound",
+              "condition_effect": {
+                "speed": 0
+              },
+              "duration": "1 minute or until broken",
+              "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+              "on_failure": "apply",
+              "save_ability": "constitution",
+              "target": "area",
+              "type": "apply_condition"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+              "half_on_success": true,
+              "range": "self 30-foot cone",
+              "save_ability": "constitution",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+              "kind": "area",
+              "range": "self 30-foot cone",
+              "shape": "cone",
+              "size_ft": 30,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每比二环高一环，伤害增加1d8",
+              "increments": "1d8",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "费资本的巨龙宝库",
+          "source_fingerprint": "be9cd13062116e1928605e32a9742d1303e5b12f8899b6f91d06b612278a211b",
+          "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+          "source_record_id": "cadce71b1ba7a42354f785dc",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+        "target": "30-foot cone"
+      },
+      "source_fingerprint": "be9cd13062116e1928605e32a9742d1303e5b12f8899b6f91d06b612278a211b",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "a0e3144725a4f2dc3234eaabb6cc48d7a63dc83620817d316278bed7542bff30",
+      "spell_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+      "typed_clause_count": 6,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    }
+  ],
+  "runtime_preview": [
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.apply_condition.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:3",
+          "status": "full",
+          "type": "apply_condition"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:4",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "b12761c829a000ee47119b9fbfb8873aae10905ad99900b36ebcbb9ecb652fbd",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "目标智力豁免，失败7d6心灵伤害并失能至施法者下回合开始，成功一半且不失能",
+            "kind": "one_creature",
+            "range": "120 feet",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "目标智力豁免，失败7d6心灵伤害并失能至施法者下回合开始，成功一半且不失能",
+            "half_on_success": true,
+            "range": "120 feet",
+            "save_ability": "intelligence",
+            "target": "one_creature",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "psychic",
+            "evidence_ref": "目标智力豁免，失败7d6心灵伤害并失能至施法者下回合开始，成功一半且不失能",
+            "expression": "7d6",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "one_creature",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "break_action": null,
+            "clause_id": "condition",
+            "condition": "incapacitated",
+            "condition_effect": {
+              "incapacitated": true
+            },
+            "duration": "until_caster_next_turn_start",
+            "evidence_ref": "目标智力豁免，失败7d6心灵伤害并失能至施法者下回合开始，成功一半且不失能",
+            "on_failure": "apply",
+            "save_ability": "intelligence",
+            "target": "one_creature",
+            "type": "apply_condition"
+          },
+          "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+          "type": "apply_condition"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每比四环高一环，伤害增加1d6",
+            "increments": "1d6",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 4,
+        "name": "劳洛希姆心灵长枪",
+        "range": "120 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "psychic",
+              "evidence_ref": "目标智力豁免，失败7d6心灵伤害并失能至施法者下回合开始，成功一半且不失能",
+              "expression": "7d6",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "one_creature",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "break_action": null,
+              "clause_id": "condition",
+              "condition": "incapacitated",
+              "condition_effect": {
+                "incapacitated": true
+              },
+              "duration": "until_caster_next_turn_start",
+              "evidence_ref": "目标智力豁免，失败7d6心灵伤害并失能至施法者下回合开始，成功一半且不失能",
+              "on_failure": "apply",
+              "save_ability": "intelligence",
+              "target": "one_creature",
+              "type": "apply_condition"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "目标智力豁免，失败7d6心灵伤害并失能至施法者下回合开始，成功一半且不失能",
+              "half_on_success": true,
+              "range": "120 feet",
+              "save_ability": "intelligence",
+              "target": "one_creature",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "目标智力豁免，失败7d6心灵伤害并失能至施法者下回合开始，成功一半且不失能",
+              "kind": "one_creature",
+              "range": "120 feet",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每比四环高一环，伤害增加1d6",
+              "increments": "1d6",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "惑控",
+        "source": {
+          "source_book": "费资本的巨龙宝库",
+          "source_fingerprint": "45786e6c57e4c56a29800259cf32e1d236b08990ffc7d61efc793cb30a5fbbdc",
+          "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+          "source_record_id": "49a5bacc752aa90fbbfbf316",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+        "target": "one visible or named creature"
+      },
+      "source_fingerprint": "45786e6c57e4c56a29800259cf32e1d236b08990ffc7d61efc793cb30a5fbbdc",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "043e74021571228f1d3d8e6202a31139ac96abee0b26e6220fe8676e586e9c97",
+      "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+      "typed_clause_count": 5,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.apply_condition.v1",
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:4",
+          "status": "full",
+          "type": "apply_condition"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:5",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "4a4847e5b09015107cbd9e029cdfebfefee463302e636c1ed3dd266c0ac41d22",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+            "kind": "area",
+            "range": "self 30-foot cone",
+            "shape": "cone",
+            "size_ft": 30,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+            "half_on_success": true,
+            "range": "self 30-foot cone",
+            "save_ability": "constitution",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "cold",
+            "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+            "expression": "3d8",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+            "origin": "self",
+            "range": "self 30-foot cone",
+            "shape": "cone",
+            "size_ft": 30,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "break_action": "action:break_free",
+            "clause_id": "condition",
+            "condition": "frost_bound",
+            "condition_effect": {
+              "speed": 0
+            },
+            "duration": "1 minute or until broken",
+            "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+            "on_failure": "apply",
+            "save_ability": "constitution",
+            "target": "area",
+            "type": "apply_condition"
+          },
+          "spell_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+          "type": "apply_condition"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:5",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每比二环高一环，伤害增加1d8",
+            "increments": "1d8",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "S,M(melted snow water)",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 2,
+        "name": "雾凇霜缚",
+        "range": "self 30-foot cone",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "cold",
+              "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+              "expression": "3d8",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+              "origin": "self",
+              "range": "self 30-foot cone",
+              "shape": "cone",
+              "size_ft": 30,
+              "target": "area",
+              "type": "area"
+            },
+            {
+              "break_action": "action:break_free",
+              "clause_id": "condition",
+              "condition": "frost_bound",
+              "condition_effect": {
+                "speed": 0
+              },
+              "duration": "1 minute or until broken",
+              "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+              "on_failure": "apply",
+              "save_ability": "constitution",
+              "target": "area",
+              "type": "apply_condition"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+              "half_on_success": true,
+              "range": "self 30-foot cone",
+              "save_ability": "constitution",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+              "kind": "area",
+              "range": "self 30-foot cone",
+              "shape": "cone",
+              "size_ft": 30,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每比二环高一环，伤害增加1d8",
+              "increments": "1d8",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "费资本的巨龙宝库",
+          "source_fingerprint": "be9cd13062116e1928605e32a9742d1303e5b12f8899b6f91d06b612278a211b",
+          "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+          "source_record_id": "cadce71b1ba7a42354f785dc",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+        "target": "30-foot cone"
+      },
+      "source_fingerprint": "be9cd13062116e1928605e32a9742d1303e5b12f8899b6f91d06b612278a211b",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "a0e3144725a4f2dc3234eaabb6cc48d7a63dc83620817d316278bed7542bff30",
+      "spell_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+      "typed_clause_count": 6,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    }
+  ],
+  "schema_version": "content-ir-compile-result-1",
+  "typed_ir_count": 2
+}

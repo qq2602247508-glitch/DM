@@ -1,0 +1,170 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "action",
+  "clause_boundaries": {
+    "area": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+      "source_heading": "土石喷发"
+    },
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+      "source_heading": "土石喷发"
+    },
+    "save": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+      "source_heading": "土石喷发"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+      "source_heading": "土石喷发"
+    },
+    "upcast": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "每高一环伤害增加1d12",
+      "source_heading": "土石喷发"
+    }
+  },
+  "clause_identity": [
+    "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:target",
+    "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:save",
+    "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:damage",
+    "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:area",
+    "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:upcast"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": "all_in_area",
+      "evidence_ref": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+      "kind": "area",
+      "range": "120 feet",
+      "shape": "cube",
+      "size_ft": 20,
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "save",
+      "evidence_ref": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+      "half_on_success": true,
+      "range": "120 feet",
+      "save_ability": "dexterity",
+      "target": "area",
+      "trigger": "spell_cast",
+      "type": "saving_throw"
+    },
+    {
+      "applies_to": "save",
+      "clause_id": "damage",
+      "damage_type": "bludgeoning",
+      "evidence_ref": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+      "expression": "3d12",
+      "on_failure": "full",
+      "on_success": "half",
+      "target": "area",
+      "trigger": "saving_throw",
+      "type": "damage"
+    },
+    {
+      "clause_id": "area",
+      "evidence_ref": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+      "origin": "chosen_ground_point",
+      "range": "120 feet",
+      "shape": "cube",
+      "size_ft": 20,
+      "target": "area",
+      "type": "area"
+    },
+    {
+      "applies_to": "damage",
+      "clause_id": "upcast",
+      "evidence_ref": "每高一环伤害增加1d12",
+      "increments": "1d12",
+      "per_slot": 1,
+      "progression": null,
+      "type": "upcast"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "components": "V,S,M(obsidian)",
+  "concentration": false,
+  "duration": "instant",
+  "edition": "2014",
+  "evidence": [
+    "area: 20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+    "damage: 20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+    "save: 20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+    "target: 20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+    "upcast: 每高一环伤害增加1d12"
+  ],
+  "kind": "spell",
+  "level": 3,
+  "manual_decisions": {
+    "save_success": "按 source text 显式记录 half 或 no damage branch",
+    "targeting": "target_selection 与 area clause 共同定义目标集合"
+  },
+  "name": "土石喷发",
+  "namespace": "content.xanathars-guide",
+  "pack_id": "xanathars-guide",
+  "pack_version": "source-0a6dfd91c085",
+  "range": "120 feet",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "target",
+    "components",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "spell-ir-1",
+  "school": "变化",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "selected_clause_excerpt": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半 20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半 20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半 20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半 每高一环伤害增加1d12",
+    "source_book": "珊娜萨的万事指南",
+    "source_checksum": "c5e484a462d48fdf5289712af4ae3b8a2a4f43b8206c6a7bdaa2ed2ca21f513b",
+    "source_fingerprint": "ab6c40c0e9e1639a3144edd7e4582baa97b17ab897e7788d2a82953902335918",
+    "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+    "source_text": "#### 土石喷发｜Erupting Earth\n\n*三环 变化（德鲁伊、术士、法师）*\n**施法时间：**1 动作\n**施法距离：**120\n尺\n**法术成分：**V、S、M（一块黑曜石）\n**持续时间：**立即\n选择距离内你能看见的，位于地面上的一点。以该点为中心，20\n尺立方的空间内，一道翻滚的泥土和岩石流喷发而出。在该区域中的每个生物必须进行一次敏捷豁免检定。若未通过豁免，该生物受到 3d12\n点钝击伤害，成功的豁免令上述伤害减半。此外，该区域的地面成为困难地形直到被清理。该区域每 5 平方尺的空间，若用手来清理至少需要 1\n分钟时间。\n**升环施法。**当你使用四环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 1d12。"
+  },
+  "source_fingerprint": "ab6c40c0e9e1639a3144edd7e4582baa97b17ab897e7788d2a82953902335918",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+  "source_provenance": {
+    "officiality": "unknown",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "珊娜萨的万事指南",
+    "source_checksum": "c5e484a462d48fdf5289712af4ae3b8a2a4f43b8206c6a7bdaa2ed2ca21f513b",
+    "source_relative_path": "珊娜萨的万事指南/法术/法术详述/3环.html"
+  },
+  "source_record_id": "7c6ea0798cf1e7f00e5bbfbb",
+  "source_trust": "authored_ir",
+  "spell_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb",
+  "target": "20-foot cube"
+}

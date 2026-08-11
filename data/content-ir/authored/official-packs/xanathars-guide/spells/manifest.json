@@ -1,0 +1,36 @@
+{
+  "capability_registry_version": "content-capabilities-1",
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "draft_paths": [],
+  "manifest_fingerprint": "79e9cef7c8d6fa46af937731a71c6c76d8efff386bc37a39a3b306b2e287e780",
+  "namespace": "content.xanathars-guide",
+  "pack_id": "xanathars-guide",
+  "pack_version": "source-0a6dfd91c085",
+  "production_targets": {
+    "campaign": false,
+    "character": false,
+    "database": false,
+    "feature_registry": false,
+    "spell_registry": false
+  },
+  "replay": {
+    "policy": "same-manifest-fingerprint-is-idempotent"
+  },
+  "ruleset_version": "2014",
+  "schema_version": "content-ir-workbench-manifest-3",
+  "source_book": "珊娜萨的万事指南",
+  "source_fingerprints": {
+    "483e4b174da746100d0f873b": "fb4ddcdbc2be19d027734b69335bb7d3f2d9b95cec8e6e90cf4578977cfd8f05",
+    "647e44fd3b93b2e4dafd2323": "7338870954005f22e908e7152cbd75be2a5fb43a1754dd8bbb988be0f0dc33e6",
+    "7c6ea0798cf1e7f00e5bbfbb": "ab6c40c0e9e1639a3144edd7e4582baa97b17ab897e7788d2a82953902335918",
+    "868117360db3137344a7e04d": "778a1c90232969699e09941b70e190af34cf7ef6c147860e319f08a94acd2a9c",
+    "b2a01c766a8db42f9bc4d52e": "c41301ba0bf64e2dbb443ca43135440fd84793c1fe095dd68e77796b1bc81b8d"
+  },
+  "typed_ir_paths": [
+    "spells/xanathars-guide-spell-483e4b174da746100d0f873b.json",
+    "spells/xanathars-guide-spell-647e44fd3b93b2e4dafd2323.json",
+    "spells/xanathars-guide-spell-7c6ea0798cf1e7f00e5bbfbb.json",
+    "spells/xanathars-guide-spell-868117360db3137344a7e04d.json",
+    "spells/xanathars-guide-spell-b2a01c766a8db42f9bc4d52e.json"
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "class_name": "战士",
+  "clause_boundaries": {
+    "ambush": {
+      "boundary_rule": "the named feature heading and its complete paragraph(s)",
+      "source_excerpt": "当你进行一次敏捷（隐匿）检定或先攻检定时，你可以消耗一枚卓越骰，并将消耗的卓越骰加入本次检定中，前提是你并未失能",
+      "source_heading": "战技选项：伏击"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-11",
+        "source": "authored_ir",
+        "source_excerpt": "进行敏捷隐匿检定或先攻检定时，消耗卓越骰并加入本次检定"
+      },
+      "clause_id": "ambush",
+      "conditions": [
+        {
+          "kind": "actor_lacks_state",
+          "parameters": {
+            "state": "incapacitated"
+          }
+        }
+      ],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "consume_resource",
+          "parameters": {
+            "amount": 1,
+            "operation": "consume",
+            "resource_key": "superiority_dice"
+          }
+        },
+        {
+          "operator": "add_modifier",
+          "parameters": {
+            "applies_when": "initiative_roll",
+            "id": "ambush:initiative",
+            "operation": "add",
+            "scope": "self",
+            "stat": "initiative",
+            "value_source": "superiority_die"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "initiative_rolled",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "13418d41bbe36e695c131a0a0972e749979d8174421fc9bcc2bf767a92f19eef"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "ambush: 当你进行一次敏捷（隐匿）检定或先攻检定时，你可以消耗一枚卓越骰，并将消耗的卓越骰加入本次检定中，前提是你并未失能"
+  ],
+  "feature_id": "content.tashas-cauldron.feature.battle-master.ambush",
+  "kind": "feature",
+  "level": 3,
+  "localized_names": {
+    "zh-CN": "战技选项：伏击"
+  },
+  "manual_decisions": {
+    "selected_contract": "本 authored record 选择先攻检定分支；未把隐匿检定另造第二条名称分支"
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-da33a75054af",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "class_name",
+    "subclass_name",
+    "level",
+    "clauses"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "selected_feature_excerpts": {
+      "ambush": "当你进行一次敏捷（隐匿）检定或先攻检定时，你可以消耗一枚卓越骰，并将消耗的卓越骰加入本次检定中，前提是你并未失能"
+    },
+    "source_book": "塔莎的万事坩埚",
+    "source_checksum": "e879a53a8868dc06d53358184236ab623156b7964624e29f4d54996ef1d8313d",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/战技选项.htm",
+    "source_text": "**战技选项 Maneuver\nOptions**\n如果你能够使用战技，以下战技将加入可选列表。使用战技的能力可以通过战斗大师武术范型、卓越技巧战斗风格或战技专家专长来获得。\n\n**伏击Ambush**\n当你进行一次敏捷（隐匿）检定或先攻检定时，你可以消耗一枚卓越骰，并将消耗的卓越骰加入本次检定中，前提是你并未**失能**。\n\n**换位诈术Bait and\nSwitch**\n在你自己的回合中，若你身旁有某名生物距你5尺内，你就能够消耗一枚卓越骰来与那名生物互换位置，前提是你消耗至少5尺移动力且那名生物是自愿且并未失能。这次移动不会引发借机攻击。\n投掷那枚被消耗的卓越骰。直到你的下个回合开始前，你或被互换位置的另一生物（由你选择）的AC获得等于卓越骰结果的加值。\n\n**警戒Brace**\n当一名你可见的生物移动进你持握近战武器的触及范围时，你能用一个反应消耗一枚卓越骰对该生物进行一次武器攻击。如果攻击命中，将消耗的卓越骰加入此次攻击的伤害掷骰中。\n\n**领导风范Commanding\nPresence**\n当你进行一次魅力（威吓）、魅力（表演）或魅力（游说）检定时，你能够消耗一枚卓越骰，将消耗的卓越骰加入此次属性检定中。\n\n**擒拿击Grappling\nStrike**\n当你以一次近战攻击命中一名生物时，你能够立即消耗一枚卓越骰，以一个附赠动作对目标进行一次擒抱（见玩家手册的擒抱规则）。将消耗的卓越骰加入你的力量（运动）检定中。。\n\n**快手投掷Quick\nToss**\n以一个附赠动作，你能消耗一枚卓越骰，用一件具有投掷属性的武器发动一次远程攻击。你可以作为攻击的一部分拔出那把投掷武器。如果此次攻击命中，你能将消耗的卓越骰加入此武器的伤害掷骰中。\n\n**战术预估Tactical\nAssessment**\n当你进行一次智力（调查）、智力（历史）或感知（洞悉）检定时，你能够消耗一枚卓越骰，将消耗的卓越骰加入此次属性检定中。"
+  },
+  "source_fingerprint": "13418d41bbe36e695c131a0a0972e749979d8174421fc9bcc2bf767a92f19eef",
+  "source_name": "战技选项：伏击",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/战技选项.htm",
+  "source_record_id": "12139219bf7e575f9cde019c",
+  "source_trust": "authored_ir",
+  "subclass_name": "战斗大师"
+}

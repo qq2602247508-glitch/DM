@@ -1,0 +1,170 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "action",
+  "clause_boundaries": {
+    "area": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+      "source_heading": "史尼洛雪球群"
+    },
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+      "source_heading": "史尼洛雪球群"
+    },
+    "save": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+      "source_heading": "史尼洛雪球群"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+      "source_heading": "史尼洛雪球群"
+    },
+    "upcast": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "每高一环伤害增加1d6",
+      "source_heading": "史尼洛雪球群"
+    }
+  },
+  "clause_identity": [
+    "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:target",
+    "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:save",
+    "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:damage",
+    "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:area",
+    "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:upcast"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": "all_in_area",
+      "evidence_ref": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+      "kind": "area",
+      "range": "90 feet",
+      "shape": "sphere",
+      "size_ft": 5,
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "save",
+      "evidence_ref": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+      "half_on_success": true,
+      "range": "90 feet",
+      "save_ability": "dexterity",
+      "target": "area",
+      "trigger": "spell_cast",
+      "type": "saving_throw"
+    },
+    {
+      "applies_to": "save",
+      "clause_id": "damage",
+      "damage_type": "cold",
+      "evidence_ref": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+      "expression": "3d6",
+      "on_failure": "full",
+      "on_success": "half",
+      "target": "area",
+      "trigger": "saving_throw",
+      "type": "damage"
+    },
+    {
+      "clause_id": "area",
+      "evidence_ref": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+      "origin": "chosen_point",
+      "range": "90 feet",
+      "shape": "sphere",
+      "size_ft": 5,
+      "target": "area",
+      "type": "area"
+    },
+    {
+      "applies_to": "damage",
+      "clause_id": "upcast",
+      "evidence_ref": "每高一环伤害增加1d6",
+      "increments": "1d6",
+      "per_slot": 1,
+      "progression": null,
+      "type": "upcast"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "components": "V,S,M(ice or white rock)",
+  "concentration": false,
+  "duration": "instant",
+  "edition": "2014",
+  "evidence": [
+    "area: 5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+    "damage: 5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+    "save: 5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+    "target: 5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+    "upcast: 每高一环伤害增加1d6"
+  ],
+  "kind": "spell",
+  "level": 2,
+  "manual_decisions": {
+    "save_success": "按 source text 显式记录 half 或 no damage branch",
+    "targeting": "target_selection 与 area clause 共同定义目标集合"
+  },
+  "name": "史尼洛雪球群",
+  "namespace": "content.xanathars-guide",
+  "pack_id": "xanathars-guide",
+  "pack_version": "source-0a6dfd91c085",
+  "range": "90 feet",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "target",
+    "components",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "spell-ir-1",
+  "school": "塑能",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "selected_clause_excerpt": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半 5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半 5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半 5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半 每高一环伤害增加1d6",
+    "source_book": "珊娜萨的万事指南",
+    "source_checksum": "8cc90ad5600506243819bd5becdb8f8c92b2d80d1259282e47095e576b4f9700",
+    "source_fingerprint": "7338870954005f22e908e7152cbd75be2a5fb43a1754dd8bbb988be0f0dc33e6",
+    "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+    "source_text": "#### 史尼洛雪球群｜Snilloc's Snowball Swarm\n\n*二环 塑能（术士、法师）*\n**施法时间：**1 动作\n**施法距离：**90 尺\n**法术成分：**V、S、M（一块冰或一小块白色岩石碎片）\n**持续时间：**立即\n在距离之内的，一个由你指定的点上，大量的魔法雪球喷涌而出。以该点为中心，5\n尺半径的球形区域内的所有生物必须进行一次敏捷豁免。豁免失败则受到 3d6 点寒冷伤害，成功则只受到半数伤害。\n**升环施法。**当你使用三环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 1d6。"
+  },
+  "source_fingerprint": "7338870954005f22e908e7152cbd75be2a5fb43a1754dd8bbb988be0f0dc33e6",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+  "source_provenance": {
+    "officiality": "unknown",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "珊娜萨的万事指南",
+    "source_checksum": "8cc90ad5600506243819bd5becdb8f8c92b2d80d1259282e47095e576b4f9700",
+    "source_relative_path": "珊娜萨的万事指南/法术/法术详述/2环.html"
+  },
+  "source_record_id": "647e44fd3b93b2e4dafd2323",
+  "source_trust": "authored_ir",
+  "spell_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323",
+  "target": "5-foot sphere"
+}

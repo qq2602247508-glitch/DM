@@ -1,0 +1,30 @@
+{
+  "capability_registry_version": "content-capabilities-1",
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "draft_paths": [],
+  "manifest_fingerprint": "078cae2e671e38c2d3f0bae9fd7b7b97ded876a91a833ac450fe33cc29541494",
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-da33a75054af",
+  "production_targets": {
+    "campaign": false,
+    "character": false,
+    "database": false,
+    "feature_registry": false,
+    "spell_registry": false
+  },
+  "replay": {
+    "policy": "same-manifest-fingerprint-is-idempotent"
+  },
+  "ruleset_version": "2014",
+  "schema_version": "content-ir-workbench-manifest-3",
+  "source_book": "塔莎的万事坩埚",
+  "source_fingerprints": {
+    "bef5ef39397ea7aa8a0856ea": "022825b2cb1bbc7bef6261662caa98cc2964ffad60ed5f6d00085bf46f86c736",
+    "eec6bd94eb83a351fb987de2": "1dc4562d4b497156c7f5e46fdb7f06ff8461fcb9f8109752b03aac254d0a8bd6"
+  },
+  "typed_ir_paths": [
+    "spells/tashas-cauldron-spell-bef5ef39397ea7aa8a0856ea.json",
+    "spells/tashas-cauldron-spell-eec6bd94eb83a351fb987de2.json"
+  ]
+}

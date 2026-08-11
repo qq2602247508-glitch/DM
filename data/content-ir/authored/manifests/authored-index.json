@@ -1,0 +1,67 @@
+{
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "packs": {
+    "book-of-many-things": {
+      "counts": {
+        "full": 1,
+        "invalid": 0,
+        "manual": 0,
+        "partial": 0
+      },
+      "manifest_fingerprint": "9165085122f40904cb6fb523decaf18f1d52769e57388d6f296e3de9602c7308",
+      "typed_ir_count": 1
+    },
+    "core-2024-golden": {
+      "counts": {
+        "full": 12,
+        "invalid": 0,
+        "manual": 0,
+        "partial": 0
+      },
+      "manifest_fingerprint": "88f45a876ead20b6140099fa42acd0ffd8af5688dbcb08353e44bef2e9a25968",
+      "typed_ir_count": 12
+    },
+    "fizbans-treasury": {
+      "counts": {
+        "full": 2,
+        "invalid": 0,
+        "manual": 0,
+        "partial": 0
+      },
+      "manifest_fingerprint": "01f606a2a231149de26e7ea220baacc3e60c7073f9070dc890ac719cf16aa1df",
+      "typed_ir_count": 2
+    },
+    "official-expansion-features": {
+      "counts": {
+        "full": 8,
+        "invalid": 0,
+        "manual": 0,
+        "partial": 0
+      },
+      "manifest_fingerprint": "bdb3a124adc4bbef4defed0ee72c43fa5d9f7ef335b137d7e8cbb1a3e1fad7c1",
+      "typed_ir_count": 8
+    },
+    "tashas-cauldron": {
+      "counts": {
+        "full": 2,
+        "invalid": 0,
+        "manual": 0,
+        "partial": 0
+      },
+      "manifest_fingerprint": "078cae2e671e38c2d3f0bae9fd7b7b97ded876a91a833ac450fe33cc29541494",
+      "typed_ir_count": 2
+    },
+    "xanathars-guide": {
+      "counts": {
+        "full": 5,
+        "invalid": 0,
+        "manual": 0,
+        "partial": 0
+      },
+      "manifest_fingerprint": "79e9cef7c8d6fa46af937731a71c6c76d8efff386bc37a39a3b306b2e287e780",
+      "typed_ir_count": 5
+    }
+  },
+  "reviewed_by": "codex-manual-review-2026-08-11",
+  "schema_version": "content-ir-authored-index-1"
+}

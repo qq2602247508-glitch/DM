@@ -1,0 +1,1129 @@
+{
+  "blocker_counts": {},
+  "capability_counts": {
+    "spell.apply_condition.v1": 1,
+    "spell.area.v1": 2,
+    "spell.damage.v1": 2,
+    "spell.saving_throw.v1": 2,
+    "spell.target_selection.v1": 2,
+    "spell.upcast.v1": 2
+  },
+  "capability_registry_version": "content-capabilities-1",
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "conflicts": [],
+  "counts": {
+    "full": 2,
+    "invalid": 0,
+    "manual": 0,
+    "partial": 0
+  },
+  "manifest_fingerprint": "078cae2e671e38c2d3f0bae9fd7b7b97ded876a91a833ac450fe33cc29541494",
+  "results": [
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.apply_condition.v1",
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:4",
+          "status": "full",
+          "type": "apply_condition"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:5",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "9905b58c6e6e0dba79d5f508824d6ace5d775d3901321eedecba263ccf8fdfd4",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "线状区域生物敏捷豁免，失败被强酸覆盖；每个自己回合开始受到2d4强酸",
+            "kind": "area",
+            "range": "self 30-foot line",
+            "shape": "line",
+            "size_ft": 30,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "线状区域生物敏捷豁免，失败被强酸覆盖；每个自己回合开始受到2d4强酸",
+            "half_on_success": false,
+            "range": "self 30-foot line",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "acid",
+            "evidence_ref": "线状区域生物敏捷豁免，失败被强酸覆盖；每个自己回合开始受到2d4强酸",
+            "expression": "2d4",
+            "on_failure": "full",
+            "on_success": "none",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "线状区域生物敏捷豁免，失败被强酸覆盖；每个自己回合开始受到2d4强酸",
+            "origin": "self",
+            "range": "self 30-foot line",
+            "shape": "line",
+            "size_ft": 30,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "break_action": "action:clean_acid",
+            "clause_id": "condition",
+            "condition": "caustic_brew_covered",
+            "condition_effect": {
+              "damage_each_turn": "2d4 acid"
+            },
+            "duration": "up to 1 minute",
+            "evidence_ref": "线状区域生物敏捷豁免，失败被强酸覆盖；每个自己回合开始受到2d4强酸",
+            "on_failure": "apply",
+            "save_ability": "dexterity",
+            "target": "area",
+            "type": "apply_condition"
+          },
+          "spell_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+          "type": "apply_condition"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:5",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每高一环伤害增加2d4",
+            "increments": "2d4",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S,M(rotten food)",
+        "concentration": true,
+        "duration": "up to 1 minute",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 1,
+        "name": "塔莎酸蚀酿",
+        "range": "self 30-foot line",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "acid",
+              "evidence_ref": "线状区域生物敏捷豁免，失败被强酸覆盖；每个自己回合开始受到2d4强酸",
+              "expression": "2d4",
+              "on_failure": "full",
+              "on_success": "none",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "线状区域生物敏捷豁免，失败被强酸覆盖；每个自己回合开始受到2d4强酸",
+              "origin": "self",
+              "range": "self 30-foot line",
+              "shape": "line",
+              "size_ft": 30,
+              "target": "area",
+              "type": "area"
+            },
+            {
+              "break_action": "action:clean_acid",
+              "clause_id": "condition",
+              "condition": "caustic_brew_covered",
+              "condition_effect": {
+                "damage_each_turn": "2d4 acid"
+              },
+              "duration": "up to 1 minute",
+              "evidence_ref": "线状区域生物敏捷豁免，失败被强酸覆盖；每个自己回合开始受到2d4强酸",
+              "on_failure": "apply",
+              "save_ability": "dexterity",
+              "target": "area",
+              "type": "apply_condition"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "线状区域生物敏捷豁免，失败被强酸覆盖；每个自己回合开始受到2d4强酸",
+              "half_on_success": false,
+              "range": "self 30-foot line",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "线状区域生物敏捷豁免，失败被强酸覆盖；每个自己回合开始受到2d4强酸",
+              "kind": "area",
+              "range": "self 30-foot line",
+              "shape": "line",
+              "size_ft": 30,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每高一环伤害增加2d4",
+              "increments": "2d4",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "塔莎的万事坩埚",
+          "source_fingerprint": "022825b2cb1bbc7bef6261662caa98cc2964ffad60ed5f6d00085bf46f86c736",
+          "source_path": "塔莎的万事坩埚/法术/法术详述/1环.html",
+          "source_record_id": "bef5ef39397ea7aa8a0856ea",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+        "target": "30-foot line"
+      },
+      "source_fingerprint": "022825b2cb1bbc7bef6261662caa98cc2964ffad60ed5f6d00085bf46f86c736",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "e1fb60e7a3f59ea9a2439ab1184c7817421114c5c8a3bce9af9810d1dee2150f",
+      "spell_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+      "typed_clause_count": 6,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2:clause:4",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "40c434b24f4651e87e3c8c69fad12c99e72ce166420e12a901ceb4008bd4bba7",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "周围半径5尺内所有生物敏捷豁免，失败受到1d6力场伤害",
+            "kind": "area",
+            "range": "self 5-foot radius",
+            "shape": "sphere",
+            "size_ft": 5,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "周围半径5尺内所有生物敏捷豁免，失败受到1d6力场伤害",
+            "half_on_success": false,
+            "range": "self 5-foot radius",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "force",
+            "evidence_ref": "周围半径5尺内所有生物敏捷豁免，失败受到1d6力场伤害",
+            "expression": "1d6",
+            "on_failure": "full",
+            "on_success": "none",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "周围半径5尺内所有生物敏捷豁免，失败受到1d6力场伤害",
+            "origin": "self",
+            "range": "self 5-foot radius",
+            "shape": "sphere",
+            "size_ft": 5,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "戏法强化：5级2d6、11级3d6、17级4d6",
+            "increments": 1,
+            "per_slot": null,
+            "progression": [
+              {
+                "character_level": 5,
+                "expression": "2d6"
+              },
+              {
+                "character_level": 11,
+                "expression": "3d6"
+              },
+              {
+                "character_level": 17,
+                "expression": "4d6"
+              }
+            ],
+            "type": "upcast"
+          },
+          "spell_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 0,
+        "name": "剑刃爆发",
+        "range": "self 5-foot radius",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "force",
+              "evidence_ref": "周围半径5尺内所有生物敏捷豁免，失败受到1d6力场伤害",
+              "expression": "1d6",
+              "on_failure": "full",
+              "on_success": "none",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "周围半径5尺内所有生物敏捷豁免，失败受到1d6力场伤害",
+              "origin": "self",
+              "range": "self 5-foot radius",
+              "shape": "sphere",
+              "size_ft": 5,
+              "target": "area",
+              "type": "area"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "周围半径5尺内所有生物敏捷豁免，失败受到1d6力场伤害",
+              "half_on_success": false,
+              "range": "self 5-foot radius",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "周围半径5尺内所有生物敏捷豁免，失败受到1d6力场伤害",
+              "kind": "area",
+              "range": "self 5-foot radius",
+              "shape": "sphere",
+              "size_ft": 5,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "戏法强化：5级2d6、11级3d6、17级4d6",
+              "increments": 1,
+              "per_slot": null,
+              "progression": [
+                {
+                  "character_level": 5,
+                  "expression": "2d6"
+                },
+                {
+                  "character_level": 11,
+                  "expression": "3d6"
+                },
+                {
+                  "character_level": 17,
+                  "expression": "4d6"
+                }
+              ],
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "咒法",
+        "source": {
+          "source_book": "塔莎的万事坩埚",
+          "source_fingerprint": "1dc4562d4b497156c7f5e46fdb7f06ff8461fcb9f8109752b03aac254d0a8bd6",
+          "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
+          "source_record_id": "eec6bd94eb83a351fb987de2",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+        "target": "5-foot radius around caster"
+      },
+      "source_fingerprint": "1dc4562d4b497156c7f5e46fdb7f06ff8461fcb9f8109752b03aac254d0a8bd6",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "47149daee7ce969e2ee0a8b966a91e08d15c9b49749666d585a70e514489755b",
+      "spell_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+      "typed_clause_count": 5,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    }
+  ],
+  "runtime_preview": [
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.apply_condition.v1",
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:4",
+          "status": "full",
+          "type": "apply_condition"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:5",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "9905b58c6e6e0dba79d5f508824d6ace5d775d3901321eedecba263ccf8fdfd4",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "线状区域生物敏捷豁免，失败被强酸覆盖；每个自己回合开始受到2d4强酸",
+            "kind": "area",
+            "range": "self 30-foot line",
+            "shape": "line",
+            "size_ft": 30,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "线状区域生物敏捷豁免，失败被强酸覆盖；每个自己回合开始受到2d4强酸",
+            "half_on_success": false,
+            "range": "self 30-foot line",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "acid",
+            "evidence_ref": "线状区域生物敏捷豁免，失败被强酸覆盖；每个自己回合开始受到2d4强酸",
+            "expression": "2d4",
+            "on_failure": "full",
+            "on_success": "none",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "线状区域生物敏捷豁免，失败被强酸覆盖；每个自己回合开始受到2d4强酸",
+            "origin": "self",
+            "range": "self 30-foot line",
+            "shape": "line",
+            "size_ft": 30,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "break_action": "action:clean_acid",
+            "clause_id": "condition",
+            "condition": "caustic_brew_covered",
+            "condition_effect": {
+              "damage_each_turn": "2d4 acid"
+            },
+            "duration": "up to 1 minute",
+            "evidence_ref": "线状区域生物敏捷豁免，失败被强酸覆盖；每个自己回合开始受到2d4强酸",
+            "on_failure": "apply",
+            "save_ability": "dexterity",
+            "target": "area",
+            "type": "apply_condition"
+          },
+          "spell_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+          "type": "apply_condition"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea:clause:5",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每高一环伤害增加2d4",
+            "increments": "2d4",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S,M(rotten food)",
+        "concentration": true,
+        "duration": "up to 1 minute",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 1,
+        "name": "塔莎酸蚀酿",
+        "range": "self 30-foot line",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "acid",
+              "evidence_ref": "线状区域生物敏捷豁免，失败被强酸覆盖；每个自己回合开始受到2d4强酸",
+              "expression": "2d4",
+              "on_failure": "full",
+              "on_success": "none",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "线状区域生物敏捷豁免，失败被强酸覆盖；每个自己回合开始受到2d4强酸",
+              "origin": "self",
+              "range": "self 30-foot line",
+              "shape": "line",
+              "size_ft": 30,
+              "target": "area",
+              "type": "area"
+            },
+            {
+              "break_action": "action:clean_acid",
+              "clause_id": "condition",
+              "condition": "caustic_brew_covered",
+              "condition_effect": {
+                "damage_each_turn": "2d4 acid"
+              },
+              "duration": "up to 1 minute",
+              "evidence_ref": "线状区域生物敏捷豁免，失败被强酸覆盖；每个自己回合开始受到2d4强酸",
+              "on_failure": "apply",
+              "save_ability": "dexterity",
+              "target": "area",
+              "type": "apply_condition"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "线状区域生物敏捷豁免，失败被强酸覆盖；每个自己回合开始受到2d4强酸",
+              "half_on_success": false,
+              "range": "self 30-foot line",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "线状区域生物敏捷豁免，失败被强酸覆盖；每个自己回合开始受到2d4强酸",
+              "kind": "area",
+              "range": "self 30-foot line",
+              "shape": "line",
+              "size_ft": 30,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每高一环伤害增加2d4",
+              "increments": "2d4",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "塔莎的万事坩埚",
+          "source_fingerprint": "022825b2cb1bbc7bef6261662caa98cc2964ffad60ed5f6d00085bf46f86c736",
+          "source_path": "塔莎的万事坩埚/法术/法术详述/1环.html",
+          "source_record_id": "bef5ef39397ea7aa8a0856ea",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+        "target": "30-foot line"
+      },
+      "source_fingerprint": "022825b2cb1bbc7bef6261662caa98cc2964ffad60ed5f6d00085bf46f86c736",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "e1fb60e7a3f59ea9a2439ab1184c7817421114c5c8a3bce9af9810d1dee2150f",
+      "spell_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+      "typed_clause_count": 6,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2:clause:4",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "40c434b24f4651e87e3c8c69fad12c99e72ce166420e12a901ceb4008bd4bba7",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "周围半径5尺内所有生物敏捷豁免，失败受到1d6力场伤害",
+            "kind": "area",
+            "range": "self 5-foot radius",
+            "shape": "sphere",
+            "size_ft": 5,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "周围半径5尺内所有生物敏捷豁免，失败受到1d6力场伤害",
+            "half_on_success": false,
+            "range": "self 5-foot radius",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "force",
+            "evidence_ref": "周围半径5尺内所有生物敏捷豁免，失败受到1d6力场伤害",
+            "expression": "1d6",
+            "on_failure": "full",
+            "on_success": "none",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "周围半径5尺内所有生物敏捷豁免，失败受到1d6力场伤害",
+            "origin": "self",
+            "range": "self 5-foot radius",
+            "shape": "sphere",
+            "size_ft": 5,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "戏法强化：5级2d6、11级3d6、17级4d6",
+            "increments": 1,
+            "per_slot": null,
+            "progression": [
+              {
+                "character_level": 5,
+                "expression": "2d6"
+              },
+              {
+                "character_level": 11,
+                "expression": "3d6"
+              },
+              {
+                "character_level": 17,
+                "expression": "4d6"
+              }
+            ],
+            "type": "upcast"
+          },
+          "spell_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 0,
+        "name": "剑刃爆发",
+        "range": "self 5-foot radius",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "force",
+              "evidence_ref": "周围半径5尺内所有生物敏捷豁免，失败受到1d6力场伤害",
+              "expression": "1d6",
+              "on_failure": "full",
+              "on_success": "none",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "周围半径5尺内所有生物敏捷豁免，失败受到1d6力场伤害",
+              "origin": "self",
+              "range": "self 5-foot radius",
+              "shape": "sphere",
+              "size_ft": 5,
+              "target": "area",
+              "type": "area"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "周围半径5尺内所有生物敏捷豁免，失败受到1d6力场伤害",
+              "half_on_success": false,
+              "range": "self 5-foot radius",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "周围半径5尺内所有生物敏捷豁免，失败受到1d6力场伤害",
+              "kind": "area",
+              "range": "self 5-foot radius",
+              "shape": "sphere",
+              "size_ft": 5,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "戏法强化：5级2d6、11级3d6、17级4d6",
+              "increments": 1,
+              "per_slot": null,
+              "progression": [
+                {
+                  "character_level": 5,
+                  "expression": "2d6"
+                },
+                {
+                  "character_level": 11,
+                  "expression": "3d6"
+                },
+                {
+                  "character_level": 17,
+                  "expression": "4d6"
+                }
+              ],
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "咒法",
+        "source": {
+          "source_book": "塔莎的万事坩埚",
+          "source_fingerprint": "1dc4562d4b497156c7f5e46fdb7f06ff8461fcb9f8109752b03aac254d0a8bd6",
+          "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
+          "source_record_id": "eec6bd94eb83a351fb987de2",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+        "target": "5-foot radius around caster"
+      },
+      "source_fingerprint": "1dc4562d4b497156c7f5e46fdb7f06ff8461fcb9f8109752b03aac254d0a8bd6",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "47149daee7ce969e2ee0a8b966a91e08d15c9b49749666d585a70e514489755b",
+      "spell_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+      "typed_clause_count": 5,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    }
+  ],
+  "schema_version": "content-ir-compile-result-1",
+  "typed_ir_count": 2
+}

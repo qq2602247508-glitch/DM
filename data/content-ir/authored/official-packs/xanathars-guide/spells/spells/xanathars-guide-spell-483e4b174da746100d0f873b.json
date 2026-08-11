@@ -1,0 +1,191 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "action",
+  "clause_boundaries": {
+    "area": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+      "source_heading": "地颤"
+    },
+    "condition": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+      "source_heading": "地颤"
+    },
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+      "source_heading": "地颤"
+    },
+    "save": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+      "source_heading": "地颤"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+      "source_heading": "地颤"
+    },
+    "upcast": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "每高一环伤害增加1d6",
+      "source_heading": "地颤"
+    }
+  },
+  "clause_identity": [
+    "xanathars-guide:spell:483e4b174da746100d0f873b:target",
+    "xanathars-guide:spell:483e4b174da746100d0f873b:save",
+    "xanathars-guide:spell:483e4b174da746100d0f873b:damage",
+    "xanathars-guide:spell:483e4b174da746100d0f873b:area",
+    "xanathars-guide:spell:483e4b174da746100d0f873b:condition",
+    "xanathars-guide:spell:483e4b174da746100d0f873b:upcast"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": "all_in_area",
+      "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+      "kind": "area",
+      "range": "10 feet",
+      "shape": "area",
+      "size_ft": 10,
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "save",
+      "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+      "half_on_success": false,
+      "range": "10 feet",
+      "save_ability": "dexterity",
+      "target": "area",
+      "trigger": "spell_cast",
+      "type": "saving_throw"
+    },
+    {
+      "applies_to": "save",
+      "clause_id": "damage",
+      "damage_type": "bludgeoning",
+      "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+      "expression": "1d6",
+      "on_failure": "full",
+      "on_success": "none",
+      "target": "area",
+      "trigger": "saving_throw",
+      "type": "damage"
+    },
+    {
+      "clause_id": "area",
+      "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+      "origin": "chosen_point",
+      "range": "10 feet",
+      "shape": "area",
+      "size_ft": 10,
+      "target": "area",
+      "type": "area"
+    },
+    {
+      "break_action": "movement_to_stand",
+      "clause_id": "condition",
+      "condition": "prone",
+      "condition_effect": {
+        "movement": "fall_prone"
+      },
+      "duration": "until_stand",
+      "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+      "on_failure": "apply",
+      "save_ability": "dexterity",
+      "target": "area",
+      "type": "apply_condition"
+    },
+    {
+      "applies_to": "damage",
+      "clause_id": "upcast",
+      "evidence_ref": "每高一环伤害增加1d6",
+      "increments": "1d6",
+      "per_slot": 1,
+      "progression": null,
+      "type": "upcast"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "components": "V,S",
+  "concentration": false,
+  "duration": "instant",
+  "edition": "2014",
+  "evidence": [
+    "area: 区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+    "condition: 区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+    "damage: 区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+    "save: 区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+    "target: 区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+    "upcast: 每高一环伤害增加1d6"
+  ],
+  "kind": "spell",
+  "level": 1,
+  "manual_decisions": {
+    "save_success": "按 source text 显式记录 half 或 no damage branch",
+    "targeting": "target_selection 与 area clause 共同定义目标集合"
+  },
+  "name": "地颤",
+  "namespace": "content.xanathars-guide",
+  "pack_id": "xanathars-guide",
+  "pack_version": "source-0a6dfd91c085",
+  "range": "10 feet",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "target",
+    "components",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "spell-ir-1",
+  "school": "塑能",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "selected_clause_excerpt": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地 区域内其他生物敏捷豁免，失败受到1d6钝击并倒地 区域内其他生物敏捷豁免，失败受到1d6钝击并倒地 区域内其他生物敏捷豁免，失败受到1d6钝击并倒地 区域内其他生物敏捷豁免，失败受到1d6钝击并倒地 每高一环伤害增加1d6",
+    "source_book": "珊娜萨的万事指南",
+    "source_checksum": "a2e25417972eff00517e829ccad113e21396b63be0105a7bad7c6d657a3f3689",
+    "source_fingerprint": "fb4ddcdbc2be19d027734b69335bb7d3f2d9b95cec8e6e90cf4578977cfd8f05",
+    "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+    "source_text": "#### 地颤｜Earth Tremor\n\n*一环 塑能（吟游诗人、德鲁伊、术士、法师）*\n**施法时间：**1 动作\n**施法距离：**10\n尺\n**法术成分：**V、S\n**持续时间：**立即\n你在施法距离内引发地面颤动。处于该区域，除你之外的其他生物必须进行一次敏捷豁免检定。若检定失败，该生物受到\n1d6 点钝击伤害并倒地。若区域的地表为松软的土壤或石头，其在被清理之前成为困难地形。每 5 尺直径的部分都需要至少 1\n分钟来手动清理。\n**升环施法。**当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 1d6。"
+  },
+  "source_fingerprint": "fb4ddcdbc2be19d027734b69335bb7d3f2d9b95cec8e6e90cf4578977cfd8f05",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+  "source_provenance": {
+    "officiality": "unknown",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "珊娜萨的万事指南",
+    "source_checksum": "a2e25417972eff00517e829ccad113e21396b63be0105a7bad7c6d657a3f3689",
+    "source_relative_path": "珊娜萨的万事指南/法术/法术详述/1环.html"
+  },
+  "source_record_id": "483e4b174da746100d0f873b",
+  "source_trust": "authored_ir",
+  "spell_id": "xanathars-guide:spell:483e4b174da746100d0f873b",
+  "target": "area excluding caster"
+}

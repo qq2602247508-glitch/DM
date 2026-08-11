@@ -1,0 +1,2445 @@
+{
+  "blocker_counts": {},
+  "capability_counts": {
+    "spell.apply_condition.v1": 1,
+    "spell.area.v1": 4,
+    "spell.damage.v1": 5,
+    "spell.saving_throw.v1": 5,
+    "spell.target_selection.v1": 5,
+    "spell.upcast.v1": 5
+  },
+  "capability_registry_version": "content-capabilities-1",
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "conflicts": [],
+  "counts": {
+    "full": 5,
+    "invalid": 0,
+    "manual": 0,
+    "partial": 0
+  },
+  "manifest_fingerprint": "79e9cef7c8d6fa46af937731a71c6c76d8efff386bc37a39a3b306b2e287e780",
+  "results": [
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.apply_condition.v1",
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:4",
+          "status": "full",
+          "type": "apply_condition"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:5",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "d57faf70c4b2d6b62ace8a5ff03fd10927a3b86d7d58fd9ed8e632b8fd14648b",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+            "kind": "area",
+            "range": "10 feet",
+            "shape": "area",
+            "size_ft": 10,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "xanathars-guide:spell:483e4b174da746100d0f873b",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+            "half_on_success": false,
+            "range": "10 feet",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "xanathars-guide:spell:483e4b174da746100d0f873b",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "bludgeoning",
+            "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+            "expression": "1d6",
+            "on_failure": "full",
+            "on_success": "none",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "xanathars-guide:spell:483e4b174da746100d0f873b",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+            "origin": "chosen_point",
+            "range": "10 feet",
+            "shape": "area",
+            "size_ft": 10,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "xanathars-guide:spell:483e4b174da746100d0f873b",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "break_action": "movement_to_stand",
+            "clause_id": "condition",
+            "condition": "prone",
+            "condition_effect": {
+              "movement": "fall_prone"
+            },
+            "duration": "until_stand",
+            "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+            "on_failure": "apply",
+            "save_ability": "dexterity",
+            "target": "area",
+            "type": "apply_condition"
+          },
+          "spell_id": "xanathars-guide:spell:483e4b174da746100d0f873b",
+          "type": "apply_condition"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:5",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每高一环伤害增加1d6",
+            "increments": "1d6",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "xanathars-guide:spell:483e4b174da746100d0f873b",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 1,
+        "name": "地颤",
+        "range": "10 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "bludgeoning",
+              "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+              "expression": "1d6",
+              "on_failure": "full",
+              "on_success": "none",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+              "origin": "chosen_point",
+              "range": "10 feet",
+              "shape": "area",
+              "size_ft": 10,
+              "target": "area",
+              "type": "area"
+            },
+            {
+              "break_action": "movement_to_stand",
+              "clause_id": "condition",
+              "condition": "prone",
+              "condition_effect": {
+                "movement": "fall_prone"
+              },
+              "duration": "until_stand",
+              "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+              "on_failure": "apply",
+              "save_ability": "dexterity",
+              "target": "area",
+              "type": "apply_condition"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+              "half_on_success": false,
+              "range": "10 feet",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+              "kind": "area",
+              "range": "10 feet",
+              "shape": "area",
+              "size_ft": 10,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每高一环伤害增加1d6",
+              "increments": "1d6",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "珊娜萨的万事指南",
+          "source_fingerprint": "fb4ddcdbc2be19d027734b69335bb7d3f2d9b95cec8e6e90cf4578977cfd8f05",
+          "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+          "source_record_id": "483e4b174da746100d0f873b",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "xanathars-guide:spell:483e4b174da746100d0f873b",
+        "target": "area excluding caster"
+      },
+      "source_fingerprint": "fb4ddcdbc2be19d027734b69335bb7d3f2d9b95cec8e6e90cf4578977cfd8f05",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "8a5a83690e53fc95a87247c879a999149f4ce5937aae2daf0cd38103cbc35000",
+      "spell_id": "xanathars-guide:spell:483e4b174da746100d0f873b",
+      "typed_clause_count": 6,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:clause:4",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "f0e2adff6a1a118863b35bf55f52d7ea036dc45dd2d97853592e4b5aeb1deb00",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+            "kind": "area",
+            "range": "90 feet",
+            "shape": "sphere",
+            "size_ft": 5,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+            "half_on_success": true,
+            "range": "90 feet",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "cold",
+            "evidence_ref": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+            "expression": "3d6",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+            "origin": "chosen_point",
+            "range": "90 feet",
+            "shape": "sphere",
+            "size_ft": 5,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每高一环伤害增加1d6",
+            "increments": "1d6",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S,M(ice or white rock)",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 2,
+        "name": "史尼洛雪球群",
+        "range": "90 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "cold",
+              "evidence_ref": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+              "expression": "3d6",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+              "origin": "chosen_point",
+              "range": "90 feet",
+              "shape": "sphere",
+              "size_ft": 5,
+              "target": "area",
+              "type": "area"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+              "half_on_success": true,
+              "range": "90 feet",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+              "kind": "area",
+              "range": "90 feet",
+              "shape": "sphere",
+              "size_ft": 5,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每高一环伤害增加1d6",
+              "increments": "1d6",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "珊娜萨的万事指南",
+          "source_fingerprint": "7338870954005f22e908e7152cbd75be2a5fb43a1754dd8bbb988be0f0dc33e6",
+          "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+          "source_record_id": "647e44fd3b93b2e4dafd2323",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323",
+        "target": "5-foot sphere"
+      },
+      "source_fingerprint": "7338870954005f22e908e7152cbd75be2a5fb43a1754dd8bbb988be0f0dc33e6",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "735e63cc1f24b9c091ea606a2fe919d204c1dd4cd9b2d241f575730e4f3e07bc",
+      "spell_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323",
+      "typed_clause_count": 5,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:clause:4",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "6459126ef8388aa1d50af953c9a26cde0385384d8ad940aeeada38ec8c042d39",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+            "kind": "area",
+            "range": "120 feet",
+            "shape": "cube",
+            "size_ft": 20,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+            "half_on_success": true,
+            "range": "120 feet",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "bludgeoning",
+            "evidence_ref": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+            "expression": "3d12",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+            "origin": "chosen_ground_point",
+            "range": "120 feet",
+            "shape": "cube",
+            "size_ft": 20,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每高一环伤害增加1d12",
+            "increments": "1d12",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S,M(obsidian)",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 3,
+        "name": "土石喷发",
+        "range": "120 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "bludgeoning",
+              "evidence_ref": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+              "expression": "3d12",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+              "origin": "chosen_ground_point",
+              "range": "120 feet",
+              "shape": "cube",
+              "size_ft": 20,
+              "target": "area",
+              "type": "area"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+              "half_on_success": true,
+              "range": "120 feet",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+              "kind": "area",
+              "range": "120 feet",
+              "shape": "cube",
+              "size_ft": 20,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每高一环伤害增加1d12",
+              "increments": "1d12",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "变化",
+        "source": {
+          "source_book": "珊娜萨的万事指南",
+          "source_fingerprint": "ab6c40c0e9e1639a3144edd7e4582baa97b17ab897e7788d2a82953902335918",
+          "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+          "source_record_id": "7c6ea0798cf1e7f00e5bbfbb",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb",
+        "target": "20-foot cube"
+      },
+      "source_fingerprint": "ab6c40c0e9e1639a3144edd7e4582baa97b17ab897e7788d2a82953902335918",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "d3532b5abb8098b415571d49c85d378ea353fff0aafeca9497a81f9d722c7f05",
+      "spell_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb",
+      "typed_clause_count": 5,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:868117360db3137344a7e04d:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:868117360db3137344a7e04d:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:868117360db3137344a7e04d:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "xanathars-guide:spell:868117360db3137344a7e04d:clause:3",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "dd6694e8c8863dc0c15862df2def50fe4551bbed1aeadc5eb5aded4d5d05fca7",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:868117360db3137344a7e04d:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "弹射物撞击生物时进行敏捷豁免，失败受到3d8钝击伤害，物件和被击中的东西都受伤害",
+            "kind": "one_creature",
+            "range": "60 feet",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "xanathars-guide:spell:868117360db3137344a7e04d",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:868117360db3137344a7e04d:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "弹射物撞击生物时进行敏捷豁免，失败受到3d8钝击伤害，物件和被击中的东西都受伤害",
+            "half_on_success": false,
+            "range": "60 feet",
+            "save_ability": "dexterity",
+            "target": "one_creature",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "xanathars-guide:spell:868117360db3137344a7e04d",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:868117360db3137344a7e04d:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "bludgeoning",
+            "evidence_ref": "弹射物撞击生物时进行敏捷豁免，失败受到3d8钝击伤害，物件和被击中的东西都受伤害",
+            "expression": "3d8",
+            "on_failure": "full",
+            "on_success": "none",
+            "target": "one_creature",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "xanathars-guide:spell:868117360db3137344a7e04d",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "xanathars-guide:spell:868117360db3137344a7e04d:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每高一环伤害提高1d8",
+            "increments": "1d8",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "xanathars-guide:spell:868117360db3137344a7e04d",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "S",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 1,
+        "name": "弹射术",
+        "range": "60 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "bludgeoning",
+              "evidence_ref": "弹射物撞击生物时进行敏捷豁免，失败受到3d8钝击伤害，物件和被击中的东西都受伤害",
+              "expression": "3d8",
+              "on_failure": "full",
+              "on_success": "none",
+              "target": "one_creature",
+              "trigger": "saving_throw",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "弹射物撞击生物时进行敏捷豁免，失败受到3d8钝击伤害，物件和被击中的东西都受伤害",
+              "half_on_success": false,
+              "range": "60 feet",
+              "save_ability": "dexterity",
+              "target": "one_creature",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "弹射物撞击生物时进行敏捷豁免，失败受到3d8钝击伤害，物件和被击中的东西都受伤害",
+              "kind": "one_creature",
+              "range": "60 feet",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每高一环伤害提高1d8",
+              "increments": "1d8",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "变化",
+        "source": {
+          "source_book": "珊娜萨的万事指南",
+          "source_fingerprint": "778a1c90232969699e09941b70e190af34cf7ef6c147860e319f08a94acd2a9c",
+          "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+          "source_record_id": "868117360db3137344a7e04d",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "xanathars-guide:spell:868117360db3137344a7e04d",
+        "target": "one object or creature in trajectory"
+      },
+      "source_fingerprint": "778a1c90232969699e09941b70e190af34cf7ef6c147860e319f08a94acd2a9c",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "8aaf5baa7fad1451087dda3bc61162e65f491727cb3860501828970b21110dcc",
+      "spell_id": "xanathars-guide:spell:868117360db3137344a7e04d",
+      "typed_clause_count": 4,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e:clause:4",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "21a52b85b57eb32c6b96f8f182899b0490ef333955bb9f3753f7ecce3e885446",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "30尺长5尺宽线中生物敏捷豁免，失败3d8火焰，成功一半",
+            "kind": "area",
+            "range": "30 feet",
+            "shape": "line",
+            "size_ft": 30,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "30尺长5尺宽线中生物敏捷豁免，失败3d8火焰，成功一半",
+            "half_on_success": true,
+            "range": "30 feet",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "fire",
+            "evidence_ref": "30尺长5尺宽线中生物敏捷豁免，失败3d8火焰，成功一半",
+            "expression": "3d8",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "30尺长5尺宽线中生物敏捷豁免，失败3d8火焰，成功一半",
+            "origin": "self",
+            "range": "30 feet",
+            "shape": "line",
+            "size_ft": 30,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每高一环伤害增加1d8",
+            "increments": "1d8",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S,M(red dragon scale)",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 2,
+        "name": "阿迦纳萨喷火术",
+        "range": "30 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "fire",
+              "evidence_ref": "30尺长5尺宽线中生物敏捷豁免，失败3d8火焰，成功一半",
+              "expression": "3d8",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "30尺长5尺宽线中生物敏捷豁免，失败3d8火焰，成功一半",
+              "origin": "self",
+              "range": "30 feet",
+              "shape": "line",
+              "size_ft": 30,
+              "target": "area",
+              "type": "area"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "30尺长5尺宽线中生物敏捷豁免，失败3d8火焰，成功一半",
+              "half_on_success": true,
+              "range": "30 feet",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "30尺长5尺宽线中生物敏捷豁免，失败3d8火焰，成功一半",
+              "kind": "area",
+              "range": "30 feet",
+              "shape": "line",
+              "size_ft": 30,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每高一环伤害增加1d8",
+              "increments": "1d8",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "珊娜萨的万事指南",
+          "source_fingerprint": "c41301ba0bf64e2dbb443ca43135440fd84793c1fe095dd68e77796b1bc81b8d",
+          "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+          "source_record_id": "b2a01c766a8db42f9bc4d52e",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e",
+        "target": "30-foot line"
+      },
+      "source_fingerprint": "c41301ba0bf64e2dbb443ca43135440fd84793c1fe095dd68e77796b1bc81b8d",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "4c0b40134f659fb2cb3c63d697f0d007ce7a7060764a93ef86b5f8cdc7e66003",
+      "spell_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e",
+      "typed_clause_count": 5,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    }
+  ],
+  "runtime_preview": [
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.apply_condition.v1",
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:4",
+          "status": "full",
+          "type": "apply_condition"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:5",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "d57faf70c4b2d6b62ace8a5ff03fd10927a3b86d7d58fd9ed8e632b8fd14648b",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+            "kind": "area",
+            "range": "10 feet",
+            "shape": "area",
+            "size_ft": 10,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "xanathars-guide:spell:483e4b174da746100d0f873b",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+            "half_on_success": false,
+            "range": "10 feet",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "xanathars-guide:spell:483e4b174da746100d0f873b",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "bludgeoning",
+            "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+            "expression": "1d6",
+            "on_failure": "full",
+            "on_success": "none",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "xanathars-guide:spell:483e4b174da746100d0f873b",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+            "origin": "chosen_point",
+            "range": "10 feet",
+            "shape": "area",
+            "size_ft": 10,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "xanathars-guide:spell:483e4b174da746100d0f873b",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "break_action": "movement_to_stand",
+            "clause_id": "condition",
+            "condition": "prone",
+            "condition_effect": {
+              "movement": "fall_prone"
+            },
+            "duration": "until_stand",
+            "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+            "on_failure": "apply",
+            "save_ability": "dexterity",
+            "target": "area",
+            "type": "apply_condition"
+          },
+          "spell_id": "xanathars-guide:spell:483e4b174da746100d0f873b",
+          "type": "apply_condition"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "xanathars-guide:spell:483e4b174da746100d0f873b:clause:5",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每高一环伤害增加1d6",
+            "increments": "1d6",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "xanathars-guide:spell:483e4b174da746100d0f873b",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 1,
+        "name": "地颤",
+        "range": "10 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "bludgeoning",
+              "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+              "expression": "1d6",
+              "on_failure": "full",
+              "on_success": "none",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+              "origin": "chosen_point",
+              "range": "10 feet",
+              "shape": "area",
+              "size_ft": 10,
+              "target": "area",
+              "type": "area"
+            },
+            {
+              "break_action": "movement_to_stand",
+              "clause_id": "condition",
+              "condition": "prone",
+              "condition_effect": {
+                "movement": "fall_prone"
+              },
+              "duration": "until_stand",
+              "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+              "on_failure": "apply",
+              "save_ability": "dexterity",
+              "target": "area",
+              "type": "apply_condition"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+              "half_on_success": false,
+              "range": "10 feet",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "区域内其他生物敏捷豁免，失败受到1d6钝击并倒地",
+              "kind": "area",
+              "range": "10 feet",
+              "shape": "area",
+              "size_ft": 10,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每高一环伤害增加1d6",
+              "increments": "1d6",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "珊娜萨的万事指南",
+          "source_fingerprint": "fb4ddcdbc2be19d027734b69335bb7d3f2d9b95cec8e6e90cf4578977cfd8f05",
+          "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+          "source_record_id": "483e4b174da746100d0f873b",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "xanathars-guide:spell:483e4b174da746100d0f873b",
+        "target": "area excluding caster"
+      },
+      "source_fingerprint": "fb4ddcdbc2be19d027734b69335bb7d3f2d9b95cec8e6e90cf4578977cfd8f05",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "8a5a83690e53fc95a87247c879a999149f4ce5937aae2daf0cd38103cbc35000",
+      "spell_id": "xanathars-guide:spell:483e4b174da746100d0f873b",
+      "typed_clause_count": 6,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:clause:4",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "f0e2adff6a1a118863b35bf55f52d7ea036dc45dd2d97853592e4b5aeb1deb00",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+            "kind": "area",
+            "range": "90 feet",
+            "shape": "sphere",
+            "size_ft": 5,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+            "half_on_success": true,
+            "range": "90 feet",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "cold",
+            "evidence_ref": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+            "expression": "3d6",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+            "origin": "chosen_point",
+            "range": "90 feet",
+            "shape": "sphere",
+            "size_ft": 5,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每高一环伤害增加1d6",
+            "increments": "1d6",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S,M(ice or white rock)",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 2,
+        "name": "史尼洛雪球群",
+        "range": "90 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "cold",
+              "evidence_ref": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+              "expression": "3d6",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+              "origin": "chosen_point",
+              "range": "90 feet",
+              "shape": "sphere",
+              "size_ft": 5,
+              "target": "area",
+              "type": "area"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+              "half_on_success": true,
+              "range": "90 feet",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "5尺半径球形区域内所有生物敏捷豁免，失败3d6寒冷，成功一半",
+              "kind": "area",
+              "range": "90 feet",
+              "shape": "sphere",
+              "size_ft": 5,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每高一环伤害增加1d6",
+              "increments": "1d6",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "珊娜萨的万事指南",
+          "source_fingerprint": "7338870954005f22e908e7152cbd75be2a5fb43a1754dd8bbb988be0f0dc33e6",
+          "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+          "source_record_id": "647e44fd3b93b2e4dafd2323",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323",
+        "target": "5-foot sphere"
+      },
+      "source_fingerprint": "7338870954005f22e908e7152cbd75be2a5fb43a1754dd8bbb988be0f0dc33e6",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "735e63cc1f24b9c091ea606a2fe919d204c1dd4cd9b2d241f575730e4f3e07bc",
+      "spell_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323",
+      "typed_clause_count": 5,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:clause:4",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "6459126ef8388aa1d50af953c9a26cde0385384d8ad940aeeada38ec8c042d39",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+            "kind": "area",
+            "range": "120 feet",
+            "shape": "cube",
+            "size_ft": 20,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+            "half_on_success": true,
+            "range": "120 feet",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "bludgeoning",
+            "evidence_ref": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+            "expression": "3d12",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+            "origin": "chosen_ground_point",
+            "range": "120 feet",
+            "shape": "cube",
+            "size_ft": 20,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每高一环伤害增加1d12",
+            "increments": "1d12",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S,M(obsidian)",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 3,
+        "name": "土石喷发",
+        "range": "120 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "bludgeoning",
+              "evidence_ref": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+              "expression": "3d12",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+              "origin": "chosen_ground_point",
+              "range": "120 feet",
+              "shape": "cube",
+              "size_ft": 20,
+              "target": "area",
+              "type": "area"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+              "half_on_success": true,
+              "range": "120 feet",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "20尺立方区域内每个生物敏捷豁免，失败3d12钝击，成功一半",
+              "kind": "area",
+              "range": "120 feet",
+              "shape": "cube",
+              "size_ft": 20,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每高一环伤害增加1d12",
+              "increments": "1d12",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "变化",
+        "source": {
+          "source_book": "珊娜萨的万事指南",
+          "source_fingerprint": "ab6c40c0e9e1639a3144edd7e4582baa97b17ab897e7788d2a82953902335918",
+          "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+          "source_record_id": "7c6ea0798cf1e7f00e5bbfbb",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb",
+        "target": "20-foot cube"
+      },
+      "source_fingerprint": "ab6c40c0e9e1639a3144edd7e4582baa97b17ab897e7788d2a82953902335918",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "d3532b5abb8098b415571d49c85d378ea353fff0aafeca9497a81f9d722c7f05",
+      "spell_id": "xanathars-guide:spell:7c6ea0798cf1e7f00e5bbfbb",
+      "typed_clause_count": 5,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:868117360db3137344a7e04d:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:868117360db3137344a7e04d:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:868117360db3137344a7e04d:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "xanathars-guide:spell:868117360db3137344a7e04d:clause:3",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "dd6694e8c8863dc0c15862df2def50fe4551bbed1aeadc5eb5aded4d5d05fca7",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:868117360db3137344a7e04d:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "弹射物撞击生物时进行敏捷豁免，失败受到3d8钝击伤害，物件和被击中的东西都受伤害",
+            "kind": "one_creature",
+            "range": "60 feet",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "xanathars-guide:spell:868117360db3137344a7e04d",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:868117360db3137344a7e04d:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "弹射物撞击生物时进行敏捷豁免，失败受到3d8钝击伤害，物件和被击中的东西都受伤害",
+            "half_on_success": false,
+            "range": "60 feet",
+            "save_ability": "dexterity",
+            "target": "one_creature",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "xanathars-guide:spell:868117360db3137344a7e04d",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:868117360db3137344a7e04d:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "bludgeoning",
+            "evidence_ref": "弹射物撞击生物时进行敏捷豁免，失败受到3d8钝击伤害，物件和被击中的东西都受伤害",
+            "expression": "3d8",
+            "on_failure": "full",
+            "on_success": "none",
+            "target": "one_creature",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "xanathars-guide:spell:868117360db3137344a7e04d",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "xanathars-guide:spell:868117360db3137344a7e04d:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每高一环伤害提高1d8",
+            "increments": "1d8",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "xanathars-guide:spell:868117360db3137344a7e04d",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "S",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 1,
+        "name": "弹射术",
+        "range": "60 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "bludgeoning",
+              "evidence_ref": "弹射物撞击生物时进行敏捷豁免，失败受到3d8钝击伤害，物件和被击中的东西都受伤害",
+              "expression": "3d8",
+              "on_failure": "full",
+              "on_success": "none",
+              "target": "one_creature",
+              "trigger": "saving_throw",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "弹射物撞击生物时进行敏捷豁免，失败受到3d8钝击伤害，物件和被击中的东西都受伤害",
+              "half_on_success": false,
+              "range": "60 feet",
+              "save_ability": "dexterity",
+              "target": "one_creature",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "弹射物撞击生物时进行敏捷豁免，失败受到3d8钝击伤害，物件和被击中的东西都受伤害",
+              "kind": "one_creature",
+              "range": "60 feet",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每高一环伤害提高1d8",
+              "increments": "1d8",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "变化",
+        "source": {
+          "source_book": "珊娜萨的万事指南",
+          "source_fingerprint": "778a1c90232969699e09941b70e190af34cf7ef6c147860e319f08a94acd2a9c",
+          "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+          "source_record_id": "868117360db3137344a7e04d",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "xanathars-guide:spell:868117360db3137344a7e04d",
+        "target": "one object or creature in trajectory"
+      },
+      "source_fingerprint": "778a1c90232969699e09941b70e190af34cf7ef6c147860e319f08a94acd2a9c",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "8aaf5baa7fad1451087dda3bc61162e65f491727cb3860501828970b21110dcc",
+      "spell_id": "xanathars-guide:spell:868117360db3137344a7e04d",
+      "typed_clause_count": 4,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e:clause:4",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "21a52b85b57eb32c6b96f8f182899b0490ef333955bb9f3753f7ecce3e885446",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "30尺长5尺宽线中生物敏捷豁免，失败3d8火焰，成功一半",
+            "kind": "area",
+            "range": "30 feet",
+            "shape": "line",
+            "size_ft": 30,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "30尺长5尺宽线中生物敏捷豁免，失败3d8火焰，成功一半",
+            "half_on_success": true,
+            "range": "30 feet",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "fire",
+            "evidence_ref": "30尺长5尺宽线中生物敏捷豁免，失败3d8火焰，成功一半",
+            "expression": "3d8",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "30尺长5尺宽线中生物敏捷豁免，失败3d8火焰，成功一半",
+            "origin": "self",
+            "range": "30 feet",
+            "shape": "line",
+            "size_ft": 30,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每高一环伤害增加1d8",
+            "increments": "1d8",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S,M(red dragon scale)",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 2,
+        "name": "阿迦纳萨喷火术",
+        "range": "30 feet",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "fire",
+              "evidence_ref": "30尺长5尺宽线中生物敏捷豁免，失败3d8火焰，成功一半",
+              "expression": "3d8",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "30尺长5尺宽线中生物敏捷豁免，失败3d8火焰，成功一半",
+              "origin": "self",
+              "range": "30 feet",
+              "shape": "line",
+              "size_ft": 30,
+              "target": "area",
+              "type": "area"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "30尺长5尺宽线中生物敏捷豁免，失败3d8火焰，成功一半",
+              "half_on_success": true,
+              "range": "30 feet",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "30尺长5尺宽线中生物敏捷豁免，失败3d8火焰，成功一半",
+              "kind": "area",
+              "range": "30 feet",
+              "shape": "line",
+              "size_ft": 30,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每高一环伤害增加1d8",
+              "increments": "1d8",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "珊娜萨的万事指南",
+          "source_fingerprint": "c41301ba0bf64e2dbb443ca43135440fd84793c1fe095dd68e77796b1bc81b8d",
+          "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+          "source_record_id": "b2a01c766a8db42f9bc4d52e",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e",
+        "target": "30-foot line"
+      },
+      "source_fingerprint": "c41301ba0bf64e2dbb443ca43135440fd84793c1fe095dd68e77796b1bc81b8d",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "4c0b40134f659fb2cb3c63d697f0d007ce7a7060764a93ef86b5f8cdc7e66003",
+      "spell_id": "xanathars-guide:spell:b2a01c766a8db42f9bc4d52e",
+      "typed_clause_count": 5,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    }
+  ],
+  "schema_version": "content-ir-compile-result-1",
+  "typed_ir_count": 5
+}

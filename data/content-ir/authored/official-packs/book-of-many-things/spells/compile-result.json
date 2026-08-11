@@ -1,0 +1,595 @@
+{
+  "blocker_counts": {},
+  "capability_counts": {
+    "spell.apply_condition.v1": 1,
+    "spell.area.v1": 1,
+    "spell.damage.v1": 1,
+    "spell.saving_throw.v1": 1,
+    "spell.target_selection.v1": 1,
+    "spell.upcast.v1": 1
+  },
+  "capability_registry_version": "content-capabilities-1",
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "conflicts": [],
+  "counts": {
+    "full": 1,
+    "invalid": 0,
+    "manual": 0,
+    "partial": 0
+  },
+  "manifest_fingerprint": "9165085122f40904cb6fb523decaf18f1d52769e57388d6f296e3de9602c7308",
+  "results": [
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.apply_condition.v1",
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:4",
+          "status": "full",
+          "type": "apply_condition"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:5",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "30dfe7d5cd7893e29bcd8ab4301e375f82c104b0c56b353f662bac760460b0e5",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+            "kind": "area",
+            "range": "self 15-foot cone",
+            "shape": "cone",
+            "size_ft": 15,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "book-of-many-things:spell:69822f264262f10066c621b3",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+            "half_on_success": true,
+            "range": "self 15-foot cone",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "book-of-many-things:spell:69822f264262f10066c621b3",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "force",
+            "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+            "expression": "2d10",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "book-of-many-things:spell:69822f264262f10066c621b3",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+            "origin": "self",
+            "range": "self 15-foot cone",
+            "shape": "cone",
+            "size_ft": 15,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "book-of-many-things:spell:69822f264262f10066c621b3",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "break_action": null,
+            "clause_id": "condition",
+            "condition": "blinded",
+            "condition_effect": {
+              "blinded": true
+            },
+            "duration": "until_target_next_turn_end",
+            "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+            "on_failure": "apply",
+            "save_ability": "dexterity",
+            "target": "area",
+            "type": "apply_condition"
+          },
+          "spell_id": "book-of-many-things:spell:69822f264262f10066c621b3",
+          "type": "apply_condition"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:5",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每比二环高一环，伤害增加1d10",
+            "increments": "1d10",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "book-of-many-things:spell:69822f264262f10066c621b3",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S,M(deck of cards)",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 2,
+        "name": "卡牌喷射",
+        "range": "self 15-foot cone",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "force",
+              "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+              "expression": "2d10",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+              "origin": "self",
+              "range": "self 15-foot cone",
+              "shape": "cone",
+              "size_ft": 15,
+              "target": "area",
+              "type": "area"
+            },
+            {
+              "break_action": null,
+              "clause_id": "condition",
+              "condition": "blinded",
+              "condition_effect": {
+                "blinded": true
+              },
+              "duration": "until_target_next_turn_end",
+              "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+              "on_failure": "apply",
+              "save_ability": "dexterity",
+              "target": "area",
+              "type": "apply_condition"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+              "half_on_success": true,
+              "range": "self 15-foot cone",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+              "kind": "area",
+              "range": "self 15-foot cone",
+              "shape": "cone",
+              "size_ft": 15,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每比二环高一环，伤害增加1d10",
+              "increments": "1d10",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "咒法",
+        "source": {
+          "source_book": "万象无常书",
+          "source_fingerprint": "04503730c3ea0119d17b2bde803d307413328d4a88f46c49718277fba6909f5c",
+          "source_path": "万象无常书/贤者/卡牌法术详述.htm",
+          "source_record_id": "69822f264262f10066c621b3",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "book-of-many-things:spell:69822f264262f10066c621b3",
+        "target": "15-foot cone"
+      },
+      "source_fingerprint": "04503730c3ea0119d17b2bde803d307413328d4a88f46c49718277fba6909f5c",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "5f04d7db2fcfdf5f478ec7e14193243f0b9072df877d9390cbf3ef9300175868",
+      "spell_id": "book-of-many-things:spell:69822f264262f10066c621b3",
+      "typed_clause_count": 6,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    }
+  ],
+  "runtime_preview": [
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.apply_condition.v1",
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.area.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:3",
+          "status": "full",
+          "type": "area"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:4",
+          "status": "full",
+          "type": "apply_condition"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:5",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "30dfe7d5cd7893e29bcd8ab4301e375f82c104b0c56b353f662bac760460b0e5",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": "all_in_area",
+            "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+            "kind": "area",
+            "range": "self 15-foot cone",
+            "shape": "cone",
+            "size_ft": 15,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "book-of-many-things:spell:69822f264262f10066c621b3",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+            "half_on_success": true,
+            "range": "self 15-foot cone",
+            "save_ability": "dexterity",
+            "target": "area",
+            "trigger": "spell_cast",
+            "type": "saving_throw"
+          },
+          "spell_id": "book-of-many-things:spell:69822f264262f10066c621b3",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "save",
+            "clause_id": "damage",
+            "damage_type": "force",
+            "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+            "expression": "2d10",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "area",
+            "trigger": "saving_throw",
+            "type": "damage"
+          },
+          "spell_id": "book-of-many-things:spell:69822f264262f10066c621b3",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+            "origin": "self",
+            "range": "self 15-foot cone",
+            "shape": "cone",
+            "size_ft": 15,
+            "target": "area",
+            "type": "area"
+          },
+          "spell_id": "book-of-many-things:spell:69822f264262f10066c621b3",
+          "type": "area"
+        },
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:4",
+          "kind": "spell_clause",
+          "parameters": {
+            "break_action": null,
+            "clause_id": "condition",
+            "condition": "blinded",
+            "condition_effect": {
+              "blinded": true
+            },
+            "duration": "until_target_next_turn_end",
+            "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+            "on_failure": "apply",
+            "save_ability": "dexterity",
+            "target": "area",
+            "type": "apply_condition"
+          },
+          "spell_id": "book-of-many-things:spell:69822f264262f10066c621b3",
+          "type": "apply_condition"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "book-of-many-things:spell:69822f264262f10066c621b3:clause:5",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "每比二环高一环，伤害增加1d10",
+            "increments": "1d10",
+            "per_slot": 1,
+            "progression": null,
+            "type": "upcast"
+          },
+          "spell_id": "book-of-many-things:spell:69822f264262f10066c621b3",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "action",
+        "components": "V,S,M(deck of cards)",
+        "concentration": false,
+        "duration": "instant",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 2,
+        "name": "卡牌喷射",
+        "range": "self 15-foot cone",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "applies_to": "save",
+              "clause_id": "damage",
+              "damage_type": "force",
+              "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+              "expression": "2d10",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "area",
+              "trigger": "saving_throw",
+              "type": "damage"
+            },
+            {
+              "clause_id": "area",
+              "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+              "origin": "self",
+              "range": "self 15-foot cone",
+              "shape": "cone",
+              "size_ft": 15,
+              "target": "area",
+              "type": "area"
+            },
+            {
+              "break_action": null,
+              "clause_id": "condition",
+              "condition": "blinded",
+              "condition_effect": {
+                "blinded": true
+              },
+              "duration": "until_target_next_turn_end",
+              "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+              "on_failure": "apply",
+              "save_ability": "dexterity",
+              "target": "area",
+              "type": "apply_condition"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+              "half_on_success": true,
+              "range": "self 15-foot cone",
+              "save_ability": "dexterity",
+              "target": "area",
+              "trigger": "spell_cast",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": "all_in_area",
+              "evidence_ref": "15尺锥状区域生物敏捷豁免，失败2d10力场并目盲至其下回合结束，成功一半",
+              "kind": "area",
+              "range": "self 15-foot cone",
+              "shape": "cone",
+              "size_ft": 15,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "每比二环高一环，伤害增加1d10",
+              "increments": "1d10",
+              "per_slot": 1,
+              "progression": null,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "咒法",
+        "source": {
+          "source_book": "万象无常书",
+          "source_fingerprint": "04503730c3ea0119d17b2bde803d307413328d4a88f46c49718277fba6909f5c",
+          "source_path": "万象无常书/贤者/卡牌法术详述.htm",
+          "source_record_id": "69822f264262f10066c621b3",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "book-of-many-things:spell:69822f264262f10066c621b3",
+        "target": "15-foot cone"
+      },
+      "source_fingerprint": "04503730c3ea0119d17b2bde803d307413328d4a88f46c49718277fba6909f5c",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "5f04d7db2fcfdf5f478ec7e14193243f0b9072df877d9390cbf3ef9300175868",
+      "spell_id": "book-of-many-things:spell:69822f264262f10066c621b3",
+      "typed_clause_count": 6,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    }
+  ],
+  "schema_version": "content-ir-compile-result-1",
+  "typed_ir_count": 1
+}

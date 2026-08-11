@@ -1,0 +1,191 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "action",
+  "clause_boundaries": {
+    "area": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+      "source_heading": "雾凇霜缚"
+    },
+    "condition": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+      "source_heading": "雾凇霜缚"
+    },
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+      "source_heading": "雾凇霜缚"
+    },
+    "save": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+      "source_heading": "雾凇霜缚"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+      "source_heading": "雾凇霜缚"
+    },
+    "upcast": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "每比二环高一环，伤害增加1d8",
+      "source_heading": "雾凇霜缚"
+    }
+  },
+  "clause_identity": [
+    "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:target",
+    "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:save",
+    "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:damage",
+    "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:area",
+    "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:condition",
+    "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:upcast"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": "all_in_area",
+      "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+      "kind": "area",
+      "range": "self 30-foot cone",
+      "shape": "cone",
+      "size_ft": 30,
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "save",
+      "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+      "half_on_success": true,
+      "range": "self 30-foot cone",
+      "save_ability": "constitution",
+      "target": "area",
+      "trigger": "spell_cast",
+      "type": "saving_throw"
+    },
+    {
+      "applies_to": "save",
+      "clause_id": "damage",
+      "damage_type": "cold",
+      "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+      "expression": "3d8",
+      "on_failure": "full",
+      "on_success": "half",
+      "target": "area",
+      "trigger": "saving_throw",
+      "type": "damage"
+    },
+    {
+      "clause_id": "area",
+      "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+      "origin": "self",
+      "range": "self 30-foot cone",
+      "shape": "cone",
+      "size_ft": 30,
+      "target": "area",
+      "type": "area"
+    },
+    {
+      "break_action": "action:break_free",
+      "clause_id": "condition",
+      "condition": "frost_bound",
+      "condition_effect": {
+        "speed": 0
+      },
+      "duration": "1 minute or until broken",
+      "evidence_ref": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+      "on_failure": "apply",
+      "save_ability": "constitution",
+      "target": "area",
+      "type": "apply_condition"
+    },
+    {
+      "applies_to": "damage",
+      "clause_id": "upcast",
+      "evidence_ref": "每比二环高一环，伤害增加1d8",
+      "increments": "1d8",
+      "per_slot": 1,
+      "progression": null,
+      "type": "upcast"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "components": "S,M(melted snow water)",
+  "concentration": false,
+  "duration": "instant",
+  "edition": "2014",
+  "evidence": [
+    "area: 30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+    "condition: 30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+    "damage: 30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+    "save: 30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+    "target: 30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0",
+    "upcast: 每比二环高一环，伤害增加1d8"
+  ],
+  "kind": "spell",
+  "level": 2,
+  "manual_decisions": {
+    "save_success": "按 source text 显式记录 half 或 no damage branch",
+    "targeting": "target_selection 与 area clause 共同定义目标集合"
+  },
+  "name": "雾凇霜缚",
+  "namespace": "content.fizbans-treasury",
+  "pack_id": "fizbans-treasury",
+  "pack_version": "source-ffa95fd541bc",
+  "range": "self 30-foot cone",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "target",
+    "components",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "spell-ir-1",
+  "school": "塑能",
+  "source_book": "费资本的巨龙宝库",
+  "source_evidence": {
+    "selected_clause_excerpt": "30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0 30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0 30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0 30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0 30尺锥形内每个生物体质豁免，失败3d8寒冷并被冰霜包裹，速度降至0 每比二环高一环，伤害增加1d8",
+    "source_book": "费资本的巨龙宝库",
+    "source_checksum": "f3b275e265d656222d552e17bcc5d4a43c86e207b22e6cf5f9144b23d6727b5f",
+    "source_fingerprint": "be9cd13062116e1928605e32a9742d1303e5b12f8899b6f91d06b612278a211b",
+    "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+    "source_text": "#### 雾凇霜缚｜Rime's Binding Ice\n\n*二环 塑能（术士、法师）*\n**施法时间：**1动作\n**施法距离：**自身（30尺锥形）\n**法术成分：**S、M（一瓶冰雪融化而成的水）\n**持续时间：**立即\n你向30尺锥形范围内放出一股冰冷的能量。范围内的每个生物都必须成功通过一体质豁免，否则将受到3d8寒冷伤害并且被冰霜包裹，持续一分钟或直至一个生物用动作为自己或触及范围内的其他生物破冰。被冰霜包裹的生物其速度降至0。豁免成功则伤害减半，并且不会受到其他效应影响。\n**升环施法效果：**当你用3环或更高的法术位施展此法术时，你使用的法术位每比2环高一环，法术的伤害增加1d8。"
+  },
+  "source_fingerprint": "be9cd13062116e1928605e32a9742d1303e5b12f8899b6f91d06b612278a211b",
+  "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+  "source_provenance": {
+    "officiality": "unknown",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "费资本的巨龙宝库",
+    "source_checksum": "f3b275e265d656222d552e17bcc5d4a43c86e207b22e6cf5f9144b23d6727b5f",
+    "source_relative_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm"
+  },
+  "source_record_id": "cadce71b1ba7a42354f785dc",
+  "source_trust": "authored_ir",
+  "spell_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+  "target": "30-foot cone"
+}

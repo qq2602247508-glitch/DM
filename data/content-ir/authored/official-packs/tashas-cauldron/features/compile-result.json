@@ -1,0 +1,3086 @@
+{
+  "blocker_counts": {},
+  "capability_counts": {},
+  "capability_registry_version": "content-capabilities-1",
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "conflicts": [],
+  "counts": {
+    "full": 8,
+    "invalid": 0,
+    "manual": 0,
+    "partial": 0
+  },
+  "manifest_fingerprint": "bdb3a124adc4bbef4defed0ee72c43fa5d9f7ef335b137d7e8cbb1a3e1fad7c1",
+  "results": [
+    {
+      "blockers": [],
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "advancement.proficiency"
+          ],
+          "clause_id": "tool-proficiency",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "advancement.proficiency",
+            "clause_id": "tool-proficiency",
+            "contract_version": "1.0",
+            "materializer_id": "advancement.proficiency",
+            "operator": "grant_proficiency",
+            "parameters": {
+              "asset_id": "alchemist_supplies",
+              "if_already_proficient": "replacement_tool_choice",
+              "operation": "grant",
+              "proficiency_kind": "tool"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "content.tashas-cauldron.feature.alchemist.tool-proficiency",
+      "fingerprint": "619bb4a9dd3630caf5a4172af560477af2e667acc9316dfd32feef04603f0900",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "advancement.proficiency",
+          "clause_id": "tool-proficiency",
+          "contract_version": "1.0",
+          "materializer_id": "advancement.proficiency",
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "alchemist_supplies",
+            "if_already_proficient": "replacement_tool_choice",
+            "operation": "grant",
+            "proficiency_kind": "tool"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "advancement_confirmed"
+        }
+      ],
+      "kind": "feature",
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "materialized": true,
+      "required_inputs": [
+        {
+          "clause_id": "tool-proficiency",
+          "key": "replacement_tool_choice",
+          "kind": "choice",
+          "parameters": {
+            "duplicate_policy": "forbid",
+            "options_source": "artisan_tools",
+            "requires_dm_selection": false
+          }
+        }
+      ],
+      "required_persistence": [
+        "character.proficiencies"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "runtime_definition": {
+        "actions": {},
+        "advancement": null,
+        "attack_riders": [],
+        "automation_status": "full",
+        "combat_start": {
+          "defenses": [],
+          "modifiers": [],
+          "movement_modes": []
+        },
+        "prepared_spell_list": null,
+        "proficiencies": [
+          {
+            "action_cost": "none",
+            "activation": "automatic",
+            "asset_id": "alchemist_supplies",
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "奇械师",
+            "clause_id": "tool-proficiency",
+            "feature_id": "content.tashas-cauldron.feature.alchemist.tool-proficiency",
+            "feature_name": "炼金师：工具精通",
+            "id": "content.tashas-cauldron.feature.alchemist.tool-proficiency:tool-proficiency:0",
+            "if_already_proficient": "replacement_tool_choice",
+            "kind": "tool",
+            "name": "alchemist_supplies",
+            "operation": "grant",
+            "operator": "grant_proficiency",
+            "replacement_choice": {
+              "duplicate_policy": "forbid",
+              "key": "replacement_tool_choice",
+              "options_source": "artisan_tools"
+            },
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "advancement.proficiency",
+              "consumer": "advancement_service.character_proficiency_registry",
+              "contract_version": "1.0",
+              "materializer_id": "advancement.proficiency",
+              "persistence": "character.proficiencies",
+              "status": "ready"
+            },
+            "source_record_id": "dc4f2bf18baca6ec97d7d0bf",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          }
+        ],
+        "requires_dm_adjudication": false,
+        "resources": {},
+        "triggers": []
+      },
+      "source_fingerprint": "f947584f708c3e4156d6666e4fceb81d909aee156c9071f5908aa1aafb6042b0",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "e12815cf391c9fd47f5ea545adde76bca2ec215f79dee6a8799434dcf080d9bd",
+      "status_authority": "compiler",
+      "typed_ir": true,
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "blockers": [],
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "advancement.proficiency"
+          ],
+          "clause_id": "heavy-armor",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "advancement.proficiency",
+            "clause_id": "heavy-armor",
+            "contract_version": "1.0",
+            "materializer_id": "advancement.proficiency",
+            "operator": "grant_proficiency",
+            "parameters": {
+              "asset_id": "heavy_armor",
+              "if_already_proficient": "",
+              "operation": "grant",
+              "proficiency_kind": "armor"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        },
+        {
+          "blockers": [],
+          "capability_ids": [
+            "advancement.proficiency"
+          ],
+          "clause_id": "tool-proficiency",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "advancement.proficiency",
+            "clause_id": "tool-proficiency",
+            "contract_version": "1.0",
+            "materializer_id": "advancement.proficiency",
+            "operator": "grant_proficiency",
+            "parameters": {
+              "asset_id": "smith_tools",
+              "if_already_proficient": "replacement_tool_choice",
+              "operation": "grant",
+              "proficiency_kind": "tool"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "content.tashas-cauldron.feature.armorer.tools-of-the-trade",
+      "fingerprint": "99b8f87a6778b40d9dd3f78f0e8dc73f3f072f7ec93c907bf4021ecd34aa8ad1",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "advancement.proficiency",
+          "clause_id": "heavy-armor",
+          "contract_version": "1.0",
+          "materializer_id": "advancement.proficiency",
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "heavy_armor",
+            "if_already_proficient": "",
+            "operation": "grant",
+            "proficiency_kind": "armor"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "advancement_confirmed"
+        },
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "advancement.proficiency",
+          "clause_id": "tool-proficiency",
+          "contract_version": "1.0",
+          "materializer_id": "advancement.proficiency",
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "smith_tools",
+            "if_already_proficient": "replacement_tool_choice",
+            "operation": "grant",
+            "proficiency_kind": "tool"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "advancement_confirmed"
+        }
+      ],
+      "kind": "feature",
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "materialized": true,
+      "required_inputs": [
+        {
+          "clause_id": "tool-proficiency",
+          "key": "replacement_tool_choice",
+          "kind": "choice",
+          "parameters": {
+            "duplicate_policy": "forbid",
+            "options_source": "artisan_tools",
+            "requires_dm_selection": false
+          }
+        }
+      ],
+      "required_persistence": [
+        "character.proficiencies"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "runtime_definition": {
+        "actions": {},
+        "advancement": null,
+        "attack_riders": [],
+        "automation_status": "full",
+        "combat_start": {
+          "defenses": [],
+          "modifiers": [],
+          "movement_modes": []
+        },
+        "prepared_spell_list": null,
+        "proficiencies": [
+          {
+            "action_cost": "none",
+            "activation": "automatic",
+            "asset_id": "heavy_armor",
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "奇械师",
+            "clause_id": "heavy-armor",
+            "feature_id": "content.tashas-cauldron.feature.armorer.tools-of-the-trade",
+            "feature_name": "装甲师：工具精通",
+            "id": "content.tashas-cauldron.feature.armorer.tools-of-the-trade:heavy-armor:0",
+            "kind": "armor",
+            "name": "heavy_armor",
+            "operation": "grant",
+            "operator": "grant_proficiency",
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "advancement.proficiency",
+              "consumer": "advancement_service.character_proficiency_registry",
+              "contract_version": "1.0",
+              "materializer_id": "advancement.proficiency",
+              "persistence": "character.proficiencies",
+              "status": "ready"
+            },
+            "source_record_id": "cf864e58ba0d62c93110f5c6",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          {
+            "action_cost": "none",
+            "activation": "automatic",
+            "asset_id": "smith_tools",
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "奇械师",
+            "clause_id": "tool-proficiency",
+            "feature_id": "content.tashas-cauldron.feature.armorer.tools-of-the-trade",
+            "feature_name": "装甲师：工具精通",
+            "id": "content.tashas-cauldron.feature.armorer.tools-of-the-trade:tool-proficiency:1",
+            "if_already_proficient": "replacement_tool_choice",
+            "kind": "tool",
+            "name": "smith_tools",
+            "operation": "grant",
+            "operator": "grant_proficiency",
+            "replacement_choice": {
+              "duplicate_policy": "forbid",
+              "key": "replacement_tool_choice",
+              "options_source": "artisan_tools"
+            },
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "advancement.proficiency",
+              "consumer": "advancement_service.character_proficiency_registry",
+              "contract_version": "1.0",
+              "materializer_id": "advancement.proficiency",
+              "persistence": "character.proficiencies",
+              "status": "ready"
+            },
+            "source_record_id": "cf864e58ba0d62c93110f5c6",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          }
+        ],
+        "requires_dm_adjudication": false,
+        "resources": {},
+        "triggers": []
+      },
+      "source_fingerprint": "ace115b60fbbef32b8fd7bf3d8eb576623a21c7a24ec6cf516266b5c69d6dda7",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "b31728854bcaa0d0defb30fdabded12e1104d9d6a1d600cdf488112d0d80637e",
+      "status_authority": "compiler",
+      "typed_ir": true,
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "blockers": [],
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "advancement.proficiency"
+          ],
+          "clause_id": "tool-proficiency",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "advancement.proficiency",
+            "clause_id": "tool-proficiency",
+            "contract_version": "1.0",
+            "materializer_id": "advancement.proficiency",
+            "operator": "grant_proficiency",
+            "parameters": {
+              "asset_id": "woodcarver_tools",
+              "if_already_proficient": "replacement_tool_choice",
+              "operation": "grant",
+              "proficiency_kind": "tool"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "content.tashas-cauldron.feature.artillerist.tool-proficiency",
+      "fingerprint": "aa8471ffcbd0416ee1ddaa026574de4c8dda3a74b59b94e477a3d61167b0afb1",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "advancement.proficiency",
+          "clause_id": "tool-proficiency",
+          "contract_version": "1.0",
+          "materializer_id": "advancement.proficiency",
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "woodcarver_tools",
+            "if_already_proficient": "replacement_tool_choice",
+            "operation": "grant",
+            "proficiency_kind": "tool"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "advancement_confirmed"
+        }
+      ],
+      "kind": "feature",
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "materialized": true,
+      "required_inputs": [
+        {
+          "clause_id": "tool-proficiency",
+          "key": "replacement_tool_choice",
+          "kind": "choice",
+          "parameters": {
+            "duplicate_policy": "forbid",
+            "options_source": "artisan_tools",
+            "requires_dm_selection": false
+          }
+        }
+      ],
+      "required_persistence": [
+        "character.proficiencies"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "runtime_definition": {
+        "actions": {},
+        "advancement": null,
+        "attack_riders": [],
+        "automation_status": "full",
+        "combat_start": {
+          "defenses": [],
+          "modifiers": [],
+          "movement_modes": []
+        },
+        "prepared_spell_list": null,
+        "proficiencies": [
+          {
+            "action_cost": "none",
+            "activation": "automatic",
+            "asset_id": "woodcarver_tools",
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "奇械师",
+            "clause_id": "tool-proficiency",
+            "feature_id": "content.tashas-cauldron.feature.artillerist.tool-proficiency",
+            "feature_name": "魔炮师：工具精通",
+            "id": "content.tashas-cauldron.feature.artillerist.tool-proficiency:tool-proficiency:0",
+            "if_already_proficient": "replacement_tool_choice",
+            "kind": "tool",
+            "name": "woodcarver_tools",
+            "operation": "grant",
+            "operator": "grant_proficiency",
+            "replacement_choice": {
+              "duplicate_policy": "forbid",
+              "key": "replacement_tool_choice",
+              "options_source": "artisan_tools"
+            },
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "advancement.proficiency",
+              "consumer": "advancement_service.character_proficiency_registry",
+              "contract_version": "1.0",
+              "materializer_id": "advancement.proficiency",
+              "persistence": "character.proficiencies",
+              "status": "ready"
+            },
+            "source_record_id": "fbf8451f879a169fb17a01e9",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          }
+        ],
+        "requires_dm_adjudication": false,
+        "resources": {},
+        "triggers": []
+      },
+      "source_fingerprint": "3ea6459917699b41dee7c608f0aeb28605e8b6f280c0c750ab65d430f70f5569",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "8141af42d5bf3fdb18314c9b1824e525c1d6c0e4316957667ef44eafd98b78ee",
+      "status_authority": "compiler",
+      "typed_ir": true,
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "blockers": [],
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "resource.lifecycle.consume",
+            "modifier.passive"
+          ],
+          "clause_id": "ambush",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "modifier.passive",
+            "clause_id": "ambush",
+            "contract_version": "1.0",
+            "materializer_id": "modifier.passive",
+            "operator": "add_modifier",
+            "parameters": {
+              "applies_when": "initiative_roll",
+              "id": "ambush:initiative",
+              "operation": "add",
+              "scope": "self",
+              "stat": "initiative",
+              "value_source": "superiority_die"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "initiative_rolled"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "content.tashas-cauldron.feature.battle-master.ambush",
+      "fingerprint": "742ebe85b2946155be143a993e2622d6d7fb291727dbe93cdf1f90727be9211a",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "resource.lifecycle.consume",
+          "clause_id": "ambush",
+          "contract_version": "1.0",
+          "materializer_id": "resource.lifecycle.consume",
+          "operator": "consume_resource",
+          "parameters": {
+            "amount": 1,
+            "operation": "consume",
+            "resource_key": "superiority_dice"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "initiative_rolled"
+        },
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "modifier.passive",
+          "clause_id": "ambush",
+          "contract_version": "1.0",
+          "materializer_id": "modifier.passive",
+          "operator": "add_modifier",
+          "parameters": {
+            "applies_when": "initiative_roll",
+            "id": "ambush:initiative",
+            "operation": "add",
+            "scope": "self",
+            "stat": "initiative",
+            "value_source": "superiority_die"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "initiative_rolled"
+        }
+      ],
+      "kind": "feature",
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "materialized": true,
+      "required_inputs": [],
+      "required_persistence": [
+        "character.resources",
+        "character.feature_runtime"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "runtime_definition": {
+        "actions": {},
+        "advancement": null,
+        "attack_riders": [],
+        "automation_status": "full",
+        "combat_start": {
+          "defenses": [],
+          "modifiers": [
+            {
+              "action_cost": "none",
+              "activation": "automatic",
+              "applies_when": "initiative_roll",
+              "automation_status": "full",
+              "class_level": 3,
+              "class_name": "战士",
+              "clause_id": "ambush",
+              "feature_id": "content.tashas-cauldron.feature.battle-master.ambush",
+              "feature_name": "战技选项：伏击",
+              "id": "ambush:initiative",
+              "kind": "modifier",
+              "operation": "add",
+              "operator": "add_modifier",
+              "requires_dm_adjudication": false,
+              "runtime_execution": {
+                "capability_id": "modifier.passive",
+                "consumer": "typed_modifier_resolvers",
+                "contract_version": "1.0",
+                "materializer_id": "modifier.passive",
+                "persistence": "character.feature_runtime",
+                "status": "ready"
+              },
+              "scope": "self",
+              "source_record_id": "12139219bf7e575f9cde019c",
+              "stat": "initiative",
+              "targeting": {
+                "kind": "self",
+                "parameters": {}
+              },
+              "trigger": "initiative_rolled",
+              "value_source": "superiority_die"
+            }
+          ],
+          "movement_modes": []
+        },
+        "prepared_spell_list": null,
+        "proficiencies": [],
+        "requires_dm_adjudication": false,
+        "resources": {
+          "superiority_dice": {
+            "action_cost": "none",
+            "activation": "automatic",
+            "amount": 1,
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "战士",
+            "clause_id": "ambush",
+            "feature_id": "content.tashas-cauldron.feature.battle-master.ambush",
+            "feature_name": "战技选项：伏击",
+            "id": "content.tashas-cauldron.feature.battle-master.ambush:ambush:0",
+            "key": "superiority_dice",
+            "kind": "resource_lifecycle",
+            "operation": "consume",
+            "operator": "consume_resource",
+            "recovery": "initiative_rolled",
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "resource.lifecycle.consume",
+              "consumer": "combat_and_advancement_resource_cas",
+              "contract_version": "1.0",
+              "materializer_id": "resource.lifecycle.consume",
+              "persistence": "character.resources",
+              "status": "ready"
+            },
+            "source_record_id": "12139219bf7e575f9cde019c",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "initiative_rolled"
+          }
+        },
+        "triggers": []
+      },
+      "source_fingerprint": "13418d41bbe36e695c131a0a0972e749979d8174421fc9bcc2bf767a92f19eef",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "f42c7237bb7edad90ea1d277aac3ec2a12a41097412ba0432f1065e053b2bd8b",
+      "status_authority": "compiler",
+      "typed_ir": true,
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "blockers": [],
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "resource.lifecycle.consume",
+            "modifier.passive"
+          ],
+          "clause_id": "commanding-presence",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "modifier.passive",
+            "clause_id": "commanding-presence",
+            "contract_version": "1.0",
+            "materializer_id": "modifier.passive",
+            "operator": "add_modifier",
+            "parameters": {
+              "applies_when": "intimidation_or_performance_or_persuasion",
+              "id": "commanding_presence:check",
+              "operation": "add",
+              "scope": "self",
+              "stat": "charisma_social_check",
+              "value_source": "superiority_die"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "ability_check"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "content.tashas-cauldron.feature.battle-master.commanding-presence",
+      "fingerprint": "c64e09012fa751ffbf833a49d4894e58cb6c13acaa2dcf4ec23843aeeae2c207",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "resource.lifecycle.consume",
+          "clause_id": "commanding-presence",
+          "contract_version": "1.0",
+          "materializer_id": "resource.lifecycle.consume",
+          "operator": "consume_resource",
+          "parameters": {
+            "amount": 1,
+            "operation": "consume",
+            "resource_key": "superiority_dice"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "ability_check"
+        },
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "modifier.passive",
+          "clause_id": "commanding-presence",
+          "contract_version": "1.0",
+          "materializer_id": "modifier.passive",
+          "operator": "add_modifier",
+          "parameters": {
+            "applies_when": "intimidation_or_performance_or_persuasion",
+            "id": "commanding_presence:check",
+            "operation": "add",
+            "scope": "self",
+            "stat": "charisma_social_check",
+            "value_source": "superiority_die"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "ability_check"
+        }
+      ],
+      "kind": "feature",
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "materialized": true,
+      "required_inputs": [],
+      "required_persistence": [
+        "character.resources",
+        "character.feature_runtime"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "runtime_definition": {
+        "actions": {},
+        "advancement": null,
+        "attack_riders": [],
+        "automation_status": "full",
+        "combat_start": {
+          "defenses": [],
+          "modifiers": [
+            {
+              "action_cost": "none",
+              "activation": "automatic",
+              "applies_when": "intimidation_or_performance_or_persuasion",
+              "automation_status": "full",
+              "class_level": 3,
+              "class_name": "战士",
+              "clause_id": "commanding-presence",
+              "feature_id": "content.tashas-cauldron.feature.battle-master.commanding-presence",
+              "feature_name": "战技选项：领导风范",
+              "id": "commanding_presence:check",
+              "kind": "modifier",
+              "operation": "add",
+              "operator": "add_modifier",
+              "requires_dm_adjudication": false,
+              "runtime_execution": {
+                "capability_id": "modifier.passive",
+                "consumer": "typed_modifier_resolvers",
+                "contract_version": "1.0",
+                "materializer_id": "modifier.passive",
+                "persistence": "character.feature_runtime",
+                "status": "ready"
+              },
+              "scope": "self",
+              "source_record_id": "12139219bf7e575f9cde019c",
+              "stat": "charisma_social_check",
+              "targeting": {
+                "kind": "self",
+                "parameters": {}
+              },
+              "trigger": "ability_check",
+              "value_source": "superiority_die"
+            }
+          ],
+          "movement_modes": []
+        },
+        "prepared_spell_list": null,
+        "proficiencies": [],
+        "requires_dm_adjudication": false,
+        "resources": {
+          "superiority_dice": {
+            "action_cost": "none",
+            "activation": "automatic",
+            "amount": 1,
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "战士",
+            "clause_id": "commanding-presence",
+            "feature_id": "content.tashas-cauldron.feature.battle-master.commanding-presence",
+            "feature_name": "战技选项：领导风范",
+            "id": "content.tashas-cauldron.feature.battle-master.commanding-presence:commanding-presence:0",
+            "key": "superiority_dice",
+            "kind": "resource_lifecycle",
+            "operation": "consume",
+            "operator": "consume_resource",
+            "recovery": "ability_check",
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "resource.lifecycle.consume",
+              "consumer": "combat_and_advancement_resource_cas",
+              "contract_version": "1.0",
+              "materializer_id": "resource.lifecycle.consume",
+              "persistence": "character.resources",
+              "status": "ready"
+            },
+            "source_record_id": "12139219bf7e575f9cde019c",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "ability_check"
+          }
+        },
+        "triggers": []
+      },
+      "source_fingerprint": "13418d41bbe36e695c131a0a0972e749979d8174421fc9bcc2bf767a92f19eef",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "bd9aafb7884fd47c0dba45851581b951b4f42556ec733b0e848861b845e84d28",
+      "status_authority": "compiler",
+      "typed_ir": true,
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "blockers": [],
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "resource.lifecycle.consume",
+            "modifier.passive"
+          ],
+          "clause_id": "precision-attack",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "modifier.passive",
+            "clause_id": "precision-attack",
+            "contract_version": "1.0",
+            "materializer_id": "modifier.passive",
+            "operator": "add_modifier",
+            "parameters": {
+              "applies_when": "weapon_attack",
+              "id": "precision_attack:roll",
+              "operation": "add",
+              "scope": "self",
+              "stat": "attack_roll",
+              "value_source": "superiority_die"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "attack_declared"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "content.tashas-cauldron.feature.battle-master.precision-attack",
+      "fingerprint": "6429be553e3bd3b13e290d5cd8cea22b7360abd40f57ce9e48bac77705b88a7c",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "resource.lifecycle.consume",
+          "clause_id": "precision-attack",
+          "contract_version": "1.0",
+          "materializer_id": "resource.lifecycle.consume",
+          "operator": "consume_resource",
+          "parameters": {
+            "amount": 1,
+            "operation": "consume",
+            "resource_key": "superiority_dice"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "attack_declared"
+        },
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "modifier.passive",
+          "clause_id": "precision-attack",
+          "contract_version": "1.0",
+          "materializer_id": "modifier.passive",
+          "operator": "add_modifier",
+          "parameters": {
+            "applies_when": "weapon_attack",
+            "id": "precision_attack:roll",
+            "operation": "add",
+            "scope": "self",
+            "stat": "attack_roll",
+            "value_source": "superiority_die"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "attack_declared"
+        }
+      ],
+      "kind": "feature",
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "materialized": true,
+      "required_inputs": [],
+      "required_persistence": [
+        "character.resources",
+        "character.feature_runtime"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "runtime_definition": {
+        "actions": {},
+        "advancement": null,
+        "attack_riders": [],
+        "automation_status": "full",
+        "combat_start": {
+          "defenses": [],
+          "modifiers": [
+            {
+              "action_cost": "none",
+              "activation": "automatic",
+              "applies_when": "weapon_attack",
+              "automation_status": "full",
+              "class_level": 3,
+              "class_name": "战士",
+              "clause_id": "precision-attack",
+              "feature_id": "content.tashas-cauldron.feature.battle-master.precision-attack",
+              "feature_name": "战技选项：精准攻击",
+              "id": "precision_attack:roll",
+              "kind": "modifier",
+              "operation": "add",
+              "operator": "add_modifier",
+              "requires_dm_adjudication": false,
+              "runtime_execution": {
+                "capability_id": "modifier.passive",
+                "consumer": "typed_modifier_resolvers",
+                "contract_version": "1.0",
+                "materializer_id": "modifier.passive",
+                "persistence": "character.feature_runtime",
+                "status": "ready"
+              },
+              "scope": "self",
+              "source_record_id": "12139219bf7e575f9cde019c",
+              "stat": "attack_roll",
+              "targeting": {
+                "kind": "self",
+                "parameters": {}
+              },
+              "trigger": "attack_declared",
+              "value_source": "superiority_die"
+            }
+          ],
+          "movement_modes": []
+        },
+        "prepared_spell_list": null,
+        "proficiencies": [],
+        "requires_dm_adjudication": false,
+        "resources": {
+          "superiority_dice": {
+            "action_cost": "none",
+            "activation": "automatic",
+            "amount": 1,
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "战士",
+            "clause_id": "precision-attack",
+            "feature_id": "content.tashas-cauldron.feature.battle-master.precision-attack",
+            "feature_name": "战技选项：精准攻击",
+            "id": "content.tashas-cauldron.feature.battle-master.precision-attack:precision-attack:0",
+            "key": "superiority_dice",
+            "kind": "resource_lifecycle",
+            "operation": "consume",
+            "operator": "consume_resource",
+            "recovery": "attack_declared",
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "resource.lifecycle.consume",
+              "consumer": "combat_and_advancement_resource_cas",
+              "contract_version": "1.0",
+              "materializer_id": "resource.lifecycle.consume",
+              "persistence": "character.resources",
+              "status": "ready"
+            },
+            "source_record_id": "12139219bf7e575f9cde019c",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "attack_declared"
+          }
+        },
+        "triggers": []
+      },
+      "source_fingerprint": "13418d41bbe36e695c131a0a0972e749979d8174421fc9bcc2bf767a92f19eef",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "1a07687ccc6a028ec4a6edd6f0e6a42a19f9dfba417f3321daee156ce24e3f06",
+      "status_authority": "compiler",
+      "typed_ir": true,
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "blockers": [],
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "advancement.proficiency"
+          ],
+          "clause_id": "tool-proficiency",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "advancement.proficiency",
+            "clause_id": "tool-proficiency",
+            "contract_version": "1.0",
+            "materializer_id": "advancement.proficiency",
+            "operator": "grant_proficiency",
+            "parameters": {
+              "asset_id": "smith_tools",
+              "if_already_proficient": "replacement_tool_choice",
+              "operation": "grant",
+              "proficiency_kind": "tool"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "content.tashas-cauldron.feature.battle-smith.tool-proficiency",
+      "fingerprint": "6e5954ad77815ad85e4835170f9916e7817754431e1026bfe53bc262c0f93166",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "advancement.proficiency",
+          "clause_id": "tool-proficiency",
+          "contract_version": "1.0",
+          "materializer_id": "advancement.proficiency",
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "smith_tools",
+            "if_already_proficient": "replacement_tool_choice",
+            "operation": "grant",
+            "proficiency_kind": "tool"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "advancement_confirmed"
+        }
+      ],
+      "kind": "feature",
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "materialized": true,
+      "required_inputs": [
+        {
+          "clause_id": "tool-proficiency",
+          "key": "replacement_tool_choice",
+          "kind": "choice",
+          "parameters": {
+            "duplicate_policy": "forbid",
+            "options_source": "artisan_tools",
+            "requires_dm_selection": false
+          }
+        }
+      ],
+      "required_persistence": [
+        "character.proficiencies"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "runtime_definition": {
+        "actions": {},
+        "advancement": null,
+        "attack_riders": [],
+        "automation_status": "full",
+        "combat_start": {
+          "defenses": [],
+          "modifiers": [],
+          "movement_modes": []
+        },
+        "prepared_spell_list": null,
+        "proficiencies": [
+          {
+            "action_cost": "none",
+            "activation": "automatic",
+            "asset_id": "smith_tools",
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "奇械师",
+            "clause_id": "tool-proficiency",
+            "feature_id": "content.tashas-cauldron.feature.battle-smith.tool-proficiency",
+            "feature_name": "战地匠师：工具精通",
+            "id": "content.tashas-cauldron.feature.battle-smith.tool-proficiency:tool-proficiency:0",
+            "if_already_proficient": "replacement_tool_choice",
+            "kind": "tool",
+            "name": "smith_tools",
+            "operation": "grant",
+            "operator": "grant_proficiency",
+            "replacement_choice": {
+              "duplicate_policy": "forbid",
+              "key": "replacement_tool_choice",
+              "options_source": "artisan_tools"
+            },
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "advancement.proficiency",
+              "consumer": "advancement_service.character_proficiency_registry",
+              "contract_version": "1.0",
+              "materializer_id": "advancement.proficiency",
+              "persistence": "character.proficiencies",
+              "status": "ready"
+            },
+            "source_record_id": "606d89f6e0ea3b2e0194f24c",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          }
+        ],
+        "requires_dm_adjudication": false,
+        "resources": {},
+        "triggers": []
+      },
+      "source_fingerprint": "bd9ff66e2ba5029069c1c4f8ba8eda7de38e67b3db1ff94b809b900623ea2970",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "7e50a1c90a8b66941f8ae2bf56966e1f90f0be8d4a454d8290c3fb3c5b513f86",
+      "status_authority": "compiler",
+      "typed_ir": true,
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "blockers": [],
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "advancement.proficiency"
+          ],
+          "clause_id": "insight",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "advancement.proficiency",
+            "clause_id": "insight",
+            "contract_version": "1.0",
+            "materializer_id": "advancement.proficiency",
+            "operator": "grant_proficiency",
+            "parameters": {
+              "asset_id": "insight",
+              "if_already_proficient": "",
+              "operation": "grant",
+              "proficiency_kind": "skill"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        },
+        {
+          "blockers": [],
+          "capability_ids": [
+            "advancement.proficiency"
+          ],
+          "clause_id": "medicine",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "advancement.proficiency",
+            "clause_id": "medicine",
+            "contract_version": "1.0",
+            "materializer_id": "advancement.proficiency",
+            "operator": "grant_proficiency",
+            "parameters": {
+              "asset_id": "medicine",
+              "if_already_proficient": "",
+              "operation": "grant",
+              "proficiency_kind": "skill"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        },
+        {
+          "blockers": [],
+          "capability_ids": [
+            "advancement.proficiency"
+          ],
+          "clause_id": "herbalism",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "advancement.proficiency",
+            "clause_id": "herbalism",
+            "contract_version": "1.0",
+            "materializer_id": "advancement.proficiency",
+            "operator": "grant_proficiency",
+            "parameters": {
+              "asset_id": "herbalism_kit",
+              "if_already_proficient": "",
+              "operation": "grant",
+              "proficiency_kind": "tool"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy",
+      "fingerprint": "5f245277ed8aefb1b2d0027a331c40fca921b99ef9fa895a335b61c452ae2e94",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "advancement.proficiency",
+          "clause_id": "insight",
+          "contract_version": "1.0",
+          "materializer_id": "advancement.proficiency",
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "insight",
+            "if_already_proficient": "",
+            "operation": "grant",
+            "proficiency_kind": "skill"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "advancement_confirmed"
+        },
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "advancement.proficiency",
+          "clause_id": "medicine",
+          "contract_version": "1.0",
+          "materializer_id": "advancement.proficiency",
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "medicine",
+            "if_already_proficient": "",
+            "operation": "grant",
+            "proficiency_kind": "skill"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "advancement_confirmed"
+        },
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "advancement.proficiency",
+          "clause_id": "herbalism",
+          "contract_version": "1.0",
+          "materializer_id": "advancement.proficiency",
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "herbalism_kit",
+            "if_already_proficient": "",
+            "operation": "grant",
+            "proficiency_kind": "tool"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "advancement_confirmed"
+        }
+      ],
+      "kind": "feature",
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "materialized": true,
+      "required_inputs": [],
+      "required_persistence": [
+        "character.proficiencies"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "runtime_definition": {
+        "actions": {},
+        "advancement": null,
+        "attack_riders": [],
+        "automation_status": "full",
+        "combat_start": {
+          "defenses": [],
+          "modifiers": [],
+          "movement_modes": []
+        },
+        "prepared_spell_list": null,
+        "proficiencies": [
+          {
+            "action_cost": "none",
+            "activation": "automatic",
+            "asset_id": "insight",
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "武僧",
+            "clause_id": "insight",
+            "feature_id": "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy",
+            "feature_name": "命流之器",
+            "id": "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy:insight:0",
+            "kind": "skill",
+            "name": "insight",
+            "operation": "grant",
+            "operator": "grant_proficiency",
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "advancement.proficiency",
+              "consumer": "advancement_service.character_proficiency_registry",
+              "contract_version": "1.0",
+              "materializer_id": "advancement.proficiency",
+              "persistence": "character.proficiencies",
+              "status": "ready"
+            },
+            "source_record_id": "d4e98761778ae5c18fd66bdb",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          {
+            "action_cost": "none",
+            "activation": "automatic",
+            "asset_id": "medicine",
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "武僧",
+            "clause_id": "medicine",
+            "feature_id": "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy",
+            "feature_name": "命流之器",
+            "id": "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy:medicine:1",
+            "kind": "skill",
+            "name": "medicine",
+            "operation": "grant",
+            "operator": "grant_proficiency",
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "advancement.proficiency",
+              "consumer": "advancement_service.character_proficiency_registry",
+              "contract_version": "1.0",
+              "materializer_id": "advancement.proficiency",
+              "persistence": "character.proficiencies",
+              "status": "ready"
+            },
+            "source_record_id": "d4e98761778ae5c18fd66bdb",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          {
+            "action_cost": "none",
+            "activation": "automatic",
+            "asset_id": "herbalism_kit",
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "武僧",
+            "clause_id": "herbalism",
+            "feature_id": "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy",
+            "feature_name": "命流之器",
+            "id": "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy:herbalism:2",
+            "kind": "tool",
+            "name": "herbalism_kit",
+            "operation": "grant",
+            "operator": "grant_proficiency",
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "advancement.proficiency",
+              "consumer": "advancement_service.character_proficiency_registry",
+              "contract_version": "1.0",
+              "materializer_id": "advancement.proficiency",
+              "persistence": "character.proficiencies",
+              "status": "ready"
+            },
+            "source_record_id": "d4e98761778ae5c18fd66bdb",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          }
+        ],
+        "requires_dm_adjudication": false,
+        "resources": {},
+        "triggers": []
+      },
+      "source_fingerprint": "cd0da7ef4b8d1eabd454e2ec2fc63f3c594d34896bddad8c846a2b6fcc495545",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "ae3191b749ffacac9e5b59c256569aa1e9e19417ed5746c521122445b13ff15e",
+      "status_authority": "compiler",
+      "typed_ir": true,
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    }
+  ],
+  "runtime_preview": [
+    {
+      "blockers": [],
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "advancement.proficiency"
+          ],
+          "clause_id": "tool-proficiency",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "advancement.proficiency",
+            "clause_id": "tool-proficiency",
+            "contract_version": "1.0",
+            "materializer_id": "advancement.proficiency",
+            "operator": "grant_proficiency",
+            "parameters": {
+              "asset_id": "alchemist_supplies",
+              "if_already_proficient": "replacement_tool_choice",
+              "operation": "grant",
+              "proficiency_kind": "tool"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "content.tashas-cauldron.feature.alchemist.tool-proficiency",
+      "fingerprint": "619bb4a9dd3630caf5a4172af560477af2e667acc9316dfd32feef04603f0900",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "advancement.proficiency",
+          "clause_id": "tool-proficiency",
+          "contract_version": "1.0",
+          "materializer_id": "advancement.proficiency",
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "alchemist_supplies",
+            "if_already_proficient": "replacement_tool_choice",
+            "operation": "grant",
+            "proficiency_kind": "tool"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "advancement_confirmed"
+        }
+      ],
+      "kind": "feature",
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "materialized": true,
+      "required_inputs": [
+        {
+          "clause_id": "tool-proficiency",
+          "key": "replacement_tool_choice",
+          "kind": "choice",
+          "parameters": {
+            "duplicate_policy": "forbid",
+            "options_source": "artisan_tools",
+            "requires_dm_selection": false
+          }
+        }
+      ],
+      "required_persistence": [
+        "character.proficiencies"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "runtime_definition": {
+        "actions": {},
+        "advancement": null,
+        "attack_riders": [],
+        "automation_status": "full",
+        "combat_start": {
+          "defenses": [],
+          "modifiers": [],
+          "movement_modes": []
+        },
+        "prepared_spell_list": null,
+        "proficiencies": [
+          {
+            "action_cost": "none",
+            "activation": "automatic",
+            "asset_id": "alchemist_supplies",
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "奇械师",
+            "clause_id": "tool-proficiency",
+            "feature_id": "content.tashas-cauldron.feature.alchemist.tool-proficiency",
+            "feature_name": "炼金师：工具精通",
+            "id": "content.tashas-cauldron.feature.alchemist.tool-proficiency:tool-proficiency:0",
+            "if_already_proficient": "replacement_tool_choice",
+            "kind": "tool",
+            "name": "alchemist_supplies",
+            "operation": "grant",
+            "operator": "grant_proficiency",
+            "replacement_choice": {
+              "duplicate_policy": "forbid",
+              "key": "replacement_tool_choice",
+              "options_source": "artisan_tools"
+            },
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "advancement.proficiency",
+              "consumer": "advancement_service.character_proficiency_registry",
+              "contract_version": "1.0",
+              "materializer_id": "advancement.proficiency",
+              "persistence": "character.proficiencies",
+              "status": "ready"
+            },
+            "source_record_id": "dc4f2bf18baca6ec97d7d0bf",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          }
+        ],
+        "requires_dm_adjudication": false,
+        "resources": {},
+        "triggers": []
+      },
+      "source_fingerprint": "f947584f708c3e4156d6666e4fceb81d909aee156c9071f5908aa1aafb6042b0",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "e12815cf391c9fd47f5ea545adde76bca2ec215f79dee6a8799434dcf080d9bd",
+      "status_authority": "compiler",
+      "typed_ir": true,
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "blockers": [],
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "advancement.proficiency"
+          ],
+          "clause_id": "heavy-armor",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "advancement.proficiency",
+            "clause_id": "heavy-armor",
+            "contract_version": "1.0",
+            "materializer_id": "advancement.proficiency",
+            "operator": "grant_proficiency",
+            "parameters": {
+              "asset_id": "heavy_armor",
+              "if_already_proficient": "",
+              "operation": "grant",
+              "proficiency_kind": "armor"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        },
+        {
+          "blockers": [],
+          "capability_ids": [
+            "advancement.proficiency"
+          ],
+          "clause_id": "tool-proficiency",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "advancement.proficiency",
+            "clause_id": "tool-proficiency",
+            "contract_version": "1.0",
+            "materializer_id": "advancement.proficiency",
+            "operator": "grant_proficiency",
+            "parameters": {
+              "asset_id": "smith_tools",
+              "if_already_proficient": "replacement_tool_choice",
+              "operation": "grant",
+              "proficiency_kind": "tool"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "content.tashas-cauldron.feature.armorer.tools-of-the-trade",
+      "fingerprint": "99b8f87a6778b40d9dd3f78f0e8dc73f3f072f7ec93c907bf4021ecd34aa8ad1",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "advancement.proficiency",
+          "clause_id": "heavy-armor",
+          "contract_version": "1.0",
+          "materializer_id": "advancement.proficiency",
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "heavy_armor",
+            "if_already_proficient": "",
+            "operation": "grant",
+            "proficiency_kind": "armor"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "advancement_confirmed"
+        },
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "advancement.proficiency",
+          "clause_id": "tool-proficiency",
+          "contract_version": "1.0",
+          "materializer_id": "advancement.proficiency",
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "smith_tools",
+            "if_already_proficient": "replacement_tool_choice",
+            "operation": "grant",
+            "proficiency_kind": "tool"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "advancement_confirmed"
+        }
+      ],
+      "kind": "feature",
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "materialized": true,
+      "required_inputs": [
+        {
+          "clause_id": "tool-proficiency",
+          "key": "replacement_tool_choice",
+          "kind": "choice",
+          "parameters": {
+            "duplicate_policy": "forbid",
+            "options_source": "artisan_tools",
+            "requires_dm_selection": false
+          }
+        }
+      ],
+      "required_persistence": [
+        "character.proficiencies"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "runtime_definition": {
+        "actions": {},
+        "advancement": null,
+        "attack_riders": [],
+        "automation_status": "full",
+        "combat_start": {
+          "defenses": [],
+          "modifiers": [],
+          "movement_modes": []
+        },
+        "prepared_spell_list": null,
+        "proficiencies": [
+          {
+            "action_cost": "none",
+            "activation": "automatic",
+            "asset_id": "heavy_armor",
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "奇械师",
+            "clause_id": "heavy-armor",
+            "feature_id": "content.tashas-cauldron.feature.armorer.tools-of-the-trade",
+            "feature_name": "装甲师：工具精通",
+            "id": "content.tashas-cauldron.feature.armorer.tools-of-the-trade:heavy-armor:0",
+            "kind": "armor",
+            "name": "heavy_armor",
+            "operation": "grant",
+            "operator": "grant_proficiency",
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "advancement.proficiency",
+              "consumer": "advancement_service.character_proficiency_registry",
+              "contract_version": "1.0",
+              "materializer_id": "advancement.proficiency",
+              "persistence": "character.proficiencies",
+              "status": "ready"
+            },
+            "source_record_id": "cf864e58ba0d62c93110f5c6",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          {
+            "action_cost": "none",
+            "activation": "automatic",
+            "asset_id": "smith_tools",
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "奇械师",
+            "clause_id": "tool-proficiency",
+            "feature_id": "content.tashas-cauldron.feature.armorer.tools-of-the-trade",
+            "feature_name": "装甲师：工具精通",
+            "id": "content.tashas-cauldron.feature.armorer.tools-of-the-trade:tool-proficiency:1",
+            "if_already_proficient": "replacement_tool_choice",
+            "kind": "tool",
+            "name": "smith_tools",
+            "operation": "grant",
+            "operator": "grant_proficiency",
+            "replacement_choice": {
+              "duplicate_policy": "forbid",
+              "key": "replacement_tool_choice",
+              "options_source": "artisan_tools"
+            },
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "advancement.proficiency",
+              "consumer": "advancement_service.character_proficiency_registry",
+              "contract_version": "1.0",
+              "materializer_id": "advancement.proficiency",
+              "persistence": "character.proficiencies",
+              "status": "ready"
+            },
+            "source_record_id": "cf864e58ba0d62c93110f5c6",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          }
+        ],
+        "requires_dm_adjudication": false,
+        "resources": {},
+        "triggers": []
+      },
+      "source_fingerprint": "ace115b60fbbef32b8fd7bf3d8eb576623a21c7a24ec6cf516266b5c69d6dda7",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "b31728854bcaa0d0defb30fdabded12e1104d9d6a1d600cdf488112d0d80637e",
+      "status_authority": "compiler",
+      "typed_ir": true,
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "blockers": [],
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "advancement.proficiency"
+          ],
+          "clause_id": "tool-proficiency",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "advancement.proficiency",
+            "clause_id": "tool-proficiency",
+            "contract_version": "1.0",
+            "materializer_id": "advancement.proficiency",
+            "operator": "grant_proficiency",
+            "parameters": {
+              "asset_id": "woodcarver_tools",
+              "if_already_proficient": "replacement_tool_choice",
+              "operation": "grant",
+              "proficiency_kind": "tool"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "content.tashas-cauldron.feature.artillerist.tool-proficiency",
+      "fingerprint": "aa8471ffcbd0416ee1ddaa026574de4c8dda3a74b59b94e477a3d61167b0afb1",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "advancement.proficiency",
+          "clause_id": "tool-proficiency",
+          "contract_version": "1.0",
+          "materializer_id": "advancement.proficiency",
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "woodcarver_tools",
+            "if_already_proficient": "replacement_tool_choice",
+            "operation": "grant",
+            "proficiency_kind": "tool"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "advancement_confirmed"
+        }
+      ],
+      "kind": "feature",
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "materialized": true,
+      "required_inputs": [
+        {
+          "clause_id": "tool-proficiency",
+          "key": "replacement_tool_choice",
+          "kind": "choice",
+          "parameters": {
+            "duplicate_policy": "forbid",
+            "options_source": "artisan_tools",
+            "requires_dm_selection": false
+          }
+        }
+      ],
+      "required_persistence": [
+        "character.proficiencies"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "runtime_definition": {
+        "actions": {},
+        "advancement": null,
+        "attack_riders": [],
+        "automation_status": "full",
+        "combat_start": {
+          "defenses": [],
+          "modifiers": [],
+          "movement_modes": []
+        },
+        "prepared_spell_list": null,
+        "proficiencies": [
+          {
+            "action_cost": "none",
+            "activation": "automatic",
+            "asset_id": "woodcarver_tools",
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "奇械师",
+            "clause_id": "tool-proficiency",
+            "feature_id": "content.tashas-cauldron.feature.artillerist.tool-proficiency",
+            "feature_name": "魔炮师：工具精通",
+            "id": "content.tashas-cauldron.feature.artillerist.tool-proficiency:tool-proficiency:0",
+            "if_already_proficient": "replacement_tool_choice",
+            "kind": "tool",
+            "name": "woodcarver_tools",
+            "operation": "grant",
+            "operator": "grant_proficiency",
+            "replacement_choice": {
+              "duplicate_policy": "forbid",
+              "key": "replacement_tool_choice",
+              "options_source": "artisan_tools"
+            },
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "advancement.proficiency",
+              "consumer": "advancement_service.character_proficiency_registry",
+              "contract_version": "1.0",
+              "materializer_id": "advancement.proficiency",
+              "persistence": "character.proficiencies",
+              "status": "ready"
+            },
+            "source_record_id": "fbf8451f879a169fb17a01e9",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          }
+        ],
+        "requires_dm_adjudication": false,
+        "resources": {},
+        "triggers": []
+      },
+      "source_fingerprint": "3ea6459917699b41dee7c608f0aeb28605e8b6f280c0c750ab65d430f70f5569",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "8141af42d5bf3fdb18314c9b1824e525c1d6c0e4316957667ef44eafd98b78ee",
+      "status_authority": "compiler",
+      "typed_ir": true,
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "blockers": [],
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "resource.lifecycle.consume",
+            "modifier.passive"
+          ],
+          "clause_id": "ambush",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "modifier.passive",
+            "clause_id": "ambush",
+            "contract_version": "1.0",
+            "materializer_id": "modifier.passive",
+            "operator": "add_modifier",
+            "parameters": {
+              "applies_when": "initiative_roll",
+              "id": "ambush:initiative",
+              "operation": "add",
+              "scope": "self",
+              "stat": "initiative",
+              "value_source": "superiority_die"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "initiative_rolled"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "content.tashas-cauldron.feature.battle-master.ambush",
+      "fingerprint": "742ebe85b2946155be143a993e2622d6d7fb291727dbe93cdf1f90727be9211a",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "resource.lifecycle.consume",
+          "clause_id": "ambush",
+          "contract_version": "1.0",
+          "materializer_id": "resource.lifecycle.consume",
+          "operator": "consume_resource",
+          "parameters": {
+            "amount": 1,
+            "operation": "consume",
+            "resource_key": "superiority_dice"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "initiative_rolled"
+        },
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "modifier.passive",
+          "clause_id": "ambush",
+          "contract_version": "1.0",
+          "materializer_id": "modifier.passive",
+          "operator": "add_modifier",
+          "parameters": {
+            "applies_when": "initiative_roll",
+            "id": "ambush:initiative",
+            "operation": "add",
+            "scope": "self",
+            "stat": "initiative",
+            "value_source": "superiority_die"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "initiative_rolled"
+        }
+      ],
+      "kind": "feature",
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "materialized": true,
+      "required_inputs": [],
+      "required_persistence": [
+        "character.resources",
+        "character.feature_runtime"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "runtime_definition": {
+        "actions": {},
+        "advancement": null,
+        "attack_riders": [],
+        "automation_status": "full",
+        "combat_start": {
+          "defenses": [],
+          "modifiers": [
+            {
+              "action_cost": "none",
+              "activation": "automatic",
+              "applies_when": "initiative_roll",
+              "automation_status": "full",
+              "class_level": 3,
+              "class_name": "战士",
+              "clause_id": "ambush",
+              "feature_id": "content.tashas-cauldron.feature.battle-master.ambush",
+              "feature_name": "战技选项：伏击",
+              "id": "ambush:initiative",
+              "kind": "modifier",
+              "operation": "add",
+              "operator": "add_modifier",
+              "requires_dm_adjudication": false,
+              "runtime_execution": {
+                "capability_id": "modifier.passive",
+                "consumer": "typed_modifier_resolvers",
+                "contract_version": "1.0",
+                "materializer_id": "modifier.passive",
+                "persistence": "character.feature_runtime",
+                "status": "ready"
+              },
+              "scope": "self",
+              "source_record_id": "12139219bf7e575f9cde019c",
+              "stat": "initiative",
+              "targeting": {
+                "kind": "self",
+                "parameters": {}
+              },
+              "trigger": "initiative_rolled",
+              "value_source": "superiority_die"
+            }
+          ],
+          "movement_modes": []
+        },
+        "prepared_spell_list": null,
+        "proficiencies": [],
+        "requires_dm_adjudication": false,
+        "resources": {
+          "superiority_dice": {
+            "action_cost": "none",
+            "activation": "automatic",
+            "amount": 1,
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "战士",
+            "clause_id": "ambush",
+            "feature_id": "content.tashas-cauldron.feature.battle-master.ambush",
+            "feature_name": "战技选项：伏击",
+            "id": "content.tashas-cauldron.feature.battle-master.ambush:ambush:0",
+            "key": "superiority_dice",
+            "kind": "resource_lifecycle",
+            "operation": "consume",
+            "operator": "consume_resource",
+            "recovery": "initiative_rolled",
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "resource.lifecycle.consume",
+              "consumer": "combat_and_advancement_resource_cas",
+              "contract_version": "1.0",
+              "materializer_id": "resource.lifecycle.consume",
+              "persistence": "character.resources",
+              "status": "ready"
+            },
+            "source_record_id": "12139219bf7e575f9cde019c",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "initiative_rolled"
+          }
+        },
+        "triggers": []
+      },
+      "source_fingerprint": "13418d41bbe36e695c131a0a0972e749979d8174421fc9bcc2bf767a92f19eef",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "f42c7237bb7edad90ea1d277aac3ec2a12a41097412ba0432f1065e053b2bd8b",
+      "status_authority": "compiler",
+      "typed_ir": true,
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "blockers": [],
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "resource.lifecycle.consume",
+            "modifier.passive"
+          ],
+          "clause_id": "commanding-presence",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "modifier.passive",
+            "clause_id": "commanding-presence",
+            "contract_version": "1.0",
+            "materializer_id": "modifier.passive",
+            "operator": "add_modifier",
+            "parameters": {
+              "applies_when": "intimidation_or_performance_or_persuasion",
+              "id": "commanding_presence:check",
+              "operation": "add",
+              "scope": "self",
+              "stat": "charisma_social_check",
+              "value_source": "superiority_die"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "ability_check"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "content.tashas-cauldron.feature.battle-master.commanding-presence",
+      "fingerprint": "c64e09012fa751ffbf833a49d4894e58cb6c13acaa2dcf4ec23843aeeae2c207",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "resource.lifecycle.consume",
+          "clause_id": "commanding-presence",
+          "contract_version": "1.0",
+          "materializer_id": "resource.lifecycle.consume",
+          "operator": "consume_resource",
+          "parameters": {
+            "amount": 1,
+            "operation": "consume",
+            "resource_key": "superiority_dice"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "ability_check"
+        },
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "modifier.passive",
+          "clause_id": "commanding-presence",
+          "contract_version": "1.0",
+          "materializer_id": "modifier.passive",
+          "operator": "add_modifier",
+          "parameters": {
+            "applies_when": "intimidation_or_performance_or_persuasion",
+            "id": "commanding_presence:check",
+            "operation": "add",
+            "scope": "self",
+            "stat": "charisma_social_check",
+            "value_source": "superiority_die"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "ability_check"
+        }
+      ],
+      "kind": "feature",
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "materialized": true,
+      "required_inputs": [],
+      "required_persistence": [
+        "character.resources",
+        "character.feature_runtime"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "runtime_definition": {
+        "actions": {},
+        "advancement": null,
+        "attack_riders": [],
+        "automation_status": "full",
+        "combat_start": {
+          "defenses": [],
+          "modifiers": [
+            {
+              "action_cost": "none",
+              "activation": "automatic",
+              "applies_when": "intimidation_or_performance_or_persuasion",
+              "automation_status": "full",
+              "class_level": 3,
+              "class_name": "战士",
+              "clause_id": "commanding-presence",
+              "feature_id": "content.tashas-cauldron.feature.battle-master.commanding-presence",
+              "feature_name": "战技选项：领导风范",
+              "id": "commanding_presence:check",
+              "kind": "modifier",
+              "operation": "add",
+              "operator": "add_modifier",
+              "requires_dm_adjudication": false,
+              "runtime_execution": {
+                "capability_id": "modifier.passive",
+                "consumer": "typed_modifier_resolvers",
+                "contract_version": "1.0",
+                "materializer_id": "modifier.passive",
+                "persistence": "character.feature_runtime",
+                "status": "ready"
+              },
+              "scope": "self",
+              "source_record_id": "12139219bf7e575f9cde019c",
+              "stat": "charisma_social_check",
+              "targeting": {
+                "kind": "self",
+                "parameters": {}
+              },
+              "trigger": "ability_check",
+              "value_source": "superiority_die"
+            }
+          ],
+          "movement_modes": []
+        },
+        "prepared_spell_list": null,
+        "proficiencies": [],
+        "requires_dm_adjudication": false,
+        "resources": {
+          "superiority_dice": {
+            "action_cost": "none",
+            "activation": "automatic",
+            "amount": 1,
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "战士",
+            "clause_id": "commanding-presence",
+            "feature_id": "content.tashas-cauldron.feature.battle-master.commanding-presence",
+            "feature_name": "战技选项：领导风范",
+            "id": "content.tashas-cauldron.feature.battle-master.commanding-presence:commanding-presence:0",
+            "key": "superiority_dice",
+            "kind": "resource_lifecycle",
+            "operation": "consume",
+            "operator": "consume_resource",
+            "recovery": "ability_check",
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "resource.lifecycle.consume",
+              "consumer": "combat_and_advancement_resource_cas",
+              "contract_version": "1.0",
+              "materializer_id": "resource.lifecycle.consume",
+              "persistence": "character.resources",
+              "status": "ready"
+            },
+            "source_record_id": "12139219bf7e575f9cde019c",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "ability_check"
+          }
+        },
+        "triggers": []
+      },
+      "source_fingerprint": "13418d41bbe36e695c131a0a0972e749979d8174421fc9bcc2bf767a92f19eef",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "bd9aafb7884fd47c0dba45851581b951b4f42556ec733b0e848861b845e84d28",
+      "status_authority": "compiler",
+      "typed_ir": true,
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "blockers": [],
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "resource.lifecycle.consume",
+            "modifier.passive"
+          ],
+          "clause_id": "precision-attack",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "modifier.passive",
+            "clause_id": "precision-attack",
+            "contract_version": "1.0",
+            "materializer_id": "modifier.passive",
+            "operator": "add_modifier",
+            "parameters": {
+              "applies_when": "weapon_attack",
+              "id": "precision_attack:roll",
+              "operation": "add",
+              "scope": "self",
+              "stat": "attack_roll",
+              "value_source": "superiority_die"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "attack_declared"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "content.tashas-cauldron.feature.battle-master.precision-attack",
+      "fingerprint": "6429be553e3bd3b13e290d5cd8cea22b7360abd40f57ce9e48bac77705b88a7c",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "resource.lifecycle.consume",
+          "clause_id": "precision-attack",
+          "contract_version": "1.0",
+          "materializer_id": "resource.lifecycle.consume",
+          "operator": "consume_resource",
+          "parameters": {
+            "amount": 1,
+            "operation": "consume",
+            "resource_key": "superiority_dice"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "attack_declared"
+        },
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "modifier.passive",
+          "clause_id": "precision-attack",
+          "contract_version": "1.0",
+          "materializer_id": "modifier.passive",
+          "operator": "add_modifier",
+          "parameters": {
+            "applies_when": "weapon_attack",
+            "id": "precision_attack:roll",
+            "operation": "add",
+            "scope": "self",
+            "stat": "attack_roll",
+            "value_source": "superiority_die"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "attack_declared"
+        }
+      ],
+      "kind": "feature",
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "materialized": true,
+      "required_inputs": [],
+      "required_persistence": [
+        "character.resources",
+        "character.feature_runtime"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "runtime_definition": {
+        "actions": {},
+        "advancement": null,
+        "attack_riders": [],
+        "automation_status": "full",
+        "combat_start": {
+          "defenses": [],
+          "modifiers": [
+            {
+              "action_cost": "none",
+              "activation": "automatic",
+              "applies_when": "weapon_attack",
+              "automation_status": "full",
+              "class_level": 3,
+              "class_name": "战士",
+              "clause_id": "precision-attack",
+              "feature_id": "content.tashas-cauldron.feature.battle-master.precision-attack",
+              "feature_name": "战技选项：精准攻击",
+              "id": "precision_attack:roll",
+              "kind": "modifier",
+              "operation": "add",
+              "operator": "add_modifier",
+              "requires_dm_adjudication": false,
+              "runtime_execution": {
+                "capability_id": "modifier.passive",
+                "consumer": "typed_modifier_resolvers",
+                "contract_version": "1.0",
+                "materializer_id": "modifier.passive",
+                "persistence": "character.feature_runtime",
+                "status": "ready"
+              },
+              "scope": "self",
+              "source_record_id": "12139219bf7e575f9cde019c",
+              "stat": "attack_roll",
+              "targeting": {
+                "kind": "self",
+                "parameters": {}
+              },
+              "trigger": "attack_declared",
+              "value_source": "superiority_die"
+            }
+          ],
+          "movement_modes": []
+        },
+        "prepared_spell_list": null,
+        "proficiencies": [],
+        "requires_dm_adjudication": false,
+        "resources": {
+          "superiority_dice": {
+            "action_cost": "none",
+            "activation": "automatic",
+            "amount": 1,
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "战士",
+            "clause_id": "precision-attack",
+            "feature_id": "content.tashas-cauldron.feature.battle-master.precision-attack",
+            "feature_name": "战技选项：精准攻击",
+            "id": "content.tashas-cauldron.feature.battle-master.precision-attack:precision-attack:0",
+            "key": "superiority_dice",
+            "kind": "resource_lifecycle",
+            "operation": "consume",
+            "operator": "consume_resource",
+            "recovery": "attack_declared",
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "resource.lifecycle.consume",
+              "consumer": "combat_and_advancement_resource_cas",
+              "contract_version": "1.0",
+              "materializer_id": "resource.lifecycle.consume",
+              "persistence": "character.resources",
+              "status": "ready"
+            },
+            "source_record_id": "12139219bf7e575f9cde019c",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "attack_declared"
+          }
+        },
+        "triggers": []
+      },
+      "source_fingerprint": "13418d41bbe36e695c131a0a0972e749979d8174421fc9bcc2bf767a92f19eef",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "1a07687ccc6a028ec4a6edd6f0e6a42a19f9dfba417f3321daee156ce24e3f06",
+      "status_authority": "compiler",
+      "typed_ir": true,
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "blockers": [],
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "advancement.proficiency"
+          ],
+          "clause_id": "tool-proficiency",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "advancement.proficiency",
+            "clause_id": "tool-proficiency",
+            "contract_version": "1.0",
+            "materializer_id": "advancement.proficiency",
+            "operator": "grant_proficiency",
+            "parameters": {
+              "asset_id": "smith_tools",
+              "if_already_proficient": "replacement_tool_choice",
+              "operation": "grant",
+              "proficiency_kind": "tool"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "content.tashas-cauldron.feature.battle-smith.tool-proficiency",
+      "fingerprint": "6e5954ad77815ad85e4835170f9916e7817754431e1026bfe53bc262c0f93166",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "advancement.proficiency",
+          "clause_id": "tool-proficiency",
+          "contract_version": "1.0",
+          "materializer_id": "advancement.proficiency",
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "smith_tools",
+            "if_already_proficient": "replacement_tool_choice",
+            "operation": "grant",
+            "proficiency_kind": "tool"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "advancement_confirmed"
+        }
+      ],
+      "kind": "feature",
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "materialized": true,
+      "required_inputs": [
+        {
+          "clause_id": "tool-proficiency",
+          "key": "replacement_tool_choice",
+          "kind": "choice",
+          "parameters": {
+            "duplicate_policy": "forbid",
+            "options_source": "artisan_tools",
+            "requires_dm_selection": false
+          }
+        }
+      ],
+      "required_persistence": [
+        "character.proficiencies"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "runtime_definition": {
+        "actions": {},
+        "advancement": null,
+        "attack_riders": [],
+        "automation_status": "full",
+        "combat_start": {
+          "defenses": [],
+          "modifiers": [],
+          "movement_modes": []
+        },
+        "prepared_spell_list": null,
+        "proficiencies": [
+          {
+            "action_cost": "none",
+            "activation": "automatic",
+            "asset_id": "smith_tools",
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "奇械师",
+            "clause_id": "tool-proficiency",
+            "feature_id": "content.tashas-cauldron.feature.battle-smith.tool-proficiency",
+            "feature_name": "战地匠师：工具精通",
+            "id": "content.tashas-cauldron.feature.battle-smith.tool-proficiency:tool-proficiency:0",
+            "if_already_proficient": "replacement_tool_choice",
+            "kind": "tool",
+            "name": "smith_tools",
+            "operation": "grant",
+            "operator": "grant_proficiency",
+            "replacement_choice": {
+              "duplicate_policy": "forbid",
+              "key": "replacement_tool_choice",
+              "options_source": "artisan_tools"
+            },
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "advancement.proficiency",
+              "consumer": "advancement_service.character_proficiency_registry",
+              "contract_version": "1.0",
+              "materializer_id": "advancement.proficiency",
+              "persistence": "character.proficiencies",
+              "status": "ready"
+            },
+            "source_record_id": "606d89f6e0ea3b2e0194f24c",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          }
+        ],
+        "requires_dm_adjudication": false,
+        "resources": {},
+        "triggers": []
+      },
+      "source_fingerprint": "bd9ff66e2ba5029069c1c4f8ba8eda7de38e67b3db1ff94b809b900623ea2970",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "7e50a1c90a8b66941f8ae2bf56966e1f90f0be8d4a454d8290c3fb3c5b513f86",
+      "status_authority": "compiler",
+      "typed_ir": true,
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "blockers": [],
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "advancement.proficiency"
+          ],
+          "clause_id": "insight",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "advancement.proficiency",
+            "clause_id": "insight",
+            "contract_version": "1.0",
+            "materializer_id": "advancement.proficiency",
+            "operator": "grant_proficiency",
+            "parameters": {
+              "asset_id": "insight",
+              "if_already_proficient": "",
+              "operation": "grant",
+              "proficiency_kind": "skill"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        },
+        {
+          "blockers": [],
+          "capability_ids": [
+            "advancement.proficiency"
+          ],
+          "clause_id": "medicine",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "advancement.proficiency",
+            "clause_id": "medicine",
+            "contract_version": "1.0",
+            "materializer_id": "advancement.proficiency",
+            "operator": "grant_proficiency",
+            "parameters": {
+              "asset_id": "medicine",
+              "if_already_proficient": "",
+              "operation": "grant",
+              "proficiency_kind": "skill"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        },
+        {
+          "blockers": [],
+          "capability_ids": [
+            "advancement.proficiency"
+          ],
+          "clause_id": "herbalism",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "advancement.proficiency",
+            "clause_id": "herbalism",
+            "contract_version": "1.0",
+            "materializer_id": "advancement.proficiency",
+            "operator": "grant_proficiency",
+            "parameters": {
+              "asset_id": "herbalism_kit",
+              "if_already_proficient": "",
+              "operation": "grant",
+              "proficiency_kind": "tool"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy",
+      "fingerprint": "5f245277ed8aefb1b2d0027a331c40fca921b99ef9fa895a335b61c452ae2e94",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "advancement.proficiency",
+          "clause_id": "insight",
+          "contract_version": "1.0",
+          "materializer_id": "advancement.proficiency",
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "insight",
+            "if_already_proficient": "",
+            "operation": "grant",
+            "proficiency_kind": "skill"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "advancement_confirmed"
+        },
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "advancement.proficiency",
+          "clause_id": "medicine",
+          "contract_version": "1.0",
+          "materializer_id": "advancement.proficiency",
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "medicine",
+            "if_already_proficient": "",
+            "operation": "grant",
+            "proficiency_kind": "skill"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "advancement_confirmed"
+        },
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "advancement.proficiency",
+          "clause_id": "herbalism",
+          "contract_version": "1.0",
+          "materializer_id": "advancement.proficiency",
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "herbalism_kit",
+            "if_already_proficient": "",
+            "operation": "grant",
+            "proficiency_kind": "tool"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "advancement_confirmed"
+        }
+      ],
+      "kind": "feature",
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "materialized": true,
+      "required_inputs": [],
+      "required_persistence": [
+        "character.proficiencies"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "runtime_definition": {
+        "actions": {},
+        "advancement": null,
+        "attack_riders": [],
+        "automation_status": "full",
+        "combat_start": {
+          "defenses": [],
+          "modifiers": [],
+          "movement_modes": []
+        },
+        "prepared_spell_list": null,
+        "proficiencies": [
+          {
+            "action_cost": "none",
+            "activation": "automatic",
+            "asset_id": "insight",
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "武僧",
+            "clause_id": "insight",
+            "feature_id": "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy",
+            "feature_name": "命流之器",
+            "id": "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy:insight:0",
+            "kind": "skill",
+            "name": "insight",
+            "operation": "grant",
+            "operator": "grant_proficiency",
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "advancement.proficiency",
+              "consumer": "advancement_service.character_proficiency_registry",
+              "contract_version": "1.0",
+              "materializer_id": "advancement.proficiency",
+              "persistence": "character.proficiencies",
+              "status": "ready"
+            },
+            "source_record_id": "d4e98761778ae5c18fd66bdb",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          {
+            "action_cost": "none",
+            "activation": "automatic",
+            "asset_id": "medicine",
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "武僧",
+            "clause_id": "medicine",
+            "feature_id": "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy",
+            "feature_name": "命流之器",
+            "id": "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy:medicine:1",
+            "kind": "skill",
+            "name": "medicine",
+            "operation": "grant",
+            "operator": "grant_proficiency",
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "advancement.proficiency",
+              "consumer": "advancement_service.character_proficiency_registry",
+              "contract_version": "1.0",
+              "materializer_id": "advancement.proficiency",
+              "persistence": "character.proficiencies",
+              "status": "ready"
+            },
+            "source_record_id": "d4e98761778ae5c18fd66bdb",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          {
+            "action_cost": "none",
+            "activation": "automatic",
+            "asset_id": "herbalism_kit",
+            "automation_status": "full",
+            "class_level": 3,
+            "class_name": "武僧",
+            "clause_id": "herbalism",
+            "feature_id": "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy",
+            "feature_name": "命流之器",
+            "id": "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy:herbalism:2",
+            "kind": "tool",
+            "name": "herbalism_kit",
+            "operation": "grant",
+            "operator": "grant_proficiency",
+            "requires_dm_adjudication": false,
+            "runtime_execution": {
+              "capability_id": "advancement.proficiency",
+              "consumer": "advancement_service.character_proficiency_registry",
+              "contract_version": "1.0",
+              "materializer_id": "advancement.proficiency",
+              "persistence": "character.proficiencies",
+              "status": "ready"
+            },
+            "source_record_id": "d4e98761778ae5c18fd66bdb",
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          }
+        ],
+        "requires_dm_adjudication": false,
+        "resources": {},
+        "triggers": []
+      },
+      "source_fingerprint": "cd0da7ef4b8d1eabd454e2ec2fc63f3c594d34896bddad8c846a2b6fcc495545",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "ae3191b749ffacac9e5b59c256569aa1e9e19417ed5746c521122445b13ff15e",
+      "status_authority": "compiler",
+      "typed_ir": true,
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    }
+  ],
+  "schema_version": "content-ir-compile-result-1",
+  "typed_ir_count": 8
+}

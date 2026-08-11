@@ -1,0 +1,40 @@
+{
+  "capability_registry_version": "content-capabilities-1",
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "draft_paths": [],
+  "manifest_fingerprint": "bdb3a124adc4bbef4defed0ee72c43fa5d9f7ef335b137d7e8cbb1a3e1fad7c1",
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-da33a75054af",
+  "production_targets": {
+    "campaign": false,
+    "character": false,
+    "database": false,
+    "feature_registry": false,
+    "spell_registry": false
+  },
+  "replay": {
+    "policy": "same-manifest-fingerprint-is-idempotent"
+  },
+  "ruleset_version": "2014",
+  "schema_version": "content-ir-workbench-manifest-3",
+  "source_book": "塔莎的万事坩埚",
+  "source_fingerprints": {
+    "12139219bf7e575f9cde019c": "13418d41bbe36e695c131a0a0972e749979d8174421fc9bcc2bf767a92f19eef",
+    "606d89f6e0ea3b2e0194f24c": "bd9ff66e2ba5029069c1c4f8ba8eda7de38e67b3db1ff94b809b900623ea2970",
+    "cf864e58ba0d62c93110f5c6": "ace115b60fbbef32b8fd7bf3d8eb576623a21c7a24ec6cf516266b5c69d6dda7",
+    "d4e98761778ae5c18fd66bdb": "cd0da7ef4b8d1eabd454e2ec2fc63f3c594d34896bddad8c846a2b6fcc495545",
+    "dc4f2bf18baca6ec97d7d0bf": "f947584f708c3e4156d6666e4fceb81d909aee156c9071f5908aa1aafb6042b0",
+    "fbf8451f879a169fb17a01e9": "3ea6459917699b41dee7c608f0aeb28605e8b6f280c0c750ab65d430f70f5569"
+  },
+  "typed_ir_paths": [
+    "features/content-tashas-cauldron-feature-alchemist-tool-proficiency.json",
+    "features/content-tashas-cauldron-feature-armorer-tools-of-the-trade.json",
+    "features/content-tashas-cauldron-feature-artillerist-tool-proficiency.json",
+    "features/content-tashas-cauldron-feature-battle-master-ambush.json",
+    "features/content-tashas-cauldron-feature-battle-master-commanding-presence.json",
+    "features/content-tashas-cauldron-feature-battle-master-precision-attack.json",
+    "features/content-tashas-cauldron-feature-battle-smith-tool-proficiency.json",
+    "features/content-tashas-cauldron-feature-way-of-mercy-implements-of-mercy.json"
+  ]
+}
