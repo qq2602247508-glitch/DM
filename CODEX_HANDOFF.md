@@ -2511,6 +2511,41 @@ PYTHONPATH=. backend/.venv/bin/python -m compileall -q backend/src backend/tests
 git diff --check
 ```
 
+# 2026-08-11 Compile Full → Production Runtime Full 批量收口
+
+- 本轮严格单线程执行；保护路径 `backend/tests/integrations/`、`backend/tests/ollama.py`
+  仍保持未跟踪、未暂存、未提交。
+- 基线 100 条 `compile_full=100 / runtime_preview_full=100 / production_runtime_full=20` 未被
+  覆盖。新增 authored IR 独立位于 `data/content-ir/authored/batch-III/`：13 条，13/13 compile
+  full，13/13 production full。
+- 真实生产 API 批量收口：26 条 Spell + 5 条 Feature 全部 preview→confirm→replay 成功；新增
+  production full=31，最终 production full=51；最终 Spell=41、Feature=10。
+- 跨包最终 Spell 生产数：Core 26、Xanathar 8、Tasha 3、Fizban 2、Book of Many Things 2。
+  正式 499 审计仍为 `328 full / 110 partial / 61 dm_only`。
+- 新增闭集注册表 `backend/src/dnd_dm_assistant/application/content_ir_production_registry.py`。
+  生产 dispatch 依赖 typed clause/schema，不依赖 content name；未知 schema/section/required
+  field fail closed。
+- Spell 入口接入真实 spell economy + combat engine：attack hit/miss、save full/half、奇数向下
+  取整、区域几何、多目标 batch preflight、fixed dice bounds、upcast、healing cap、temporary
+  HP replacement、condition、concentration、CAS、idempotency、rollback、snapshot audit 均有
+  真实 API evidence。Feature 入口新增 timed movement modifier、condition removal、passive
+  registry inspection、attack rider consumer。
+- 逐条 blocker audit 与最多 4 个 major consumer unlock ranking：
+  `reports/content-ir-production-blocker-audit-2026-08-11.json`、
+  `reports/content-ir-production-unlock-ranking-2026-08-11.json`。
+- 批量/跨包/隔离验证报告：
+  `reports/content-ir-production-runtime-validation-II-2026-08-11.json`、
+  `reports/content-ir-runtime-level-audit-II-2026-08-11.json`、
+  `reports/content-ir-cross-pack-production-proof-2026-08-11.json`、
+  `reports/content-ir-isolated-pack-dry-run-III-2026-08-11.json`。
+- 验证脚本连续重复运行后，production results 与 closeout reports SHA-256 byte-identical；临时
+  SQLite 销毁，正式 DB/registry/campaign/character 未污染。前端未修改，未运行浏览器；真实
+  后端 API 入口验收已完成。
+- 仍保持 compile-only 的内容不得自动升级，剩余 blocker 主要为自由 choice、召唤/创建、复杂
+  movement、复杂 duration/concentration settlement、非标准多段 effect 与需 DM 裁定的目标/视线。
+
+文档：`docs/content-ir-production-runtime-closeout-2026-08-11.md`。
+
 四项均通过；真实官方扫描报告连续两次 hash 一致。
 
 # 2026-08-11 真实 Typed IR 生产与批量 Full 收割 I
