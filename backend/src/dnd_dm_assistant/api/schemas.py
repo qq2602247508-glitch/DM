@@ -2468,6 +2468,44 @@ class SpellCastRequest(BaseModel):
     idempotency_key: str | None = Field(default=None, min_length=8, max_length=120)
 
 
+class ContentIRRuntimeRequest(BaseModel):
+    """A production confirmation bound to a reviewed runtime registry entry."""
+
+    content_kind: Literal["spell", "feature"]
+    runtime_id: str = Field(min_length=1, max_length=200)
+    permission: Literal["player", "dm"] = "player"
+    character_id: str | None = None
+    character_version: int | None = Field(default=None, ge=1)
+    known_spell_id: str | None = None
+    slot_level: int | None = Field(default=None, ge=0, le=9)
+    recovery_slot_level: int | None = Field(default=None, ge=1, le=5)
+    ritual: bool = False
+    material_available: bool = True
+    concentration: bool = False
+    free_cast: bool = False
+    combat_id: str = Field(min_length=1, max_length=36)
+    actor_combatant_id: str = Field(min_length=1, max_length=36)
+    actor_version: int = Field(ge=1)
+    target_combatant_id: str | None = None
+    target_version: int | None = Field(default=None, ge=1)
+    resolution_total: int | None = Field(default=None, ge=0, le=100_000)
+    attack_roll_total: int | None = Field(default=None, ge=-100, le=1_000)
+    save_succeeded: bool | None = None
+    preview_token: str | None = None
+    idempotency_key: str | None = Field(default=None, min_length=8, max_length=120)
+
+    @model_validator(mode="after")
+    def validate_runtime_request(self) -> ContentIRRuntimeRequest:
+        if self.content_kind == "spell":
+            if not self.character_id or self.character_version is None or not self.known_spell_id:
+                raise ValueError("spell content runtime requires character and known_spell binding")
+            if self.slot_level is None:
+                raise ValueError("spell content runtime requires slot_level")
+        if self.content_kind == "feature" and self.known_spell_id is not None:
+            raise ValueError("feature content runtime cannot bind known_spell_id")
+        return self
+
+
 class EquipmentOperationRequest(BaseModel):
     character_id: str
     character_version: int = Field(ge=1)

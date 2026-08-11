@@ -16650,6 +16650,7 @@ class CombatEngineService:
         command: CombatFeatureActionCommand,
         *,
         idempotency_key: str,
+        runtime_action: Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Apply a class feature whose registry has an executable contract.
 
@@ -16693,19 +16694,22 @@ class CombatEngineService:
             self._validate_can_act(actor)
             registry = actor.snapshot_json.get("feature_runtime")
             registry_data = dict(registry) if isinstance(registry, dict) else {}
-            raw_actions = registry_data.get("actions")
-            canonical_actions = feature_block_payloads(registry_data, "action")
-            if canonical_actions:
-                raw_actions = {
-                    str(item.get("id") or item.get("resource_key") or index): item
-                    for index, item in enumerate(canonical_actions)
-                }
-            action = (
-                dict(raw_actions.get(command.feature_id))
-                if isinstance(raw_actions, dict)
-                and isinstance(raw_actions.get(command.feature_id), dict)
-                else None
-            )
+            if runtime_action is not None:
+                action = dict(runtime_action)
+            else:
+                raw_actions = registry_data.get("actions")
+                canonical_actions = feature_block_payloads(registry_data, "action")
+                if canonical_actions:
+                    raw_actions = {
+                        str(item.get("id") or item.get("resource_key") or index): item
+                        for index, item in enumerate(canonical_actions)
+                    }
+                action = (
+                    dict(raw_actions.get(command.feature_id))
+                    if isinstance(raw_actions, dict)
+                    and isinstance(raw_actions.get(command.feature_id), dict)
+                    else None
+                )
             if action is None or action.get("kind") != "feature_action":
                 raise ValueError("该职业特性没有可执行的运行时积木")
             block_errors = feature_action_block_errors(action)

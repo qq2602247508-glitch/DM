@@ -8,6 +8,7 @@ from sqlalchemy.engine import Engine
 from dnd_dm_assistant.application.agent import AgentOrchestrator
 from dnd_dm_assistant.application.campaigns import CampaignService
 from dnd_dm_assistant.application.character_catalog import CharacterCatalog
+from dnd_dm_assistant.application.content_ir_runtime import ContentIRRuntimeService
 from dnd_dm_assistant.application.health import HealthService
 from dnd_dm_assistant.application.player_rules_search import PlayerRulesSearch
 from dnd_dm_assistant.application.reliability import ReliabilityService
@@ -139,6 +140,10 @@ def get_session_checkpoint_service(request: Request) -> SessionCheckpointService
 
 def get_spell_economy_service(request: Request) -> SpellEconomyService:
     return SpellEconomyService(cast(Engine, request.app.state.database_engine))
+
+
+def get_content_ir_runtime_service(request: Request) -> ContentIRRuntimeService:
+    return ContentIRRuntimeService(cast(Engine, request.app.state.database_engine))
 
 
 def get_narrative_service(request: Request) -> NarrativeService:

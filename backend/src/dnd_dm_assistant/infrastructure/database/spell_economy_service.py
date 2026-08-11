@@ -564,6 +564,13 @@ class SpellEconomyService:
             if preview["preview_token"] != token:
                 raise VersionConflict("spell preview", "state", 1, 2)
             c = self._character(s, cid, data["character_id"], data["character_version"])
+            before_character = {
+                "character_id": c.id,
+                "version": c.version,
+                "spellcasting": dict(c.spellcasting or {}),
+                "resources": dict(c.resources or {}),
+            }
+            before_concentration = dict(c.resources or {}).get("concentration")
             if preview.get("free_cast"):
                 resource_key = str(preview.get("free_cast_resource_key") or "").strip()
                 resources = dict(c.resources or {})
@@ -607,18 +614,94 @@ class SpellEconomyService:
                     "concentration": {"spell_id": data["known_spell_id"], "rule_reference": RULE},
                 }
             out = {**preview, "confirmed": True}
+            out["character_version_before"] = before_character["version"]
+            out["character_version_after"] = c.version
+            out["before_concentration"] = before_concentration
+            out["after_concentration"] = dict(c.resources or {}).get("concentration")
             s.add(
                 OperationTransaction(
                     campaign_id=cid,
                     operation_type="spell_cast",
                     idempotency_key=f"spell:{key}",
-                    before_snapshot={},
-                    after_snapshot=out,
+                    before_snapshot=before_character,
+                    after_snapshot={
+                        **out,
+                        "character_after": {
+                            "version": c.version,
+                            "spellcasting": dict(c.spellcasting or {}),
+                            "resources": dict(c.resources or {}),
+                        },
+                    },
                     source="system",
                     confirmed_at=datetime.now(UTC),
                 )
             )
             return out
+
+    def rollback_spell_cast(
+        self,
+        cid: str,
+        *,
+        idempotency_key: str,
+        expected_character_version: int,
+    ) -> dict[str, Any]:
+        """Compensate a spell-economy commit when its combat consumer fails.
+
+        The compensation itself is CAS guarded and recorded on the original
+        transaction.  It is intentionally generic and is only used by the
+        content-runtime coordinator after a downstream production consumer
+        rejects the already-previewed action.
+        """
+
+        transaction_key = f"spell:{idempotency_key}"
+        with Session(self.engine) as s, s.begin():
+            transaction = s.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == cid,
+                    OperationTransaction.idempotency_key == transaction_key,
+                )
+            )
+            if transaction is None:
+                raise StateNotFoundError("spell transaction not found")
+            if transaction.status == "reverted":
+                return {
+                    "status": "already_reverted",
+                    "idempotency_key": idempotency_key,
+                    "transaction_id": transaction.id,
+                }
+            before = dict(transaction.before_snapshot or {})
+            character_id = str(before.get("character_id") or "")
+            character = s.get(Character, character_id)
+            if character is None or character.campaign_id != cid:
+                raise StateNotFoundError("spell rollback character not found")
+            if character.version != expected_character_version:
+                raise VersionConflict(
+                    "character",
+                    character.id,
+                    expected_character_version,
+                    character.version,
+                )
+            character.spellcasting = dict(before.get("spellcasting") or {})
+            character.resources = dict(before.get("resources") or {})
+            character.version += 1
+            transaction.status = "reverted"
+            transaction.reason = "content runtime downstream consumer rejected action"
+            transaction.reverted_at = datetime.now(UTC)
+            transaction.after_snapshot = {
+                **dict(transaction.after_snapshot or {}),
+                "rollback": {
+                    "character_version_after": character.version,
+                    "spellcasting": dict(character.spellcasting or {}),
+                    "resources": dict(character.resources or {}),
+                },
+            }
+            return {
+                "status": "reverted",
+                "idempotency_key": idempotency_key,
+                "transaction_id": transaction.id,
+                "character_id": character.id,
+                "character_version": character.version,
+            }
 
     @staticmethod
     def _equipment_armor_class(

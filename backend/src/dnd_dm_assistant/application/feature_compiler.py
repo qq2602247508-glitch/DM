@@ -587,6 +587,32 @@ def materialize_runtime_definition(
         )
         section = materialized.section
         entry = materialized.entry
+        clause_effects = explicit_clause_effects.get(clause_id, [])
+        consume_effect = next(
+            (
+                dict(effect.get("parameters") or {})
+                for effect in clause_effects
+                if effect.get("operator") == "consume_resource"
+            ),
+            None,
+        )
+        if operator in {"heal", "grant_temporary_hp"} and clause.trigger == "explicit_activation":
+            # These operators are ordinary production feature actions.  The
+            # generic combat consumer needs the same action envelope as an
+            # older hand-authored feature, while the formula/target/resource
+            # remain data carried by the materialized block.
+            entry["kind"] = "feature_action"
+            entry["target"] = str(clause.targeting.kind if clause.targeting else "self")
+            entry["resolution_kind"] = (
+                "temporary_healing" if operator == "grant_temporary_hp" else "healing"
+            )
+            entry["healing"] = str(
+                entry.get("formula") or entry.get("healing") or entry.get("healing_formula") or ""
+            )
+            if consume_effect:
+                entry["resource_key"] = str(consume_effect.get("resource_key") or "")
+                entry["resource_cost"] = int(consume_effect.get("amount") or 1)
+            section = "actions"
         if section == "combat_modifiers":
             definition["combat_start"]["modifiers"].append(entry)
         elif section == "combat_defenses":
@@ -643,6 +669,11 @@ def materialize_runtime_definition(
                 if effects:
                     entry["effects"] = effects
             definition["actions"][str(entry["id"])] = entry
+        elif section == "triggers" and operator in {"heal", "grant_temporary_hp"}:
+            # Non-explicit trigger blocks stay trigger blocks.  Explicit
+            # healing/temp-HP blocks were promoted above so player/DM
+            # activation goes through the production feature-action endpoint.
+            definition["triggers"].append(entry)
         elif section in {"proficiencies", "triggers", "attack_riders"}:
             target = definition[section]
             if isinstance(target, list):
