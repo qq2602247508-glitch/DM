@@ -80,14 +80,19 @@ def _cmd_scan(args: argparse.Namespace) -> int:
 
 def _cmd_extract(args: argparse.Namespace) -> int:
     records = load_records(JSON_ROOT)
-    selected, pack = _records_for_input(args.input, records)
+    if args.book:
+        selected, pack = _records_for_selector(args.book, records)
+        input_name = args.book
+    else:
+        selected, pack = _records_for_input(args.input, records)
+        input_name = args.input.name
     if pack is None:
         pack = {
-            "pack_id": args.input.name.lower().replace(" ", "-"),
-            "label": args.input.name,
-            "source_book": args.input.name,
+            "pack_id": input_name.lower().replace(" ", "-"),
+            "label": input_name,
+            "source_book": input_name,
             "source_book_aliases": [],
-            "source_path_prefixes": [args.input.name],
+            "source_path_prefixes": [input_name],
             "source_origin": "local-source",
             "content_types": [],
         }
@@ -141,7 +146,9 @@ def main() -> int:
     scan.set_defaults(func=_cmd_scan)
 
     extract = subparsers.add_parser("extract")
-    extract.add_argument("--input", type=Path, required=True)
+    input_group = extract.add_mutually_exclusive_group(required=True)
+    input_group.add_argument("--input", type=Path)
+    input_group.add_argument("--book")
     extract.add_argument("--output", type=Path, required=True)
     extract.set_defaults(func=_cmd_extract)
 

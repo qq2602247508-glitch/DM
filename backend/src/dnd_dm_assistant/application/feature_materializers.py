@@ -89,17 +89,33 @@ def _with_parameters(context: MaterializerContext, *, kind: str | None = None) -
 
 def _materialize_proficiency(context: MaterializerContext) -> MaterializedBlock:
     params = context.parameters
-    if params["proficiency_kind"] == "language_choice":
-        entry = context.base(kind="selected_language_grant")
+    proficiency_kind = str(params["proficiency_kind"])
+    if proficiency_kind == "language_choice" or proficiency_kind.endswith("_choice"):
+        choice_input = next(
+            (
+                item
+                for item in context.clause.required_inputs
+                if item.kind == "choice"
+            ),
+            None,
+        )
+        choice_key = choice_input.key if choice_input is not None else f"{proficiency_kind}_input"
+        choice_parameters = dict(choice_input.parameters) if choice_input is not None else {}
+        entry = context.base(
+            kind="selected_language_grant"
+            if proficiency_kind == "language_choice"
+            else "selected_proficiency_grant"
+        )
         entry["choice_requirement"] = {
-            "key": "language_choice",
+            "key": choice_key,
             "minimum": 1,
             "maximum": 1,
             "strict": True,
             "options_source": str(params["asset_id"]),
-            "duplicate_policy": "forbid",
-            "requires_dm_selection": False,
+            "duplicate_policy": str(choice_parameters.get("duplicate_policy") or "forbid"),
+            "requires_dm_selection": bool(choice_parameters.get("requires_dm_selection")),
         }
+        entry["proficiency_kind"] = proficiency_kind
         return MaterializedBlock("advancement", entry)
     entry = context.base(kind=str(params["proficiency_kind"]))
     entry.update(
@@ -109,6 +125,26 @@ def _materialize_proficiency(context: MaterializerContext) -> MaterializedBlock:
             "operation": str(params["operation"]),
         }
     )
+    if params.get("if_already_proficient"):
+        entry["if_already_proficient"] = str(params["if_already_proficient"])
+        choice_input = next(
+            (
+                item
+                for item in context.clause.required_inputs
+                if item.kind == "choice"
+            ),
+            None,
+        )
+        if choice_input is not None:
+            entry["replacement_choice"] = {
+                "key": choice_input.key,
+                "options_source": str(
+                    choice_input.parameters.get("options_source") or "proficiency_options"
+                ),
+                "duplicate_policy": str(
+                    choice_input.parameters.get("duplicate_policy") or "forbid"
+                ),
+            }
     return MaterializedBlock("proficiencies", entry)
 
 

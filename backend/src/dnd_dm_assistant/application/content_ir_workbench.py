@@ -39,7 +39,7 @@ STATUS_VALUES = ("full", "partial", "manual", "invalid")
 REPORT_SCHEMA_VERSION = "content-ir-workbench-report-2"
 MANIFEST_SCHEMA_VERSION = "content-ir-workbench-manifest-2"
 COMPILER_FINGERPRINT = hashlib.sha256(
-    b"local-dnd-content-ir-compiler:feature-ir-1:spell-ir-1:2026-08-10"
+    b"local-dnd-content-ir-compiler:feature-ir-1:spell-ir-2:2026-08-11"
 ).hexdigest()
 CAPABILITY_REGISTRY_VERSION = "content-capabilities-1"
 
@@ -69,22 +69,197 @@ _SPELL_CLAUSE_CAPABILITIES = {
     clause_type: f"spell.{clause_type}.v1" for clause_type in sorted(_SPELL_CLAUSE_TYPES)
 }
 _SPELL_CLAUSE_FIELDS = {
-    "attack_roll": frozenset({"type", "attack_ability", "attack_bonus", "range"}),
-    "saving_throw": frozenset({"type", "save_ability", "dc", "half_on_success"}),
-    "damage": frozenset({"type", "expression", "damage", "damage_type", "on_success"}),
-    "healing": frozenset({"type", "expression", "healing", "amount", "on_success"}),
-    "temporary_hp": frozenset({"type", "amount", "expression"}),
-    "apply_condition": frozenset({"type", "condition", "duration", "save_ability"}),
-    "remove_condition": frozenset({"type", "condition", "target"}),
-    "area": frozenset({"type", "shape", "size", "size_ft", "origin", "target"}),
-    "duration": frozenset({"type", "duration", "rounds", "concentration"}),
-    "concentration": frozenset({"type", "required", "duration"}),
-    "movement": frozenset({"type", "distance_ft", "movement_type", "direction", "speed"}),
-    "summon_or_creation": frozenset({"type", "kind", "stat_block_id", "duration", "count"}),
-    "resource_effect": frozenset({"type", "resource_key", "operation", "amount"}),
-    "upcast": frozenset({"type", "increments", "text", "per_slot"}),
-    "spell_modifier": frozenset({"type", "modifier", "value", "scope"}),
-    "target_selection": frozenset({"type", "kind", "count", "range", "visibility"}),
+    "attack_roll": frozenset(
+        {
+            "type",
+            "clause_id",
+            "action_economy",
+            "trigger",
+            "target",
+            "range",
+            "attack_ability",
+            "attack_bonus",
+            "object_target",
+            "visibility",
+        }
+    ),
+    "saving_throw": frozenset(
+        {
+            "type",
+            "clause_id",
+            "action_economy",
+            "trigger",
+            "target",
+            "range",
+            "save_ability",
+            "dc",
+            "half_on_success",
+            "ignores_cover",
+            "visibility",
+        }
+    ),
+    "damage": frozenset(
+        {
+            "type",
+            "clause_id",
+            "action_economy",
+            "trigger",
+            "target",
+            "range",
+            "expression",
+            "damage",
+            "damage_type",
+            "on_success",
+            "on_failure",
+            "applies_to",
+            "timing",
+        }
+    ),
+    "healing": frozenset(
+        {
+            "type",
+            "clause_id",
+            "action_economy",
+            "trigger",
+            "target",
+            "range",
+            "expression",
+            "healing",
+            "amount",
+            "on_success",
+            "applies_to",
+            "timing",
+        }
+    ),
+    "temporary_hp": frozenset(
+        {
+            "type",
+            "clause_id",
+            "action_economy",
+            "trigger",
+            "target",
+            "range",
+            "amount",
+            "expression",
+            "duration",
+            "timing",
+        }
+    ),
+    "apply_condition": frozenset(
+        {
+            "type",
+            "clause_id",
+            "action_economy",
+            "trigger",
+            "target",
+            "range",
+            "condition",
+            "duration",
+            "save_ability",
+            "on_failure",
+            "condition_effect",
+            "break_action",
+        }
+    ),
+    "remove_condition": frozenset(
+        {
+            "type",
+            "clause_id",
+            "action_economy",
+            "trigger",
+            "target",
+            "range",
+            "condition",
+            "remove_mode",
+        }
+    ),
+    "area": frozenset(
+        {
+            "type",
+            "clause_id",
+            "action_economy",
+            "trigger",
+            "shape",
+            "size",
+            "size_ft",
+            "origin",
+            "target",
+            "range",
+        }
+    ),
+    "duration": frozenset(
+        {
+            "type",
+            "clause_id",
+            "duration",
+            "rounds",
+            "concentration",
+            "applies_to",
+        }
+    ),
+    "concentration": frozenset(
+        {
+            "type",
+            "clause_id",
+            "required",
+            "duration",
+            "applies_to",
+        }
+    ),
+    "movement": frozenset(
+        {
+            "type",
+            "clause_id",
+            "action_economy",
+            "trigger",
+            "target",
+            "range",
+            "distance_ft",
+            "speed_delta_ft",
+            "movement_type",
+            "direction",
+            "speed",
+            "duration",
+            "applies_to",
+        }
+    ),
+    "summon_or_creation": frozenset(
+        {"type", "clause_id", "kind", "stat_block_id", "duration", "count"}
+    ),
+    "resource_effect": frozenset(
+        {"type", "clause_id", "resource_key", "operation", "amount"}
+    ),
+    "upcast": frozenset(
+        {
+            "type",
+            "clause_id",
+            "increments",
+            "text",
+            "per_slot",
+            "progression",
+            "minimum_slot",
+            "applies_to",
+        }
+    ),
+    "spell_modifier": frozenset(
+        {"type", "clause_id", "modifier", "value", "scope", "duration", "applies_to"}
+    ),
+    "target_selection": frozenset(
+        {
+            "type",
+            "clause_id",
+            "kind",
+            "count",
+            "range",
+            "visibility",
+            "shape",
+            "size_ft",
+        }
+    ),
+}
+_SPELL_CLAUSE_FIELDS = {
+    clause_type: fields | frozenset({"evidence_ref"})
+    for clause_type, fields in _SPELL_CLAUSE_FIELDS.items()
 }
 _SPELL_REQUIRED_FIELDS = {
     "damage": (("expression", "damage"),),
@@ -96,7 +271,7 @@ _SPELL_REQUIRED_FIELDS = {
     "area": (("shape",),),
     "duration": (("duration", "rounds"),),
     "concentration": (("required",),),
-    "movement": (("distance_ft", "speed"),),
+    "movement": (("distance_ft", "speed", "speed_delta_ft"),),
     "summon_or_creation": (("kind",),),
     "resource_effect": (("resource_key", "operation"),),
     "upcast": (("increments", "text", "per_slot"),),
@@ -105,6 +280,7 @@ _SPELL_REQUIRED_FIELDS = {
 }
 _SPELL_TOP_LEVEL_FIELDS = frozenset(
     {
+        "kind",
         "spell_id",
         "name",
         "source_book",
@@ -112,6 +288,7 @@ _SPELL_TOP_LEVEL_FIELDS = frozenset(
         "edition",
         "ruleset_version",
         "pack_id",
+        "pack_version",
         "namespace",
         "level",
         "school",
@@ -134,6 +311,15 @@ _SPELL_TOP_LEVEL_FIELDS = frozenset(
         "clauses",
         "source_trust",
         "source_fingerprint",
+        "schema_version",
+        "source_path",
+        "review_status",
+        "reviewed_by",
+        "reviewed_fields",
+        "evidence",
+        "clause_boundaries",
+        "manual_decisions",
+        "source_evidence",
         "source_provenance",
         "clause_identity",
         "compiler_fingerprint",
@@ -589,11 +775,14 @@ class SpellSpec:
     name: str
     level: int
     clauses: tuple[dict[str, Any], ...]
+    schema_version: str = "spell-ir-1"
     source_book: str | None = None
     source_record_id: str | None = None
+    source_path: str | None = None
     edition: str = "unknown"
     ruleset_version: str = "2024"
     pack_id: str = "core"
+    pack_version: str = "unknown"
     namespace: str = "content.core"
     school: str | None = None
     casting_time: str | None = None
@@ -615,6 +804,13 @@ class SpellSpec:
     source_trust: str = "authored_ir"
     source_fingerprint: str | None = None
     source_provenance: dict[str, Any] = field(default_factory=dict)
+    review_status: str | None = None
+    reviewed_by: str | None = None
+    reviewed_fields: tuple[str, ...] = ()
+    evidence: tuple[str, ...] = ()
+    clause_boundaries: dict[str, Any] = field(default_factory=dict)
+    manual_decisions: dict[str, Any] = field(default_factory=dict)
+    source_evidence: dict[str, Any] = field(default_factory=dict)
     clause_identity: tuple[str, ...] = ()
     compiler_fingerprint: str = COMPILER_FINGERPRINT
     capability_registry: dict[str, Any] = field(
@@ -645,6 +841,9 @@ class SpellSpec:
             or not 0 <= value["level"] <= 9
         ):
             raise ValueError("level must be an integer from 0 to 9")
+        schema_version = _text(value.get("schema_version")) or "spell-ir-1"
+        if schema_version != "spell-ir-1":
+            raise ValueError(f"unsupported SpellSpec schema_version: {schema_version}")
         if not isinstance(value["clauses"], list) or not value["clauses"]:
             raise ValueError("clauses must be a non-empty array")
         for index, clause in enumerate(value["clauses"]):
@@ -671,6 +870,20 @@ class SpellSpec:
         resource_effects = value.get("resource_effects") or ()
         if not isinstance(resource_effects, (list, tuple)):
             raise ValueError("resource_effects must be an array")
+        reviewed_fields = value.get("reviewed_fields") or ()
+        if not isinstance(reviewed_fields, (list, tuple)):
+            raise ValueError("reviewed_fields must be an array")
+        evidence = value.get("evidence") or ()
+        if not isinstance(evidence, (list, tuple)):
+            raise ValueError("evidence must be an array")
+        for mapping_name in (
+            "source_provenance",
+            "clause_boundaries",
+            "manual_decisions",
+            "source_evidence",
+        ):
+            if not isinstance(value.get(mapping_name) or {}, Mapping):
+                raise ValueError(f"{mapping_name} must be an object")
         capability_registry = value.get("capability_registry") or {
             "id": "spell",
             "version": CAPABILITY_REGISTRY_VERSION,
@@ -682,11 +895,14 @@ class SpellSpec:
             name=value["name"].strip(),
             level=value["level"],
             clauses=clauses,
+            schema_version=schema_version,
             source_book=_text(value.get("source_book")) or None,
             source_record_id=_text(value.get("source_record_id")) or None,
+            source_path=_text(value.get("source_path")) or None,
             edition=_text(value.get("edition")) or "unknown",
             ruleset_version=_text(value.get("ruleset_version")) or "2024",
             pack_id=_text(value.get("pack_id")) or "core",
+            pack_version=_text(value.get("pack_version")) or "unknown",
             namespace=_text(value.get("namespace")) or "content.core",
             school=_text(value.get("school")) or None,
             casting_time=_text(value.get("casting_time")) or None,
@@ -708,6 +924,15 @@ class SpellSpec:
             source_trust=source_trust,
             source_fingerprint=_text(value.get("source_fingerprint")) or None,
             source_provenance=source_provenance,
+            review_status=_text(value.get("review_status")) or None,
+            reviewed_by=_text(value.get("reviewed_by")) or None,
+            reviewed_fields=tuple(
+                str(item) for item in reviewed_fields if str(item).strip()
+            ),
+            evidence=tuple(str(item) for item in evidence if str(item).strip()),
+            clause_boundaries=dict(value.get("clause_boundaries") or {}),
+            manual_decisions=dict(value.get("manual_decisions") or {}),
+            source_evidence=dict(value.get("source_evidence") or {}),
             clause_identity=tuple(
                 str(item) for item in (value.get("clause_identity") or ()) if str(item).strip()
             ),
@@ -718,13 +943,16 @@ class SpellSpec:
     def to_dict(self) -> dict[str, Any]:
         return {
             "kind": "spell",
+            "schema_version": self.schema_version,
             "spell_id": self.spell_id,
             "name": self.name,
             "source_book": self.source_book,
             "source_record_id": self.source_record_id or self.spell_id,
+            "source_path": self.source_path,
             "edition": self.edition,
             "ruleset_version": self.ruleset_version,
             "pack_id": self.pack_id,
+            "pack_version": self.pack_version,
             "namespace": self.namespace,
             "level": self.level,
             "school": self.school,
@@ -755,6 +983,13 @@ class SpellSpec:
                 }
             ),
             "source_provenance": _jsonable(self.source_provenance),
+            "review_status": self.review_status,
+            "reviewed_by": self.reviewed_by,
+            "reviewed_fields": list(self.reviewed_fields),
+            "evidence": list(self.evidence),
+            "clause_boundaries": _jsonable(self.clause_boundaries),
+            "manual_decisions": _jsonable(self.manual_decisions),
+            "source_evidence": _jsonable(self.source_evidence),
             "clause_identity": list(self.clause_identity)
             or [f"{self.spell_id}:clause:{index}" for index, _ in enumerate(self.clauses)],
             "compiler_fingerprint": self.compiler_fingerprint,
@@ -770,7 +1005,9 @@ def _jsonable(value: Any) -> Any:
     return value
 
 
-def _spell_clause_errors(clause: Mapping[str, Any], index: int) -> tuple[str, ...]:
+def _spell_clause_errors(
+    clause: Mapping[str, Any], index: int, *, strict: bool = False
+) -> tuple[str, ...]:
     clause_type = _text(clause.get("type"))
     if not clause_type:
         return (f"clause:{index}:missing_type",)
@@ -788,7 +1025,79 @@ def _spell_clause_errors(clause: Mapping[str, Any], index: int) -> tuple[str, ..
         expression = clause.get("expression") or clause.get("damage") or clause.get("healing")
         if expression is not None and not isinstance(expression, (str, int, float)):
             errors.append(f"clause:{index}:expression_must_be_scalar")
+    if strict and clause_type == "attack_roll" and not _text(clause.get("target")):
+        errors.append(f"clause:{index}:missing_target")
+    if strict and clause_type == "saving_throw" and not _text(clause.get("save_ability")):
+        errors.append(f"clause:{index}:missing_save_ability")
+    if strict and clause_type == "damage" and clause.get("damage_type") in (None, ""):
+        errors.append(f"clause:{index}:missing_damage_type")
+    if strict and clause_type == "movement" and (
+        clause.get("speed_delta_ft") is None
+        and clause.get("distance_ft") is None
+        and clause.get("speed") in (None, "")
+    ):
+        errors.append(f"clause:{index}:missing_movement_value")
     return tuple(errors)
+
+
+def _materialize_spell_runtime(
+    spec: SpellSpec,
+    clauses: Iterable[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Build the name-agnostic runtime spell block used by isolated previews."""
+
+    ordered = [dict(clause) for clause in clauses]
+    resolution: dict[str, Any] = {
+        "target_selection": [],
+        "attack_roll": [],
+        "saving_throw": [],
+        "effects": [],
+        "duration": [],
+        "concentration": [],
+        "upcast": [],
+    }
+    for clause in ordered:
+        clause_type = _text(clause.get("type"))
+        if clause_type in resolution:
+            resolution[clause_type].append(_jsonable(clause))
+        elif clause_type in {
+            "damage",
+            "healing",
+            "temporary_hp",
+            "apply_condition",
+            "remove_condition",
+            "movement",
+            "spell_modifier",
+            "resource_effect",
+            "summon_or_creation",
+        }:
+            resolution["effects"].append(_jsonable(clause))
+        else:
+            resolution["effects"].append(_jsonable(clause))
+    return {
+        "kind": "spell",
+        "runtime_schema_version": "spell-runtime-1",
+        "spell_id": spec.spell_id,
+        "name": spec.name,
+        "level": spec.level,
+        "school": spec.school,
+        "casting_time": spec.casting_time,
+        "range": spec.range,
+        "target": _jsonable(spec.target),
+        "components": _jsonable(spec.components),
+        "duration": _jsonable(spec.duration),
+        "concentration": spec.concentration,
+        "resolution": resolution,
+        "source": {
+            "source_record_id": spec.source_record_id or spec.spell_id,
+            "source_path": spec.source_path,
+            "source_book": spec.source_book,
+            "source_fingerprint": spec.source_fingerprint
+            or spec.to_dict()["source_fingerprint"],
+            "source_trust": spec.source_trust,
+        },
+        "execution_status": "ready",
+    }
 
 
 def compile_spell_spec(spec: SpellSpec) -> dict[str, Any]:
@@ -799,7 +1108,9 @@ def compile_spell_spec(spec: SpellSpec) -> dict[str, Any]:
     capabilities: list[str] = []
     runtime_blocks: list[dict[str, Any]] = []
     for index, clause in enumerate(spec.clauses):
-        errors = _spell_clause_errors(clause, index)
+        errors = _spell_clause_errors(
+            clause, index, strict=spec.review_status == "reviewed"
+        )
         clause_type = _text(clause.get("type"))
         capability = _SPELL_CLAUSE_CAPABILITIES.get(clause_type)
         if errors:
@@ -836,6 +1147,23 @@ def compile_spell_spec(spec: SpellSpec) -> dict[str, Any]:
         blockers.append("source_trust_not_verified")
     if spec.compiler_fingerprint != COMPILER_FINGERPRINT:
         blockers.append("compiler_fingerprint_mismatch")
+    if spec.review_status == "reviewed":
+        required_review = {
+            "source_record_id": spec.source_record_id,
+            "source_path": spec.source_path,
+            "source_book": spec.source_book,
+            "source_fingerprint": spec.source_fingerprint,
+            "reviewed_by": spec.reviewed_by,
+            "reviewed_fields": spec.reviewed_fields,
+            "source_evidence": spec.source_evidence,
+            "clause_boundaries": spec.clause_boundaries,
+            "manual_decisions": spec.manual_decisions,
+        }
+        blockers.extend(
+            f"missing_authored_provenance:{key}"
+            for key, value in required_review.items()
+            if value in (None, "", (), {}, [])
+        )
     if not spec.clauses:
         blockers.append("missing_typed_clauses")
     if any(
@@ -851,6 +1179,9 @@ def compile_spell_spec(spec: SpellSpec) -> dict[str, Any]:
         status = "full"
     if status != "full":
         runtime_blocks = []
+    runtime_definition = (
+        _materialize_spell_runtime(spec, spec.clauses) if status == "full" else None
+    )
     source_fp = spec.to_dict()["source_fingerprint"]
     result_without_fp = {
         "spell_id": spec.spell_id,
@@ -867,6 +1198,8 @@ def compile_spell_spec(spec: SpellSpec) -> dict[str, Any]:
         ),
         "blockers": sorted(set(blockers)),
         "runtime_blocks": runtime_blocks,
+        "runtime_spell_definition": runtime_definition,
+        "materialized": runtime_definition is not None,
         "source_trust": spec.source_trust,
         "source_fingerprint": source_fp,
         "compiler_fingerprint": spec.compiler_fingerprint,
@@ -1235,12 +1568,30 @@ def compile_feature_draft(draft: Mapping[str, Any]) -> dict[str, Any]:
 def compile_typed_feature_spec(spec: FeatureSpec) -> dict[str, Any]:
     result = FeatureCompiler(status_authority="compiler").compile(spec)
     payload = result.to_dict()
+    runtime_definition = None
+    materializer_error = None
+    if result.compile_status == "full":
+        try:
+            from dnd_dm_assistant.application.feature_compiler import (
+                materialize_runtime_definition,
+            )
+
+            runtime_definition = materialize_runtime_definition(spec, result)
+        except (TypeError, ValueError) as exc:
+            materializer_error = str(exc)
+    if materializer_error:
+        payload["compile_status"] = "partial"
+        payload.setdefault("blockers", []).append(
+            f"runtime_materializer_error:{materializer_error}"
+        )
     payload.update(
         {
             "typed_ir": True,
-            "materialized": result.compile_status == "full",
+            "materialized": runtime_definition is not None,
+            "runtime_definition": runtime_definition,
             "spec_fingerprint": spec.fingerprint(),
-            "source_fingerprint": _text(spec.compatibility.get("source_fingerprint"))
+            "source_fingerprint": _text(spec.source_fingerprint)
+            or _text(spec.compatibility.get("source_fingerprint"))
             or spec.fingerprint(),
             "compiler_fingerprint": COMPILER_FINGERPRINT,
         }
@@ -1437,7 +1788,9 @@ def compile_artifact_directory(
         value = _read_json(root / relative)
         kind = value.get("kind")
         if kind == "feature":
-            spec = FeatureSpec.from_dict(value, "typed.feature")
+            feature_value = dict(value)
+            feature_value.pop("kind", None)
+            spec = FeatureSpec.from_dict(feature_value, "typed.feature")
             if spec.feature_id in typed_features:
                 raise ValueError(f"duplicate feature_id: {spec.feature_id}")
             typed_features[spec.feature_id] = spec
@@ -1453,6 +1806,26 @@ def compile_artifact_directory(
         str(key): str(value) for key, value in (manifest.get("source_fingerprints") or {}).items()
     }
     conflicts: list[str] = []
+    consumed_features: set[str] = set()
+    consumed_spells: set[str] = set()
+
+    def typed_metadata_conflicts(spec: FeatureSpec | SpellSpec) -> list[str]:
+        source_id = _text(spec.source_record_id)
+        expected_source_fp = source_fingerprints.get(source_id)
+        actual_source_fp = _text(spec.source_fingerprint)
+        errors: list[str] = []
+        if expected_source_fp and actual_source_fp and expected_source_fp != actual_source_fp:
+            errors.append(f"{source_id}: source fingerprint conflict")
+        for field_name in ("pack_id", "pack_version", "ruleset_version"):
+            expected = _text(manifest.get(field_name))
+            actual = _text(getattr(spec, field_name, None))
+            if expected and actual and expected != actual:
+                errors.append(
+                    f"{source_id or getattr(spec, 'spell_id', getattr(spec, 'feature_id', ''))}: "
+                    f"{field_name} conflict"
+                )
+        return errors
+
     for draft in sorted(
         draft_entries,
         key=lambda item: (_text(item.get("kind")), _text(item.get("source_record_id"))),
@@ -1471,12 +1844,15 @@ def compile_artifact_directory(
             }
             spec = typed_spells.get(result["spell_id"])
             if spec is not None:
+                consumed_spells.add(spec.spell_id)
+                conflicts.extend(typed_metadata_conflicts(spec))
+                compiled = compile_spell_spec(spec)
                 result = {
                     "kind": "spell",
                     "spell_id": spec.spell_id,
-                    **compile_spell_spec(spec),
+                    **compiled,
                     "typed_ir": True,
-                    "materialized": compile_spell_spec(spec)["compile_status"] == "full",
+                    "materialized": compiled["compile_status"] == "full",
                     "spec_fingerprint": _fingerprint(spec.to_dict()),
                 }
         elif draft.get("kind") in {"feature_draft", "player_option_draft"}:
@@ -1488,11 +1864,44 @@ def compile_artifact_directory(
             }
             spec = typed_features.get(result["feature_id"])
             if spec is not None:
+                consumed_features.add(spec.feature_id)
+                conflicts.extend(typed_metadata_conflicts(spec))
                 compiled = compile_typed_feature_spec(spec)
                 result = {"kind": "feature", **compiled, "feature_id": spec.feature_id}
         else:
             continue
         results.append(result)
+    for spec in sorted(
+        (item for key, item in typed_spells.items() if key not in consumed_spells),
+        key=lambda item: item.spell_id,
+    ):
+        conflicts.extend(typed_metadata_conflicts(spec))
+        compiled = compile_spell_spec(spec)
+        results.append(
+            {
+                "kind": "spell",
+                "spell_id": spec.spell_id,
+                **compiled,
+                "typed_ir": True,
+                "materialized": compiled["compile_status"] == "full",
+                "spec_fingerprint": _fingerprint(spec.to_dict()),
+            }
+        )
+    for spec in sorted(
+        (item for key, item in typed_features.items() if key not in consumed_features),
+        key=lambda item: item.feature_id,
+    ):
+        conflicts.extend(typed_metadata_conflicts(spec))
+        compiled = compile_typed_feature_spec(spec)
+        results.append(
+            {
+                "kind": "feature",
+                **compiled,
+                "feature_id": spec.feature_id,
+                "typed_ir": True,
+                "materialized": compiled["compile_status"] == "full",
+            }
+        )
     ids = [str(item.get("spell_id") or item.get("feature_id")) for item in results]
     if len(ids) != len(set(ids)):
         raise ValueError("duplicate feature_id/spell_id in compiled artifact")

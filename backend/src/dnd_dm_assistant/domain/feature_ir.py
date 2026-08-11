@@ -11,7 +11,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, ClassVar
 
 FEATURE_IR_SCHEMA_VERSION = "feature-ir-1"
@@ -307,6 +307,17 @@ class FeatureSpec:
     clauses: tuple[ClauseSpec, ...]
     dependencies: tuple[str, ...]
     compatibility: dict[str, Any]
+    source_path: str | None = None
+    source_book: str | None = None
+    source_fingerprint: str | None = None
+    review_status: str | None = None
+    reviewed_by: str | None = None
+    reviewed_fields: tuple[str, ...] = ()
+    source_evidence: dict[str, Any] = field(default_factory=dict)
+    clause_boundaries: dict[str, Any] = field(default_factory=dict)
+    manual_decisions: dict[str, Any] = field(default_factory=dict)
+    evidence: tuple[str, ...] = ()
+    compiler_fingerprint: str | None = None
 
     _FIELDS: ClassVar[frozenset[str]] = frozenset(
         {
@@ -327,6 +338,17 @@ class FeatureSpec:
             "clauses",
             "dependencies",
             "compatibility",
+            "source_path",
+            "source_book",
+            "source_fingerprint",
+            "review_status",
+            "reviewed_by",
+            "reviewed_fields",
+            "source_evidence",
+            "clause_boundaries",
+            "manual_decisions",
+            "evidence",
+            "compiler_fingerprint",
         }
     )
     _SOURCE_COMPLETENESS: ClassVar[frozenset[str]] = frozenset(
@@ -386,6 +408,11 @@ class FeatureSpec:
             _require_string(item, f"{path}.dependencies[{index}]")
             for index, item in enumerate(raw_dependencies)
         )
+        reviewed_fields_raw = _list(data.get("reviewed_fields", []), f"{path}.reviewed_fields")
+        reviewed_fields = tuple(
+            _require_string(item, f"{path}.reviewed_fields[{index}]")
+            for index, item in enumerate(reviewed_fields_raw)
+        )
         return cls(
             schema_version=schema_version,
             feature_id=feature_id,
@@ -404,6 +431,30 @@ class FeatureSpec:
             clauses=clauses,
             dependencies=dependencies,
             compatibility=_mapping(data.get("compatibility", {}), f"{path}.compatibility"),
+            source_path=_optional_string(data.get("source_path"), f"{path}.source_path"),
+            source_book=_optional_string(data.get("source_book"), f"{path}.source_book"),
+            source_fingerprint=_optional_string(
+                data.get("source_fingerprint"), f"{path}.source_fingerprint"
+            ),
+            review_status=_optional_string(data.get("review_status"), f"{path}.review_status"),
+            reviewed_by=_optional_string(data.get("reviewed_by"), f"{path}.reviewed_by"),
+            reviewed_fields=reviewed_fields,
+            source_evidence=_mapping(data.get("source_evidence", {}), f"{path}.source_evidence"),
+            clause_boundaries=_mapping(
+                data.get("clause_boundaries", {}), f"{path}.clause_boundaries"
+            ),
+            manual_decisions=_mapping(
+                data.get("manual_decisions", {}), f"{path}.manual_decisions"
+            ),
+            evidence=tuple(
+                _require_string(item, f"{path}.evidence[{index}]")
+                for index, item in enumerate(
+                    _list(data.get("evidence", []), f"{path}.evidence")
+                )
+            ),
+            compiler_fingerprint=_optional_string(
+                data.get("compiler_fingerprint"), f"{path}.compiler_fingerprint"
+            ),
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -425,6 +476,17 @@ class FeatureSpec:
             "clauses": [item.to_dict() for item in self.clauses],
             "dependencies": list(self.dependencies),
             "compatibility": _jsonable(self.compatibility),
+            "source_path": self.source_path,
+            "source_book": self.source_book,
+            "source_fingerprint": self.source_fingerprint,
+            "review_status": self.review_status,
+            "reviewed_by": self.reviewed_by,
+            "reviewed_fields": list(self.reviewed_fields),
+            "source_evidence": _jsonable(self.source_evidence),
+            "clause_boundaries": _jsonable(self.clause_boundaries),
+            "manual_decisions": _jsonable(self.manual_decisions),
+            "evidence": list(self.evidence),
+            "compiler_fingerprint": self.compiler_fingerprint,
         }
 
     def fingerprint(self) -> str:

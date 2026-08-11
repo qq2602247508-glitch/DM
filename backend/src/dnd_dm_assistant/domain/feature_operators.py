@@ -404,7 +404,13 @@ def default_operator_contracts() -> dict[str, OperatorContract]:
         _contract(
             "grant_proficiency",
             required=("proficiency_kind", "asset_id", "operation"),
-            types={"proficiency_kind": "string", "asset_id": "string", "operation": "string"},
+            optional=("if_already_proficient",),
+            types={
+                "proficiency_kind": "string",
+                "asset_id": "string",
+                "operation": "string",
+                "if_already_proficient": "string",
+            },
             enums={"operation": {"grant", "remove", "replace"}},
             triggers=_TRIGGER_ADVANCEMENT,
             durations=_DURATION_PERSISTENT,
