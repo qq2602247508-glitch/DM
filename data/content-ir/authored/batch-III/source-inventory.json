@@ -1,0 +1,96 @@
+{
+  "records": [
+    {
+      "source_book": "玩家手册 2024",
+      "source_fingerprint": "42c271394a9fb7c5bfc9dd0d02b9bd08dae47bdb45f3b31ee10d872e72481fbb",
+      "source_path": "玩家手册2024/法术详述/3环.htm",
+      "source_record_id": "21db89639520a9951088e222",
+      "spell_id": "core-phb-2024:spell:21db89639520a9951088e222"
+    },
+    {
+      "source_book": "玩家手册 2024",
+      "source_fingerprint": "2bff01c844e5704d1af12c5b5db4cd5e1168d88518eb0d14cd1d831966fa9939",
+      "source_path": "玩家手册2024/法术详述/6环.htm",
+      "source_record_id": "2940fd0bac27b811329157a9",
+      "spell_id": "core-phb-2024:spell:2940fd0bac27b811329157a9"
+    },
+    {
+      "source_book": "玩家手册 2024",
+      "source_fingerprint": "4979082573ef0e141a738e96f949e04a33c82d8d2990022afd938c1d0f938bd1",
+      "source_path": "玩家手册2024/法术详述/5环.htm",
+      "source_record_id": "3f4fae885921a47ad0c6f759",
+      "spell_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759"
+    },
+    {
+      "source_book": "玩家手册 2024",
+      "source_fingerprint": "9e30b35903feab87d652f56f819c9ff28460d8633a254387c1bd1571f7c422fe",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "56193b76694eafc2025e1c0b",
+      "spell_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b"
+    },
+    {
+      "source_book": "玩家手册 2024",
+      "source_fingerprint": "6904285535ad103ec150150aed3b97dd15f6cc075486befaeb79421ed81b9c2f",
+      "source_path": "玩家手册2024/法术详述/4环.htm",
+      "source_record_id": "5842f6550b16755fb544c642",
+      "spell_id": "core-phb-2024:spell:5842f6550b16755fb544c642"
+    },
+    {
+      "source_book": "玩家手册 2024",
+      "source_fingerprint": "d23e86271fc9e1082cc7110c46e7baabdd9282249497a60fd3c20a44e418f197",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "5dd11cb3fbb6d21ea53739f2",
+      "spell_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2"
+    },
+    {
+      "source_book": "费资本的巨龙宝库",
+      "source_fingerprint": "cdbd9cb32dc130fb627e55ea76e3dd1ca83b0b99fc58702825592cc439098468",
+      "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+      "source_record_id": "084712e58fd3714db50148c5",
+      "spell_id": "fizbans-treasury:spell:084712e58fd3714db50148c5"
+    },
+    {
+      "source_book": "费资本的巨龙宝库",
+      "source_fingerprint": "45786e6c57e4c56a29800259cf32e1d236b08990ffc7d61efc793cb30a5fbbdc",
+      "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+      "source_record_id": "49a5bacc752aa90fbbfbf316",
+      "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316"
+    },
+    {
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "c03972f4c5ec5df6794fd142bd3c71e2477344805e19869d15eab10dc46961a2",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
+      "source_record_id": "ef0f92b557fb48d421d462e1",
+      "spell_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1"
+    },
+    {
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "e36ab12fc1519be7c9f46ae7d23c239e59cc3afc17046a83879819506db7fa03",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+      "source_record_id": "25fd183be8a5a886bc180e83",
+      "spell_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83"
+    },
+    {
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "5c135954c6a56d6edd429c2f5ae81ce67b41de9aa4b6e34215f72e18d8ce664e",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/9环.html",
+      "source_record_id": "3552e12594b2d8e6067f24f5",
+      "spell_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5"
+    },
+    {
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "5305786ec460ae99e6325e5452ec4cd1348d87b6ac85725b0de43b883553edb4",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+      "source_record_id": "4d94c0c610e955904d8893aa",
+      "spell_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa"
+    },
+    {
+      "source_book": "玩家手册 2024",
+      "source_fingerprint": "ac82b51e3dd582319e4928bf9ac22d8eb9b4f8c6ba7800b3e72d680a462c11cc",
+      "source_path": "玩家手册2024/法术详述/5环.htm",
+      "source_record_id": "a87ab0181a321cb09fef2884",
+      "spell_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884"
+    }
+  ],
+  "schema_version": "content-ir-source-inventory-1"
+}

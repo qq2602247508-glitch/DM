@@ -1,0 +1,128 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "附赠动作，当你使用近战武器或徒手打击命中一个生物后立即执行",
+  "clause_boundaries": {
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "手打击命中一个生物后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。",
+      "source_heading": "致盲斩"
+    },
+    "save": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。",
+      "source_heading": "致盲斩"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "间：**附赠动作，当你使用近战武器或徒手打击命中一个生物后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。",
+      "source_heading": "致盲斩"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:21db89639520a9951088e222:target",
+    "core-phb-2024:spell:21db89639520a9951088e222:save",
+    "core-phb-2024:spell:21db89639520a9951088e222:damage"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "间：**附赠动作，当你使用近战武器或徒手打击命中一个生物后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "bonus_action",
+      "clause_id": "save",
+      "evidence_ref": "间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。",
+      "half_on_success": false,
+      "save_ability": "体质",
+      "target": "one_creature",
+      "type": "saving_throw"
+    },
+    {
+      "action_economy": "bonus_action",
+      "clause_id": "damage",
+      "damage": "3d8",
+      "damage_type": "光耀",
+      "evidence_ref": "手打击命中一个生物后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。",
+      "expression": "3d8",
+      "on_failure": "full",
+      "on_success": "none",
+      "target": "one_creature",
+      "timing": "immediate",
+      "type": "damage"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "1分钟",
+  "edition": "2024",
+  "evidence": [
+    "damage: 手打击命中一个生物后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。",
+    "save: 间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。",
+    "target: 间：**附赠动作，当你使用近战武器或徒手打击命中一个生物后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。"
+  ],
+  "kind": "spell",
+  "level": 3,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "致盲斩",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "自身",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "塑能",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "间：**附赠动作，当你使用近战武器或徒手打击命中一个生物后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。 间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。 手打击命中一个生物后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "6012f57f842ff3f0e8f41022f3f6cbd34448d10fa28273c1983f35dd1eb9ced2",
+    "source_path": "玩家手册2024/法术详述/3环.htm",
+    "source_text": "#### 致盲斩｜Blinding Smite\n\n*三环 塑能（圣武士）*\n**施法时间：**附赠动作，当你使用近战武器或徒手打击命中一个生物后立即执行\n**施法距离：**自身\n**法术成分：**V\n**持续时间：**1分钟\n被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。\n**升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。"
+  },
+  "source_fingerprint": "42c271394a9fb7c5bfc9dd0d02b9bd08dae47bdb45f3b31ee10d872e72481fbb",
+  "source_path": "玩家手册2024/法术详述/3环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "6012f57f842ff3f0e8f41022f3f6cbd34448d10fa28273c1983f35dd1eb9ced2",
+    "source_relative_path": "玩家手册2024/法术详述/3环.htm"
+  },
+  "source_record_id": "21db89639520a9951088e222",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:21db89639520a9951088e222"
+}

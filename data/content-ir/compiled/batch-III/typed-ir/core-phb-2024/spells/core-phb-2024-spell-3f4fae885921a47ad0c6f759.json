@@ -1,0 +1,128 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "1分钟",
+  "clause_boundaries": {
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法术位施展该法术时，法术将一直持续至被上文提及的法术所终止。",
+      "source_heading": "指使术"
+    },
+    "save": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "时间：**30日 你对施法距离内你能看见的一个生物下达一条魔法口头命令，并强迫其执行相应的某种服务或克制某种行为，或者遵照你的要求行动。目标必须成功通过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法术位施展该法术时，法术将",
+      "source_heading": "指使术"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "术成分：**V **持续时间：**30日 你对施法距离内你能看见的一个生物下达一条魔法口头命令，并强迫其执行相应的某种服务或克制某种行为，或者遵照你的要求行动。目标必须成功通过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法",
+      "source_heading": "指使术"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:3f4fae885921a47ad0c6f759:target",
+    "core-phb-2024:spell:3f4fae885921a47ad0c6f759:save",
+    "core-phb-2024:spell:3f4fae885921a47ad0c6f759:damage"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "术成分：**V **持续时间：**30日 你对施法距离内你能看见的一个生物下达一条魔法口头命令，并强迫其执行相应的某种服务或克制某种行为，或者遵照你的要求行动。目标必须成功通过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": null,
+      "clause_id": "save",
+      "evidence_ref": "时间：**30日 你对施法距离内你能看见的一个生物下达一条魔法口头命令，并强迫其执行相应的某种服务或克制某种行为，或者遵照你的要求行动。目标必须成功通过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法术位施展该法术时，法术将",
+      "half_on_success": false,
+      "save_ability": "感知",
+      "target": "one_creature",
+      "type": "saving_throw"
+    },
+    {
+      "action_economy": null,
+      "clause_id": "damage",
+      "damage": "5d10",
+      "damage_type": "心灵",
+      "evidence_ref": "过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法术位施展该法术时，法术将一直持续至被上文提及的法术所终止。",
+      "expression": "5d10",
+      "on_failure": "full",
+      "on_success": "none",
+      "target": "one_creature",
+      "timing": "immediate",
+      "type": "damage"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "30日",
+  "edition": "2024",
+  "evidence": [
+    "damage: 过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法术位施展该法术时，法术将一直持续至被上文提及的法术所终止。",
+    "save: 时间：**30日 你对施法距离内你能看见的一个生物下达一条魔法口头命令，并强迫其执行相应的某种服务或克制某种行为，或者遵照你的要求行动。目标必须成功通过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法术位施展该法术时，法术将",
+    "target: 术成分：**V **持续时间：**30日 你对施法距离内你能看见的一个生物下达一条魔法口头命令，并强迫其执行相应的某种服务或克制某种行为，或者遵照你的要求行动。目标必须成功通过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法"
+  ],
+  "kind": "spell",
+  "level": 5,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "指使术",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "60尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": null,
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "术成分：**V **持续时间：**30日 你对施法距离内你能看见的一个生物下达一条魔法口头命令，并强迫其执行相应的某种服务或克制某种行为，或者遵照你的要求行动。目标必须成功通过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法 时间：**30日 你对施法距离内你能看见的一个生物下达一条魔法口头命令，并强迫其执行相应的某种服务或克制某种行为，或者遵照你的要求行动。目标必须成功通过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法术位施展该法术时，法术将 过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法术位施展该法术时，法术将一直持续至被上文提及的法术所终止。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "83deb768847c7578c52dc71157c3afcbcd34e072275a6fa8a9db3c5100907a26",
+    "source_path": "玩家手册2024/法术详述/5环.htm",
+    "source_text": "#### 指使术｜Geas\n\n*五环 惑控（吟游诗人、牧师、德鲁伊、圣武士、法师）*\n**施法时间：**1分钟\n**施法距离：**60尺\n**法术成分：**V\n**持续时间：**30日\n你对施法距离内你能看见的一个生物下达一条魔法口头命令，并强迫其执行相应的某种服务或克制某种行为，或者遵照你的要求行动。目标必须成功通过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。\n被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。\n除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。\n一道*移除诅咒Remove Curse*，*高等复原术Greater\nRestoration*或*祈愿术Wish*可以终止该法术。\n**升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法术位施展该法术时，法术将一直持续至被上文提及的法术所终止。"
+  },
+  "source_fingerprint": "4979082573ef0e141a738e96f949e04a33c82d8d2990022afd938c1d0f938bd1",
+  "source_path": "玩家手册2024/法术详述/5环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "83deb768847c7578c52dc71157c3afcbcd34e072275a6fa8a9db3c5100907a26",
+    "source_relative_path": "玩家手册2024/法术详述/5环.htm"
+  },
+  "source_record_id": "3f4fae885921a47ad0c6f759",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759"
+}

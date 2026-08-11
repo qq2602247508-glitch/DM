@@ -1,0 +1,4152 @@
+{
+  "blocker_counts": {},
+  "capability_counts": {
+    "spell.apply_condition.v1": 1,
+    "spell.attack_roll.v1": 1,
+    "spell.concentration.v1": 1,
+    "spell.damage.v1": 10,
+    "spell.healing.v1": 2,
+    "spell.saving_throw.v1": 8,
+    "spell.target_selection.v1": 12,
+    "spell.temporary_hp.v1": 1,
+    "spell.upcast.v1": 2
+  },
+  "capability_registry_version": "content-capabilities-1",
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "conflicts": [],
+  "counts": {
+    "full": 13,
+    "invalid": 0,
+    "manual": 0,
+    "partial": 0
+  },
+  "manifest_fingerprint": "67ea0cca7f55bdcc2561da0e28bbb8691d549110ff8f66e2d840166238c52304",
+  "results": [
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:21db89639520a9951088e222:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:21db89639520a9951088e222:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:21db89639520a9951088e222:clause:2",
+          "status": "full",
+          "type": "damage"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "d57238bc2ca89fc23d519abeb883ace6c3d0499cd1976cb41b9e00562d0c9b03",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:21db89639520a9951088e222:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "间：**附赠动作，当你使用近战武器或徒手打击命中一个生物后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:21db89639520a9951088e222",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:21db89639520a9951088e222:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "bonus_action",
+            "clause_id": "save",
+            "evidence_ref": "间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。",
+            "half_on_success": false,
+            "save_ability": "体质",
+            "target": "one_creature",
+            "type": "saving_throw"
+          },
+          "spell_id": "core-phb-2024:spell:21db89639520a9951088e222",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:21db89639520a9951088e222:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "bonus_action",
+            "clause_id": "damage",
+            "damage": "3d8",
+            "damage_type": "光耀",
+            "evidence_ref": "手打击命中一个生物后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。",
+            "expression": "3d8",
+            "on_failure": "full",
+            "on_success": "none",
+            "target": "one_creature",
+            "timing": "immediate",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:21db89639520a9951088e222",
+          "type": "damage"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "附赠动作，当你使用近战武器或徒手打击命中一个生物后立即执行",
+        "components": null,
+        "concentration": false,
+        "duration": "1分钟",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 3,
+        "name": "致盲斩",
+        "range": "自身",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "bonus_action",
+              "clause_id": "damage",
+              "damage": "3d8",
+              "damage_type": "光耀",
+              "evidence_ref": "手打击命中一个生物后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。",
+              "expression": "3d8",
+              "on_failure": "full",
+              "on_success": "none",
+              "target": "one_creature",
+              "timing": "immediate",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "bonus_action",
+              "clause_id": "save",
+              "evidence_ref": "间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。",
+              "half_on_success": false,
+              "save_ability": "体质",
+              "target": "one_creature",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "间：**附赠动作，当你使用近战武器或徒手打击命中一个生物后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "42c271394a9fb7c5bfc9dd0d02b9bd08dae47bdb45f3b31ee10d872e72481fbb",
+          "source_path": "玩家手册2024/法术详述/3环.htm",
+          "source_record_id": "21db89639520a9951088e222",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:21db89639520a9951088e222",
+        "target": null
+      },
+      "source_fingerprint": "42c271394a9fb7c5bfc9dd0d02b9bd08dae47bdb45f3b31ee10d872e72481fbb",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "d208a1a10bdd98360e2347d9ed328d770d1da23bc25a213931a644eaa79117df",
+      "spell_id": "core-phb-2024:spell:21db89639520a9951088e222",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.healing.v1",
+        "spell.target_selection.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:2940fd0bac27b811329157a9:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.healing.v1",
+          "clause_id": "core-phb-2024:spell:2940fd0bac27b811329157a9:clause:1",
+          "status": "full",
+          "type": "healing"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "ec46b3efcb200e9f910d9b972e31f49f32b382496b469f951350a62a774914f9",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:2940fd0bac27b811329157a9:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "*法术成分：**V、S **持续时间：**立即 指定施法距离内一个你能看见的生物。汹涌澎湃的正能量将充盈该生物，使其恢复 70 点生命值。该法术也会终止正在影响目标的目盲、耳聋以及中毒状态。 **升环施法。**使用的法术位每比六环高一环，此法术的治疗量就增加10点。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:2940fd0bac27b811329157a9",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.healing.v1",
+          "clause_id": "core-phb-2024:spell:2940fd0bac27b811329157a9:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "healing",
+            "evidence_ref": "间：**1动作 **施法距离：**60尺 **法术成分：**V、S **持续时间：**立即 指定施法距离内一个你能看见的生物。汹涌澎湃的正能量将充盈该生物，使其恢复 70 点生命值。该法术也会终止正在影响目标的目盲、耳聋以及中毒状态。 **升环施法。**使用的法术位每比六环高一环，此法术的治疗量就增加10点。",
+            "expression": "70",
+            "healing": "70",
+            "target": "one_creature",
+            "timing": "immediate",
+            "type": "healing"
+          },
+          "spell_id": "core-phb-2024:spell:2940fd0bac27b811329157a9",
+          "type": "healing"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "1动作",
+        "components": null,
+        "concentration": false,
+        "duration": "立即",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 6,
+        "name": "医疗术",
+        "range": "60尺",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "clause_id": "healing",
+              "evidence_ref": "间：**1动作 **施法距离：**60尺 **法术成分：**V、S **持续时间：**立即 指定施法距离内一个你能看见的生物。汹涌澎湃的正能量将充盈该生物，使其恢复 70 点生命值。该法术也会终止正在影响目标的目盲、耳聋以及中毒状态。 **升环施法。**使用的法术位每比六环高一环，此法术的治疗量就增加10点。",
+              "expression": "70",
+              "healing": "70",
+              "target": "one_creature",
+              "timing": "immediate",
+              "type": "healing"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "*法术成分：**V、S **持续时间：**立即 指定施法距离内一个你能看见的生物。汹涌澎湃的正能量将充盈该生物，使其恢复 70 点生命值。该法术也会终止正在影响目标的目盲、耳聋以及中毒状态。 **升环施法。**使用的法术位每比六环高一环，此法术的治疗量就增加10点。",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "防护",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "2bff01c844e5704d1af12c5b5db4cd5e1168d88518eb0d14cd1d831966fa9939",
+          "source_path": "玩家手册2024/法术详述/6环.htm",
+          "source_record_id": "2940fd0bac27b811329157a9",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:2940fd0bac27b811329157a9",
+        "target": null
+      },
+      "source_fingerprint": "2bff01c844e5704d1af12c5b5db4cd5e1168d88518eb0d14cd1d831966fa9939",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "dfb72d73cc49fe74204460112627f352f015bb6c7a502f965094f127c61952db",
+      "spell_id": "core-phb-2024:spell:2940fd0bac27b811329157a9",
+      "typed_clause_count": 2,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759:clause:2",
+          "status": "full",
+          "type": "damage"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "2990785c72e749b2c5bcefb66212d99a05911533997a81da72f7ea044fe505bf",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "术成分：**V **持续时间：**30日 你对施法距离内你能看见的一个生物下达一条魔法口头命令，并强迫其执行相应的某种服务或克制某种行为，或者遵照你的要求行动。目标必须成功通过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": null,
+            "clause_id": "save",
+            "evidence_ref": "时间：**30日 你对施法距离内你能看见的一个生物下达一条魔法口头命令，并强迫其执行相应的某种服务或克制某种行为，或者遵照你的要求行动。目标必须成功通过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法术位施展该法术时，法术将",
+            "half_on_success": false,
+            "save_ability": "感知",
+            "target": "one_creature",
+            "type": "saving_throw"
+          },
+          "spell_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": null,
+            "clause_id": "damage",
+            "damage": "5d10",
+            "damage_type": "心灵",
+            "evidence_ref": "过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法术位施展该法术时，法术将一直持续至被上文提及的法术所终止。",
+            "expression": "5d10",
+            "on_failure": "full",
+            "on_success": "none",
+            "target": "one_creature",
+            "timing": "immediate",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+          "type": "damage"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "1分钟",
+        "components": null,
+        "concentration": false,
+        "duration": "30日",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 5,
+        "name": "指使术",
+        "range": "60尺",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": null,
+              "clause_id": "damage",
+              "damage": "5d10",
+              "damage_type": "心灵",
+              "evidence_ref": "过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法术位施展该法术时，法术将一直持续至被上文提及的法术所终止。",
+              "expression": "5d10",
+              "on_failure": "full",
+              "on_success": "none",
+              "target": "one_creature",
+              "timing": "immediate",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": null,
+              "clause_id": "save",
+              "evidence_ref": "时间：**30日 你对施法距离内你能看见的一个生物下达一条魔法口头命令，并强迫其执行相应的某种服务或克制某种行为，或者遵照你的要求行动。目标必须成功通过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法术位施展该法术时，法术将",
+              "half_on_success": false,
+              "save_ability": "感知",
+              "target": "one_creature",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "术成分：**V **持续时间：**30日 你对施法距离内你能看见的一个生物下达一条魔法口头命令，并强迫其执行相应的某种服务或克制某种行为，或者遵照你的要求行动。目标必须成功通过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": null,
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "4979082573ef0e141a738e96f949e04a33c82d8d2990022afd938c1d0f938bd1",
+          "source_path": "玩家手册2024/法术详述/5环.htm",
+          "source_record_id": "3f4fae885921a47ad0c6f759",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+        "target": null
+      },
+      "source_fingerprint": "4979082573ef0e141a738e96f949e04a33c82d8d2990022afd938c1d0f938bd1",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "1d277defa6a4ebb9cb9001c93330b952a5cc6b0c598c5b6c7cbacd3d10da8c5d",
+      "spell_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.temporary_hp.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.temporary_hp.v1",
+          "clause_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b:clause:0",
+          "status": "full",
+          "type": "temporary_hp"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "21b3f5fff3179de8d024921fe54ad4579f758d5f069ff1272383a33e73af34cb",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.temporary_hp.v1",
+          "clause_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "amount": "2d4+4",
+            "clause_id": "temporary-hp",
+            "evidence_ref": "灵（术士、法师、奇械师）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、S、M（一滴酒精） **持续时间：**立即 你获得2d4+4点临时生命值。 **升环施法。**使用的法术位每比一环高一环，其给予的临时生命值就增加5。",
+            "expression": "2d4+4",
+            "target": "one_creature",
+            "type": "temporary_hp"
+          },
+          "spell_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+          "type": "temporary_hp"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "动作",
+        "components": null,
+        "concentration": false,
+        "duration": "立即",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 1,
+        "name": "虚假生命",
+        "range": "自身",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "amount": "2d4+4",
+              "clause_id": "temporary-hp",
+              "evidence_ref": "灵（术士、法师、奇械师）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、S、M（一滴酒精） **持续时间：**立即 你获得2d4+4点临时生命值。 **升环施法。**使用的法术位每比一环高一环，其给予的临时生命值就增加5。",
+              "expression": "2d4+4",
+              "target": "one_creature",
+              "type": "temporary_hp"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "死灵",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "9e30b35903feab87d652f56f819c9ff28460d8633a254387c1bd1571f7c422fe",
+          "source_path": "玩家手册2024/法术详述/1环.htm",
+          "source_record_id": "56193b76694eafc2025e1c0b",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+        "target": null
+      },
+      "source_fingerprint": "9e30b35903feab87d652f56f819c9ff28460d8633a254387c1bd1571f7c422fe",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "82f3aee1fa59100b8c0b5d522918f59158da71a7f130c5e4342afbb65bf4d85c",
+      "spell_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+      "typed_clause_count": 1,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:5842f6550b16755fb544c642:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:5842f6550b16755fb544c642:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:5842f6550b16755fb544c642:clause:2",
+          "status": "full",
+          "type": "damage"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "0cc3e661359dce25abccc19add059cf842a14ec896752b36af2772b698a9485f",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:5842f6550b16755fb544c642:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "#### 信仰守卫｜Guardian of Faith *四环 咒法（牧师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**V **持续时间：**8小时 一名大型灵体守护者出现在施法距离内一处由你指定的，你可见且未占据空间，并在法术持续时间内在该处悬浮。占据该空间的守护者是无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。",
+            "kind": "enemy",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:5842f6550b16755fb544c642",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:5842f6550b16755fb544c642:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "处悬浮。占据该空间的守护者是无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。",
+            "half_on_success": true,
+            "save_ability": "敏捷",
+            "target": "one_creature",
+            "type": "saving_throw"
+          },
+          "spell_id": "core-phb-2024:spell:5842f6550b16755fb544c642",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:5842f6550b16755fb544c642:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "damage",
+            "damage": "20",
+            "damage_type": "光耀",
+            "evidence_ref": "无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。",
+            "expression": "20",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "one_creature",
+            "timing": "immediate",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:5842f6550b16755fb544c642",
+          "type": "damage"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "动作",
+        "components": null,
+        "concentration": false,
+        "duration": "8小时",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 4,
+        "name": "信仰守卫",
+        "range": "30尺",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "clause_id": "damage",
+              "damage": "20",
+              "damage_type": "光耀",
+              "evidence_ref": "无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。",
+              "expression": "20",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "one_creature",
+              "timing": "immediate",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "处悬浮。占据该空间的守护者是无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。",
+              "half_on_success": true,
+              "save_ability": "敏捷",
+              "target": "one_creature",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "#### 信仰守卫｜Guardian of Faith *四环 咒法（牧师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**V **持续时间：**8小时 一名大型灵体守护者出现在施法距离内一处由你指定的，你可见且未占据空间，并在法术持续时间内在该处悬浮。占据该空间的守护者是无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。",
+              "kind": "enemy",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "咒法",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "6904285535ad103ec150150aed3b97dd15f6cc075486befaeb79421ed81b9c2f",
+          "source_path": "玩家手册2024/法术详述/4环.htm",
+          "source_record_id": "5842f6550b16755fb544c642",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:5842f6550b16755fb544c642",
+        "target": null
+      },
+      "source_fingerprint": "6904285535ad103ec150150aed3b97dd15f6cc075486befaeb79421ed81b9c2f",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "2db64645d25d783b573b89cb53a909e6d143b47409e1e259a06d74c0350ff87a",
+      "spell_id": "core-phb-2024:spell:5842f6550b16755fb544c642",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.healing.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.healing.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:1",
+          "status": "full",
+          "type": "healing"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:2",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "8ee29aacf4b8ea3623c076053477ac95e8a9c1ec741c098a08e7acf0fd4467d4",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "吟游诗人、牧师、德鲁伊、圣武士、游侠、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**立即 你触碰的一名生物恢复等同于2d8+你施法属性调整值点生命值。 **升环施法。**使用的法术位每比一环高一环，此法术的治疗量就增加2d8点。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.healing.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "healing",
+            "evidence_ref": "诗人、牧师、德鲁伊、圣武士、游侠、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**立即 你触碰的一名生物恢复等同于2d8+你施法属性调整值点生命值。 **升环施法。**使用的法术位每比一环高一环，此法术的治疗量就增加2d8点。",
+            "expression": "2d8",
+            "healing": "2d8",
+            "target": "one_creature",
+            "timing": "immediate",
+            "type": "healing"
+          },
+          "spell_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+          "type": "healing"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "healing",
+            "clause_id": "upcast",
+            "evidence_ref": "施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**立即 你触碰的一名生物恢复等同于2d8+你施法属性调整值点生命值。 **升环施法。**使用的法术位每比一环高一环，此法术的治疗量就增加2d8点。",
+            "increments": "2d8",
+            "per_slot": 1,
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "动作",
+        "components": null,
+        "concentration": false,
+        "duration": "立即",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 1,
+        "name": "疗伤术",
+        "range": "触碰",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "clause_id": "healing",
+              "evidence_ref": "诗人、牧师、德鲁伊、圣武士、游侠、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**立即 你触碰的一名生物恢复等同于2d8+你施法属性调整值点生命值。 **升环施法。**使用的法术位每比一环高一环，此法术的治疗量就增加2d8点。",
+              "expression": "2d8",
+              "healing": "2d8",
+              "target": "one_creature",
+              "timing": "immediate",
+              "type": "healing"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "吟游诗人、牧师、德鲁伊、圣武士、游侠、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**立即 你触碰的一名生物恢复等同于2d8+你施法属性调整值点生命值。 **升环施法。**使用的法术位每比一环高一环，此法术的治疗量就增加2d8点。",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "healing",
+              "clause_id": "upcast",
+              "evidence_ref": "施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**立即 你触碰的一名生物恢复等同于2d8+你施法属性调整值点生命值。 **升环施法。**使用的法术位每比一环高一环，此法术的治疗量就增加2d8点。",
+              "increments": "2d8",
+              "per_slot": 1,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "防护",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "d23e86271fc9e1082cc7110c46e7baabdd9282249497a60fd3c20a44e418f197",
+          "source_path": "玩家手册2024/法术详述/1环.htm",
+          "source_record_id": "5dd11cb3fbb6d21ea53739f2",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+        "target": null
+      },
+      "source_fingerprint": "d23e86271fc9e1082cc7110c46e7baabdd9282249497a60fd3c20a44e418f197",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "45df06e5db6282d30ea4e93a7c773a1ab74f64aea9bfda20b8608114172f6217",
+      "spell_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.concentration.v1",
+        "spell.damage.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "fizbans-treasury:spell:084712e58fd3714db50148c5:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.concentration.v1",
+          "clause_id": "fizbans-treasury:spell:084712e58fd3714db50148c5:clause:1",
+          "status": "full",
+          "type": "concentration"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "fizbans-treasury:spell:084712e58fd3714db50148c5:clause:2",
+          "status": "full",
+          "type": "upcast"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "fizbans-treasury:spell:084712e58fd3714db50148c5:clause:3",
+          "status": "full",
+          "type": "damage"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "45be1ab65a72b3dd2c806f5756436dae154eb11bd68985d42b7491d184ca23ff",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "fizbans-treasury:spell:084712e58fd3714db50148c5:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "时间：**专注，至多1分钟 龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "fizbans-treasury:spell:084712e58fd3714db50148c5",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.concentration.v1",
+          "clause_id": "fizbans-treasury:spell:084712e58fd3714db50148c5:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "concentration",
+            "duration": "专注，至多1分钟",
+            "evidence_ref": "s Stride *三环 变化（奇械师、游侠、术士、法师）* **施法时间：**1附赠动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**专注，至多1分钟 龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+            "required": true,
+            "type": "concentration"
+          },
+          "spell_id": "fizbans-treasury:spell:084712e58fd3714db50148c5",
+          "type": "concentration"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "fizbans-treasury:spell:084712e58fd3714db50148c5:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+            "increments": "1d6",
+            "per_slot": 1,
+            "type": "upcast"
+          },
+          "spell_id": "fizbans-treasury:spell:084712e58fd3714db50148c5",
+          "type": "upcast"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "fizbans-treasury:spell:084712e58fd3714db50148c5:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "bonus_action",
+            "clause_id": "damage",
+            "damage": "1d6",
+            "damage_type": "火焰",
+            "evidence_ref": "#### 阿莎德隆奔行｜Ashardalon's Stride\n\n*三环 变化（奇械师、游侠、术士、法师）*\n**施法时间：**1附赠动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**专注，至多1分钟\n龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。\n当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。\n**升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+            "expression": "1d6",
+            "target": "one_creature",
+            "timing": "on_enter",
+            "type": "damage"
+          },
+          "spell_id": "fizbans-treasury:spell:084712e58fd3714db50148c5",
+          "type": "damage"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "1附赠动作",
+        "components": null,
+        "concentration": true,
+        "duration": "专注，至多1分钟",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 3,
+        "name": "阿莎德隆奔行",
+        "range": "自身",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [
+            {
+              "clause_id": "concentration",
+              "duration": "专注，至多1分钟",
+              "evidence_ref": "s Stride *三环 变化（奇械师、游侠、术士、法师）* **施法时间：**1附赠动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**专注，至多1分钟 龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+              "required": true,
+              "type": "concentration"
+            }
+          ],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "bonus_action",
+              "clause_id": "damage",
+              "damage": "1d6",
+              "damage_type": "火焰",
+              "evidence_ref": "#### 阿莎德隆奔行｜Ashardalon's Stride\n\n*三环 变化（奇械师、游侠、术士、法师）*\n**施法时间：**1附赠动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**专注，至多1分钟\n龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。\n当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。\n**升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+              "expression": "1d6",
+              "target": "one_creature",
+              "timing": "on_enter",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "时间：**专注，至多1分钟 龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+              "increments": "1d6",
+              "per_slot": 1,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "变化",
+        "source": {
+          "source_book": "费资本的巨龙宝库",
+          "source_fingerprint": "cdbd9cb32dc130fb627e55ea76e3dd1ca83b0b99fc58702825592cc439098468",
+          "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+          "source_record_id": "084712e58fd3714db50148c5",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "fizbans-treasury:spell:084712e58fd3714db50148c5",
+        "target": null
+      },
+      "source_fingerprint": "cdbd9cb32dc130fb627e55ea76e3dd1ca83b0b99fc58702825592cc439098468",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "522763e509ebc72393978e17bb8be514a0d85f3dc1459184eed84583ea4ab979",
+      "spell_id": "fizbans-treasury:spell:084712e58fd3714db50148c5",
+      "typed_clause_count": 4,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.apply_condition.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:3",
+          "status": "full",
+          "type": "apply_condition"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "a7721301828946258b491f3642bb1557f9225a824061ef2b5ffc91562cef3929",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。 目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。 **升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "#### 劳洛希姆心灵长枪｜Raulothim's Psychic Lance\n\n*四环 惑控（吟游诗人、术士、魔契师、法师）*\n**施法时间：**1动作\n**施法距离：**120尺\n**法术成分：**V\n**持续时间：**立即\n你从你的额头处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。\n目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。\n**升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+            "half_on_success": true,
+            "save_ability": "智力",
+            "target": "one_creature",
+            "type": "saving_throw"
+          },
+          "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "damage",
+            "damage": "7d6",
+            "damage_type": "心灵",
+            "evidence_ref": "#### 劳洛希姆心灵长枪｜Raulothim's Psychic Lance\n\n*四环 惑控（吟游诗人、术士、魔契师、法师）*\n**施法时间：**1动作\n**施法距离：**120尺\n**法术成分：**V\n**持续时间：**立即\n你从你的额头处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。\n目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。\n**升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+            "expression": "7d6",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "one_creature",
+            "timing": "immediate",
+            "type": "damage"
+          },
+          "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "condition",
+            "condition": "失能",
+            "duration": "target_turn_start",
+            "evidence_ref": "#### 劳洛希姆心灵长枪｜Raulothim's Psychic Lance\n\n*四环 惑控（吟游诗人、术士、魔契师、法师）*\n**施法时间：**1动作\n**施法距离：**120尺\n**法术成分：**V\n**持续时间：**立即\n你从你的额头处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。\n目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。\n**升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+            "target": "one_creature",
+            "type": "apply_condition"
+          },
+          "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+          "type": "apply_condition"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "1动作",
+        "components": null,
+        "concentration": false,
+        "duration": "立即",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 4,
+        "name": "劳洛希姆心灵长枪",
+        "range": "120尺",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "clause_id": "damage",
+              "damage": "7d6",
+              "damage_type": "心灵",
+              "evidence_ref": "#### 劳洛希姆心灵长枪｜Raulothim's Psychic Lance\n\n*四环 惑控（吟游诗人、术士、魔契师、法师）*\n**施法时间：**1动作\n**施法距离：**120尺\n**法术成分：**V\n**持续时间：**立即\n你从你的额头处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。\n目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。\n**升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+              "expression": "7d6",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "one_creature",
+              "timing": "immediate",
+              "type": "damage"
+            },
+            {
+              "action_economy": "action",
+              "clause_id": "condition",
+              "condition": "失能",
+              "duration": "target_turn_start",
+              "evidence_ref": "#### 劳洛希姆心灵长枪｜Raulothim's Psychic Lance\n\n*四环 惑控（吟游诗人、术士、魔契师、法师）*\n**施法时间：**1动作\n**施法距离：**120尺\n**法术成分：**V\n**持续时间：**立即\n你从你的额头处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。\n目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。\n**升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+              "target": "one_creature",
+              "type": "apply_condition"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "#### 劳洛希姆心灵长枪｜Raulothim's Psychic Lance\n\n*四环 惑控（吟游诗人、术士、魔契师、法师）*\n**施法时间：**1动作\n**施法距离：**120尺\n**法术成分：**V\n**持续时间：**立即\n你从你的额头处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。\n目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。\n**升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+              "half_on_success": true,
+              "save_ability": "智力",
+              "target": "one_creature",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。 目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。 **升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": null,
+        "source": {
+          "source_book": "费资本的巨龙宝库",
+          "source_fingerprint": "45786e6c57e4c56a29800259cf32e1d236b08990ffc7d61efc793cb30a5fbbdc",
+          "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+          "source_record_id": "49a5bacc752aa90fbbfbf316",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+        "target": null
+      },
+      "source_fingerprint": "45786e6c57e4c56a29800259cf32e1d236b08990ffc7d61efc793cb30a5fbbdc",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "6de5c6be93705550c4d96620c25050a01413875d09c80509ce73894cb96e4216",
+      "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+      "typed_clause_count": 4,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1:clause:2",
+          "status": "full",
+          "type": "damage"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "998515d90a3063bb89a9de3d844cac9837e5ad35c472740ba6acca678cba6611",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "法师）**Legacy* 施法时间：1 动作 施法距离：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "y* 施法时间：1 动作 施法距离：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。",
+            "half_on_success": false,
+            "save_ability": "智力",
+            "target": "one_creature",
+            "type": "saving_throw"
+          },
+          "spell_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "damage",
+            "damage": "1d6",
+            "damage_type": "心灵",
+            "evidence_ref": "：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。",
+            "expression": "1d6",
+            "on_failure": "full",
+            "on_success": "none",
+            "target": "one_creature",
+            "timing": "immediate",
+            "type": "damage"
+          },
+          "spell_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1",
+          "type": "damage"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "1 动作",
+        "components": null,
+        "concentration": false,
+        "duration": "1",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 0,
+        "name": "心灵之楔",
+        "range": "60 尺",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "clause_id": "damage",
+              "damage": "1d6",
+              "damage_type": "心灵",
+              "evidence_ref": "：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。",
+              "expression": "1d6",
+              "on_failure": "full",
+              "on_success": "none",
+              "target": "one_creature",
+              "timing": "immediate",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "y* 施法时间：1 动作 施法距离：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。",
+              "half_on_success": false,
+              "save_ability": "智力",
+              "target": "one_creature",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "法师）**Legacy* 施法时间：1 动作 施法距离：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": null,
+        "source": {
+          "source_book": "塔莎的万事坩埚",
+          "source_fingerprint": "c03972f4c5ec5df6794fd142bd3c71e2477344805e19869d15eab10dc46961a2",
+          "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
+          "source_record_id": "ef0f92b557fb48d421d462e1",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1",
+        "target": null
+      },
+      "source_fingerprint": "c03972f4c5ec5df6794fd142bd3c71e2477344805e19869d15eab10dc46961a2",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "0794d972f3b44993c8b9c815896031fb5932cb89e075159e3e01d13463d5b586",
+      "spell_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83:clause:2",
+          "status": "full",
+          "type": "damage"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "9e30856b4cff037fbd654d4fe2bc26a9fdca480a21e51d60d9afe434b33f7a83",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "S、M（一滴水） **持续时间：**立即 你召唤出浪潮拍打距离之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "持续时间：**立即 你召唤出浪潮拍打距离之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。",
+            "half_on_success": true,
+            "save_ability": "敏捷",
+            "target": "one_creature",
+            "type": "saving_throw"
+          },
+          "spell_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "damage",
+            "damage": "4d8",
+            "damage_type": "钝击",
+            "evidence_ref": "之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。",
+            "expression": "4d8",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "one_creature",
+            "timing": "immediate",
+            "type": "damage"
+          },
+          "spell_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83",
+          "type": "damage"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "1 动作",
+        "components": null,
+        "concentration": false,
+        "duration": "立即",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 3,
+        "name": "潮涌",
+        "range": "120 尺",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "clause_id": "damage",
+              "damage": "4d8",
+              "damage_type": "钝击",
+              "evidence_ref": "之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。",
+              "expression": "4d8",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "one_creature",
+              "timing": "immediate",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "持续时间：**立即 你召唤出浪潮拍打距离之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。",
+              "half_on_success": true,
+              "save_ability": "敏捷",
+              "target": "one_creature",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "S、M（一滴水） **持续时间：**立即 你召唤出浪潮拍打距离之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "咒法",
+        "source": {
+          "source_book": "珊娜萨的万事指南",
+          "source_fingerprint": "e36ab12fc1519be7c9f46ae7d23c239e59cc3afc17046a83879819506db7fa03",
+          "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+          "source_record_id": "25fd183be8a5a886bc180e83",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83",
+        "target": null
+      },
+      "source_fingerprint": "e36ab12fc1519be7c9f46ae7d23c239e59cc3afc17046a83879819506db7fa03",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "9d42702e05d5188798b983137dd021ad63068d4e4172c5f7086d6086d3ee2306",
+      "spell_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5:clause:2",
+          "status": "full",
+          "type": "damage"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "a1818341526fa97395d1d6d2c94cee5b6cd2f3e578c1914bd4f2b9ff9eb3e090",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "*法术成分：**S **持续时间：**立即 你释放你的心灵力量，轰击施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "*持续时间：**立即 你释放你的心灵力量，轰击施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。",
+            "half_on_success": true,
+            "save_ability": "智力",
+            "target": "one_creature",
+            "type": "saving_throw"
+          },
+          "spell_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "damage",
+            "damage": "14d6",
+            "damage_type": "心灵",
+            "evidence_ref": "施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。",
+            "expression": "14d6",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "one_creature",
+            "timing": "immediate",
+            "type": "damage"
+          },
+          "spell_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5",
+          "type": "damage"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "1 动作",
+        "components": null,
+        "concentration": false,
+        "duration": "立即",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 9,
+        "name": "心灵尖啸",
+        "range": "90 尺",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "clause_id": "damage",
+              "damage": "14d6",
+              "damage_type": "心灵",
+              "evidence_ref": "施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。",
+              "expression": "14d6",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "one_creature",
+              "timing": "immediate",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "*持续时间：**立即 你释放你的心灵力量，轰击施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。",
+              "half_on_success": true,
+              "save_ability": "智力",
+              "target": "one_creature",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "*法术成分：**S **持续时间：**立即 你释放你的心灵力量，轰击施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": null,
+        "source": {
+          "source_book": "珊娜萨的万事指南",
+          "source_fingerprint": "5c135954c6a56d6edd429c2f5ae81ce67b41de9aa4b6e34215f72e18d8ce664e",
+          "source_path": "珊娜萨的万事指南/法术/法术详述/9环.html",
+          "source_record_id": "3552e12594b2d8e6067f24f5",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5",
+        "target": null
+      },
+      "source_fingerprint": "5c135954c6a56d6edd429c2f5ae81ce67b41de9aa4b6e34215f72e18d8ce664e",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "e7cb2bdbd80550ba34f715dbce28fdc50ae10affa4f7e857d0040bd003cd6782",
+      "spell_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa:clause:2",
+          "status": "full",
+          "type": "damage"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "ce920bc1320ee4e5a7153ff888fe42b8e1535dfbb57fa44e656ec9f2af804162",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "法师）* **施法时间：**1 动作 **施法距离：**60 尺 **法术成分：**V、S **持续时间：**立即 你令距离之内，一个你能看见的生物开始结冰。该目标必须进行一次体质豁免检定。若豁免失败，该目标受到 1d6 点寒冷伤害，并在其下个回合结束前进行的下一次武器攻击检定中得到劣势。 你到达 5 级时，该法术的伤害增加 1d6（变为 2d6）。11 级时再加 1d6（变为 3d6），17 级时再加 1d6（变为 4d6）。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "间：**1 动作 **施法距离：**60 尺 **法术成分：**V、S **持续时间：**立即 你令距离之内，一个你能看见的生物开始结冰。该目标必须进行一次体质豁免检定。若豁免失败，该目标受到 1d6 点寒冷伤害，并在其下个回合结束前进行的下一次武器攻击检定中得到劣势。 你到达 5 级时，该法术的伤害增加 1d6（变为 2d6）。11 级时再加 1d6（变为 3d6），17 级时再加 1d6（变为 4d6）。",
+            "half_on_success": false,
+            "save_ability": "体质",
+            "target": "one_creature",
+            "type": "saving_throw"
+          },
+          "spell_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "damage",
+            "damage": "1d6",
+            "damage_type": "寒冷",
+            "evidence_ref": "*法术成分：**V、S **持续时间：**立即 你令距离之内，一个你能看见的生物开始结冰。该目标必须进行一次体质豁免检定。若豁免失败，该目标受到 1d6 点寒冷伤害，并在其下个回合结束前进行的下一次武器攻击检定中得到劣势。 你到达 5 级时，该法术的伤害增加 1d6（变为 2d6）。11 级时再加 1d6（变为 3d6），17 级时再加 1d6（变为 4d6）。",
+            "expression": "1d6",
+            "on_failure": "full",
+            "on_success": "none",
+            "target": "one_creature",
+            "timing": "immediate",
+            "type": "damage"
+          },
+          "spell_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa",
+          "type": "damage"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "1 动作",
+        "components": null,
+        "concentration": false,
+        "duration": "立即",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 0,
+        "name": "霜噬",
+        "range": "60 尺",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "clause_id": "damage",
+              "damage": "1d6",
+              "damage_type": "寒冷",
+              "evidence_ref": "*法术成分：**V、S **持续时间：**立即 你令距离之内，一个你能看见的生物开始结冰。该目标必须进行一次体质豁免检定。若豁免失败，该目标受到 1d6 点寒冷伤害，并在其下个回合结束前进行的下一次武器攻击检定中得到劣势。 你到达 5 级时，该法术的伤害增加 1d6（变为 2d6）。11 级时再加 1d6（变为 3d6），17 级时再加 1d6（变为 4d6）。",
+              "expression": "1d6",
+              "on_failure": "full",
+              "on_success": "none",
+              "target": "one_creature",
+              "timing": "immediate",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "间：**1 动作 **施法距离：**60 尺 **法术成分：**V、S **持续时间：**立即 你令距离之内，一个你能看见的生物开始结冰。该目标必须进行一次体质豁免检定。若豁免失败，该目标受到 1d6 点寒冷伤害，并在其下个回合结束前进行的下一次武器攻击检定中得到劣势。 你到达 5 级时，该法术的伤害增加 1d6（变为 2d6）。11 级时再加 1d6（变为 3d6），17 级时再加 1d6（变为 4d6）。",
+              "half_on_success": false,
+              "save_ability": "体质",
+              "target": "one_creature",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "法师）* **施法时间：**1 动作 **施法距离：**60 尺 **法术成分：**V、S **持续时间：**立即 你令距离之内，一个你能看见的生物开始结冰。该目标必须进行一次体质豁免检定。若豁免失败，该目标受到 1d6 点寒冷伤害，并在其下个回合结束前进行的下一次武器攻击检定中得到劣势。 你到达 5 级时，该法术的伤害增加 1d6（变为 2d6）。11 级时再加 1d6（变为 3d6），17 级时再加 1d6（变为 4d6）。",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "珊娜萨的万事指南",
+          "source_fingerprint": "5305786ec460ae99e6325e5452ec4cd1348d87b6ac85725b0de43b883553edb4",
+          "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+          "source_record_id": "4d94c0c610e955904d8893aa",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa",
+        "target": null
+      },
+      "source_fingerprint": "5305786ec460ae99e6325e5452ec4cd1348d87b6ac85725b0de43b883553edb4",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "a5f3c88cd3324466e42d70e3fe91a8375b55e8864f2308efc91c2774b0601367",
+      "spell_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.attack_roll.v1",
+        "spell.damage.v1",
+        "spell.target_selection.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.attack_roll.v1",
+          "clause_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884:clause:1",
+          "status": "full",
+          "type": "attack_roll"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884:clause:2",
+          "status": "full",
+          "type": "damage"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "60061b903956ec24c4b57662bc48a26d2755fc8d39a9d771823bc4de28b5e73c",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "*持续时间：**立即 你舞动用于施法的武器，随后忽然消失并如疾风般发起一轮突击。选择施法距离内最多5个你可见的生物。向每个生物分别进行一次近战法术攻击。若命中，目标将受到6d10点力场伤害。 在这之后，你可以传送到法术目标之一周围5尺内一处你可以看见且未占据空间中。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.attack_roll.v1",
+          "clause_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "attack_ability": "spellcasting",
+            "clause_id": "attack",
+            "evidence_ref": "+的近战武器） **持续时间：**立即 你舞动用于施法的武器，随后忽然消失并如疾风般发起一轮突击。选择施法距离内最多5个你可见的生物。向每个生物分别进行一次近战法术攻击。若命中，目标将受到6d10点力场伤害。 在这之后，你可以传送到法术目标之一周围5尺内一处你可以看见且未占据空间中。",
+            "target": "one_creature",
+            "type": "attack_roll"
+          },
+          "spell_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884",
+          "type": "attack_roll"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "damage",
+            "damage": "6d10",
+            "damage_type": "力场",
+            "evidence_ref": "舞动用于施法的武器，随后忽然消失并如疾风般发起一轮突击。选择施法距离内最多5个你可见的生物。向每个生物分别进行一次近战法术攻击。若命中，目标将受到6d10点力场伤害。 在这之后，你可以传送到法术目标之一周围5尺内一处你可以看见且未占据空间中。",
+            "expression": "6d10",
+            "target": "one_creature",
+            "timing": "on_hit",
+            "type": "damage"
+          },
+          "spell_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884",
+          "type": "damage"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "动作",
+        "components": null,
+        "concentration": false,
+        "duration": "立即",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 5,
+        "name": "钢风斩",
+        "range": "30尺",
+        "resolution": {
+          "attack_roll": [
+            {
+              "action_economy": "action",
+              "attack_ability": "spellcasting",
+              "clause_id": "attack",
+              "evidence_ref": "+的近战武器） **持续时间：**立即 你舞动用于施法的武器，随后忽然消失并如疾风般发起一轮突击。选择施法距离内最多5个你可见的生物。向每个生物分别进行一次近战法术攻击。若命中，目标将受到6d10点力场伤害。 在这之后，你可以传送到法术目标之一周围5尺内一处你可以看见且未占据空间中。",
+              "target": "one_creature",
+              "type": "attack_roll"
+            }
+          ],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "clause_id": "damage",
+              "damage": "6d10",
+              "damage_type": "力场",
+              "evidence_ref": "舞动用于施法的武器，随后忽然消失并如疾风般发起一轮突击。选择施法距离内最多5个你可见的生物。向每个生物分别进行一次近战法术攻击。若命中，目标将受到6d10点力场伤害。 在这之后，你可以传送到法术目标之一周围5尺内一处你可以看见且未占据空间中。",
+              "expression": "6d10",
+              "target": "one_creature",
+              "timing": "on_hit",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "*持续时间：**立即 你舞动用于施法的武器，随后忽然消失并如疾风般发起一轮突击。选择施法距离内最多5个你可见的生物。向每个生物分别进行一次近战法术攻击。若命中，目标将受到6d10点力场伤害。 在这之后，你可以传送到法术目标之一周围5尺内一处你可以看见且未占据空间中。",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "咒法",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "ac82b51e3dd582319e4928bf9ac22d8eb9b4f8c6ba7800b3e72d680a462c11cc",
+          "source_path": "玩家手册2024/法术详述/5环.htm",
+          "source_record_id": "a87ab0181a321cb09fef2884",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884",
+        "target": null
+      },
+      "source_fingerprint": "ac82b51e3dd582319e4928bf9ac22d8eb9b4f8c6ba7800b3e72d680a462c11cc",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "cb52de3acc6abf4407e5376995ad930d33ec73e9c4dfc114c71096d766680468",
+      "spell_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    }
+  ],
+  "runtime_preview": [
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:21db89639520a9951088e222:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:21db89639520a9951088e222:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:21db89639520a9951088e222:clause:2",
+          "status": "full",
+          "type": "damage"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "d57238bc2ca89fc23d519abeb883ace6c3d0499cd1976cb41b9e00562d0c9b03",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:21db89639520a9951088e222:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "间：**附赠动作，当你使用近战武器或徒手打击命中一个生物后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:21db89639520a9951088e222",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:21db89639520a9951088e222:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "bonus_action",
+            "clause_id": "save",
+            "evidence_ref": "间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。",
+            "half_on_success": false,
+            "save_ability": "体质",
+            "target": "one_creature",
+            "type": "saving_throw"
+          },
+          "spell_id": "core-phb-2024:spell:21db89639520a9951088e222",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:21db89639520a9951088e222:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "bonus_action",
+            "clause_id": "damage",
+            "damage": "3d8",
+            "damage_type": "光耀",
+            "evidence_ref": "手打击命中一个生物后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。",
+            "expression": "3d8",
+            "on_failure": "full",
+            "on_success": "none",
+            "target": "one_creature",
+            "timing": "immediate",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:21db89639520a9951088e222",
+          "type": "damage"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "附赠动作，当你使用近战武器或徒手打击命中一个生物后立即执行",
+        "components": null,
+        "concentration": false,
+        "duration": "1分钟",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 3,
+        "name": "致盲斩",
+        "range": "自身",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "bonus_action",
+              "clause_id": "damage",
+              "damage": "3d8",
+              "damage_type": "光耀",
+              "evidence_ref": "手打击命中一个生物后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。",
+              "expression": "3d8",
+              "on_failure": "full",
+              "on_success": "none",
+              "target": "one_creature",
+              "timing": "immediate",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "bonus_action",
+              "clause_id": "save",
+              "evidence_ref": "间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。",
+              "half_on_success": false,
+              "save_ability": "体质",
+              "target": "one_creature",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "间：**附赠动作，当你使用近战武器或徒手打击命中一个生物后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到3d8点光耀伤害，并且目标陷入目盲状态直至法术结束。陷入目盲的目标在其每回合结束时可以进行一次体质豁免，豁免成功则终止其身上的法术。 **升环施法。**你使用的法术位每比三环高一环，此法术的额外伤害提升1d8。",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "42c271394a9fb7c5bfc9dd0d02b9bd08dae47bdb45f3b31ee10d872e72481fbb",
+          "source_path": "玩家手册2024/法术详述/3环.htm",
+          "source_record_id": "21db89639520a9951088e222",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:21db89639520a9951088e222",
+        "target": null
+      },
+      "source_fingerprint": "42c271394a9fb7c5bfc9dd0d02b9bd08dae47bdb45f3b31ee10d872e72481fbb",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "d208a1a10bdd98360e2347d9ed328d770d1da23bc25a213931a644eaa79117df",
+      "spell_id": "core-phb-2024:spell:21db89639520a9951088e222",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.healing.v1",
+        "spell.target_selection.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:2940fd0bac27b811329157a9:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.healing.v1",
+          "clause_id": "core-phb-2024:spell:2940fd0bac27b811329157a9:clause:1",
+          "status": "full",
+          "type": "healing"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "ec46b3efcb200e9f910d9b972e31f49f32b382496b469f951350a62a774914f9",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:2940fd0bac27b811329157a9:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "*法术成分：**V、S **持续时间：**立即 指定施法距离内一个你能看见的生物。汹涌澎湃的正能量将充盈该生物，使其恢复 70 点生命值。该法术也会终止正在影响目标的目盲、耳聋以及中毒状态。 **升环施法。**使用的法术位每比六环高一环，此法术的治疗量就增加10点。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:2940fd0bac27b811329157a9",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.healing.v1",
+          "clause_id": "core-phb-2024:spell:2940fd0bac27b811329157a9:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "healing",
+            "evidence_ref": "间：**1动作 **施法距离：**60尺 **法术成分：**V、S **持续时间：**立即 指定施法距离内一个你能看见的生物。汹涌澎湃的正能量将充盈该生物，使其恢复 70 点生命值。该法术也会终止正在影响目标的目盲、耳聋以及中毒状态。 **升环施法。**使用的法术位每比六环高一环，此法术的治疗量就增加10点。",
+            "expression": "70",
+            "healing": "70",
+            "target": "one_creature",
+            "timing": "immediate",
+            "type": "healing"
+          },
+          "spell_id": "core-phb-2024:spell:2940fd0bac27b811329157a9",
+          "type": "healing"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "1动作",
+        "components": null,
+        "concentration": false,
+        "duration": "立即",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 6,
+        "name": "医疗术",
+        "range": "60尺",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "clause_id": "healing",
+              "evidence_ref": "间：**1动作 **施法距离：**60尺 **法术成分：**V、S **持续时间：**立即 指定施法距离内一个你能看见的生物。汹涌澎湃的正能量将充盈该生物，使其恢复 70 点生命值。该法术也会终止正在影响目标的目盲、耳聋以及中毒状态。 **升环施法。**使用的法术位每比六环高一环，此法术的治疗量就增加10点。",
+              "expression": "70",
+              "healing": "70",
+              "target": "one_creature",
+              "timing": "immediate",
+              "type": "healing"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "*法术成分：**V、S **持续时间：**立即 指定施法距离内一个你能看见的生物。汹涌澎湃的正能量将充盈该生物，使其恢复 70 点生命值。该法术也会终止正在影响目标的目盲、耳聋以及中毒状态。 **升环施法。**使用的法术位每比六环高一环，此法术的治疗量就增加10点。",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "防护",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "2bff01c844e5704d1af12c5b5db4cd5e1168d88518eb0d14cd1d831966fa9939",
+          "source_path": "玩家手册2024/法术详述/6环.htm",
+          "source_record_id": "2940fd0bac27b811329157a9",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:2940fd0bac27b811329157a9",
+        "target": null
+      },
+      "source_fingerprint": "2bff01c844e5704d1af12c5b5db4cd5e1168d88518eb0d14cd1d831966fa9939",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "dfb72d73cc49fe74204460112627f352f015bb6c7a502f965094f127c61952db",
+      "spell_id": "core-phb-2024:spell:2940fd0bac27b811329157a9",
+      "typed_clause_count": 2,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759:clause:2",
+          "status": "full",
+          "type": "damage"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "2990785c72e749b2c5bcefb66212d99a05911533997a81da72f7ea044fe505bf",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "术成分：**V **持续时间：**30日 你对施法距离内你能看见的一个生物下达一条魔法口头命令，并强迫其执行相应的某种服务或克制某种行为，或者遵照你的要求行动。目标必须成功通过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": null,
+            "clause_id": "save",
+            "evidence_ref": "时间：**30日 你对施法距离内你能看见的一个生物下达一条魔法口头命令，并强迫其执行相应的某种服务或克制某种行为，或者遵照你的要求行动。目标必须成功通过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法术位施展该法术时，法术将",
+            "half_on_success": false,
+            "save_ability": "感知",
+            "target": "one_creature",
+            "type": "saving_throw"
+          },
+          "spell_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": null,
+            "clause_id": "damage",
+            "damage": "5d10",
+            "damage_type": "心灵",
+            "evidence_ref": "过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法术位施展该法术时，法术将一直持续至被上文提及的法术所终止。",
+            "expression": "5d10",
+            "on_failure": "full",
+            "on_success": "none",
+            "target": "one_creature",
+            "timing": "immediate",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+          "type": "damage"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "1分钟",
+        "components": null,
+        "concentration": false,
+        "duration": "30日",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 5,
+        "name": "指使术",
+        "range": "60尺",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": null,
+              "clause_id": "damage",
+              "damage": "5d10",
+              "damage_type": "心灵",
+              "evidence_ref": "过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法术位施展该法术时，法术将一直持续至被上文提及的法术所终止。",
+              "expression": "5d10",
+              "on_failure": "full",
+              "on_success": "none",
+              "target": "one_creature",
+              "timing": "immediate",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": null,
+              "clause_id": "save",
+              "evidence_ref": "时间：**30日 你对施法距离内你能看见的一个生物下达一条魔法口头命令，并强迫其执行相应的某种服务或克制某种行为，或者遵照你的要求行动。目标必须成功通过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法术位施展该法术时，法术将",
+              "half_on_success": false,
+              "save_ability": "感知",
+              "target": "one_creature",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "术成分：**V **持续时间：**30日 你对施法距离内你能看见的一个生物下达一条魔法口头命令，并强迫其执行相应的某种服务或克制某种行为，或者遵照你的要求行动。目标必须成功通过一次感知豁免，否则将在法术持续时间内陷入魅惑状态。目标不能理解你的命令，则其在豁免中自动成功。 被魅惑生物每次做出与你的命令相悖的行为时，即受到5d10点心灵伤害。该伤害一日至多生效一次。 除了涉及导致必死结果的行为外，你向目标下达的任何命令都会生效。如果你发布自杀指令则法术即时终止。 一道*移除诅咒Remove Curse*，*高等复原术Greater Restoration*或*祈愿术Wish*可以终止该法术。 **升环施法。**使用七环或八环法术位施展该法术时，持续时间变为365日。使用九环法",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": null,
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "4979082573ef0e141a738e96f949e04a33c82d8d2990022afd938c1d0f938bd1",
+          "source_path": "玩家手册2024/法术详述/5环.htm",
+          "source_record_id": "3f4fae885921a47ad0c6f759",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+        "target": null
+      },
+      "source_fingerprint": "4979082573ef0e141a738e96f949e04a33c82d8d2990022afd938c1d0f938bd1",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "1d277defa6a4ebb9cb9001c93330b952a5cc6b0c598c5b6c7cbacd3d10da8c5d",
+      "spell_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.temporary_hp.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.temporary_hp.v1",
+          "clause_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b:clause:0",
+          "status": "full",
+          "type": "temporary_hp"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "21b3f5fff3179de8d024921fe54ad4579f758d5f069ff1272383a33e73af34cb",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.temporary_hp.v1",
+          "clause_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "amount": "2d4+4",
+            "clause_id": "temporary-hp",
+            "evidence_ref": "灵（术士、法师、奇械师）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、S、M（一滴酒精） **持续时间：**立即 你获得2d4+4点临时生命值。 **升环施法。**使用的法术位每比一环高一环，其给予的临时生命值就增加5。",
+            "expression": "2d4+4",
+            "target": "one_creature",
+            "type": "temporary_hp"
+          },
+          "spell_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+          "type": "temporary_hp"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "动作",
+        "components": null,
+        "concentration": false,
+        "duration": "立即",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 1,
+        "name": "虚假生命",
+        "range": "自身",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "amount": "2d4+4",
+              "clause_id": "temporary-hp",
+              "evidence_ref": "灵（术士、法师、奇械师）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、S、M（一滴酒精） **持续时间：**立即 你获得2d4+4点临时生命值。 **升环施法。**使用的法术位每比一环高一环，其给予的临时生命值就增加5。",
+              "expression": "2d4+4",
+              "target": "one_creature",
+              "type": "temporary_hp"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "死灵",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "9e30b35903feab87d652f56f819c9ff28460d8633a254387c1bd1571f7c422fe",
+          "source_path": "玩家手册2024/法术详述/1环.htm",
+          "source_record_id": "56193b76694eafc2025e1c0b",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+        "target": null
+      },
+      "source_fingerprint": "9e30b35903feab87d652f56f819c9ff28460d8633a254387c1bd1571f7c422fe",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "82f3aee1fa59100b8c0b5d522918f59158da71a7f130c5e4342afbb65bf4d85c",
+      "spell_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+      "typed_clause_count": 1,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:5842f6550b16755fb544c642:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:5842f6550b16755fb544c642:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:5842f6550b16755fb544c642:clause:2",
+          "status": "full",
+          "type": "damage"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "0cc3e661359dce25abccc19add059cf842a14ec896752b36af2772b698a9485f",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:5842f6550b16755fb544c642:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "#### 信仰守卫｜Guardian of Faith *四环 咒法（牧师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**V **持续时间：**8小时 一名大型灵体守护者出现在施法距离内一处由你指定的，你可见且未占据空间，并在法术持续时间内在该处悬浮。占据该空间的守护者是无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。",
+            "kind": "enemy",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:5842f6550b16755fb544c642",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "core-phb-2024:spell:5842f6550b16755fb544c642:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "处悬浮。占据该空间的守护者是无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。",
+            "half_on_success": true,
+            "save_ability": "敏捷",
+            "target": "one_creature",
+            "type": "saving_throw"
+          },
+          "spell_id": "core-phb-2024:spell:5842f6550b16755fb544c642",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "core-phb-2024:spell:5842f6550b16755fb544c642:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "damage",
+            "damage": "20",
+            "damage_type": "光耀",
+            "evidence_ref": "无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。",
+            "expression": "20",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "one_creature",
+            "timing": "immediate",
+            "type": "damage"
+          },
+          "spell_id": "core-phb-2024:spell:5842f6550b16755fb544c642",
+          "type": "damage"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "动作",
+        "components": null,
+        "concentration": false,
+        "duration": "8小时",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 4,
+        "name": "信仰守卫",
+        "range": "30尺",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "clause_id": "damage",
+              "damage": "20",
+              "damage_type": "光耀",
+              "evidence_ref": "无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。",
+              "expression": "20",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "one_creature",
+              "timing": "immediate",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "处悬浮。占据该空间的守护者是无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。",
+              "half_on_success": true,
+              "save_ability": "敏捷",
+              "target": "one_creature",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "#### 信仰守卫｜Guardian of Faith *四环 咒法（牧师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**V **持续时间：**8小时 一名大型灵体守护者出现在施法距离内一处由你指定的，你可见且未占据空间，并在法术持续时间内在该处悬浮。占据该空间的守护者是无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。",
+              "kind": "enemy",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "咒法",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "6904285535ad103ec150150aed3b97dd15f6cc075486befaeb79421ed81b9c2f",
+          "source_path": "玩家手册2024/法术详述/4环.htm",
+          "source_record_id": "5842f6550b16755fb544c642",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:5842f6550b16755fb544c642",
+        "target": null
+      },
+      "source_fingerprint": "6904285535ad103ec150150aed3b97dd15f6cc075486befaeb79421ed81b9c2f",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "2db64645d25d783b573b89cb53a909e6d143b47409e1e259a06d74c0350ff87a",
+      "spell_id": "core-phb-2024:spell:5842f6550b16755fb544c642",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.healing.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.healing.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:1",
+          "status": "full",
+          "type": "healing"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:2",
+          "status": "full",
+          "type": "upcast"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "8ee29aacf4b8ea3623c076053477ac95e8a9c1ec741c098a08e7acf0fd4467d4",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "吟游诗人、牧师、德鲁伊、圣武士、游侠、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**立即 你触碰的一名生物恢复等同于2d8+你施法属性调整值点生命值。 **升环施法。**使用的法术位每比一环高一环，此法术的治疗量就增加2d8点。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.healing.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "healing",
+            "evidence_ref": "诗人、牧师、德鲁伊、圣武士、游侠、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**立即 你触碰的一名生物恢复等同于2d8+你施法属性调整值点生命值。 **升环施法。**使用的法术位每比一环高一环，此法术的治疗量就增加2d8点。",
+            "expression": "2d8",
+            "healing": "2d8",
+            "target": "one_creature",
+            "timing": "immediate",
+            "type": "healing"
+          },
+          "spell_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+          "type": "healing"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "healing",
+            "clause_id": "upcast",
+            "evidence_ref": "施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**立即 你触碰的一名生物恢复等同于2d8+你施法属性调整值点生命值。 **升环施法。**使用的法术位每比一环高一环，此法术的治疗量就增加2d8点。",
+            "increments": "2d8",
+            "per_slot": 1,
+            "type": "upcast"
+          },
+          "spell_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+          "type": "upcast"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "动作",
+        "components": null,
+        "concentration": false,
+        "duration": "立即",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 1,
+        "name": "疗伤术",
+        "range": "触碰",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "clause_id": "healing",
+              "evidence_ref": "诗人、牧师、德鲁伊、圣武士、游侠、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**立即 你触碰的一名生物恢复等同于2d8+你施法属性调整值点生命值。 **升环施法。**使用的法术位每比一环高一环，此法术的治疗量就增加2d8点。",
+              "expression": "2d8",
+              "healing": "2d8",
+              "target": "one_creature",
+              "timing": "immediate",
+              "type": "healing"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "吟游诗人、牧师、德鲁伊、圣武士、游侠、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**立即 你触碰的一名生物恢复等同于2d8+你施法属性调整值点生命值。 **升环施法。**使用的法术位每比一环高一环，此法术的治疗量就增加2d8点。",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "healing",
+              "clause_id": "upcast",
+              "evidence_ref": "施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**立即 你触碰的一名生物恢复等同于2d8+你施法属性调整值点生命值。 **升环施法。**使用的法术位每比一环高一环，此法术的治疗量就增加2d8点。",
+              "increments": "2d8",
+              "per_slot": 1,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "防护",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "d23e86271fc9e1082cc7110c46e7baabdd9282249497a60fd3c20a44e418f197",
+          "source_path": "玩家手册2024/法术详述/1环.htm",
+          "source_record_id": "5dd11cb3fbb6d21ea53739f2",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+        "target": null
+      },
+      "source_fingerprint": "d23e86271fc9e1082cc7110c46e7baabdd9282249497a60fd3c20a44e418f197",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "45df06e5db6282d30ea4e93a7c773a1ab74f64aea9bfda20b8608114172f6217",
+      "spell_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.concentration.v1",
+        "spell.damage.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "fizbans-treasury:spell:084712e58fd3714db50148c5:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.concentration.v1",
+          "clause_id": "fizbans-treasury:spell:084712e58fd3714db50148c5:clause:1",
+          "status": "full",
+          "type": "concentration"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "fizbans-treasury:spell:084712e58fd3714db50148c5:clause:2",
+          "status": "full",
+          "type": "upcast"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "fizbans-treasury:spell:084712e58fd3714db50148c5:clause:3",
+          "status": "full",
+          "type": "damage"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "45be1ab65a72b3dd2c806f5756436dae154eb11bd68985d42b7491d184ca23ff",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "fizbans-treasury:spell:084712e58fd3714db50148c5:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "时间：**专注，至多1分钟 龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "fizbans-treasury:spell:084712e58fd3714db50148c5",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.concentration.v1",
+          "clause_id": "fizbans-treasury:spell:084712e58fd3714db50148c5:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "concentration",
+            "duration": "专注，至多1分钟",
+            "evidence_ref": "s Stride *三环 变化（奇械师、游侠、术士、法师）* **施法时间：**1附赠动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**专注，至多1分钟 龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+            "required": true,
+            "type": "concentration"
+          },
+          "spell_id": "fizbans-treasury:spell:084712e58fd3714db50148c5",
+          "type": "concentration"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "fizbans-treasury:spell:084712e58fd3714db50148c5:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "damage",
+            "clause_id": "upcast",
+            "evidence_ref": "动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+            "increments": "1d6",
+            "per_slot": 1,
+            "type": "upcast"
+          },
+          "spell_id": "fizbans-treasury:spell:084712e58fd3714db50148c5",
+          "type": "upcast"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "fizbans-treasury:spell:084712e58fd3714db50148c5:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "bonus_action",
+            "clause_id": "damage",
+            "damage": "1d6",
+            "damage_type": "火焰",
+            "evidence_ref": "#### 阿莎德隆奔行｜Ashardalon's Stride\n\n*三环 变化（奇械师、游侠、术士、法师）*\n**施法时间：**1附赠动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**专注，至多1分钟\n龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。\n当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。\n**升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+            "expression": "1d6",
+            "target": "one_creature",
+            "timing": "on_enter",
+            "type": "damage"
+          },
+          "spell_id": "fizbans-treasury:spell:084712e58fd3714db50148c5",
+          "type": "damage"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "1附赠动作",
+        "components": null,
+        "concentration": true,
+        "duration": "专注，至多1分钟",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 3,
+        "name": "阿莎德隆奔行",
+        "range": "自身",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [
+            {
+              "clause_id": "concentration",
+              "duration": "专注，至多1分钟",
+              "evidence_ref": "s Stride *三环 变化（奇械师、游侠、术士、法师）* **施法时间：**1附赠动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**专注，至多1分钟 龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+              "required": true,
+              "type": "concentration"
+            }
+          ],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "bonus_action",
+              "clause_id": "damage",
+              "damage": "1d6",
+              "damage_type": "火焰",
+              "evidence_ref": "#### 阿莎德隆奔行｜Ashardalon's Stride\n\n*三环 变化（奇械师、游侠、术士、法师）*\n**施法时间：**1附赠动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**专注，至多1分钟\n龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。\n当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。\n**升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+              "expression": "1d6",
+              "target": "one_creature",
+              "timing": "on_enter",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "时间：**专注，至多1分钟 龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "damage",
+              "clause_id": "upcast",
+              "evidence_ref": "动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+              "increments": "1d6",
+              "per_slot": 1,
+              "type": "upcast"
+            }
+          ]
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "变化",
+        "source": {
+          "source_book": "费资本的巨龙宝库",
+          "source_fingerprint": "cdbd9cb32dc130fb627e55ea76e3dd1ca83b0b99fc58702825592cc439098468",
+          "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+          "source_record_id": "084712e58fd3714db50148c5",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "fizbans-treasury:spell:084712e58fd3714db50148c5",
+        "target": null
+      },
+      "source_fingerprint": "cdbd9cb32dc130fb627e55ea76e3dd1ca83b0b99fc58702825592cc439098468",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "522763e509ebc72393978e17bb8be514a0d85f3dc1459184eed84583ea4ab979",
+      "spell_id": "fizbans-treasury:spell:084712e58fd3714db50148c5",
+      "typed_clause_count": 4,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.apply_condition.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:2",
+          "status": "full",
+          "type": "damage"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:3",
+          "status": "full",
+          "type": "apply_condition"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "a7721301828946258b491f3642bb1557f9225a824061ef2b5ffc91562cef3929",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。 目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。 **升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "#### 劳洛希姆心灵长枪｜Raulothim's Psychic Lance\n\n*四环 惑控（吟游诗人、术士、魔契师、法师）*\n**施法时间：**1动作\n**施法距离：**120尺\n**法术成分：**V\n**持续时间：**立即\n你从你的额头处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。\n目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。\n**升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+            "half_on_success": true,
+            "save_ability": "智力",
+            "target": "one_creature",
+            "type": "saving_throw"
+          },
+          "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "damage",
+            "damage": "7d6",
+            "damage_type": "心灵",
+            "evidence_ref": "#### 劳洛希姆心灵长枪｜Raulothim's Psychic Lance\n\n*四环 惑控（吟游诗人、术士、魔契师、法师）*\n**施法时间：**1动作\n**施法距离：**120尺\n**法术成分：**V\n**持续时间：**立即\n你从你的额头处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。\n目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。\n**升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+            "expression": "7d6",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "one_creature",
+            "timing": "immediate",
+            "type": "damage"
+          },
+          "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+          "type": "damage"
+        },
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "condition",
+            "condition": "失能",
+            "duration": "target_turn_start",
+            "evidence_ref": "#### 劳洛希姆心灵长枪｜Raulothim's Psychic Lance\n\n*四环 惑控（吟游诗人、术士、魔契师、法师）*\n**施法时间：**1动作\n**施法距离：**120尺\n**法术成分：**V\n**持续时间：**立即\n你从你的额头处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。\n目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。\n**升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+            "target": "one_creature",
+            "type": "apply_condition"
+          },
+          "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+          "type": "apply_condition"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "1动作",
+        "components": null,
+        "concentration": false,
+        "duration": "立即",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 4,
+        "name": "劳洛希姆心灵长枪",
+        "range": "120尺",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "clause_id": "damage",
+              "damage": "7d6",
+              "damage_type": "心灵",
+              "evidence_ref": "#### 劳洛希姆心灵长枪｜Raulothim's Psychic Lance\n\n*四环 惑控（吟游诗人、术士、魔契师、法师）*\n**施法时间：**1动作\n**施法距离：**120尺\n**法术成分：**V\n**持续时间：**立即\n你从你的额头处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。\n目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。\n**升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+              "expression": "7d6",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "one_creature",
+              "timing": "immediate",
+              "type": "damage"
+            },
+            {
+              "action_economy": "action",
+              "clause_id": "condition",
+              "condition": "失能",
+              "duration": "target_turn_start",
+              "evidence_ref": "#### 劳洛希姆心灵长枪｜Raulothim's Psychic Lance\n\n*四环 惑控（吟游诗人、术士、魔契师、法师）*\n**施法时间：**1动作\n**施法距离：**120尺\n**法术成分：**V\n**持续时间：**立即\n你从你的额头处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。\n目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。\n**升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+              "target": "one_creature",
+              "type": "apply_condition"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "#### 劳洛希姆心灵长枪｜Raulothim's Psychic Lance\n\n*四环 惑控（吟游诗人、术士、魔契师、法师）*\n**施法时间：**1动作\n**施法距离：**120尺\n**法术成分：**V\n**持续时间：**立即\n你从你的额头处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。\n目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。\n**升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+              "half_on_success": true,
+              "save_ability": "智力",
+              "target": "one_creature",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。 目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。 **升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": null,
+        "source": {
+          "source_book": "费资本的巨龙宝库",
+          "source_fingerprint": "45786e6c57e4c56a29800259cf32e1d236b08990ffc7d61efc793cb30a5fbbdc",
+          "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+          "source_record_id": "49a5bacc752aa90fbbfbf316",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+        "target": null
+      },
+      "source_fingerprint": "45786e6c57e4c56a29800259cf32e1d236b08990ffc7d61efc793cb30a5fbbdc",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "6de5c6be93705550c4d96620c25050a01413875d09c80509ce73894cb96e4216",
+      "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+      "typed_clause_count": 4,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1:clause:2",
+          "status": "full",
+          "type": "damage"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "998515d90a3063bb89a9de3d844cac9837e5ad35c472740ba6acca678cba6611",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "法师）**Legacy* 施法时间：1 动作 施法距离：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "y* 施法时间：1 动作 施法距离：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。",
+            "half_on_success": false,
+            "save_ability": "智力",
+            "target": "one_creature",
+            "type": "saving_throw"
+          },
+          "spell_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "damage",
+            "damage": "1d6",
+            "damage_type": "心灵",
+            "evidence_ref": "：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。",
+            "expression": "1d6",
+            "on_failure": "full",
+            "on_success": "none",
+            "target": "one_creature",
+            "timing": "immediate",
+            "type": "damage"
+          },
+          "spell_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1",
+          "type": "damage"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "1 动作",
+        "components": null,
+        "concentration": false,
+        "duration": "1",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 0,
+        "name": "心灵之楔",
+        "range": "60 尺",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "clause_id": "damage",
+              "damage": "1d6",
+              "damage_type": "心灵",
+              "evidence_ref": "：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。",
+              "expression": "1d6",
+              "on_failure": "full",
+              "on_success": "none",
+              "target": "one_creature",
+              "timing": "immediate",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "y* 施法时间：1 动作 施法距离：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。",
+              "half_on_success": false,
+              "save_ability": "智力",
+              "target": "one_creature",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "法师）**Legacy* 施法时间：1 动作 施法距离：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": null,
+        "source": {
+          "source_book": "塔莎的万事坩埚",
+          "source_fingerprint": "c03972f4c5ec5df6794fd142bd3c71e2477344805e19869d15eab10dc46961a2",
+          "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
+          "source_record_id": "ef0f92b557fb48d421d462e1",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1",
+        "target": null
+      },
+      "source_fingerprint": "c03972f4c5ec5df6794fd142bd3c71e2477344805e19869d15eab10dc46961a2",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "0794d972f3b44993c8b9c815896031fb5932cb89e075159e3e01d13463d5b586",
+      "spell_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83:clause:2",
+          "status": "full",
+          "type": "damage"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "9e30856b4cff037fbd654d4fe2bc26a9fdca480a21e51d60d9afe434b33f7a83",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "S、M（一滴水） **持续时间：**立即 你召唤出浪潮拍打距离之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "持续时间：**立即 你召唤出浪潮拍打距离之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。",
+            "half_on_success": true,
+            "save_ability": "敏捷",
+            "target": "one_creature",
+            "type": "saving_throw"
+          },
+          "spell_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "damage",
+            "damage": "4d8",
+            "damage_type": "钝击",
+            "evidence_ref": "之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。",
+            "expression": "4d8",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "one_creature",
+            "timing": "immediate",
+            "type": "damage"
+          },
+          "spell_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83",
+          "type": "damage"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "1 动作",
+        "components": null,
+        "concentration": false,
+        "duration": "立即",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 3,
+        "name": "潮涌",
+        "range": "120 尺",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "clause_id": "damage",
+              "damage": "4d8",
+              "damage_type": "钝击",
+              "evidence_ref": "之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。",
+              "expression": "4d8",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "one_creature",
+              "timing": "immediate",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "持续时间：**立即 你召唤出浪潮拍打距离之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。",
+              "half_on_success": true,
+              "save_ability": "敏捷",
+              "target": "one_creature",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "S、M（一滴水） **持续时间：**立即 你召唤出浪潮拍打距离之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "咒法",
+        "source": {
+          "source_book": "珊娜萨的万事指南",
+          "source_fingerprint": "e36ab12fc1519be7c9f46ae7d23c239e59cc3afc17046a83879819506db7fa03",
+          "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+          "source_record_id": "25fd183be8a5a886bc180e83",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83",
+        "target": null
+      },
+      "source_fingerprint": "e36ab12fc1519be7c9f46ae7d23c239e59cc3afc17046a83879819506db7fa03",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "9d42702e05d5188798b983137dd021ad63068d4e4172c5f7086d6086d3ee2306",
+      "spell_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5:clause:2",
+          "status": "full",
+          "type": "damage"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "a1818341526fa97395d1d6d2c94cee5b6cd2f3e578c1914bd4f2b9ff9eb3e090",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "*法术成分：**S **持续时间：**立即 你释放你的心灵力量，轰击施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "*持续时间：**立即 你释放你的心灵力量，轰击施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。",
+            "half_on_success": true,
+            "save_ability": "智力",
+            "target": "one_creature",
+            "type": "saving_throw"
+          },
+          "spell_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "damage",
+            "damage": "14d6",
+            "damage_type": "心灵",
+            "evidence_ref": "施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。",
+            "expression": "14d6",
+            "on_failure": "full",
+            "on_success": "half",
+            "target": "one_creature",
+            "timing": "immediate",
+            "type": "damage"
+          },
+          "spell_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5",
+          "type": "damage"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "1 动作",
+        "components": null,
+        "concentration": false,
+        "duration": "立即",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 9,
+        "name": "心灵尖啸",
+        "range": "90 尺",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "clause_id": "damage",
+              "damage": "14d6",
+              "damage_type": "心灵",
+              "evidence_ref": "施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。",
+              "expression": "14d6",
+              "on_failure": "full",
+              "on_success": "half",
+              "target": "one_creature",
+              "timing": "immediate",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "*持续时间：**立即 你释放你的心灵力量，轰击施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。",
+              "half_on_success": true,
+              "save_ability": "智力",
+              "target": "one_creature",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "*法术成分：**S **持续时间：**立即 你释放你的心灵力量，轰击施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": null,
+        "source": {
+          "source_book": "珊娜萨的万事指南",
+          "source_fingerprint": "5c135954c6a56d6edd429c2f5ae81ce67b41de9aa4b6e34215f72e18d8ce664e",
+          "source_path": "珊娜萨的万事指南/法术/法术详述/9环.html",
+          "source_record_id": "3552e12594b2d8e6067f24f5",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5",
+        "target": null
+      },
+      "source_fingerprint": "5c135954c6a56d6edd429c2f5ae81ce67b41de9aa4b6e34215f72e18d8ce664e",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "e7cb2bdbd80550ba34f715dbce28fdc50ae10affa4f7e857d0040bd003cd6782",
+      "spell_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa:clause:1",
+          "status": "full",
+          "type": "saving_throw"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa:clause:2",
+          "status": "full",
+          "type": "damage"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "ce920bc1320ee4e5a7153ff888fe42b8e1535dfbb57fa44e656ec9f2af804162",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "法师）* **施法时间：**1 动作 **施法距离：**60 尺 **法术成分：**V、S **持续时间：**立即 你令距离之内，一个你能看见的生物开始结冰。该目标必须进行一次体质豁免检定。若豁免失败，该目标受到 1d6 点寒冷伤害，并在其下个回合结束前进行的下一次武器攻击检定中得到劣势。 你到达 5 级时，该法术的伤害增加 1d6（变为 2d6）。11 级时再加 1d6（变为 3d6），17 级时再加 1d6（变为 4d6）。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.saving_throw.v1",
+          "clause_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "save",
+            "evidence_ref": "间：**1 动作 **施法距离：**60 尺 **法术成分：**V、S **持续时间：**立即 你令距离之内，一个你能看见的生物开始结冰。该目标必须进行一次体质豁免检定。若豁免失败，该目标受到 1d6 点寒冷伤害，并在其下个回合结束前进行的下一次武器攻击检定中得到劣势。 你到达 5 级时，该法术的伤害增加 1d6（变为 2d6）。11 级时再加 1d6（变为 3d6），17 级时再加 1d6（变为 4d6）。",
+            "half_on_success": false,
+            "save_ability": "体质",
+            "target": "one_creature",
+            "type": "saving_throw"
+          },
+          "spell_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa",
+          "type": "saving_throw"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "damage",
+            "damage": "1d6",
+            "damage_type": "寒冷",
+            "evidence_ref": "*法术成分：**V、S **持续时间：**立即 你令距离之内，一个你能看见的生物开始结冰。该目标必须进行一次体质豁免检定。若豁免失败，该目标受到 1d6 点寒冷伤害，并在其下个回合结束前进行的下一次武器攻击检定中得到劣势。 你到达 5 级时，该法术的伤害增加 1d6（变为 2d6）。11 级时再加 1d6（变为 3d6），17 级时再加 1d6（变为 4d6）。",
+            "expression": "1d6",
+            "on_failure": "full",
+            "on_success": "none",
+            "target": "one_creature",
+            "timing": "immediate",
+            "type": "damage"
+          },
+          "spell_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa",
+          "type": "damage"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "1 动作",
+        "components": null,
+        "concentration": false,
+        "duration": "立即",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 0,
+        "name": "霜噬",
+        "range": "60 尺",
+        "resolution": {
+          "attack_roll": [],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "clause_id": "damage",
+              "damage": "1d6",
+              "damage_type": "寒冷",
+              "evidence_ref": "*法术成分：**V、S **持续时间：**立即 你令距离之内，一个你能看见的生物开始结冰。该目标必须进行一次体质豁免检定。若豁免失败，该目标受到 1d6 点寒冷伤害，并在其下个回合结束前进行的下一次武器攻击检定中得到劣势。 你到达 5 级时，该法术的伤害增加 1d6（变为 2d6）。11 级时再加 1d6（变为 3d6），17 级时再加 1d6（变为 4d6）。",
+              "expression": "1d6",
+              "on_failure": "full",
+              "on_success": "none",
+              "target": "one_creature",
+              "timing": "immediate",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [
+            {
+              "action_economy": "action",
+              "clause_id": "save",
+              "evidence_ref": "间：**1 动作 **施法距离：**60 尺 **法术成分：**V、S **持续时间：**立即 你令距离之内，一个你能看见的生物开始结冰。该目标必须进行一次体质豁免检定。若豁免失败，该目标受到 1d6 点寒冷伤害，并在其下个回合结束前进行的下一次武器攻击检定中得到劣势。 你到达 5 级时，该法术的伤害增加 1d6（变为 2d6）。11 级时再加 1d6（变为 3d6），17 级时再加 1d6（变为 4d6）。",
+              "half_on_success": false,
+              "save_ability": "体质",
+              "target": "one_creature",
+              "type": "saving_throw"
+            }
+          ],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "法师）* **施法时间：**1 动作 **施法距离：**60 尺 **法术成分：**V、S **持续时间：**立即 你令距离之内，一个你能看见的生物开始结冰。该目标必须进行一次体质豁免检定。若豁免失败，该目标受到 1d6 点寒冷伤害，并在其下个回合结束前进行的下一次武器攻击检定中得到劣势。 你到达 5 级时，该法术的伤害增加 1d6（变为 2d6）。11 级时再加 1d6（变为 3d6），17 级时再加 1d6（变为 4d6）。",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "塑能",
+        "source": {
+          "source_book": "珊娜萨的万事指南",
+          "source_fingerprint": "5305786ec460ae99e6325e5452ec4cd1348d87b6ac85725b0de43b883553edb4",
+          "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+          "source_record_id": "4d94c0c610e955904d8893aa",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa",
+        "target": null
+      },
+      "source_fingerprint": "5305786ec460ae99e6325e5452ec4cd1348d87b6ac85725b0de43b883553edb4",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "a5f3c88cd3324466e42d70e3fe91a8375b55e8864f2308efc91c2774b0601367",
+      "spell_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    },
+    {
+      "blockers": [],
+      "capability_ids": [
+        "spell.attack_roll.v1",
+        "spell.damage.v1",
+        "spell.target_selection.v1"
+      ],
+      "capability_registry": {
+        "id": "spell",
+        "version": "content-capabilities-1"
+      },
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884:clause:0",
+          "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.attack_roll.v1",
+          "clause_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884:clause:1",
+          "status": "full",
+          "type": "attack_roll"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884:clause:2",
+          "status": "full",
+          "type": "damage"
+        }
+      ],
+      "compile_status": "full",
+      "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+      "fingerprint": "60061b903956ec24c4b57662bc48a26d2755fc8d39a9d771823bc4de28b5e73c",
+      "kind": "spell",
+      "materialized": true,
+      "runtime_blocks": [
+        {
+          "capability_id": "spell.target_selection.v1",
+          "clause_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "*持续时间：**立即 你舞动用于施法的武器，随后忽然消失并如疾风般发起一轮突击。选择施法距离内最多5个你可见的生物。向每个生物分别进行一次近战法术攻击。若命中，目标将受到6d10点力场伤害。 在这之后，你可以传送到法术目标之一周围5尺内一处你可以看见且未占据空间中。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.attack_roll.v1",
+          "clause_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "attack_ability": "spellcasting",
+            "clause_id": "attack",
+            "evidence_ref": "+的近战武器） **持续时间：**立即 你舞动用于施法的武器，随后忽然消失并如疾风般发起一轮突击。选择施法距离内最多5个你可见的生物。向每个生物分别进行一次近战法术攻击。若命中，目标将受到6d10点力场伤害。 在这之后，你可以传送到法术目标之一周围5尺内一处你可以看见且未占据空间中。",
+            "target": "one_creature",
+            "type": "attack_roll"
+          },
+          "spell_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884",
+          "type": "attack_roll"
+        },
+        {
+          "capability_id": "spell.damage.v1",
+          "clause_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "damage",
+            "damage": "6d10",
+            "damage_type": "力场",
+            "evidence_ref": "舞动用于施法的武器，随后忽然消失并如疾风般发起一轮突击。选择施法距离内最多5个你可见的生物。向每个生物分别进行一次近战法术攻击。若命中，目标将受到6d10点力场伤害。 在这之后，你可以传送到法术目标之一周围5尺内一处你可以看见且未占据空间中。",
+            "expression": "6d10",
+            "target": "one_creature",
+            "timing": "on_hit",
+            "type": "damage"
+          },
+          "spell_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884",
+          "type": "damage"
+        }
+      ],
+      "runtime_spell_definition": {
+        "casting_time": "动作",
+        "components": null,
+        "concentration": false,
+        "duration": "立即",
+        "execution_status": "ready",
+        "kind": "spell",
+        "level": 5,
+        "name": "钢风斩",
+        "range": "30尺",
+        "resolution": {
+          "attack_roll": [
+            {
+              "action_economy": "action",
+              "attack_ability": "spellcasting",
+              "clause_id": "attack",
+              "evidence_ref": "+的近战武器） **持续时间：**立即 你舞动用于施法的武器，随后忽然消失并如疾风般发起一轮突击。选择施法距离内最多5个你可见的生物。向每个生物分别进行一次近战法术攻击。若命中，目标将受到6d10点力场伤害。 在这之后，你可以传送到法术目标之一周围5尺内一处你可以看见且未占据空间中。",
+              "target": "one_creature",
+              "type": "attack_roll"
+            }
+          ],
+          "concentration": [],
+          "duration": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "clause_id": "damage",
+              "damage": "6d10",
+              "damage_type": "力场",
+              "evidence_ref": "舞动用于施法的武器，随后忽然消失并如疾风般发起一轮突击。选择施法距离内最多5个你可见的生物。向每个生物分别进行一次近战法术攻击。若命中，目标将受到6d10点力场伤害。 在这之后，你可以传送到法术目标之一周围5尺内一处你可以看见且未占据空间中。",
+              "expression": "6d10",
+              "target": "one_creature",
+              "timing": "on_hit",
+              "type": "damage"
+            }
+          ],
+          "saving_throw": [],
+          "target_selection": [
+            {
+              "clause_id": "target",
+              "count": 1,
+              "evidence_ref": "*持续时间：**立即 你舞动用于施法的武器，随后忽然消失并如疾风般发起一轮突击。选择施法距离内最多5个你可见的生物。向每个生物分别进行一次近战法术攻击。若命中，目标将受到6d10点力场伤害。 在这之后，你可以传送到法术目标之一周围5尺内一处你可以看见且未占据空间中。",
+              "kind": "one_creature",
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": []
+        },
+        "runtime_schema_version": "spell-runtime-1",
+        "school": "咒法",
+        "source": {
+          "source_book": "玩家手册 2024",
+          "source_fingerprint": "ac82b51e3dd582319e4928bf9ac22d8eb9b4f8c6ba7800b3e72d680a462c11cc",
+          "source_path": "玩家手册2024/法术详述/5环.htm",
+          "source_record_id": "a87ab0181a321cb09fef2884",
+          "source_trust": "authored_ir"
+        },
+        "spell_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884",
+        "target": null
+      },
+      "source_fingerprint": "ac82b51e3dd582319e4928bf9ac22d8eb9b4f8c6ba7800b3e72d680a462c11cc",
+      "source_trust": "authored_ir",
+      "spec_fingerprint": "cb52de3acc6abf4407e5376995ad930d33ec73e9c4dfc114c71096d766680468",
+      "spell_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884",
+      "typed_clause_count": 3,
+      "typed_ir": true,
+      "unsupported_clause_ids": []
+    }
+  ],
+  "schema_version": "content-ir-compile-result-1",
+  "typed_ir_count": 13
+}

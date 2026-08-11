@@ -1,0 +1,109 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "1动作",
+  "clause_boundaries": {
+    "healing": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "间：**1动作 **施法距离：**60尺 **法术成分：**V、S **持续时间：**立即 指定施法距离内一个你能看见的生物。汹涌澎湃的正能量将充盈该生物，使其恢复 70 点生命值。该法术也会终止正在影响目标的目盲、耳聋以及中毒状态。 **升环施法。**使用的法术位每比六环高一环，此法术的治疗量就增加10点。",
+      "source_heading": "医疗术"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "*法术成分：**V、S **持续时间：**立即 指定施法距离内一个你能看见的生物。汹涌澎湃的正能量将充盈该生物，使其恢复 70 点生命值。该法术也会终止正在影响目标的目盲、耳聋以及中毒状态。 **升环施法。**使用的法术位每比六环高一环，此法术的治疗量就增加10点。",
+      "source_heading": "医疗术"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:2940fd0bac27b811329157a9:target",
+    "core-phb-2024:spell:2940fd0bac27b811329157a9:healing"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "*法术成分：**V、S **持续时间：**立即 指定施法距离内一个你能看见的生物。汹涌澎湃的正能量将充盈该生物，使其恢复 70 点生命值。该法术也会终止正在影响目标的目盲、耳聋以及中毒状态。 **升环施法。**使用的法术位每比六环高一环，此法术的治疗量就增加10点。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "healing",
+      "evidence_ref": "间：**1动作 **施法距离：**60尺 **法术成分：**V、S **持续时间：**立即 指定施法距离内一个你能看见的生物。汹涌澎湃的正能量将充盈该生物，使其恢复 70 点生命值。该法术也会终止正在影响目标的目盲、耳聋以及中毒状态。 **升环施法。**使用的法术位每比六环高一环，此法术的治疗量就增加10点。",
+      "expression": "70",
+      "healing": "70",
+      "target": "one_creature",
+      "timing": "immediate",
+      "type": "healing"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "立即",
+  "edition": "2024",
+  "evidence": [
+    "healing: 间：**1动作 **施法距离：**60尺 **法术成分：**V、S **持续时间：**立即 指定施法距离内一个你能看见的生物。汹涌澎湃的正能量将充盈该生物，使其恢复 70 点生命值。该法术也会终止正在影响目标的目盲、耳聋以及中毒状态。 **升环施法。**使用的法术位每比六环高一环，此法术的治疗量就增加10点。",
+    "target: *法术成分：**V、S **持续时间：**立即 指定施法距离内一个你能看见的生物。汹涌澎湃的正能量将充盈该生物，使其恢复 70 点生命值。该法术也会终止正在影响目标的目盲、耳聋以及中毒状态。 **升环施法。**使用的法术位每比六环高一环，此法术的治疗量就增加10点。"
+  ],
+  "kind": "spell",
+  "level": 6,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "医疗术",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "60尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "防护",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "*法术成分：**V、S **持续时间：**立即 指定施法距离内一个你能看见的生物。汹涌澎湃的正能量将充盈该生物，使其恢复 70 点生命值。该法术也会终止正在影响目标的目盲、耳聋以及中毒状态。 **升环施法。**使用的法术位每比六环高一环，此法术的治疗量就增加10点。 间：**1动作 **施法距离：**60尺 **法术成分：**V、S **持续时间：**立即 指定施法距离内一个你能看见的生物。汹涌澎湃的正能量将充盈该生物，使其恢复 70 点生命值。该法术也会终止正在影响目标的目盲、耳聋以及中毒状态。 **升环施法。**使用的法术位每比六环高一环，此法术的治疗量就增加10点。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "d70ed630a79176eb052ce09be79625f23389141a59f1ebc516248ed64525919e",
+    "source_path": "玩家手册2024/法术详述/6环.htm",
+    "source_text": "#### 医疗术｜Heal\n\n*六环 防护（牧师、德鲁伊）*\n**施法时间：**1动作\n**施法距离：**60尺\n**法术成分：**V、S\n**持续时间：**立即\n指定施法距离内一个你能看见的生物。汹涌澎湃的正能量将充盈该生物，使其恢复 70\n点生命值。该法术也会终止正在影响目标的目盲、耳聋以及中毒状态。\n**升环施法。**使用的法术位每比六环高一环，此法术的治疗量就增加10点。"
+  },
+  "source_fingerprint": "2bff01c844e5704d1af12c5b5db4cd5e1168d88518eb0d14cd1d831966fa9939",
+  "source_path": "玩家手册2024/法术详述/6环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "d70ed630a79176eb052ce09be79625f23389141a59f1ebc516248ed64525919e",
+    "source_relative_path": "玩家手册2024/法术详述/6环.htm"
+  },
+  "source_record_id": "2940fd0bac27b811329157a9",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:2940fd0bac27b811329157a9"
+}

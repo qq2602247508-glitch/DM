@@ -1,0 +1,93 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "temporary-hp": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "灵（术士、法师、奇械师）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、S、M（一滴酒精） **持续时间：**立即 你获得2d4+4点临时生命值。 **升环施法。**使用的法术位每比一环高一环，其给予的临时生命值就增加5。",
+      "source_heading": "虚假生命"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:56193b76694eafc2025e1c0b:temporary-hp"
+  ],
+  "clauses": [
+    {
+      "action_economy": "action",
+      "amount": "2d4+4",
+      "clause_id": "temporary-hp",
+      "evidence_ref": "灵（术士、法师、奇械师）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、S、M（一滴酒精） **持续时间：**立即 你获得2d4+4点临时生命值。 **升环施法。**使用的法术位每比一环高一环，其给予的临时生命值就增加5。",
+      "expression": "2d4+4",
+      "target": "one_creature",
+      "type": "temporary_hp"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "立即",
+  "edition": "2024",
+  "evidence": [
+    "temporary-hp: 灵（术士、法师、奇械师）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、S、M（一滴酒精） **持续时间：**立即 你获得2d4+4点临时生命值。 **升环施法。**使用的法术位每比一环高一环，其给予的临时生命值就增加5。"
+  ],
+  "kind": "spell",
+  "level": 1,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "虚假生命",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "自身",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "死灵",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "灵（术士、法师、奇械师）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、S、M（一滴酒精） **持续时间：**立即 你获得2d4+4点临时生命值。 **升环施法。**使用的法术位每比一环高一环，其给予的临时生命值就增加5。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "de63eff053a24d62e97dedf1165d43fc0d775959820910521ffeffbfb9460cee",
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 虚假生命｜False Life\n\n*一环 死灵（术士、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**自身\n**法术成分：**V、S、M（一滴酒精）\n**持续时间：**立即\n你获得2d4+4点临时生命值。\n**升环施法。**使用的法术位每比一环高一环，其给予的临时生命值就增加5。"
+  },
+  "source_fingerprint": "9e30b35903feab87d652f56f819c9ff28460d8633a254387c1bd1571f7c422fe",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "de63eff053a24d62e97dedf1165d43fc0d775959820910521ffeffbfb9460cee",
+    "source_relative_path": "玩家手册2024/法术详述/1环.htm"
+  },
+  "source_record_id": "56193b76694eafc2025e1c0b",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b"
+}

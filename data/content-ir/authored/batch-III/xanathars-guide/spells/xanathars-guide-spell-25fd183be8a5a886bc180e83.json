@@ -1,0 +1,128 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "1 动作",
+  "clause_boundaries": {
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。",
+      "source_heading": "潮涌"
+    },
+    "save": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "持续时间：**立即 你召唤出浪潮拍打距离之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。",
+      "source_heading": "潮涌"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "S、M（一滴水） **持续时间：**立即 你召唤出浪潮拍打距离之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。",
+      "source_heading": "潮涌"
+    }
+  },
+  "clause_identity": [
+    "xanathars-guide:spell:25fd183be8a5a886bc180e83:target",
+    "xanathars-guide:spell:25fd183be8a5a886bc180e83:save",
+    "xanathars-guide:spell:25fd183be8a5a886bc180e83:damage"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "S、M（一滴水） **持续时间：**立即 你召唤出浪潮拍打距离之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "save",
+      "evidence_ref": "持续时间：**立即 你召唤出浪潮拍打距离之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。",
+      "half_on_success": true,
+      "save_ability": "敏捷",
+      "target": "one_creature",
+      "type": "saving_throw"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "damage",
+      "damage": "4d8",
+      "damage_type": "钝击",
+      "evidence_ref": "之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。",
+      "expression": "4d8",
+      "on_failure": "full",
+      "on_success": "half",
+      "target": "one_creature",
+      "timing": "immediate",
+      "type": "damage"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "立即",
+  "edition": "2014",
+  "evidence": [
+    "damage: 之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。",
+    "save: 持续时间：**立即 你召唤出浪潮拍打距离之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。",
+    "target: S、M（一滴水） **持续时间：**立即 你召唤出浪潮拍打距离之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。"
+  ],
+  "kind": "spell",
+  "level": 3,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "潮涌",
+  "namespace": "content.xanathars-guide",
+  "pack_id": "xanathars-guide",
+  "pack_version": "source-7011166c19bd",
+  "range": "120 \n尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "spell-ir-1",
+  "school": "咒法",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "selected_clause_excerpt": "S、M（一滴水） **持续时间：**立即 你召唤出浪潮拍打距离之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。 持续时间：**立即 你召唤出浪潮拍打距离之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。 之内的区域。区域的长度至多为 30 尺，宽度至多为 10 尺，高度至多为 10 尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30 尺内所有有未受保护的火焰，而后消失不见。",
+    "source_book": "珊娜萨的万事指南",
+    "source_checksum": "624a16e55591095b3b656994785734c274a64e6b9b3006b76051a6cfd425977f",
+    "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+    "source_text": "#### 潮涌｜Tidal Wave\n\n*三环 咒法（德鲁伊、术士、法师）*\n**施法时间：**1 动作\n**施法距离：**120\n尺\n**法术成分：**V、S、M（一滴水）\n**持续时间：**立即\n你召唤出浪潮拍打距离之内的区域。区域的长度至多为 30\n尺，宽度至多为 10 尺，高度至多为 10\n尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30\n尺内所有有未受保护的火焰，而后消失不见。"
+  },
+  "source_fingerprint": "e36ab12fc1519be7c9f46ae7d23c239e59cc3afc17046a83879819506db7fa03",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+  "source_provenance": {
+    "officiality": "unknown",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "珊娜萨的万事指南",
+    "source_checksum": "624a16e55591095b3b656994785734c274a64e6b9b3006b76051a6cfd425977f",
+    "source_relative_path": "珊娜萨的万事指南/法术/法术详述/3环.html"
+  },
+  "source_record_id": "25fd183be8a5a886bc180e83",
+  "source_trust": "authored_ir",
+  "spell_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83"
+}

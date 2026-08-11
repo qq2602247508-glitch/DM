@@ -1,0 +1,50 @@
+{
+  "capability_registry_version": "content-capabilities-1",
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "draft_paths": [],
+  "manifest_fingerprint": "67ea0cca7f55bdcc2561da0e28bbb8691d549110ff8f66e2d840166238c52304",
+  "namespace": "content.batch-III",
+  "pack_id": null,
+  "pack_version": null,
+  "production_targets": {
+    "campaign": false,
+    "database": false,
+    "feature_registry": false
+  },
+  "replay": {
+    "policy": "same-manifest-fingerprint-is-idempotent"
+  },
+  "ruleset_version": null,
+  "schema_version": "content-ir-workbench-manifest-2",
+  "source_book": null,
+  "source_fingerprints": {
+    "084712e58fd3714db50148c5": "cdbd9cb32dc130fb627e55ea76e3dd1ca83b0b99fc58702825592cc439098468",
+    "21db89639520a9951088e222": "42c271394a9fb7c5bfc9dd0d02b9bd08dae47bdb45f3b31ee10d872e72481fbb",
+    "25fd183be8a5a886bc180e83": "e36ab12fc1519be7c9f46ae7d23c239e59cc3afc17046a83879819506db7fa03",
+    "2940fd0bac27b811329157a9": "2bff01c844e5704d1af12c5b5db4cd5e1168d88518eb0d14cd1d831966fa9939",
+    "3552e12594b2d8e6067f24f5": "5c135954c6a56d6edd429c2f5ae81ce67b41de9aa4b6e34215f72e18d8ce664e",
+    "3f4fae885921a47ad0c6f759": "4979082573ef0e141a738e96f949e04a33c82d8d2990022afd938c1d0f938bd1",
+    "49a5bacc752aa90fbbfbf316": "45786e6c57e4c56a29800259cf32e1d236b08990ffc7d61efc793cb30a5fbbdc",
+    "4d94c0c610e955904d8893aa": "5305786ec460ae99e6325e5452ec4cd1348d87b6ac85725b0de43b883553edb4",
+    "56193b76694eafc2025e1c0b": "9e30b35903feab87d652f56f819c9ff28460d8633a254387c1bd1571f7c422fe",
+    "5842f6550b16755fb544c642": "6904285535ad103ec150150aed3b97dd15f6cc075486befaeb79421ed81b9c2f",
+    "5dd11cb3fbb6d21ea53739f2": "d23e86271fc9e1082cc7110c46e7baabdd9282249497a60fd3c20a44e418f197",
+    "a87ab0181a321cb09fef2884": "ac82b51e3dd582319e4928bf9ac22d8eb9b4f8c6ba7800b3e72d680a462c11cc",
+    "ef0f92b557fb48d421d462e1": "c03972f4c5ec5df6794fd142bd3c71e2477344805e19869d15eab10dc46961a2"
+  },
+  "typed_ir_paths": [
+    "typed-ir/core-phb-2024/spells/core-phb-2024-spell-21db89639520a9951088e222.json",
+    "typed-ir/core-phb-2024/spells/core-phb-2024-spell-2940fd0bac27b811329157a9.json",
+    "typed-ir/core-phb-2024/spells/core-phb-2024-spell-3f4fae885921a47ad0c6f759.json",
+    "typed-ir/core-phb-2024/spells/core-phb-2024-spell-56193b76694eafc2025e1c0b.json",
+    "typed-ir/core-phb-2024/spells/core-phb-2024-spell-5842f6550b16755fb544c642.json",
+    "typed-ir/core-phb-2024/spells/core-phb-2024-spell-5dd11cb3fbb6d21ea53739f2.json",
+    "typed-ir/fizbans-treasury/spells/fizbans-treasury-spell-084712e58fd3714db50148c5.json",
+    "typed-ir/fizbans-treasury/spells/fizbans-treasury-spell-49a5bacc752aa90fbbfbf316.json",
+    "typed-ir/tashas-cauldron/spells/tashas-cauldron-spell-ef0f92b557fb48d421d462e1.json",
+    "typed-ir/xanathars-guide/spells/xanathars-guide-spell-25fd183be8a5a886bc180e83.json",
+    "typed-ir/xanathars-guide/spells/xanathars-guide-spell-3552e12594b2d8e6067f24f5.json",
+    "typed-ir/xanathars-guide/spells/xanathars-guide-spell-4d94c0c610e955904d8893aa.json",
+    "typed-ir/xanathars-guide/spells/xanathars-guide-spell-a87ab0181a321cb09fef2884.json"
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "1附赠动作",
+  "clause_boundaries": {
+    "concentration": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "s Stride *三环 变化（奇械师、游侠、术士、法师）* **施法时间：**1附赠动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**专注，至多1分钟 龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+      "source_heading": "阿莎德隆奔行"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "时间：**专注，至多1分钟 龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+      "source_heading": "阿莎德隆奔行"
+    },
+    "upcast": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+      "source_heading": "阿莎德隆奔行"
+    }
+  },
+  "clause_identity": [
+    "fizbans-treasury:spell:084712e58fd3714db50148c5:target",
+    "fizbans-treasury:spell:084712e58fd3714db50148c5:concentration",
+    "fizbans-treasury:spell:084712e58fd3714db50148c5:upcast",
+    "fizbans-treasury:spell:084712e58fd3714db50148c5:damage"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "时间：**专注，至多1分钟 龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "clause_id": "concentration",
+      "duration": "专注，至多1分钟",
+      "evidence_ref": "s Stride *三环 变化（奇械师、游侠、术士、法师）* **施法时间：**1附赠动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**专注，至多1分钟 龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+      "required": true,
+      "type": "concentration"
+    },
+    {
+      "applies_to": "damage",
+      "clause_id": "upcast",
+      "evidence_ref": "动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+      "increments": "1d6",
+      "per_slot": 1,
+      "type": "upcast"
+    },
+    {
+      "action_economy": "bonus_action",
+      "clause_id": "damage",
+      "damage": "1d6",
+      "damage_type": "火焰",
+      "evidence_ref": "#### 阿莎德隆奔行｜Ashardalon's Stride\n\n*三环 变化（奇械师、游侠、术士、法师）*\n**施法时间：**1附赠动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**专注，至多1分钟\n龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。\n当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。\n**升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+      "expression": "1d6",
+      "target": "one_creature",
+      "timing": "on_enter",
+      "type": "damage"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": true,
+  "duration": "专注，至多1分钟",
+  "edition": "2014",
+  "evidence": [
+    "target: 时间：**专注，至多1分钟 龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+    "concentration: s Stride *三环 变化（奇械师、游侠、术士、法师）* **施法时间：**1附赠动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**专注，至多1分钟 龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+    "upcast: 动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+    "damage: #### 阿莎德隆奔行｜Ashardalon's Stride\n\n*三环 变化（奇械师、游侠、术士、法师）*\n**施法时间：**1附赠动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**专注，至多1分钟\n龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。\n当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。\n**升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。"
+  ],
+  "kind": "spell",
+  "level": 3,
+  "manual_decisions": {
+    "review_gate": "source paragraph manually reconciled with normalized record",
+    "runtime": "only the explicit damage/save/concentration clauses are executable"
+  },
+  "name": "阿莎德隆奔行",
+  "namespace": "content.fizbans-treasury",
+  "pack_id": "fizbans-treasury",
+  "pack_version": "source-7011166c19bd",
+  "range": "自身",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "spell-ir-1",
+  "school": "变化",
+  "source_book": "费资本的巨龙宝库",
+  "source_evidence": {
+    "selected_clause_excerpt": "时间：**专注，至多1分钟 龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。 s Stride *三环 变化（奇械师、游侠、术士、法师）* **施法时间：**1附赠动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**专注，至多1分钟 龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。 动不会触发借机攻击。 当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。 **升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。",
+    "source_book": "费资本的巨龙宝库",
+    "source_checksum": "543078f39c6482cd24a2e1a6900af0793b86f4a91dffbcfe39a889c22fba6763",
+    "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+    "source_text": "#### 阿莎德隆奔行｜Ashardalon's Stride\n\n*三环 变化（奇械师、游侠、术士、法师）*\n**施法时间：**1附赠动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**专注，至多1分钟\n龙类翻滚咆哮的火焰环绕你的足部，使你获得爆发性的速度。法术持续时间内，你的速度提升20尺，并且移动不会触发借机攻击。\n当你移动至一个生物或未被着装或携带的物件5尺内时，其被你的灼热尾迹灼烧，受到1d6火焰伤害。一个生物或物件每回合只会承受一次此伤害。\n**升环施法效果：**当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。"
+  },
+  "source_fingerprint": "cdbd9cb32dc130fb627e55ea76e3dd1ca83b0b99fc58702825592cc439098468",
+  "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+  "source_provenance": {
+    "officiality": "unknown",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "费资本的巨龙宝库",
+    "source_checksum": "543078f39c6482cd24a2e1a6900af0793b86f4a91dffbcfe39a889c22fba6763",
+    "source_relative_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm"
+  },
+  "source_record_id": "084712e58fd3714db50148c5",
+  "source_trust": "authored_ir",
+  "spell_id": "fizbans-treasury:spell:084712e58fd3714db50148c5"
+}

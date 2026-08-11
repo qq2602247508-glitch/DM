@@ -1,0 +1,128 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "1 动作",
+  "clause_boundaries": {
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。",
+      "source_heading": "心灵尖啸"
+    },
+    "save": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "*持续时间：**立即 你释放你的心灵力量，轰击施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。",
+      "source_heading": "心灵尖啸"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "*法术成分：**S **持续时间：**立即 你释放你的心灵力量，轰击施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。",
+      "source_heading": "心灵尖啸"
+    }
+  },
+  "clause_identity": [
+    "xanathars-guide:spell:3552e12594b2d8e6067f24f5:target",
+    "xanathars-guide:spell:3552e12594b2d8e6067f24f5:save",
+    "xanathars-guide:spell:3552e12594b2d8e6067f24f5:damage"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "*法术成分：**S **持续时间：**立即 你释放你的心灵力量，轰击施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "save",
+      "evidence_ref": "*持续时间：**立即 你释放你的心灵力量，轰击施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。",
+      "half_on_success": true,
+      "save_ability": "智力",
+      "target": "one_creature",
+      "type": "saving_throw"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "damage",
+      "damage": "14d6",
+      "damage_type": "心灵",
+      "evidence_ref": "施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。",
+      "expression": "14d6",
+      "on_failure": "full",
+      "on_success": "half",
+      "target": "one_creature",
+      "timing": "immediate",
+      "type": "damage"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "立即",
+  "edition": "2014",
+  "evidence": [
+    "damage: 施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。",
+    "save: *持续时间：**立即 你释放你的心灵力量，轰击施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。",
+    "target: *法术成分：**S **持续时间：**立即 你释放你的心灵力量，轰击施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。"
+  ],
+  "kind": "spell",
+  "level": 9,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "心灵尖啸",
+  "namespace": "content.xanathars-guide",
+  "pack_id": "xanathars-guide",
+  "pack_version": "source-7011166c19bd",
+  "range": "90 \n尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "spell-ir-1",
+  "school": null,
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "selected_clause_excerpt": "*法术成分：**S **持续时间：**立即 你释放你的心灵力量，轰击施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。 *持续时间：**立即 你释放你的心灵力量，轰击施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。 施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2 或更低的生物不受影响。 每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6 心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。 一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。",
+    "source_book": "珊娜萨的万事指南",
+    "source_checksum": "7459b1380c654872e19c525fba463920d39fd26a79ddbf02b865321da1c29457",
+    "source_path": "珊娜萨的万事指南/法术/法术详述/9环.html",
+    "source_text": "#### 心灵尖啸｜Psychic Scream\n\n*九环 惑控（吟游诗人、术士、魔契师、法师）\n***施法时间：**1 动作\n**施法距离：**90\n尺\n**法术成分：**S\n**持续时间：**立即\n你释放你的心灵力量，轰击施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2\n或更低的生物不受影响。\n每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6\n心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。\n一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。"
+  },
+  "source_fingerprint": "5c135954c6a56d6edd429c2f5ae81ce67b41de9aa4b6e34215f72e18d8ce664e",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/9环.html",
+  "source_provenance": {
+    "officiality": "unknown",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "珊娜萨的万事指南",
+    "source_checksum": "7459b1380c654872e19c525fba463920d39fd26a79ddbf02b865321da1c29457",
+    "source_relative_path": "珊娜萨的万事指南/法术/法术详述/9环.html"
+  },
+  "source_record_id": "3552e12594b2d8e6067f24f5",
+  "source_trust": "authored_ir",
+  "spell_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5"
+}

@@ -1,0 +1,128 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。",
+      "source_heading": "信仰守卫"
+    },
+    "save": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "处悬浮。占据该空间的守护者是无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。",
+      "source_heading": "信仰守卫"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "#### 信仰守卫｜Guardian of Faith *四环 咒法（牧师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**V **持续时间：**8小时 一名大型灵体守护者出现在施法距离内一处由你指定的，你可见且未占据空间，并在法术持续时间内在该处悬浮。占据该空间的守护者是无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。",
+      "source_heading": "信仰守卫"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:5842f6550b16755fb544c642:target",
+    "core-phb-2024:spell:5842f6550b16755fb544c642:save",
+    "core-phb-2024:spell:5842f6550b16755fb544c642:damage"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "#### 信仰守卫｜Guardian of Faith *四环 咒法（牧师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**V **持续时间：**8小时 一名大型灵体守护者出现在施法距离内一处由你指定的，你可见且未占据空间，并在法术持续时间内在该处悬浮。占据该空间的守护者是无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。",
+      "kind": "enemy",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "save",
+      "evidence_ref": "处悬浮。占据该空间的守护者是无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。",
+      "half_on_success": true,
+      "save_ability": "敏捷",
+      "target": "one_creature",
+      "type": "saving_throw"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "damage",
+      "damage": "20",
+      "damage_type": "光耀",
+      "evidence_ref": "无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。",
+      "expression": "20",
+      "on_failure": "full",
+      "on_success": "half",
+      "target": "one_creature",
+      "timing": "immediate",
+      "type": "damage"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "8小时",
+  "edition": "2024",
+  "evidence": [
+    "damage: 无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。",
+    "save: 处悬浮。占据该空间的守护者是无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。",
+    "target: #### 信仰守卫｜Guardian of Faith *四环 咒法（牧师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**V **持续时间：**8小时 一名大型灵体守护者出现在施法距离内一处由你指定的，你可见且未占据空间，并在法术持续时间内在该处悬浮。占据该空间的守护者是无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。"
+  ],
+  "kind": "spell",
+  "level": 4,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "信仰守卫",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "30尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "咒法",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "#### 信仰守卫｜Guardian of Faith *四环 咒法（牧师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**V **持续时间：**8小时 一名大型灵体守护者出现在施法距离内一处由你指定的，你可见且未占据空间，并在法术持续时间内在该处悬浮。占据该空间的守护者是无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。 处悬浮。占据该空间的守护者是无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。 无敌的，并且会以适合你神祇或神系的形态出现。 任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "b649300ba0f878d164c49bcb563056fa8ad328604eb28a6c54a220836e820a72",
+    "source_path": "玩家手册2024/法术详述/4环.htm",
+    "source_text": "#### 信仰守卫｜Guardian of Faith\n\n*四环 咒法（牧师）*\n**施法时间：**动作\n**施法距离：**30尺\n**法术成分：**V\n**持续时间：**8小时\n一名大型灵体守护者出现在施法距离内一处由你指定的，你可见且未占据空间，并在法术持续时间内在该处悬浮。占据该空间的守护者是无敌的，并且会以适合你神祇或神系的形态出现。\n任何敌人在一回合内首次进入距守护者10尺内或于其10尺内开始其回合时，必须进行一次敏捷豁免。豁免失败受到20点光耀伤害，豁免成功则伤害减半。守护者在造成总计60点伤害后随即消失。"
+  },
+  "source_fingerprint": "6904285535ad103ec150150aed3b97dd15f6cc075486befaeb79421ed81b9c2f",
+  "source_path": "玩家手册2024/法术详述/4环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "b649300ba0f878d164c49bcb563056fa8ad328604eb28a6c54a220836e820a72",
+    "source_relative_path": "玩家手册2024/法术详述/4环.htm"
+  },
+  "source_record_id": "5842f6550b16755fb544c642",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:5842f6550b16755fb544c642"
+}

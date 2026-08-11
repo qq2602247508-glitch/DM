@@ -1,0 +1,21 @@
+{
+  "authored_count": 13,
+  "compile_full_count": 13,
+  "compiled_path": "data/content-ir/compiled/batch-III/compile-result.json",
+  "schema_version": "content-ir-production-authored-batch-I-1",
+  "spell_ids": [
+    "core-phb-2024:spell:21db89639520a9951088e222",
+    "core-phb-2024:spell:2940fd0bac27b811329157a9",
+    "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+    "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+    "core-phb-2024:spell:5842f6550b16755fb544c642",
+    "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+    "fizbans-treasury:spell:084712e58fd3714db50148c5",
+    "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+    "tashas-cauldron:spell:ef0f92b557fb48d421d462e1",
+    "xanathars-guide:spell:25fd183be8a5a886bc180e83",
+    "xanathars-guide:spell:3552e12594b2d8e6067f24f5",
+    "xanathars-guide:spell:4d94c0c610e955904d8893aa",
+    "xanathars-guide:spell:a87ab0181a321cb09fef2884"
+  ]
+}

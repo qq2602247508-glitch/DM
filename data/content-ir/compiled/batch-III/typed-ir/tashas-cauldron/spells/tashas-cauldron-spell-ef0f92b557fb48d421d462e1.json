@@ -1,0 +1,128 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "1 动作",
+  "clause_boundaries": {
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。",
+      "source_heading": "心灵之楔"
+    },
+    "save": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "y* 施法时间：1 动作 施法距离：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。",
+      "source_heading": "心灵之楔"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "法师）**Legacy* 施法时间：1 动作 施法距离：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。",
+      "source_heading": "心灵之楔"
+    }
+  },
+  "clause_identity": [
+    "tashas-cauldron:spell:ef0f92b557fb48d421d462e1:target",
+    "tashas-cauldron:spell:ef0f92b557fb48d421d462e1:save",
+    "tashas-cauldron:spell:ef0f92b557fb48d421d462e1:damage"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "法师）**Legacy* 施法时间：1 动作 施法距离：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "save",
+      "evidence_ref": "y* 施法时间：1 动作 施法距离：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。",
+      "half_on_success": false,
+      "save_ability": "智力",
+      "target": "one_creature",
+      "type": "saving_throw"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "damage",
+      "damage": "1d6",
+      "damage_type": "心灵",
+      "evidence_ref": "：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。",
+      "expression": "1d6",
+      "on_failure": "full",
+      "on_success": "none",
+      "target": "one_creature",
+      "timing": "immediate",
+      "type": "damage"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "1",
+  "edition": "2014",
+  "evidence": [
+    "damage: ：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。",
+    "save: y* 施法时间：1 动作 施法距离：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。",
+    "target: 法师）**Legacy* 施法时间：1 动作 施法距离：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。"
+  ],
+  "kind": "spell",
+  "level": 0,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "心灵之楔",
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "range": "60 尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "spell-ir-1",
+  "school": null,
+  "source_book": "塔莎的万事坩埚",
+  "source_evidence": {
+    "selected_clause_excerpt": "法师）**Legacy* 施法时间：1 动作 施法距离：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。 y* 施法时间：1 动作 施法距离：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。 ：60 尺 法术成分：V 持续时间：1 轮 你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6 心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。 当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17 级（4d6）。",
+    "source_book": "塔莎的万事坩埚",
+    "source_checksum": "4419b57bd3b257384465b2955061e32b8ecccd44ba51f845b12d717a334d86fe",
+    "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
+    "source_text": "#### 心灵之楔｜Mind Sliver\n\n*惑控 戏法（术士、魔契师、法师）**Legacy*\n施法时间：1 动作\n施法距离：60 尺\n法术成分：V\n持续时间：1\n轮\n你将由灵能塑成的迷惘尖刺注入施法距离内一个你可见的生物的心灵。目标必须通过一次智力豁免。豁免失败将受到 1d6\n心灵伤害，并在你的下回合结束前其进行的下一次豁免检定中减去 1d4。\n当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11\n级（3d6）、17 级（4d6）。"
+  },
+  "source_fingerprint": "c03972f4c5ec5df6794fd142bd3c71e2477344805e19869d15eab10dc46961a2",
+  "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
+  "source_provenance": {
+    "officiality": "unknown",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "塔莎的万事坩埚",
+    "source_checksum": "4419b57bd3b257384465b2955061e32b8ecccd44ba51f845b12d717a334d86fe",
+    "source_relative_path": "塔莎的万事坩埚/法术/法术详述/戏法.html"
+  },
+  "source_record_id": "ef0f92b557fb48d421d462e1",
+  "source_trust": "authored_ir",
+  "spell_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1"
+}
