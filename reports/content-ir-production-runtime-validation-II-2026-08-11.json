@@ -1,0 +1,357 @@
+{
+  "all_required_checks_passed": true,
+  "baseline_existing_100": {
+    "compile_full": 100,
+    "production_runtime_full": 20,
+    "runtime_preview_full": 100
+  },
+  "edge_checks": {
+    "area_multi_target": true,
+    "idempotency_replay": true,
+    "rollback_restored_slot": true,
+    "snapshot_version_changed": true,
+    "target_cas_rejected": true,
+    "wrong_slot_rejected": true
+  },
+  "feature_results": [
+    {
+      "confirm_status": 200,
+      "pack_id": "tashas-cauldron-features",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "runtime_id": "content.tashas-cauldron.feature.psi-warrior-telekinetic-movement"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "tashas-cauldron-features",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "runtime_id": "content.tashas-cauldron.feature.way-of-mercy-physicians-touch"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "tashas-cauldron-features",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "runtime_id": "content.tashas-cauldron.feature.alchemist-chemical-mastery"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "tashas-cauldron-features",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "runtime_id": "content.tashas-cauldron.feature.armorer-extra-attack"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "tashas-cauldron-features",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "runtime_id": "content.tashas-cauldron.feature.armorer-lightning-launcher"
+    }
+  ],
+  "feature_runtime_loop_count": 5,
+  "final_feature_production_runtime_full_count": 10,
+  "final_spell_production_runtime_full_count": 41,
+  "generic_consumers": [
+    {
+      "consumer_id": "combat_engine.damage_heal.v1",
+      "unlock_count": 27
+    },
+    {
+      "consumer_id": "combat_engine.area_damage.v1",
+      "unlock_count": 3
+    },
+    {
+      "consumer_id": "spell_economy.concentration.v1",
+      "unlock_count": 2
+    },
+    {
+      "consumer_id": "combat_engine.feature_action.v1",
+      "unlock_count": 5
+    }
+  ],
+  "new_authored_typed_ir_count": 13,
+  "new_feature_production_runtime_full_count": 5,
+  "new_production_runtime_full_count": 31,
+  "new_spell_production_runtime_full_count": 26,
+  "pack_counts_new": {
+    "book-of-many-things": 2,
+    "core-phb-2024": 16,
+    "fizbans-treasury": 2,
+    "tashas-cauldron": 2,
+    "xanathars-guide": 4
+  },
+  "production_runtime_full_count": 51,
+  "production_runtime_full_ids": [
+    "book-of-many-things:spell:164b86c070175f43296670a8",
+    "book-of-many-things:spell:69822f264262f10066c621b3",
+    "content.tashas-cauldron.feature.alchemist-chemical-mastery",
+    "content.tashas-cauldron.feature.armorer-extra-attack",
+    "content.tashas-cauldron.feature.armorer-lightning-launcher",
+    "content.tashas-cauldron.feature.psi-warrior-telekinetic-movement",
+    "content.tashas-cauldron.feature.way-of-mercy-physicians-touch",
+    "core-phb-2024:spell:21db89639520a9951088e222",
+    "core-phb-2024:spell:2940fd0bac27b811329157a9",
+    "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+    "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+    "core-phb-2024:spell:5842f6550b16755fb544c642",
+    "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+    "core-phb-2024:spell:7cc26aa16d72ceaff22920d5",
+    "core-phb-2024:spell:80a94afd6beb396baec20560",
+    "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+    "core-phb-2024:spell:8e0bb8fc40e2083c484b5139",
+    "core-phb-2024:spell:9bde12d83fe9812a2a98985b",
+    "core-phb-2024:spell:9c24ebd2795e3d23f8f72122",
+    "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+    "core-phb-2024:spell:d34f0217745a56553a36282c",
+    "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+    "core-phb-2024:spell:fb279ff13dba2abcce376201",
+    "fizbans-treasury:spell:084712e58fd3714db50148c5",
+    "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316",
+    "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+    "tashas-cauldron:spell:ef0f92b557fb48d421d462e1",
+    "xanathars-guide:spell:25fd183be8a5a886bc180e83",
+    "xanathars-guide:spell:3552e12594b2d8e6067f24f5",
+    "xanathars-guide:spell:4d94c0c610e955904d8893aa",
+    "xanathars-guide:spell:a87ab0181a321cb09fef2884"
+  ],
+  "schema_version": "content-ir-production-runtime-validation-II-1",
+  "spell_results": [
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:7cc26aa16d72ceaff22920d5"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:80a94afd6beb396baec20560"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:89d9cadae3d9583d0c2dd806"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:8e0bb8fc40e2083c484b5139"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:9bde12d83fe9812a2a98985b"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:9c24ebd2795e3d23f8f72122"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:cdf3b288708b8204133e75fb"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:d34f0217745a56553a36282c"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:fb279ff13dba2abcce376201"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "book-of-many-things",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "book-of-many-things:spell:164b86c070175f43296670a8"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "book-of-many-things",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "book-of-many-things:spell:69822f264262f10066c621b3"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "tashas-cauldron",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:21db89639520a9951088e222"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:2940fd0bac27b811329157a9"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:3f4fae885921a47ad0c6f759"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:56193b76694eafc2025e1c0b"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:5842f6550b16755fb544c642"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "fizbans-treasury",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "fizbans-treasury:spell:084712e58fd3714db50148c5"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "fizbans-treasury",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "tashas-cauldron",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "xanathars-guide",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "xanathars-guide:spell:25fd183be8a5a886bc180e83"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "xanathars-guide",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "xanathars-guide:spell:3552e12594b2d8e6067f24f5"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "xanathars-guide",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "xanathars-guide:spell:4d94c0c610e955904d8893aa"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "xanathars-guide",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "xanathars-guide:spell:a87ab0181a321cb09fef2884"
+    }
+  ],
+  "spell_runtime_loop_count": 26
+}

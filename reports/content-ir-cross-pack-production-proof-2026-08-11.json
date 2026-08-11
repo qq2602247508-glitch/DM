@@ -1,0 +1,25 @@
+{
+  "after": {
+    "book-of-many-things": 2,
+    "core-phb-2024": 26,
+    "fizbans-treasury": 2,
+    "tashas-cauldron": 3,
+    "xanathars-guide": 8
+  },
+  "before": {
+    "book-of-many-things": 0,
+    "core-phb-2024": 10,
+    "fizbans-treasury": 0,
+    "tashas-cauldron": 1,
+    "xanathars-guide": 4
+  },
+  "requirements": {
+    "book_of_many_things_min": 1,
+    "fizbans_treasury_min": 2,
+    "tashas_features_total_min": 10,
+    "tashas_spells_total_min": 3,
+    "xanathars_total_min": 7
+  },
+  "schema_version": "content-ir-cross-pack-production-proof-1",
+  "tashas_feature_after": 10
+}

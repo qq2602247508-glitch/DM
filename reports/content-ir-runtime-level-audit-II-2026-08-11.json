@@ -1,0 +1,182 @@
+{
+  "compile_preview_production_rule": "compile_full and runtime_preview_full do not imply production_runtime_full",
+  "formal_feature_audit_unchanged": {
+    "dm_only": 61,
+    "full": 328,
+    "partial": 110,
+    "total": 499
+  },
+  "generic_production_blocks": [
+    {
+      "blocked_content_count": 5,
+      "candidate_content_count": 47,
+      "consumer_id": "combat_engine.damage_heal.v1",
+      "implementation_risk": "low",
+      "registry_contract": {
+        "cas_entities": [
+          "actor_combatant",
+          "target_combatant"
+        ],
+        "clause_types": [
+          "damage",
+          "healing",
+          "temporary_hp",
+          "attack_rider"
+        ],
+        "content_kind": "spell_or_feature",
+        "idempotency_scope": "campaign_content_ir_and_combat_action",
+        "required_fields": [
+          "target_combatant_id",
+          "target_version",
+          "resolution_total"
+        ],
+        "required_services": [
+          "combat_engine"
+        ],
+        "runtime_schema_version": "spell-runtime-1|feature-runtime-1",
+        "snapshot_effects": [
+          "hp",
+          "temporary_hp",
+          "combatant_version",
+          "audit"
+        ],
+        "transaction_boundary": "combat_action_and_operation_transaction"
+      },
+      "required_modules": [
+        "combat_engine"
+      ],
+      "unlocked_full_content_count": 42
+    },
+    {
+      "blocked_content_count": 11,
+      "candidate_content_count": 19,
+      "consumer_id": "combat_engine.area_damage.v1",
+      "implementation_risk": "medium",
+      "registry_contract": {
+        "cas_entities": [
+          "actor_combatant",
+          "target_combatants"
+        ],
+        "clause_types": [
+          "area",
+          "damage",
+          "saving_throw"
+        ],
+        "content_kind": "spell",
+        "idempotency_scope": "campaign_content_ir_and_each_combat_action",
+        "required_fields": [
+          "area_shape",
+          "area_size_ft",
+          "area_anchor_row",
+          "area_anchor_col"
+        ],
+        "required_services": [
+          "combat_engine.area_geometry",
+          "combat_engine.batch"
+        ],
+        "runtime_schema_version": "spell-runtime-1",
+        "snapshot_effects": [
+          "hp",
+          "temporary_hp",
+          "conditions",
+          "combatant_versions",
+          "audit"
+        ],
+        "transaction_boundary": "preflight_then_combat_action_batch"
+      },
+      "required_modules": [
+        "combat_engine.area_geometry",
+        "combat_engine.batch"
+      ],
+      "unlocked_full_content_count": 8
+    },
+    {
+      "blocked_content_count": 1,
+      "candidate_content_count": 9,
+      "consumer_id": "combat_engine.feature_action.v1",
+      "implementation_risk": "low",
+      "registry_contract": {
+        "cas_entities": [
+          "actor_combatant",
+          "target_combatant",
+          "character_resource"
+        ],
+        "clause_types": [
+          "feature_action",
+          "timed_modifier",
+          "passive_registry"
+        ],
+        "content_kind": "feature",
+        "idempotency_scope": "campaign_content_ir_and_combat_action",
+        "required_fields": [
+          "actor_combatant_id",
+          "actor_version",
+          "runtime_id"
+        ],
+        "required_services": [
+          "combat_engine.feature_action"
+        ],
+        "runtime_schema_version": "feature-runtime-1",
+        "snapshot_effects": [
+          "feature_state",
+          "resources",
+          "timed_modifiers",
+          "audit"
+        ],
+        "transaction_boundary": "feature_action_and_operation_transaction"
+      },
+      "required_modules": [
+        "combat_engine.feature_action"
+      ],
+      "unlocked_full_content_count": 8
+    },
+    {
+      "blocked_content_count": 28,
+      "candidate_content_count": 31,
+      "consumer_id": "spell_economy.concentration.v1",
+      "implementation_risk": "low",
+      "registry_contract": {
+        "cas_entities": [
+          "character",
+          "actor_combatant"
+        ],
+        "clause_types": [
+          "concentration"
+        ],
+        "content_kind": "spell",
+        "idempotency_scope": "campaign_content_ir_and_spell_cast",
+        "required_fields": [
+          "character_id",
+          "character_version",
+          "known_spell_id",
+          "slot_level"
+        ],
+        "required_services": [
+          "spell_economy",
+          "combat_engine.effect_lifecycle"
+        ],
+        "runtime_schema_version": "spell-runtime-1",
+        "snapshot_effects": [
+          "spell_slots",
+          "concentration",
+          "combat_effect",
+          "audit"
+        ],
+        "transaction_boundary": "spell_cast_with_rollback_boundary"
+      },
+      "required_modules": [
+        "spell_economy",
+        "combat_engine.effect_lifecycle"
+      ],
+      "unlocked_full_content_count": 3
+    }
+  ],
+  "layers": {
+    "compile_full": 113,
+    "existing_100_production_runtime_full": 38,
+    "new_authored_production_runtime_full": 13,
+    "production_runtime_full": 51,
+    "runtime_preview_full": 113
+  },
+  "schema_version": "content-ir-runtime-level-audit-II-1"
+}

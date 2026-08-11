@@ -1,0 +1,421 @@
+{
+  "isolated": true,
+  "no_campaign_or_database_pollution": true,
+  "packs": [
+    {
+      "pack_id": "book-of-many-things",
+      "production_ids": [
+        "book-of-many-things:spell:164b86c070175f43296670a8",
+        "book-of-many-things:spell:69822f264262f10066c621b3"
+      ]
+    },
+    {
+      "pack_id": "book-of-many-things",
+      "production_ids": [
+        "book-of-many-things:spell:164b86c070175f43296670a8",
+        "book-of-many-things:spell:69822f264262f10066c621b3"
+      ]
+    },
+    {
+      "pack_id": "core-phb-2024",
+      "production_ids": [
+        "core-phb-2024:spell:21db89639520a9951088e222",
+        "core-phb-2024:spell:2940fd0bac27b811329157a9",
+        "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+        "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+        "core-phb-2024:spell:5842f6550b16755fb544c642",
+        "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+        "core-phb-2024:spell:7cc26aa16d72ceaff22920d5",
+        "core-phb-2024:spell:80a94afd6beb396baec20560",
+        "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+        "core-phb-2024:spell:8e0bb8fc40e2083c484b5139",
+        "core-phb-2024:spell:9bde12d83fe9812a2a98985b",
+        "core-phb-2024:spell:9c24ebd2795e3d23f8f72122",
+        "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+        "core-phb-2024:spell:d34f0217745a56553a36282c",
+        "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+        "core-phb-2024:spell:fb279ff13dba2abcce376201"
+      ]
+    },
+    {
+      "pack_id": "core-phb-2024",
+      "production_ids": [
+        "core-phb-2024:spell:21db89639520a9951088e222",
+        "core-phb-2024:spell:2940fd0bac27b811329157a9",
+        "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+        "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+        "core-phb-2024:spell:5842f6550b16755fb544c642",
+        "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+        "core-phb-2024:spell:7cc26aa16d72ceaff22920d5",
+        "core-phb-2024:spell:80a94afd6beb396baec20560",
+        "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+        "core-phb-2024:spell:8e0bb8fc40e2083c484b5139",
+        "core-phb-2024:spell:9bde12d83fe9812a2a98985b",
+        "core-phb-2024:spell:9c24ebd2795e3d23f8f72122",
+        "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+        "core-phb-2024:spell:d34f0217745a56553a36282c",
+        "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+        "core-phb-2024:spell:fb279ff13dba2abcce376201"
+      ]
+    },
+    {
+      "pack_id": "core-phb-2024",
+      "production_ids": [
+        "core-phb-2024:spell:21db89639520a9951088e222",
+        "core-phb-2024:spell:2940fd0bac27b811329157a9",
+        "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+        "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+        "core-phb-2024:spell:5842f6550b16755fb544c642",
+        "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+        "core-phb-2024:spell:7cc26aa16d72ceaff22920d5",
+        "core-phb-2024:spell:80a94afd6beb396baec20560",
+        "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+        "core-phb-2024:spell:8e0bb8fc40e2083c484b5139",
+        "core-phb-2024:spell:9bde12d83fe9812a2a98985b",
+        "core-phb-2024:spell:9c24ebd2795e3d23f8f72122",
+        "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+        "core-phb-2024:spell:d34f0217745a56553a36282c",
+        "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+        "core-phb-2024:spell:fb279ff13dba2abcce376201"
+      ]
+    },
+    {
+      "pack_id": "core-phb-2024",
+      "production_ids": [
+        "core-phb-2024:spell:21db89639520a9951088e222",
+        "core-phb-2024:spell:2940fd0bac27b811329157a9",
+        "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+        "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+        "core-phb-2024:spell:5842f6550b16755fb544c642",
+        "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+        "core-phb-2024:spell:7cc26aa16d72ceaff22920d5",
+        "core-phb-2024:spell:80a94afd6beb396baec20560",
+        "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+        "core-phb-2024:spell:8e0bb8fc40e2083c484b5139",
+        "core-phb-2024:spell:9bde12d83fe9812a2a98985b",
+        "core-phb-2024:spell:9c24ebd2795e3d23f8f72122",
+        "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+        "core-phb-2024:spell:d34f0217745a56553a36282c",
+        "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+        "core-phb-2024:spell:fb279ff13dba2abcce376201"
+      ]
+    },
+    {
+      "pack_id": "core-phb-2024",
+      "production_ids": [
+        "core-phb-2024:spell:21db89639520a9951088e222",
+        "core-phb-2024:spell:2940fd0bac27b811329157a9",
+        "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+        "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+        "core-phb-2024:spell:5842f6550b16755fb544c642",
+        "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+        "core-phb-2024:spell:7cc26aa16d72ceaff22920d5",
+        "core-phb-2024:spell:80a94afd6beb396baec20560",
+        "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+        "core-phb-2024:spell:8e0bb8fc40e2083c484b5139",
+        "core-phb-2024:spell:9bde12d83fe9812a2a98985b",
+        "core-phb-2024:spell:9c24ebd2795e3d23f8f72122",
+        "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+        "core-phb-2024:spell:d34f0217745a56553a36282c",
+        "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+        "core-phb-2024:spell:fb279ff13dba2abcce376201"
+      ]
+    },
+    {
+      "pack_id": "core-phb-2024",
+      "production_ids": [
+        "core-phb-2024:spell:21db89639520a9951088e222",
+        "core-phb-2024:spell:2940fd0bac27b811329157a9",
+        "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+        "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+        "core-phb-2024:spell:5842f6550b16755fb544c642",
+        "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+        "core-phb-2024:spell:7cc26aa16d72ceaff22920d5",
+        "core-phb-2024:spell:80a94afd6beb396baec20560",
+        "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+        "core-phb-2024:spell:8e0bb8fc40e2083c484b5139",
+        "core-phb-2024:spell:9bde12d83fe9812a2a98985b",
+        "core-phb-2024:spell:9c24ebd2795e3d23f8f72122",
+        "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+        "core-phb-2024:spell:d34f0217745a56553a36282c",
+        "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+        "core-phb-2024:spell:fb279ff13dba2abcce376201"
+      ]
+    },
+    {
+      "pack_id": "core-phb-2024",
+      "production_ids": [
+        "core-phb-2024:spell:21db89639520a9951088e222",
+        "core-phb-2024:spell:2940fd0bac27b811329157a9",
+        "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+        "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+        "core-phb-2024:spell:5842f6550b16755fb544c642",
+        "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+        "core-phb-2024:spell:7cc26aa16d72ceaff22920d5",
+        "core-phb-2024:spell:80a94afd6beb396baec20560",
+        "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+        "core-phb-2024:spell:8e0bb8fc40e2083c484b5139",
+        "core-phb-2024:spell:9bde12d83fe9812a2a98985b",
+        "core-phb-2024:spell:9c24ebd2795e3d23f8f72122",
+        "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+        "core-phb-2024:spell:d34f0217745a56553a36282c",
+        "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+        "core-phb-2024:spell:fb279ff13dba2abcce376201"
+      ]
+    },
+    {
+      "pack_id": "core-phb-2024",
+      "production_ids": [
+        "core-phb-2024:spell:21db89639520a9951088e222",
+        "core-phb-2024:spell:2940fd0bac27b811329157a9",
+        "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+        "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+        "core-phb-2024:spell:5842f6550b16755fb544c642",
+        "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+        "core-phb-2024:spell:7cc26aa16d72ceaff22920d5",
+        "core-phb-2024:spell:80a94afd6beb396baec20560",
+        "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+        "core-phb-2024:spell:8e0bb8fc40e2083c484b5139",
+        "core-phb-2024:spell:9bde12d83fe9812a2a98985b",
+        "core-phb-2024:spell:9c24ebd2795e3d23f8f72122",
+        "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+        "core-phb-2024:spell:d34f0217745a56553a36282c",
+        "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+        "core-phb-2024:spell:fb279ff13dba2abcce376201"
+      ]
+    },
+    {
+      "pack_id": "core-phb-2024",
+      "production_ids": [
+        "core-phb-2024:spell:21db89639520a9951088e222",
+        "core-phb-2024:spell:2940fd0bac27b811329157a9",
+        "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+        "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+        "core-phb-2024:spell:5842f6550b16755fb544c642",
+        "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+        "core-phb-2024:spell:7cc26aa16d72ceaff22920d5",
+        "core-phb-2024:spell:80a94afd6beb396baec20560",
+        "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+        "core-phb-2024:spell:8e0bb8fc40e2083c484b5139",
+        "core-phb-2024:spell:9bde12d83fe9812a2a98985b",
+        "core-phb-2024:spell:9c24ebd2795e3d23f8f72122",
+        "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+        "core-phb-2024:spell:d34f0217745a56553a36282c",
+        "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+        "core-phb-2024:spell:fb279ff13dba2abcce376201"
+      ]
+    },
+    {
+      "pack_id": "core-phb-2024",
+      "production_ids": [
+        "core-phb-2024:spell:21db89639520a9951088e222",
+        "core-phb-2024:spell:2940fd0bac27b811329157a9",
+        "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+        "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+        "core-phb-2024:spell:5842f6550b16755fb544c642",
+        "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+        "core-phb-2024:spell:7cc26aa16d72ceaff22920d5",
+        "core-phb-2024:spell:80a94afd6beb396baec20560",
+        "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+        "core-phb-2024:spell:8e0bb8fc40e2083c484b5139",
+        "core-phb-2024:spell:9bde12d83fe9812a2a98985b",
+        "core-phb-2024:spell:9c24ebd2795e3d23f8f72122",
+        "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+        "core-phb-2024:spell:d34f0217745a56553a36282c",
+        "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+        "core-phb-2024:spell:fb279ff13dba2abcce376201"
+      ]
+    },
+    {
+      "pack_id": "core-phb-2024",
+      "production_ids": [
+        "core-phb-2024:spell:21db89639520a9951088e222",
+        "core-phb-2024:spell:2940fd0bac27b811329157a9",
+        "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+        "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+        "core-phb-2024:spell:5842f6550b16755fb544c642",
+        "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+        "core-phb-2024:spell:7cc26aa16d72ceaff22920d5",
+        "core-phb-2024:spell:80a94afd6beb396baec20560",
+        "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+        "core-phb-2024:spell:8e0bb8fc40e2083c484b5139",
+        "core-phb-2024:spell:9bde12d83fe9812a2a98985b",
+        "core-phb-2024:spell:9c24ebd2795e3d23f8f72122",
+        "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+        "core-phb-2024:spell:d34f0217745a56553a36282c",
+        "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+        "core-phb-2024:spell:fb279ff13dba2abcce376201"
+      ]
+    },
+    {
+      "pack_id": "core-phb-2024",
+      "production_ids": [
+        "core-phb-2024:spell:21db89639520a9951088e222",
+        "core-phb-2024:spell:2940fd0bac27b811329157a9",
+        "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+        "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+        "core-phb-2024:spell:5842f6550b16755fb544c642",
+        "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+        "core-phb-2024:spell:7cc26aa16d72ceaff22920d5",
+        "core-phb-2024:spell:80a94afd6beb396baec20560",
+        "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+        "core-phb-2024:spell:8e0bb8fc40e2083c484b5139",
+        "core-phb-2024:spell:9bde12d83fe9812a2a98985b",
+        "core-phb-2024:spell:9c24ebd2795e3d23f8f72122",
+        "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+        "core-phb-2024:spell:d34f0217745a56553a36282c",
+        "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+        "core-phb-2024:spell:fb279ff13dba2abcce376201"
+      ]
+    },
+    {
+      "pack_id": "core-phb-2024",
+      "production_ids": [
+        "core-phb-2024:spell:21db89639520a9951088e222",
+        "core-phb-2024:spell:2940fd0bac27b811329157a9",
+        "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+        "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+        "core-phb-2024:spell:5842f6550b16755fb544c642",
+        "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+        "core-phb-2024:spell:7cc26aa16d72ceaff22920d5",
+        "core-phb-2024:spell:80a94afd6beb396baec20560",
+        "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+        "core-phb-2024:spell:8e0bb8fc40e2083c484b5139",
+        "core-phb-2024:spell:9bde12d83fe9812a2a98985b",
+        "core-phb-2024:spell:9c24ebd2795e3d23f8f72122",
+        "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+        "core-phb-2024:spell:d34f0217745a56553a36282c",
+        "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+        "core-phb-2024:spell:fb279ff13dba2abcce376201"
+      ]
+    },
+    {
+      "pack_id": "core-phb-2024",
+      "production_ids": [
+        "core-phb-2024:spell:21db89639520a9951088e222",
+        "core-phb-2024:spell:2940fd0bac27b811329157a9",
+        "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+        "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+        "core-phb-2024:spell:5842f6550b16755fb544c642",
+        "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+        "core-phb-2024:spell:7cc26aa16d72ceaff22920d5",
+        "core-phb-2024:spell:80a94afd6beb396baec20560",
+        "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+        "core-phb-2024:spell:8e0bb8fc40e2083c484b5139",
+        "core-phb-2024:spell:9bde12d83fe9812a2a98985b",
+        "core-phb-2024:spell:9c24ebd2795e3d23f8f72122",
+        "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+        "core-phb-2024:spell:d34f0217745a56553a36282c",
+        "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+        "core-phb-2024:spell:fb279ff13dba2abcce376201"
+      ]
+    },
+    {
+      "pack_id": "core-phb-2024",
+      "production_ids": [
+        "core-phb-2024:spell:21db89639520a9951088e222",
+        "core-phb-2024:spell:2940fd0bac27b811329157a9",
+        "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+        "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+        "core-phb-2024:spell:5842f6550b16755fb544c642",
+        "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+        "core-phb-2024:spell:7cc26aa16d72ceaff22920d5",
+        "core-phb-2024:spell:80a94afd6beb396baec20560",
+        "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+        "core-phb-2024:spell:8e0bb8fc40e2083c484b5139",
+        "core-phb-2024:spell:9bde12d83fe9812a2a98985b",
+        "core-phb-2024:spell:9c24ebd2795e3d23f8f72122",
+        "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+        "core-phb-2024:spell:d34f0217745a56553a36282c",
+        "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+        "core-phb-2024:spell:fb279ff13dba2abcce376201"
+      ]
+    },
+    {
+      "pack_id": "core-phb-2024",
+      "production_ids": [
+        "core-phb-2024:spell:21db89639520a9951088e222",
+        "core-phb-2024:spell:2940fd0bac27b811329157a9",
+        "core-phb-2024:spell:3f4fae885921a47ad0c6f759",
+        "core-phb-2024:spell:56193b76694eafc2025e1c0b",
+        "core-phb-2024:spell:5842f6550b16755fb544c642",
+        "core-phb-2024:spell:5dd11cb3fbb6d21ea53739f2",
+        "core-phb-2024:spell:7cc26aa16d72ceaff22920d5",
+        "core-phb-2024:spell:80a94afd6beb396baec20560",
+        "core-phb-2024:spell:89d9cadae3d9583d0c2dd806",
+        "core-phb-2024:spell:8e0bb8fc40e2083c484b5139",
+        "core-phb-2024:spell:9bde12d83fe9812a2a98985b",
+        "core-phb-2024:spell:9c24ebd2795e3d23f8f72122",
+        "core-phb-2024:spell:cdf3b288708b8204133e75fb",
+        "core-phb-2024:spell:d34f0217745a56553a36282c",
+        "core-phb-2024:spell:f3cf7ceffcf997ce3be9d482",
+        "core-phb-2024:spell:fb279ff13dba2abcce376201"
+      ]
+    },
+    {
+      "pack_id": "fizbans-treasury",
+      "production_ids": [
+        "fizbans-treasury:spell:084712e58fd3714db50148c5",
+        "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316"
+      ]
+    },
+    {
+      "pack_id": "fizbans-treasury",
+      "production_ids": [
+        "fizbans-treasury:spell:084712e58fd3714db50148c5",
+        "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316"
+      ]
+    },
+    {
+      "pack_id": "tashas-cauldron",
+      "production_ids": [
+        "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+        "tashas-cauldron:spell:ef0f92b557fb48d421d462e1"
+      ]
+    },
+    {
+      "pack_id": "tashas-cauldron",
+      "production_ids": [
+        "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+        "tashas-cauldron:spell:ef0f92b557fb48d421d462e1"
+      ]
+    },
+    {
+      "pack_id": "xanathars-guide",
+      "production_ids": [
+        "xanathars-guide:spell:25fd183be8a5a886bc180e83",
+        "xanathars-guide:spell:3552e12594b2d8e6067f24f5",
+        "xanathars-guide:spell:4d94c0c610e955904d8893aa",
+        "xanathars-guide:spell:a87ab0181a321cb09fef2884"
+      ]
+    },
+    {
+      "pack_id": "xanathars-guide",
+      "production_ids": [
+        "xanathars-guide:spell:25fd183be8a5a886bc180e83",
+        "xanathars-guide:spell:3552e12594b2d8e6067f24f5",
+        "xanathars-guide:spell:4d94c0c610e955904d8893aa",
+        "xanathars-guide:spell:a87ab0181a321cb09fef2884"
+      ]
+    },
+    {
+      "pack_id": "xanathars-guide",
+      "production_ids": [
+        "xanathars-guide:spell:25fd183be8a5a886bc180e83",
+        "xanathars-guide:spell:3552e12594b2d8e6067f24f5",
+        "xanathars-guide:spell:4d94c0c610e955904d8893aa",
+        "xanathars-guide:spell:a87ab0181a321cb09fef2884"
+      ]
+    },
+    {
+      "pack_id": "xanathars-guide",
+      "production_ids": [
+        "xanathars-guide:spell:25fd183be8a5a886bc180e83",
+        "xanathars-guide:spell:3552e12594b2d8e6067f24f5",
+        "xanathars-guide:spell:4d94c0c610e955904d8893aa",
+        "xanathars-guide:spell:a87ab0181a321cb09fef2884"
+      ]
+    }
+  ],
+  "schema_version": "content-ir-isolated-pack-dry-run-III-1"
+}
