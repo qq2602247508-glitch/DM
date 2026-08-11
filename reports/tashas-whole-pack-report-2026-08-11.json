@@ -3,7 +3,7 @@
     "authored_typed_ir": 94,
     "candidate_generated": 407,
     "compile_full": 93,
-    "compile_only": 39,
+    "compile_only": 31,
     "consumer_unlocks": {
       "existing_generic_consumer": {
         "content_ids": [
@@ -25,6 +25,7 @@
           "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list",
           "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech",
           "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant",
+          "content.tashas-cauldron.round2.feature.alchemist-spell-list",
           "content.tashas-cauldron.round2.feature.armorer-powered-steps",
           "content.tashas-cauldron.round2.feature.artificer-tool-expertise",
           "content.tashas-cauldron.round2.feature.artillerist-arcane-firearm",
@@ -35,8 +36,11 @@
           "content.tashas-cauldron.round2.feature.battle-master-bait-and-switch",
           "content.tashas-cauldron.round2.feature.beast-barbarian-bestial-soul",
           "content.tashas-cauldron.round2.feature.bladesinger-training-in-sword-and-song",
+          "content.tashas-cauldron.round2.feature.clockwork-soul-clockwork-magic",
           "content.tashas-cauldron.round2.feature.fathomless-gift-of-the-sea",
           "content.tashas-cauldron.round2.feature.feat-crusher",
+          "content.tashas-cauldron.round2.feature.feat-fey-touched",
+          "content.tashas-cauldron.round2.feature.feat-shadow-touched",
           "content.tashas-cauldron.round2.feature.feat-skill-expert",
           "content.tashas-cauldron.round2.feature.feat-telepathic",
           "content.tashas-cauldron.round2.feature.fey-wanderer-otherworldly-glamour",
@@ -44,16 +48,20 @@
           "content.tashas-cauldron.round2.feature.genie-genies-wrath",
           "content.tashas-cauldron.round2.feature.glory-paladin-glorious-defense",
           "content.tashas-cauldron.round2.feature.order-cleric-bonus-proficiencies",
+          "content.tashas-cauldron.round2.feature.paladin-blessed-warrior",
           "content.tashas-cauldron.round2.feature.paladin-blind-fighting",
           "content.tashas-cauldron.round2.feature.peace-cleric-implement-of-peace",
           "content.tashas-cauldron.round2.feature.psi-warrior-guarded-mind",
+          "content.tashas-cauldron.round2.feature.psi-warrior-telekinetic-master",
           "content.tashas-cauldron.round2.feature.ranger-blind-fighting",
           "content.tashas-cauldron.round2.feature.ranger-canny",
+          "content.tashas-cauldron.round2.feature.ranger-druidic-warrior",
           "content.tashas-cauldron.round2.feature.ranger-roving",
           "content.tashas-cauldron.round2.feature.rune-knight-bonus-proficiencies",
           "content.tashas-cauldron.round2.feature.rune-knight-giants-might",
           "content.tashas-cauldron.round2.feature.rune-knight-great-stature",
           "content.tashas-cauldron.round2.feature.soulknife-psychic-whispers",
+          "content.tashas-cauldron.round2.feature.swarmkeeper-spell-list",
           "content.tashas-cauldron.round2.feature.swarmkeeper-writhing-tide",
           "content.tashas-cauldron.round2.feature.twilight-cleric-bonus-proficiencies",
           "content.tashas-cauldron.round2.feature.twilight-cleric-eyes-of-night",
@@ -69,16 +77,16 @@
     },
     "content_atom_total": 524,
     "content_id_funnel": {
-      "compile_only": 39,
+      "compile_only": 31,
       "dm_assisted": 2,
       "matched_typed_ir": 94,
-      "production_full": 53,
+      "production_full": 61,
       "relation_holds": true
     },
     "current_project_compile_only": 35,
     "current_project_compiled_unique": 111,
-    "current_project_production_full": 112,
-    "current_project_production_registry_fingerprint": "b209b67861a55e043f9c286935a03e63c5f8e1446a998886d7b91e7784564b3a",
+    "current_project_production_full": 120,
+    "current_project_production_registry_fingerprint": "e5f2d77a60d95edabac6d9d53cad5d6eb79053775ac5ed19f4c2f045ebc16089",
     "dm_assisted": 2,
     "dm_reference": 107,
     "draft_total": 407,
@@ -95,7 +103,7 @@
       },
       "total": 499
     },
-    "game_usable": 54,
+    "game_usable": 62,
     "invalid_source": 0,
     "item_ir": {
       "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
@@ -167,7 +175,7 @@
       "spell": 21,
       "subclass_feature": 232
     },
-    "production_full": 52,
+    "production_full": 60,
     "reviewed_total": 407,
     "runtime_preview_full": 93,
     "schema_version": "tashas-whole-pack-migration-1",
@@ -177,7 +185,7 @@
     "source_record_total": 144,
     "source_record_unclassified": 0,
     "status_counts": {
-      "compile_only": 39,
+      "compile_only": 31,
       "dm_assisted": 2,
       "dm_reference": 107,
       "duplicate_or_reprint": 0,
@@ -185,7 +193,7 @@
       "manual_authoring": 314,
       "non_instantiable": 10,
       "out_of_scope_with_reason": 0,
-      "production_full": 52
+      "production_full": 60
     },
     "template_matched": 93
   },
@@ -213,7 +221,7 @@
     "authored_typed_ir": 94,
     "candidate_generated": 407,
     "compile_full": 93,
-    "compile_only": 39,
+    "compile_only": 31,
     "consumer_unlocks": {
       "existing_generic_consumer": {
         "content_ids": [
@@ -235,6 +243,7 @@
           "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list",
           "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech",
           "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant",
+          "content.tashas-cauldron.round2.feature.alchemist-spell-list",
           "content.tashas-cauldron.round2.feature.armorer-powered-steps",
           "content.tashas-cauldron.round2.feature.artificer-tool-expertise",
           "content.tashas-cauldron.round2.feature.artillerist-arcane-firearm",
@@ -245,8 +254,11 @@
           "content.tashas-cauldron.round2.feature.battle-master-bait-and-switch",
           "content.tashas-cauldron.round2.feature.beast-barbarian-bestial-soul",
           "content.tashas-cauldron.round2.feature.bladesinger-training-in-sword-and-song",
+          "content.tashas-cauldron.round2.feature.clockwork-soul-clockwork-magic",
           "content.tashas-cauldron.round2.feature.fathomless-gift-of-the-sea",
           "content.tashas-cauldron.round2.feature.feat-crusher",
+          "content.tashas-cauldron.round2.feature.feat-fey-touched",
+          "content.tashas-cauldron.round2.feature.feat-shadow-touched",
           "content.tashas-cauldron.round2.feature.feat-skill-expert",
           "content.tashas-cauldron.round2.feature.feat-telepathic",
           "content.tashas-cauldron.round2.feature.fey-wanderer-otherworldly-glamour",
@@ -254,16 +266,20 @@
           "content.tashas-cauldron.round2.feature.genie-genies-wrath",
           "content.tashas-cauldron.round2.feature.glory-paladin-glorious-defense",
           "content.tashas-cauldron.round2.feature.order-cleric-bonus-proficiencies",
+          "content.tashas-cauldron.round2.feature.paladin-blessed-warrior",
           "content.tashas-cauldron.round2.feature.paladin-blind-fighting",
           "content.tashas-cauldron.round2.feature.peace-cleric-implement-of-peace",
           "content.tashas-cauldron.round2.feature.psi-warrior-guarded-mind",
+          "content.tashas-cauldron.round2.feature.psi-warrior-telekinetic-master",
           "content.tashas-cauldron.round2.feature.ranger-blind-fighting",
           "content.tashas-cauldron.round2.feature.ranger-canny",
+          "content.tashas-cauldron.round2.feature.ranger-druidic-warrior",
           "content.tashas-cauldron.round2.feature.ranger-roving",
           "content.tashas-cauldron.round2.feature.rune-knight-bonus-proficiencies",
           "content.tashas-cauldron.round2.feature.rune-knight-giants-might",
           "content.tashas-cauldron.round2.feature.rune-knight-great-stature",
           "content.tashas-cauldron.round2.feature.soulknife-psychic-whispers",
+          "content.tashas-cauldron.round2.feature.swarmkeeper-spell-list",
           "content.tashas-cauldron.round2.feature.swarmkeeper-writhing-tide",
           "content.tashas-cauldron.round2.feature.twilight-cleric-bonus-proficiencies",
           "content.tashas-cauldron.round2.feature.twilight-cleric-eyes-of-night",
@@ -279,16 +295,16 @@
     },
     "content_atom_total": 524,
     "content_id_funnel": {
-      "compile_only": 39,
+      "compile_only": 31,
       "dm_assisted": 2,
       "matched_typed_ir": 94,
-      "production_full": 53,
+      "production_full": 61,
       "relation_holds": true
     },
     "current_project_compile_only": 35,
     "current_project_compiled_unique": 111,
-    "current_project_production_full": 112,
-    "current_project_production_registry_fingerprint": "b209b67861a55e043f9c286935a03e63c5f8e1446a998886d7b91e7784564b3a",
+    "current_project_production_full": 120,
+    "current_project_production_registry_fingerprint": "e5f2d77a60d95edabac6d9d53cad5d6eb79053775ac5ed19f4c2f045ebc16089",
     "dm_assisted": 2,
     "dm_reference": 107,
     "draft_total": 407,
@@ -305,7 +321,7 @@
       },
       "total": 499
     },
-    "game_usable": 54,
+    "game_usable": 62,
     "invalid_source": 0,
     "item_ir": {
       "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
@@ -377,7 +393,7 @@
       "spell": 21,
       "subclass_feature": 232
     },
-    "production_full": 52,
+    "production_full": 60,
     "reviewed_total": 407,
     "runtime_preview_full": 93,
     "schema_version": "tashas-whole-pack-migration-1",
@@ -387,7 +403,7 @@
     "source_record_total": 144,
     "source_record_unclassified": 0,
     "status_counts": {
-      "compile_only": 39,
+      "compile_only": 31,
       "dm_assisted": 2,
       "dm_reference": 107,
       "duplicate_or_reprint": 0,
@@ -395,7 +411,7 @@
       "manual_authoring": 314,
       "non_instantiable": 10,
       "out_of_scope_with_reason": 0,
-      "production_full": 52
+      "production_full": 60
     },
     "template_matched": 93
   },
@@ -2186,7 +2202,7 @@
         "instantiable": true,
         "level": null,
         "localized_name": "受祝福的勇士",
-        "migration_status": "compile_only",
+        "migration_status": "production_full",
         "name": "受祝福的勇士Blessed Warrior",
         "officiality": "unknown",
         "parent_atom_id": "tashas-cauldron:atom:28894d328bca545cc65f7eb9:acacad7b0993:000",
@@ -2214,10 +2230,10 @@
           "compile_full": true,
           "dm_assisted": false,
           "draft": true,
-          "game_usable": false,
-          "highest_status": "runtime_preview_full",
-          "isolated_runtime_validated": false,
-          "registered_production_full": false,
+          "game_usable": true,
+          "highest_status": "game_usable",
+          "isolated_runtime_validated": true,
+          "registered_production_full": true,
           "reviewed": true,
           "runtime_preview_full": true,
           "source_identified": true
@@ -6882,7 +6898,7 @@
         "instantiable": true,
         "level": null,
         "localized_name": "德鲁伊教战士",
-        "migration_status": "compile_only",
+        "migration_status": "production_full",
         "name": "德鲁伊教战士Druidic Warrior",
         "officiality": "unknown",
         "parent_atom_id": "tashas-cauldron:atom:752d57e35706db428895da0a:484b3b771be4:000",
@@ -6910,10 +6926,10 @@
           "compile_full": true,
           "dm_assisted": false,
           "draft": true,
-          "game_usable": false,
-          "highest_status": "runtime_preview_full",
-          "isolated_runtime_validated": false,
-          "registered_production_full": false,
+          "game_usable": true,
+          "highest_status": "game_usable",
+          "isolated_runtime_validated": true,
+          "registered_production_full": true,
           "reviewed": true,
           "runtime_preview_full": true,
           "source_identified": true
@@ -11242,7 +11258,7 @@
         "instantiable": true,
         "level": 18,
         "localized_name": "念力宗师",
-        "migration_status": "compile_only",
+        "migration_status": "production_full",
         "name": "念力宗师 Telekinetic Master",
         "officiality": "unknown",
         "parent_atom_id": "tashas-cauldron:atom:a13253dc90904c96eaa719ab:37b126e08d28:000",
@@ -11271,10 +11287,10 @@
           "compile_full": true,
           "dm_assisted": false,
           "draft": true,
-          "game_usable": false,
-          "highest_status": "runtime_preview_full",
-          "isolated_runtime_validated": false,
-          "registered_production_full": false,
+          "game_usable": true,
+          "highest_status": "game_usable",
+          "isolated_runtime_validated": true,
+          "registered_production_full": true,
           "reviewed": true,
           "runtime_preview_full": true,
           "source_identified": true
@@ -17094,7 +17110,7 @@
         "instantiable": true,
         "level": 3,
         "localized_name": "炼金师法术",
-        "migration_status": "compile_only",
+        "migration_status": "production_full",
         "name": "炼金师法术 Alchemist Spells",
         "officiality": "unknown",
         "parent_atom_id": "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:8e2a437de8df:000",
@@ -17123,10 +17139,10 @@
           "compile_full": true,
           "dm_assisted": false,
           "draft": true,
-          "game_usable": false,
-          "highest_status": "runtime_preview_full",
-          "isolated_runtime_validated": false,
-          "registered_production_full": false,
+          "game_usable": true,
+          "highest_status": "game_usable",
+          "isolated_runtime_validated": true,
+          "registered_production_full": true,
           "reviewed": true,
           "runtime_preview_full": true,
           "source_identified": true
@@ -18057,7 +18073,7 @@
         "instantiable": true,
         "level": 1,
         "localized_name": "时械魔法",
-        "migration_status": "compile_only",
+        "migration_status": "production_full",
         "name": "时械魔法 Clockwork Magic",
         "officiality": "unknown",
         "parent_atom_id": "tashas-cauldron:atom:ee901996f0fcc3e576657e06:b19d293772ae:000",
@@ -18086,10 +18102,10 @@
           "compile_full": true,
           "dm_assisted": false,
           "draft": true,
-          "game_usable": false,
-          "highest_status": "runtime_preview_full",
-          "isolated_runtime_validated": false,
-          "registered_production_full": false,
+          "game_usable": true,
+          "highest_status": "game_usable",
+          "isolated_runtime_validated": true,
+          "registered_production_full": true,
           "reviewed": true,
           "runtime_preview_full": true,
           "source_identified": true
@@ -18396,7 +18412,7 @@
         "instantiable": true,
         "level": 3,
         "localized_name": "集群牧者魔法",
-        "migration_status": "compile_only",
+        "migration_status": "production_full",
         "name": "集群牧者魔法 Swarmkeeper Magic",
         "officiality": "unknown",
         "parent_atom_id": "tashas-cauldron:atom:f8e42149abd618bfa3d0eac1:tce:000",
@@ -18424,10 +18440,10 @@
           "compile_full": true,
           "dm_assisted": false,
           "draft": true,
-          "game_usable": false,
-          "highest_status": "runtime_preview_full",
-          "isolated_runtime_validated": false,
-          "registered_production_full": false,
+          "game_usable": true,
+          "highest_status": "game_usable",
+          "isolated_runtime_validated": true,
+          "registered_production_full": true,
           "reviewed": true,
           "runtime_preview_full": true,
           "source_identified": true
@@ -19170,11 +19186,11 @@
     "pack_id": "tashas-cauldron",
     "schema_version": "tashas-feature-ir-report-1",
     "status_counts": {
-      "compile_only": 27,
+      "compile_only": 21,
       "dm_assisted": 1,
       "dm_reference": 31,
       "manual_authoring": 222,
-      "production_full": 45
+      "production_full": 51
     },
     "typed_atom_total": 73
   },
@@ -19193,7 +19209,7 @@
     "gate_status": "partial",
     "manual_total": 254,
     "pack_id": "tashas-cauldron",
-    "production_full_total": 49,
+    "production_full_total": 57,
     "review_blocker_counts": {
       "reviewed_typed_mapping": 85,
       "unmatched_requires_review": 254
@@ -23305,7 +23321,7 @@
         "instantiable": true,
         "level": null,
         "localized_name": "妖精触碰",
-        "migration_status": "compile_only",
+        "migration_status": "production_full",
         "name": "妖精触碰 Fey Touched",
         "officiality": "unknown",
         "parent_atom_id": null,
@@ -23333,10 +23349,10 @@
           "compile_full": true,
           "dm_assisted": false,
           "draft": true,
-          "game_usable": false,
-          "highest_status": "runtime_preview_full",
-          "isolated_runtime_validated": false,
-          "registered_production_full": false,
+          "game_usable": true,
+          "highest_status": "game_usable",
+          "isolated_runtime_validated": true,
+          "registered_production_full": true,
           "reviewed": true,
           "runtime_preview_full": true,
           "source_identified": true
@@ -23641,7 +23657,7 @@
         "instantiable": true,
         "level": null,
         "localized_name": "影界触碰",
-        "migration_status": "compile_only",
+        "migration_status": "production_full",
         "name": "影界触碰 Shadow Touched",
         "officiality": "unknown",
         "parent_atom_id": null,
@@ -23669,10 +23685,10 @@
           "compile_full": true,
           "dm_assisted": false,
           "draft": true,
-          "game_usable": false,
-          "highest_status": "runtime_preview_full",
-          "isolated_runtime_validated": false,
-          "registered_production_full": false,
+          "game_usable": true,
+          "highest_status": "game_usable",
+          "isolated_runtime_validated": true,
+          "registered_production_full": true,
           "reviewed": true,
           "runtime_preview_full": true,
           "source_identified": true
@@ -26007,16 +26023,16 @@
     "pack_id": "tashas-cauldron",
     "schema_version": "tashas-player-options-ir-report-1",
     "status_counts": {
-      "compile_only": 8,
+      "compile_only": 6,
       "dm_reference": 19,
       "manual_authoring": 32,
-      "production_full": 4
+      "production_full": 6
     },
     "typed_atom_total": 12
   },
   "runtime": {
     "atom_dm_assisted_count": 2,
-    "atom_production_full_count": 52,
+    "atom_production_full_count": 60,
     "dm_assisted_atoms": [
       "tashas-cauldron:atom:0036d7dc058c496ef08fe340:a27f6b57964b:000",
       "tashas-cauldron:atom:867896faa26eb295d846a574:glorious-defense:010"
@@ -26042,6 +26058,7 @@
           "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list",
           "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech",
           "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant",
+          "content.tashas-cauldron.round2.feature.alchemist-spell-list",
           "content.tashas-cauldron.round2.feature.armorer-powered-steps",
           "content.tashas-cauldron.round2.feature.artificer-tool-expertise",
           "content.tashas-cauldron.round2.feature.artillerist-arcane-firearm",
@@ -26052,8 +26069,11 @@
           "content.tashas-cauldron.round2.feature.battle-master-bait-and-switch",
           "content.tashas-cauldron.round2.feature.beast-barbarian-bestial-soul",
           "content.tashas-cauldron.round2.feature.bladesinger-training-in-sword-and-song",
+          "content.tashas-cauldron.round2.feature.clockwork-soul-clockwork-magic",
           "content.tashas-cauldron.round2.feature.fathomless-gift-of-the-sea",
           "content.tashas-cauldron.round2.feature.feat-crusher",
+          "content.tashas-cauldron.round2.feature.feat-fey-touched",
+          "content.tashas-cauldron.round2.feature.feat-shadow-touched",
           "content.tashas-cauldron.round2.feature.feat-skill-expert",
           "content.tashas-cauldron.round2.feature.feat-telepathic",
           "content.tashas-cauldron.round2.feature.fey-wanderer-otherworldly-glamour",
@@ -26061,16 +26081,20 @@
           "content.tashas-cauldron.round2.feature.genie-genies-wrath",
           "content.tashas-cauldron.round2.feature.glory-paladin-glorious-defense",
           "content.tashas-cauldron.round2.feature.order-cleric-bonus-proficiencies",
+          "content.tashas-cauldron.round2.feature.paladin-blessed-warrior",
           "content.tashas-cauldron.round2.feature.paladin-blind-fighting",
           "content.tashas-cauldron.round2.feature.peace-cleric-implement-of-peace",
           "content.tashas-cauldron.round2.feature.psi-warrior-guarded-mind",
+          "content.tashas-cauldron.round2.feature.psi-warrior-telekinetic-master",
           "content.tashas-cauldron.round2.feature.ranger-blind-fighting",
           "content.tashas-cauldron.round2.feature.ranger-canny",
+          "content.tashas-cauldron.round2.feature.ranger-druidic-warrior",
           "content.tashas-cauldron.round2.feature.ranger-roving",
           "content.tashas-cauldron.round2.feature.rune-knight-bonus-proficiencies",
           "content.tashas-cauldron.round2.feature.rune-knight-giants-might",
           "content.tashas-cauldron.round2.feature.rune-knight-great-stature",
           "content.tashas-cauldron.round2.feature.soulknife-psychic-whispers",
+          "content.tashas-cauldron.round2.feature.swarmkeeper-spell-list",
           "content.tashas-cauldron.round2.feature.swarmkeeper-writhing-tide",
           "content.tashas-cauldron.round2.feature.twilight-cleric-bonus-proficiencies",
           "content.tashas-cauldron.round2.feature.twilight-cleric-eyes-of-night",
@@ -26084,7 +26108,7 @@
         "new_consumer_count": 0
       }
     },
-    "matched_atom_production_runtime_full_count": 55,
+    "matched_atom_production_runtime_full_count": 63,
     "name_branch_count": 0,
     "new_consumer_count": 0,
     "pack_id": "tashas-cauldron",
@@ -26095,8 +26119,11 @@
       "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:great-stature:011",
       "tashas-cauldron:atom:12139219bf7e575f9cde019c:bait-and-switch:002",
       "tashas-cauldron:atom:1924837fba5aec4d15a290b8:crusher:003",
+      "tashas-cauldron:atom:1924837fba5aec4d15a290b8:fey-touched:005",
+      "tashas-cauldron:atom:1924837fba5aec4d15a290b8:shadow-touched:011",
       "tashas-cauldron:atom:1924837fba5aec4d15a290b8:skill-expert:012",
       "tashas-cauldron:atom:1924837fba5aec4d15a290b8:telepathic:015",
+      "tashas-cauldron:atom:28894d328bca545cc65f7eb9:blessed-warrior:003",
       "tashas-cauldron:atom:28894d328bca545cc65f7eb9:blind-fighting:004",
       "tashas-cauldron:atom:2ceef8846dfb30c175abe0dd:tool-expertise:007",
       "tashas-cauldron:atom:38a389e4b25a6eeec6c7835f:bonus-proficiencies:002",
@@ -26109,6 +26136,7 @@
       "tashas-cauldron:atom:6ac3dd8adf2acd63eeabf4ea:otherworldly-glamour:003",
       "tashas-cauldron:atom:752d57e35706db428895da0a:blind-fighting:008",
       "tashas-cauldron:atom:752d57e35706db428895da0a:canny-1:002",
+      "tashas-cauldron:atom:752d57e35706db428895da0a:druidic-warrior:009",
       "tashas-cauldron:atom:752d57e35706db428895da0a:roving-6:003",
       "tashas-cauldron:atom:790ce45021cc1901403353e1:implement-of-peace:002",
       "tashas-cauldron:atom:7947fb03852a7bc77d69e3ac:be0996c2cd7c:000",
@@ -26117,6 +26145,7 @@
       "tashas-cauldron:atom:a13253dc90904c96eaa719ab:guarded-mind:008",
       "tashas-cauldron:atom:a13253dc90904c96eaa719ab:protective-field:002",
       "tashas-cauldron:atom:a13253dc90904c96eaa719ab:psionic-strike:003",
+      "tashas-cauldron:atom:a13253dc90904c96eaa719ab:telekinetic-master:010",
       "tashas-cauldron:atom:a13253dc90904c96eaa719ab:telekinetic-movement:004",
       "tashas-cauldron:atom:b23e97de6529e42be59f8b0d:bestial-soul:005",
       "tashas-cauldron:atom:b63c217774b977cdb0c1a23e:psychic-whispers:003",
@@ -26133,16 +26162,19 @@
       "tashas-cauldron:atom:d4e98761778ae5c18fd66bdb:hand-of-healing:002",
       "tashas-cauldron:atom:d4e98761778ae5c18fd66bdb:physician-s-touch:004",
       "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:alchemical-savant:004",
+      "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:alchemist-spells:002",
       "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:chemical-mastery:006",
       "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:restorative-reagents:005",
       "tashas-cauldron:atom:e94f0c903dd025796d7a2d22:psionic-spells:001",
       "tashas-cauldron:atom:e94f0c903dd025796d7a2d22:telepathic-speech:002",
+      "tashas-cauldron:atom:ee901996f0fcc3e576657e06:clockwork-magic:001",
       "tashas-cauldron:atom:ef0f92b557fb48d421d462e1:0a329ff7f32b:000",
+      "tashas-cauldron:atom:f8e42149abd618bfa3d0eac1:swarmkeeper-magic:002",
       "tashas-cauldron:atom:f8e42149abd618bfa3d0eac1:writhing-tide:003",
       "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:arcane-firearm:004",
       "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:explosive-cannon:005"
     ],
-    "registry_production_runtime_full_count": 55,
+    "registry_production_runtime_full_count": 63,
     "runtime_evidence": {
       "content.tashas-cauldron.feature.alchemist-chemical-mastery": {
         "confirm_status": 200,
@@ -26365,6 +26397,28 @@
         "source": "round-II-reviewed-feature-contract-through-round-VI-passive-consumer",
         "typed_consumer": "combat_engine.feature_action.v1"
       },
+      "content.tashas-cauldron.round2.feature.alchemist-spell-list": {
+        "advancement_block_ready": true,
+        "character_cas": true,
+        "choice_lifecycle": false,
+        "confirm": true,
+        "content_id": "content.tashas-cauldron.round2.feature.alchemist-spell-list",
+        "content_kind": "advancement",
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-IX.json",
+        "execution_mode": "typed",
+        "feature_persisted": true,
+        "pack_id": "tashas-cauldron",
+        "preview": true,
+        "production_runtime_full": true,
+        "proficiency_grant_count": 0,
+        "replay": true,
+        "selected_choices": {},
+        "source": "round-II-reviewed-feature-runtime-through-round-VII-character-consumer",
+        "spell_grant_count": 10,
+        "transaction": true,
+        "typed_consumer": "advancement_service.character_growth.v1",
+        "typed_contract": true
+      },
       "content.tashas-cauldron.round2.feature.armorer-powered-steps": {
         "confirm": true,
         "content_id": "content.tashas-cauldron.round2.feature.armorer-powered-steps",
@@ -26530,6 +26584,28 @@
         "typed_consumer": "advancement_service.character_growth.v1",
         "typed_contract": true
       },
+      "content.tashas-cauldron.round2.feature.clockwork-soul-clockwork-magic": {
+        "advancement_block_ready": true,
+        "character_cas": true,
+        "choice_lifecycle": false,
+        "confirm": true,
+        "content_id": "content.tashas-cauldron.round2.feature.clockwork-soul-clockwork-magic",
+        "content_kind": "advancement",
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-IX.json",
+        "execution_mode": "typed",
+        "feature_persisted": true,
+        "pack_id": "tashas-cauldron",
+        "preview": true,
+        "production_runtime_full": true,
+        "proficiency_grant_count": 0,
+        "replay": true,
+        "selected_choices": {},
+        "source": "round-II-reviewed-feature-runtime-through-round-VII-character-consumer",
+        "spell_grant_count": 10,
+        "transaction": true,
+        "typed_consumer": "advancement_service.character_growth.v1",
+        "typed_contract": true
+      },
       "content.tashas-cauldron.round2.feature.fathomless-gift-of-the-sea": {
         "active_movement_modes": {
           "swim": 40
@@ -26568,6 +26644,64 @@
         "replay": true,
         "source": "round-II-reviewed-feature-contract-through-round-VI-passive-consumer",
         "typed_consumer": "combat_engine.feature_action.v1"
+      },
+      "content.tashas-cauldron.round2.feature.feat-fey-touched": {
+        "advancement_block_ready": true,
+        "character_cas": true,
+        "choice_lifecycle": true,
+        "confirm": true,
+        "content_id": "content.tashas-cauldron.round2.feature.feat-fey-touched",
+        "content_kind": "advancement",
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-IX.json",
+        "execution_mode": "typed",
+        "feature_persisted": true,
+        "pack_id": "tashas-cauldron",
+        "preview": true,
+        "production_runtime_full": true,
+        "proficiency_grant_count": 0,
+        "replay": true,
+        "selected_choices": {
+          "chosen_ability": [
+            "wisdom"
+          ],
+          "chosen_divination_or_enchantment_1": [
+            "detect_magic"
+          ]
+        },
+        "source": "round-II-reviewed-feature-runtime-through-round-VII-character-consumer",
+        "spell_grant_count": 2,
+        "transaction": true,
+        "typed_consumer": "advancement_service.character_growth.v1",
+        "typed_contract": true
+      },
+      "content.tashas-cauldron.round2.feature.feat-shadow-touched": {
+        "advancement_block_ready": true,
+        "character_cas": true,
+        "choice_lifecycle": true,
+        "confirm": true,
+        "content_id": "content.tashas-cauldron.round2.feature.feat-shadow-touched",
+        "content_kind": "advancement",
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-IX.json",
+        "execution_mode": "typed",
+        "feature_persisted": true,
+        "pack_id": "tashas-cauldron",
+        "preview": true,
+        "production_runtime_full": true,
+        "proficiency_grant_count": 0,
+        "replay": true,
+        "selected_choices": {
+          "chosen_ability": [
+            "charisma"
+          ],
+          "chosen_illusion_or_necromancy_1": [
+            "silent_image"
+          ]
+        },
+        "source": "round-II-reviewed-feature-runtime-through-round-VII-character-consumer",
+        "spell_grant_count": 2,
+        "transaction": true,
+        "typed_consumer": "advancement_service.character_growth.v1",
+        "typed_contract": true
       },
       "content.tashas-cauldron.round2.feature.feat-skill-expert": {
         "character_cas": true,
@@ -26703,6 +26837,35 @@
         "typed_consumer": "advancement_service.character_growth.v1",
         "typed_contract": true
       },
+      "content.tashas-cauldron.round2.feature.paladin-blessed-warrior": {
+        "advancement_block_ready": true,
+        "character_cas": true,
+        "choice_lifecycle": true,
+        "confirm": true,
+        "content_id": "content.tashas-cauldron.round2.feature.paladin-blessed-warrior",
+        "content_kind": "advancement",
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-IX.json",
+        "execution_mode": "typed",
+        "feature_persisted": true,
+        "pack_id": "tashas-cauldron",
+        "preview": true,
+        "production_runtime_full": true,
+        "proficiency_grant_count": 0,
+        "replay": true,
+        "selected_choices": {
+          "chosen_cleric_cantrip_1": [
+            "guidance"
+          ],
+          "chosen_cleric_cantrip_2": [
+            "sacred_flame"
+          ]
+        },
+        "source": "round-II-reviewed-feature-runtime-through-round-VII-character-consumer",
+        "spell_grant_count": 2,
+        "transaction": true,
+        "typed_consumer": "advancement_service.character_growth.v1",
+        "typed_contract": true
+      },
       "content.tashas-cauldron.round2.feature.paladin-blind-fighting": {
         "active_movement_modes": {},
         "active_sight_modes": {
@@ -26763,6 +26926,28 @@
         "transaction": true,
         "typed_consumer": "combat_engine.feature_action.v1"
       },
+      "content.tashas-cauldron.round2.feature.psi-warrior-telekinetic-master": {
+        "advancement_block_ready": true,
+        "character_cas": true,
+        "choice_lifecycle": false,
+        "confirm": true,
+        "content_id": "content.tashas-cauldron.round2.feature.psi-warrior-telekinetic-master",
+        "content_kind": "advancement",
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-IX.json",
+        "execution_mode": "typed",
+        "feature_persisted": true,
+        "pack_id": "tashas-cauldron",
+        "preview": true,
+        "production_runtime_full": true,
+        "proficiency_grant_count": 0,
+        "replay": true,
+        "selected_choices": {},
+        "source": "round-II-reviewed-feature-runtime-through-round-VII-character-consumer",
+        "spell_grant_count": 1,
+        "transaction": true,
+        "typed_consumer": "advancement_service.character_growth.v1",
+        "typed_contract": true
+      },
       "content.tashas-cauldron.round2.feature.ranger-blind-fighting": {
         "active_movement_modes": {},
         "active_sight_modes": {
@@ -26811,6 +26996,35 @@
         },
         "source": "round-II-reviewed-feature-runtime-registry-through-round-V-character-consumer",
         "spell_grant_count": 0,
+        "transaction": true,
+        "typed_consumer": "advancement_service.character_growth.v1",
+        "typed_contract": true
+      },
+      "content.tashas-cauldron.round2.feature.ranger-druidic-warrior": {
+        "advancement_block_ready": true,
+        "character_cas": true,
+        "choice_lifecycle": true,
+        "confirm": true,
+        "content_id": "content.tashas-cauldron.round2.feature.ranger-druidic-warrior",
+        "content_kind": "advancement",
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-IX.json",
+        "execution_mode": "typed",
+        "feature_persisted": true,
+        "pack_id": "tashas-cauldron",
+        "preview": true,
+        "production_runtime_full": true,
+        "proficiency_grant_count": 0,
+        "replay": true,
+        "selected_choices": {
+          "chosen_druid_cantrip_1": [
+            "druidcraft"
+          ],
+          "chosen_druid_cantrip_2": [
+            "thorn_whip"
+          ]
+        },
+        "source": "round-II-reviewed-feature-runtime-through-round-VII-character-consumer",
+        "spell_grant_count": 2,
         "transaction": true,
         "typed_consumer": "advancement_service.character_growth.v1",
         "typed_contract": true
@@ -26905,6 +27119,28 @@
         "source": "round-II-isolated-feature-contract",
         "transaction": true,
         "typed_consumer": "combat_engine.feature_action.v1"
+      },
+      "content.tashas-cauldron.round2.feature.swarmkeeper-spell-list": {
+        "advancement_block_ready": true,
+        "character_cas": true,
+        "choice_lifecycle": false,
+        "confirm": true,
+        "content_id": "content.tashas-cauldron.round2.feature.swarmkeeper-spell-list",
+        "content_kind": "advancement",
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-IX.json",
+        "execution_mode": "typed",
+        "feature_persisted": true,
+        "pack_id": "tashas-cauldron",
+        "preview": true,
+        "production_runtime_full": true,
+        "proficiency_grant_count": 0,
+        "replay": true,
+        "selected_choices": {},
+        "source": "round-II-reviewed-feature-runtime-through-round-VII-character-consumer",
+        "spell_grant_count": 6,
+        "transaction": true,
+        "typed_consumer": "advancement_service.character_growth.v1",
+        "typed_contract": true
       },
       "content.tashas-cauldron.round2.feature.swarmkeeper-writhing-tide": {
         "active_movement_modes": {
@@ -28367,9 +28603,9 @@
     "compile_full": 93,
     "dm_assisted": 2,
     "draft": 407,
-    "game_usable": 54,
-    "isolated_runtime_validated": 54,
-    "registered_production_full": 52,
+    "game_usable": 62,
+    "isolated_runtime_validated": 62,
+    "registered_production_full": 60,
     "reviewed": 407,
     "runtime_preview_full": 93,
     "source_identified": 524

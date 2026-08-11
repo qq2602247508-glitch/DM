@@ -164,7 +164,7 @@
       "atom_id": "tashas-cauldron:atom:1924837fba5aec4d15a290b8:fey-touched:005",
       "content_id": "content.tashas-cauldron.round2.feature.feat-fey-touched",
       "content_kind": "feat",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "d5cc7fd982478d0c2b13d3cb035057c6963f5df14123fb3ebea0e19efe746cb5",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.feat-fey-touched"
@@ -174,7 +174,7 @@
       "atom_id": "tashas-cauldron:atom:1924837fba5aec4d15a290b8:shadow-touched:011",
       "content_id": "content.tashas-cauldron.round2.feature.feat-shadow-touched",
       "content_kind": "feat",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "70d7286100e2fce8d19f264f1a5def09f241c523035046b05a4a5ec90029c167",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.feat-shadow-touched"
@@ -204,7 +204,7 @@
       "atom_id": "tashas-cauldron:atom:28894d328bca545cc65f7eb9:blessed-warrior:003",
       "content_id": "content.tashas-cauldron.round2.feature.paladin-blessed-warrior",
       "content_kind": "class_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "f4e75bcff563a7751bf92c7ca912ab7d57fabeb057a567e8661569e7beff5ccf",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.paladin-blessed-warrior"
@@ -375,7 +375,7 @@
       "atom_id": "tashas-cauldron:atom:752d57e35706db428895da0a:druidic-warrior:009",
       "content_id": "content.tashas-cauldron.round2.feature.ranger-druidic-warrior",
       "content_kind": "class_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "2406e185269ccb82c1cdde24a706f7814f2576449e57bfd98ffad84cc3bb4809",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.ranger-druidic-warrior"
@@ -515,7 +515,7 @@
       "atom_id": "tashas-cauldron:atom:a13253dc90904c96eaa719ab:telekinetic-master:010",
       "content_id": "content.tashas-cauldron.round2.feature.psi-warrior-telekinetic-master",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "10f5712d3e4d609a13f930b64b2817c88383c4d8cd5c88cee8a7f6ceeef6bee6",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.psi-warrior-telekinetic-master"
@@ -775,7 +775,7 @@
       "atom_id": "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:alchemist-spells:002",
       "content_id": "content.tashas-cauldron.round2.feature.alchemist-spell-list",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "5022f3119f776ae5d49994ab31ebbe1edbb7fc11990271ba96ef91ad6be8250f",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.alchemist-spell-list"
@@ -845,7 +845,7 @@
       "atom_id": "tashas-cauldron:atom:ee901996f0fcc3e576657e06:clockwork-magic:001",
       "content_id": "content.tashas-cauldron.round2.feature.clockwork-soul-clockwork-magic",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "a75a70d4de1c06e7df15582cdac7b2cb3aa471140cd48e6f0d5d9f87923dd3ca",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.clockwork-soul-clockwork-magic"
@@ -875,7 +875,7 @@
       "atom_id": "tashas-cauldron:atom:f8e42149abd618bfa3d0eac1:swarmkeeper-magic:002",
       "content_id": "content.tashas-cauldron.round2.feature.swarmkeeper-spell-list",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "b041fc5c2ffc39fb41a13028f08dac2e6526050fecd6e848c5d21964a2121f82",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.swarmkeeper-spell-list"

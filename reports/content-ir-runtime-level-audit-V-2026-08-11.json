@@ -1,12 +1,12 @@
 {
   "after": {
     "compile_only": 35,
-    "production_full": 112,
+    "production_full": 120,
     "tasha_atom_pack": {
       "authored_typed_ir": 94,
       "candidate_generated": 407,
       "compile_full": 93,
-      "compile_only": 39,
+      "compile_only": 31,
       "consumer_unlocks": {
         "existing_generic_consumer": {
           "content_ids": [
@@ -28,6 +28,7 @@
             "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list",
             "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech",
             "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant",
+            "content.tashas-cauldron.round2.feature.alchemist-spell-list",
             "content.tashas-cauldron.round2.feature.armorer-powered-steps",
             "content.tashas-cauldron.round2.feature.artificer-tool-expertise",
             "content.tashas-cauldron.round2.feature.artillerist-arcane-firearm",
@@ -38,8 +39,11 @@
             "content.tashas-cauldron.round2.feature.battle-master-bait-and-switch",
             "content.tashas-cauldron.round2.feature.beast-barbarian-bestial-soul",
             "content.tashas-cauldron.round2.feature.bladesinger-training-in-sword-and-song",
+            "content.tashas-cauldron.round2.feature.clockwork-soul-clockwork-magic",
             "content.tashas-cauldron.round2.feature.fathomless-gift-of-the-sea",
             "content.tashas-cauldron.round2.feature.feat-crusher",
+            "content.tashas-cauldron.round2.feature.feat-fey-touched",
+            "content.tashas-cauldron.round2.feature.feat-shadow-touched",
             "content.tashas-cauldron.round2.feature.feat-skill-expert",
             "content.tashas-cauldron.round2.feature.feat-telepathic",
             "content.tashas-cauldron.round2.feature.fey-wanderer-otherworldly-glamour",
@@ -47,16 +51,20 @@
             "content.tashas-cauldron.round2.feature.genie-genies-wrath",
             "content.tashas-cauldron.round2.feature.glory-paladin-glorious-defense",
             "content.tashas-cauldron.round2.feature.order-cleric-bonus-proficiencies",
+            "content.tashas-cauldron.round2.feature.paladin-blessed-warrior",
             "content.tashas-cauldron.round2.feature.paladin-blind-fighting",
             "content.tashas-cauldron.round2.feature.peace-cleric-implement-of-peace",
             "content.tashas-cauldron.round2.feature.psi-warrior-guarded-mind",
+            "content.tashas-cauldron.round2.feature.psi-warrior-telekinetic-master",
             "content.tashas-cauldron.round2.feature.ranger-blind-fighting",
             "content.tashas-cauldron.round2.feature.ranger-canny",
+            "content.tashas-cauldron.round2.feature.ranger-druidic-warrior",
             "content.tashas-cauldron.round2.feature.ranger-roving",
             "content.tashas-cauldron.round2.feature.rune-knight-bonus-proficiencies",
             "content.tashas-cauldron.round2.feature.rune-knight-giants-might",
             "content.tashas-cauldron.round2.feature.rune-knight-great-stature",
             "content.tashas-cauldron.round2.feature.soulknife-psychic-whispers",
+            "content.tashas-cauldron.round2.feature.swarmkeeper-spell-list",
             "content.tashas-cauldron.round2.feature.swarmkeeper-writhing-tide",
             "content.tashas-cauldron.round2.feature.twilight-cleric-bonus-proficiencies",
             "content.tashas-cauldron.round2.feature.twilight-cleric-eyes-of-night",
@@ -72,16 +80,16 @@
       },
       "content_atom_total": 524,
       "content_id_funnel": {
-        "compile_only": 39,
+        "compile_only": 31,
         "dm_assisted": 2,
         "matched_typed_ir": 94,
-        "production_full": 53,
+        "production_full": 61,
         "relation_holds": true
       },
       "current_project_compile_only": 35,
       "current_project_compiled_unique": 111,
-      "current_project_production_full": 112,
-      "current_project_production_registry_fingerprint": "b209b67861a55e043f9c286935a03e63c5f8e1446a998886d7b91e7784564b3a",
+      "current_project_production_full": 120,
+      "current_project_production_registry_fingerprint": "e5f2d77a60d95edabac6d9d53cad5d6eb79053775ac5ed19f4c2f045ebc16089",
       "dm_assisted": 2,
       "dm_reference": 107,
       "draft_total": 407,
@@ -98,7 +106,7 @@
         },
         "total": 499
       },
-      "game_usable": 54,
+      "game_usable": 62,
       "invalid_source": 0,
       "item_ir": {
         "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
@@ -170,7 +178,7 @@
         "spell": 21,
         "subclass_feature": 232
       },
-      "production_full": 52,
+      "production_full": 60,
       "reviewed_total": 407,
       "runtime_preview_full": 93,
       "schema_version": "tashas-whole-pack-migration-1",
@@ -180,7 +188,7 @@
       "source_record_total": 144,
       "source_record_unclassified": 0,
       "status_counts": {
-        "compile_only": 39,
+        "compile_only": 31,
         "dm_assisted": 2,
         "dm_reference": 107,
         "duplicate_or_reprint": 0,
@@ -188,7 +196,7 @@
         "manual_authoring": 314,
         "non_instantiable": 10,
         "out_of_scope_with_reason": 0,
-        "production_full": 52
+        "production_full": 60
       },
       "template_matched": 93
     },
@@ -196,7 +204,7 @@
   },
   "baseline": {
     "compile_only": 35,
-    "production_full": 112,
+    "production_full": 120,
     "unique_compiled": 111
   },
   "database_unchanged": true,

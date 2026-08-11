@@ -13,7 +13,7 @@
   "gate_status": "partial",
   "manual_total": 254,
   "pack_id": "tashas-cauldron",
-  "production_full_total": 49,
+  "production_full_total": 57,
   "review_blocker_counts": {
     "reviewed_typed_mapping": 85,
     "unmatched_requires_review": 254

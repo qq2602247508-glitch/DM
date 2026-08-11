@@ -1,3 +1,12 @@
+# 2026-08-12 Round 7 检查点：Typed Advancement / Character Growth Consumer 扩展
+
+- Round 7 在 Round-II authored Feature IR 上完成 8 条真实角色成长 production evidence：炼金师法术、时械魔法、妖精触碰、影界触碰、受祝福的勇士、念力宗师、德鲁伊教战士、集群牧者魔法。8/8 均通过真实 `ContentIRRuntimeService` preview→confirm→幂等 replay，consumer 为 `advancement_service.character_growth.v1`，并实际写入 character feature/spell snapshot。
+- 4 条带选择的合同（妖精触碰、影界触碰、圣武士/游侠 cantrip）完成 typed choice lifecycle；全部 8 条满足 advancement block ready、character CAS、operation transaction、feature persisted；name branch=0，formal registry/database/campaign/character 写入均为 false。
+- Tasha status layers：`registered_production_full=60`（Round 6 的 52→60）、`dm_assisted=2`、`game_usable=62`；`manual_authoring=314`、`compile-only=31`（39→31）、`authored Typed IR=94`、`runtime_preview_full=93`。严格口径仍为 `game_usable = registered_production_full + dm_assisted`。
+- 新增证据入口：`scripts/validate-tashas-feature-production-consumer-round-VII.py`、`backend/tests/test_tashas_feature_production_consumer_round_VII.py`、`reports/tashas-feature-production-consumer-round-VII-2026-08-12.json`、`data/content-ir/compiled/production-runtime-results-IX.json`、`docs/tashas-feature-production-consumer-round-VII-2026-08-12.md`。whole-pack migration 两次关键报告/runtime/isolated manifest hash 一致。
+- 完整 backend pytest、Round III/V/VI/VII 与 whole-pack 定向回归、变更源 Ruff、compileall、`git diff --check` 通过。保护目录 `backend/tests/integrations/` 和 `backend/tests/ollama.py` 未暂存/提交；database fingerprint 仍为 `f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad`，integrations manifest 仍为 `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`。
+- Round 7 当前已完成 evidence 与 gates，待写入 ledger、提交、推送并记录 receipt；之后继续处理 resource/action/trigger lifecycle、vessel/entity、exhaustion、spectral object、teleport destination、psionic payment 与 ItemSpec consumer，不要把 isolated-only / DM-reference 伪装成 production，也不要迁移下一本扩展包。
+
 # 2026-08-12 Round 6 检查点：Passive Modifier / Inspection Consumer 扩展
 
 - Round 6 在 Round-II authored Feature IR 上完成 8 条真实 passive production evidence：炼金术掌握、动力步伐、工具精通、奥法枪械、星之铠甲、星之视觉、粉碎者、妖冶娴都。8/8 均通过真实 `ContentIRRuntimeService` preview→confirm→幂等 replay，typed passive block 绑定和 `combat_engine.feature_action.v1` inspection consumer。

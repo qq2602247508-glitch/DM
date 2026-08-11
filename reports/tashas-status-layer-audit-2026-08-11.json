@@ -133,9 +133,9 @@
     "compile_full": 93,
     "dm_assisted": 2,
     "draft": 407,
-    "game_usable": 54,
-    "isolated_runtime_validated": 54,
-    "registered_production_full": 52,
+    "game_usable": 62,
+    "isolated_runtime_validated": 62,
+    "registered_production_full": 60,
     "reviewed": 407,
     "runtime_preview_full": 93,
     "source_identified": 524

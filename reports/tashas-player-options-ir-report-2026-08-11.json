@@ -872,7 +872,7 @@
       "instantiable": true,
       "level": null,
       "localized_name": "妖精触碰",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "name": "妖精触碰 Fey Touched",
       "officiality": "unknown",
       "parent_atom_id": null,
@@ -900,10 +900,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "runtime_preview_full",
-        "isolated_runtime_validated": false,
-        "registered_production_full": false,
+        "game_usable": true,
+        "highest_status": "game_usable",
+        "isolated_runtime_validated": true,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -1208,7 +1208,7 @@
       "instantiable": true,
       "level": null,
       "localized_name": "影界触碰",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "name": "影界触碰 Shadow Touched",
       "officiality": "unknown",
       "parent_atom_id": null,
@@ -1236,10 +1236,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "runtime_preview_full",
-        "isolated_runtime_validated": false,
-        "registered_production_full": false,
+        "game_usable": true,
+        "highest_status": "game_usable",
+        "isolated_runtime_validated": true,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -3574,10 +3574,10 @@
   "pack_id": "tashas-cauldron",
   "schema_version": "tashas-player-options-ir-report-1",
   "status_counts": {
-    "compile_only": 8,
+    "compile_only": 6,
     "dm_reference": 19,
     "manual_authoring": 32,
-    "production_full": 4
+    "production_full": 6
   },
   "typed_atom_total": 12
 }

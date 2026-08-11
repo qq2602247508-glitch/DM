@@ -1,7 +1,114 @@
 {
-  "current_round": "round-6",
+  "current_round": "round-7",
   "goal": "Local AI D&D DM Assistant complete official-content rules platform",
   "rounds": [
+    {
+      "authored_count": 0,
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 112,
+            "unique_compiled": 111
+          },
+          "formal_499": {
+            "dm_only": 61,
+            "full": 328,
+            "partial": 110,
+            "total": 499
+          },
+          "protected_fingerprints": {
+            "database": "f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad",
+            "formal_registry": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+            "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+            "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+          },
+          "tashas": {
+            "authored_typed_ir": 94,
+            "compile_only": 39,
+            "content_atoms_after_qa": 524,
+            "executable": 407,
+            "game_usable": 54,
+            "manual_authoring": 314,
+            "production_full": 52,
+            "runtime_preview_full": 93,
+            "source_records": 144
+          }
+        },
+        "difference": "Round 7 harvests eight remaining full advancement/spell-list Feature contracts through the existing typed character-growth consumer; formal campaign/character/database rows remain outside the evidence boundary.",
+        "prompt_baseline": {"round_target_production_or_dm": 8}
+      },
+      "commits": [],
+      "compile_full_delta": 0,
+      "dm_assisted_delta": 0,
+      "files_changed": [
+        "scripts/validate-tashas-feature-production-consumer-round-VII.py",
+        "backend/tests/test_tashas_feature_production_consumer_round_VII.py",
+        "backend/tests/test_tashas_feature_production_consumer_round_III.py",
+        "backend/tests/test_tashas_whole_pack_migration.py",
+        "data/content-ir/compiled/production-runtime-results-IX.json",
+        "reports/tashas-feature-production-consumer-round-VII-2026-08-12.json",
+        "docs/tashas-feature-production-consumer-round-VII-2026-08-12.md",
+        "docs/tashas-whole-pack-coverage-recovery-I-2026-08-11.md",
+        "docs/tashas-whole-pack-migration-closeout-2026-08-11.md",
+        "reports/tashas-status-layer-audit-2026-08-11.json",
+        "reports/tashas-whole-pack-report-2026-08-11.json",
+        "data/content-ir/isolated-packs/tashas-cauldron-2026-08-11/atom-index.json",
+        "data/content-ir/isolated-packs/tashas-cauldron-2026-08-11/runtime-registry.json"
+      ],
+      "manual_delta": 0,
+      "next_round_reason": "Continue remaining resource/action/trigger lifecycle, vessel/entity, exhaustion, spectral object, teleport destination, psionic payment and unresolved item lifecycle consumers; do not promote isolated-only or DM-reference content.",
+      "objective": "Harvest the next eight full Tasha advancement/spell-list Feature contracts through the existing generic character-growth consumer.",
+      "pack_coverage_delta": {
+        "feature_dm_assisted": 0,
+        "feature_production_evidence_selected": 8,
+        "feature_registered_production_full": 8,
+        "tasha_dm_assisted": 2,
+        "tasha_game_usable": 62,
+        "tasha_registered_production_full": 60
+      },
+      "phase": "G",
+      "push_receipt": {
+        "branch": "main",
+        "commit_hash": null,
+        "pushed_at": null,
+        "remote": "origin",
+        "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
+        "result": "pending"
+      },
+      "reports": [
+        "reports/tashas-feature-production-consumer-round-VII-2026-08-12.json",
+        "data/content-ir/compiled/production-runtime-results-IX.json",
+        "reports/tashas-status-layer-audit-2026-08-11.json",
+        "reports/tashas-whole-pack-report-2026-08-11.json",
+        "docs/tashas-feature-production-consumer-round-VII-2026-08-12.md"
+      ],
+      "reviewed_count": 0,
+      "selected_clusters": [
+        "feature.advancement",
+        "feature.spell_list",
+        "feature.player_choice",
+        "feature.character_growth",
+        "feature.resource_recovery"
+      ],
+      "selected_platforms": [
+        "content_ir_runtime_service",
+        "advancement_service.character_growth",
+        "character_cas",
+        "operation_transaction",
+        "idempotency_replay"
+      ],
+      "status": "evidence_gated",
+      "tests": [
+        "backend/.venv/bin/python -m pytest -q backend/tests",
+        "backend/.venv/bin/python -m pytest -q Round III/V/VI/VII and whole-pack tests",
+        "backend/.venv/bin/ruff check changed validator/tests --ignore E402,E501",
+        "backend/.venv/bin/python -m compileall -q backend/src backend/tests scripts/validate-tashas-feature-production-consumer-round-VII.py",
+        "git diff --check",
+        "Round VII validator: 8/8 preview-confirm-replay with character growth, choice and spell grant assertions",
+        "whole-pack migration twice: stdout and key report/runtime hashes byte-identical"
+      ]
+    },
     {
       "authored_count": 0,
       "baseline": {
