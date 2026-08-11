@@ -38,7 +38,7 @@
         "difference": "Round 7 harvests eight remaining full advancement/spell-list Feature contracts through the existing typed character-growth consumer; formal campaign/character/database rows remain outside the evidence boundary.",
         "prompt_baseline": {"round_target_production_or_dm": 8}
       },
-      "commits": [],
+      "commits": ["0f49029"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [
@@ -70,11 +70,11 @@
       "phase": "G",
       "push_receipt": {
         "branch": "main",
-        "commit_hash": null,
-        "pushed_at": null,
+        "commit_hash": "0f49029e340811a6ba104310e3cd320415c180e5",
+        "pushed_at": "2026-08-12T03:48:39+0800",
         "remote": "origin",
         "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
-        "result": "pending"
+        "result": "success"
       },
       "reports": [
         "reports/tashas-feature-production-consumer-round-VII-2026-08-12.json",
@@ -98,7 +98,7 @@
         "operation_transaction",
         "idempotency_replay"
       ],
-      "status": "evidence_gated",
+      "status": "accepted",
       "tests": [
         "backend/.venv/bin/python -m pytest -q backend/tests",
         "backend/.venv/bin/python -m pytest -q Round III/V/VI/VII and whole-pack tests",

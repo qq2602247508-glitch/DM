@@ -5,7 +5,7 @@
 - Tasha status layers：`registered_production_full=60`（Round 6 的 52→60）、`dm_assisted=2`、`game_usable=62`；`manual_authoring=314`、`compile-only=31`（39→31）、`authored Typed IR=94`、`runtime_preview_full=93`。严格口径仍为 `game_usable = registered_production_full + dm_assisted`。
 - 新增证据入口：`scripts/validate-tashas-feature-production-consumer-round-VII.py`、`backend/tests/test_tashas_feature_production_consumer_round_VII.py`、`reports/tashas-feature-production-consumer-round-VII-2026-08-12.json`、`data/content-ir/compiled/production-runtime-results-IX.json`、`docs/tashas-feature-production-consumer-round-VII-2026-08-12.md`。whole-pack migration 两次关键报告/runtime/isolated manifest hash 一致。
 - 完整 backend pytest、Round III/V/VI/VII 与 whole-pack 定向回归、变更源 Ruff、compileall、`git diff --check` 通过。保护目录 `backend/tests/integrations/` 和 `backend/tests/ollama.py` 未暂存/提交；database fingerprint 仍为 `f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad`，integrations manifest 仍为 `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`。
-- Round 7 当前已完成 evidence 与 gates，待写入 ledger、提交、推送并记录 receipt；之后继续处理 resource/action/trigger lifecycle、vessel/entity、exhaustion、spectral object、teleport destination、psionic payment 与 ItemSpec consumer，不要把 isolated-only / DM-reference 伪装成 production，也不要迁移下一本扩展包。
+- Round 7 evidence/gates 已完成并已推送：implementation/evidence commit `0f49029e340811a6ba104310e3cd320415c180e5`，`origin/main` push success，2026-08-12 03:48:39 +0800；ledger receipt 随后单独提交。之后继续处理 resource/action/trigger lifecycle、vessel/entity、exhaustion、spectral object、teleport destination、psionic payment 与 ItemSpec consumer，不要把 isolated-only / DM-reference 伪装成 production，也不要迁移下一本扩展包。
 
 # 2026-08-12 Round 6 检查点：Passive Modifier / Inspection Consumer 扩展
 

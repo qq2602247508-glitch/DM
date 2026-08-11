@@ -8,7 +8,7 @@
 
 ## Round 7：Typed Advancement / Character Growth Consumer Expansion
 
-当前状态：`evidence_gated`；本轮完成 8 条真实 API evidence，待提交/推送收据，整包 game usable 达到 62。
+当前状态：`accepted`；本轮完成 8 条真实 API evidence，已提交并推送，整包 game usable 达到 62。
 
 - 8/8 条 Round-II Feature contracts 通过真实 `ContentIRRuntimeService` advancement preview→confirm→幂等 replay；临时迁移 SQLite，并实际写入 character features/spell grants snapshot。consumer 统一为 `advancement_service.character_growth.v1`，formal apply/database/campaign/character 写入均为 false。
 - Tasha status layers：`registered_production_full=60`（52→60）、`dm_assisted=2`、`game_usable=62`；`manual_authoring=314`、`compile-only=31`（39→31）、`authored Typed IR=94`、`runtime_preview_full=93`。
