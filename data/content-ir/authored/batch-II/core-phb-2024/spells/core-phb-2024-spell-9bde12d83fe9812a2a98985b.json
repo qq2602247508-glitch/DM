@@ -1,0 +1,142 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "附赠动作",
+  "clause_boundaries": {
+    "area": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "#### 燃火术｜Produce Flame *咒法 戏法（德鲁伊）* **施法时间：**附赠动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**10分钟 一朵摇曳的火焰出现在你手中，火焰会存在至法术持续时间结束为止。火焰在你手中期间，不会散发任何热量也不会点燃任何东西，发出20尺半径的明亮光照，以及其外20尺范围的微光光照。此法术会在你再次施展它时提前终止。 直到法术结束为止，你可以用魔法动作向60尺内的一名生物或一个物件丢出火焰。进行一次远程法术攻击。命中时，目标将受到1d8点火焰伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+      "source_heading": "燃火术"
+    },
+    "attack": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "亮光照，以及其外20尺范围的微光光照。此法术会在你再次施展它时提前终止。 直到法术结束为止，你可以用魔法动作向60尺内的一名生物或一个物件丢出火焰。进行一次远程法术攻击。命中时，目标将受到1d8点火焰伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+      "source_heading": "燃火术"
+    },
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "法术会在你再次施展它时提前终止。 直到法术结束为止，你可以用魔法动作向60尺内的一名生物或一个物件丢出火焰。进行一次远程法术攻击。命中时，目标将受到1d8点火焰伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+      "source_heading": "燃火术"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "V、S **持续时间：**10分钟 一朵摇曳的火焰出现在你手中，火焰会存在至法术持续时间结束为止。火焰在你手中期间，不会散发任何热量也不会点燃任何东西，发出20尺半径的明亮光照，以及其外20尺范围的微光光照。此法术会在你再次施展它时提前终止。 直到法术结束为止，你可以用魔法动作向60尺内的一名生物或一个物件丢出火焰。进行一次远程法术攻击。命中时，目标将受到1d8点火焰伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+      "source_heading": "燃火术"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:9bde12d83fe9812a2a98985b:target",
+    "core-phb-2024:spell:9bde12d83fe9812a2a98985b:attack",
+    "core-phb-2024:spell:9bde12d83fe9812a2a98985b:damage",
+    "core-phb-2024:spell:9bde12d83fe9812a2a98985b:area"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "V、S **持续时间：**10分钟 一朵摇曳的火焰出现在你手中，火焰会存在至法术持续时间结束为止。火焰在你手中期间，不会散发任何热量也不会点燃任何东西，发出20尺半径的明亮光照，以及其外20尺范围的微光光照。此法术会在你再次施展它时提前终止。 直到法术结束为止，你可以用魔法动作向60尺内的一名生物或一个物件丢出火焰。进行一次远程法术攻击。命中时，目标将受到1d8点火焰伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+      "kind": "area",
+      "shape": "sphere",
+      "size_ft": 20,
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "bonus_action",
+      "attack_ability": "spellcasting",
+      "clause_id": "attack",
+      "evidence_ref": "亮光照，以及其外20尺范围的微光光照。此法术会在你再次施展它时提前终止。 直到法术结束为止，你可以用魔法动作向60尺内的一名生物或一个物件丢出火焰。进行一次远程法术攻击。命中时，目标将受到1d8点火焰伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+      "target": "one_creature",
+      "type": "attack_roll"
+    },
+    {
+      "action_economy": "bonus_action",
+      "clause_id": "damage",
+      "damage": "1d8",
+      "damage_type": "火焰",
+      "evidence_ref": "法术会在你再次施展它时提前终止。 直到法术结束为止，你可以用魔法动作向60尺内的一名生物或一个物件丢出火焰。进行一次远程法术攻击。命中时，目标将受到1d8点火焰伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+      "expression": "1d8",
+      "target": "one_creature",
+      "timing": "on_hit",
+      "type": "damage"
+    },
+    {
+      "clause_id": "area",
+      "evidence_ref": "#### 燃火术｜Produce Flame *咒法 戏法（德鲁伊）* **施法时间：**附赠动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**10分钟 一朵摇曳的火焰出现在你手中，火焰会存在至法术持续时间结束为止。火焰在你手中期间，不会散发任何热量也不会点燃任何东西，发出20尺半径的明亮光照，以及其外20尺范围的微光光照。此法术会在你再次施展它时提前终止。 直到法术结束为止，你可以用魔法动作向60尺内的一名生物或一个物件丢出火焰。进行一次远程法术攻击。命中时，目标将受到1d8点火焰伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+      "origin": "source_explicit_origin",
+      "shape": "sphere",
+      "size_ft": 20,
+      "type": "area"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "10分钟",
+  "edition": "2024",
+  "evidence": [
+    "area: #### 燃火术｜Produce Flame *咒法 戏法（德鲁伊）* **施法时间：**附赠动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**10分钟 一朵摇曳的火焰出现在你手中，火焰会存在至法术持续时间结束为止。火焰在你手中期间，不会散发任何热量也不会点燃任何东西，发出20尺半径的明亮光照，以及其外20尺范围的微光光照。此法术会在你再次施展它时提前终止。 直到法术结束为止，你可以用魔法动作向60尺内的一名生物或一个物件丢出火焰。进行一次远程法术攻击。命中时，目标将受到1d8点火焰伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+    "attack: 亮光照，以及其外20尺范围的微光光照。此法术会在你再次施展它时提前终止。 直到法术结束为止，你可以用魔法动作向60尺内的一名生物或一个物件丢出火焰。进行一次远程法术攻击。命中时，目标将受到1d8点火焰伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+    "damage: 法术会在你再次施展它时提前终止。 直到法术结束为止，你可以用魔法动作向60尺内的一名生物或一个物件丢出火焰。进行一次远程法术攻击。命中时，目标将受到1d8点火焰伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+    "target: V、S **持续时间：**10分钟 一朵摇曳的火焰出现在你手中，火焰会存在至法术持续时间结束为止。火焰在你手中期间，不会散发任何热量也不会点燃任何东西，发出20尺半径的明亮光照，以及其外20尺范围的微光光照。此法术会在你再次施展它时提前终止。 直到法术结束为止，你可以用魔法动作向60尺内的一名生物或一个物件丢出火焰。进行一次远程法术攻击。命中时，目标将受到1d8点火焰伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。"
+  ],
+  "kind": "spell",
+  "level": 0,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "燃火术",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "自身",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "咒法",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "V、S **持续时间：**10分钟 一朵摇曳的火焰出现在你手中，火焰会存在至法术持续时间结束为止。火焰在你手中期间，不会散发任何热量也不会点燃任何东西，发出20尺半径的明亮光照，以及其外20尺范围的微光光照。此法术会在你再次施展它时提前终止。 直到法术结束为止，你可以用魔法动作向60尺内的一名生物或一个物件丢出火焰。进行一次远程法术攻击。命中时，目标将受到1d8点火焰伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。 亮光照，以及其外20尺范围的微光光照。此法术会在你再次施展它时提前终止。 直到法术结束为止，你可以用魔法动作向60尺内的一名生物或一个物件丢出火焰。进行一次远程法术攻击。命中时，目标将受到1d8点火焰伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。 法术会在你再次施展它时提前终止。 直到法术结束为止，你可以用魔法动作向60尺内的一名生物或一个物件丢出火焰。进行一次远程法术攻击。命中时，目标将受到1d8点火焰伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。 #### 燃火术｜Produce Flame *咒法 戏法（德鲁伊）* **施法时间：**附赠动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**10分钟 一朵摇曳的火焰出现在你手中，火焰会存在至法术持续时间结束为止。火焰在你手中期间，不会散发任何热量也不会点燃任何东西，发出20尺半径的明亮光照，以及其外20尺范围的微光光照。此法术会在你再次施展它时提前终止。 直到法术结束为止，你可以用魔法动作向60尺内的一名生物或一个物件丢出火焰。进行一次远程法术攻击。命中时，目标将受到1d8点火焰伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "f11af1860847be92324cd89dfe0b5273956c552fc2b8c52f9902e33fbbc18a25",
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 燃火术｜Produce Flame\n\n*咒法 戏法（德鲁伊）*\n**施法时间：**附赠动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**10分钟\n一朵摇曳的火焰出现在你手中，火焰会存在至法术持续时间结束为止。火焰在你手中期间，不会散发任何热量也不会点燃任何东西，发出20尺半径的明亮光照，以及其外20尺范围的微光光照。此法术会在你再次施展它时提前终止。\n直到法术结束为止，你可以用魔法动作向60尺内的一名生物或一个物件丢出火焰。进行一次远程法术攻击。命中时，目标将受到1d8点火焰伤害。\n**戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。"
+  },
+  "source_fingerprint": "feca8e93287d82dfb44d694b6162bca97ee9b48d5ad0ab0e6f3a68c83a1a280b",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "f11af1860847be92324cd89dfe0b5273956c552fc2b8c52f9902e33fbbc18a25",
+    "source_relative_path": "玩家手册2024/法术详述/0环.htm"
+  },
+  "source_record_id": "9bde12d83fe9812a2a98985b",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:9bde12d83fe9812a2a98985b"
+}

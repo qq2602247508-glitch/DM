@@ -1,0 +1,109 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "area": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "师）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、M（一枚艳阳标志） **持续时间：**立即 灼热的光辉喷薄而出，覆盖你周身5尺光环区域。每个区域中你可见且受你选择的生物必须通过一次体质豁免，否则受到1d6点光耀伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d6：5级（2d6）、11级（3d6）、17级（4d6）。",
+      "source_heading": "光耀祷词"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "法（牧师）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、M（一枚艳阳标志） **持续时间：**立即 灼热的光辉喷薄而出，覆盖你周身5尺光环区域。每个区域中你可见且受你选择的生物必须通过一次体质豁免，否则受到1d6点光耀伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d6：5级（2d6）、11级（3d6）、17级（4d6）。",
+      "source_heading": "光耀祷词"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:ea1d170f71d30f4ddeb84f9e:target",
+    "core-phb-2024:spell:ea1d170f71d30f4ddeb84f9e:area"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "法（牧师）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、M（一枚艳阳标志） **持续时间：**立即 灼热的光辉喷薄而出，覆盖你周身5尺光环区域。每个区域中你可见且受你选择的生物必须通过一次体质豁免，否则受到1d6点光耀伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d6：5级（2d6）、11级（3d6）、17级（4d6）。",
+      "kind": "area",
+      "shape": "sphere",
+      "size_ft": 5,
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "clause_id": "area",
+      "evidence_ref": "师）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、M（一枚艳阳标志） **持续时间：**立即 灼热的光辉喷薄而出，覆盖你周身5尺光环区域。每个区域中你可见且受你选择的生物必须通过一次体质豁免，否则受到1d6点光耀伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d6：5级（2d6）、11级（3d6）、17级（4d6）。",
+      "origin": "source_explicit_origin",
+      "shape": "sphere",
+      "size_ft": 5,
+      "type": "area"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "立即",
+  "edition": "2024",
+  "evidence": [
+    "area: 师）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、M（一枚艳阳标志） **持续时间：**立即 灼热的光辉喷薄而出，覆盖你周身5尺光环区域。每个区域中你可见且受你选择的生物必须通过一次体质豁免，否则受到1d6点光耀伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d6：5级（2d6）、11级（3d6）、17级（4d6）。",
+    "target: 法（牧师）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、M（一枚艳阳标志） **持续时间：**立即 灼热的光辉喷薄而出，覆盖你周身5尺光环区域。每个区域中你可见且受你选择的生物必须通过一次体质豁免，否则受到1d6点光耀伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d6：5级（2d6）、11级（3d6）、17级（4d6）。"
+  ],
+  "kind": "spell",
+  "level": 0,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "光耀祷词",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "自身",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "塑能",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "法（牧师）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、M（一枚艳阳标志） **持续时间：**立即 灼热的光辉喷薄而出，覆盖你周身5尺光环区域。每个区域中你可见且受你选择的生物必须通过一次体质豁免，否则受到1d6点光耀伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d6：5级（2d6）、11级（3d6）、17级（4d6）。 师）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、M（一枚艳阳标志） **持续时间：**立即 灼热的光辉喷薄而出，覆盖你周身5尺光环区域。每个区域中你可见且受你选择的生物必须通过一次体质豁免，否则受到1d6点光耀伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d6：5级（2d6）、11级（3d6）、17级（4d6）。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "ef1c831141584e63a822f5fe56d46f0806ebe20e04f8799b78ec32ba3512532c",
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 光耀祷词｜Word of Radiance\n\n*塑能 戏法（牧师）*\n**施法时间：**动作\n**施法距离：**自身\n**法术成分：**V、M（一枚艳阳标志）\n**持续时间：**立即\n灼热的光辉喷薄而出，覆盖你周身5尺光环区域。每个区域中你可见且受你选择的生物必须通过一次体质豁免，否则受到1d6点光耀伤害。\n**戏法强化。**到达特定等级后，此戏法的伤害将增加1d6：5级（2d6）、11级（3d6）、17级（4d6）。"
+  },
+  "source_fingerprint": "cacdec4167b90c9cfafc793625d1b215d27eff29e18ec88171ef5b20eb0bffae",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "ef1c831141584e63a822f5fe56d46f0806ebe20e04f8799b78ec32ba3512532c",
+    "source_relative_path": "玩家手册2024/法术详述/0环.htm"
+  },
+  "source_record_id": "ea1d170f71d30f4ddeb84f9e",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:ea1d170f71d30f4ddeb84f9e"
+}

@@ -1,0 +1,106 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "附赠动作",
+  "clause_boundaries": {
+    "concentration": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "# 猎人印记｜Hunter's Mark *一环 预言（游侠）* **施法时间：**附赠动作 **施法距离：**90尺 **法术成分：**V **持续时间：**专注，至多1小时 你指定施法距离内一个你能看见的生物并以魔法标记其作为你的猎物。每当你以攻击检定命中该目标时，你对其额外造成1d6力场伤害，且每当你为寻找目标生物而进行感知（察觉或求生）检定时都具有优势，直至法术结束。 如果在法术结束前目标 HP 降至 0，则你可以用附赠动作将标记转移至施法距离内的另一个可见生物。 **升环施法。**使用三环或四环法术位施展该法术时，其专注可以维持至多8小时。使用环阶5+的法术位施展该法术时，其专注可以维持至多 24 小时。",
+      "source_heading": "猎人印记"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "距离：**90尺 **法术成分：**V **持续时间：**专注，至多1小时 你指定施法距离内一个你能看见的生物并以魔法标记其作为你的猎物。每当你以攻击检定命中该目标时，你对其额外造成1d6力场伤害，且每当你为寻找目标生物而进行感知（察觉或求生）检定时都具有优势，直至法术结束。 如果在法术结束前目标 HP 降至 0，则你可以用附赠动作将标记转移至施法距离内的另一个可见生物。 **升环施法。**使用三环或四环法术位施展该法术时，其专注可以维持至多8小时。使用环阶5+的法术位施展该法术时，其专注可以维持至多 24 小时。",
+      "source_heading": "猎人印记"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:63fb2360b8c30fb0419d9225:target",
+    "core-phb-2024:spell:63fb2360b8c30fb0419d9225:concentration"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "距离：**90尺 **法术成分：**V **持续时间：**专注，至多1小时 你指定施法距离内一个你能看见的生物并以魔法标记其作为你的猎物。每当你以攻击检定命中该目标时，你对其额外造成1d6力场伤害，且每当你为寻找目标生物而进行感知（察觉或求生）检定时都具有优势，直至法术结束。 如果在法术结束前目标 HP 降至 0，则你可以用附赠动作将标记转移至施法距离内的另一个可见生物。 **升环施法。**使用三环或四环法术位施展该法术时，其专注可以维持至多8小时。使用环阶5+的法术位施展该法术时，其专注可以维持至多 24 小时。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "clause_id": "concentration",
+      "duration": "专注，至多1小时",
+      "evidence_ref": "# 猎人印记｜Hunter's Mark *一环 预言（游侠）* **施法时间：**附赠动作 **施法距离：**90尺 **法术成分：**V **持续时间：**专注，至多1小时 你指定施法距离内一个你能看见的生物并以魔法标记其作为你的猎物。每当你以攻击检定命中该目标时，你对其额外造成1d6力场伤害，且每当你为寻找目标生物而进行感知（察觉或求生）检定时都具有优势，直至法术结束。 如果在法术结束前目标 HP 降至 0，则你可以用附赠动作将标记转移至施法距离内的另一个可见生物。 **升环施法。**使用三环或四环法术位施展该法术时，其专注可以维持至多8小时。使用环阶5+的法术位施展该法术时，其专注可以维持至多 24 小时。",
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": true,
+  "duration": "专注，至多1小时",
+  "edition": "2024",
+  "evidence": [
+    "concentration: # 猎人印记｜Hunter's Mark *一环 预言（游侠）* **施法时间：**附赠动作 **施法距离：**90尺 **法术成分：**V **持续时间：**专注，至多1小时 你指定施法距离内一个你能看见的生物并以魔法标记其作为你的猎物。每当你以攻击检定命中该目标时，你对其额外造成1d6力场伤害，且每当你为寻找目标生物而进行感知（察觉或求生）检定时都具有优势，直至法术结束。 如果在法术结束前目标 HP 降至 0，则你可以用附赠动作将标记转移至施法距离内的另一个可见生物。 **升环施法。**使用三环或四环法术位施展该法术时，其专注可以维持至多8小时。使用环阶5+的法术位施展该法术时，其专注可以维持至多 24 小时。",
+    "target: 距离：**90尺 **法术成分：**V **持续时间：**专注，至多1小时 你指定施法距离内一个你能看见的生物并以魔法标记其作为你的猎物。每当你以攻击检定命中该目标时，你对其额外造成1d6力场伤害，且每当你为寻找目标生物而进行感知（察觉或求生）检定时都具有优势，直至法术结束。 如果在法术结束前目标 HP 降至 0，则你可以用附赠动作将标记转移至施法距离内的另一个可见生物。 **升环施法。**使用三环或四环法术位施展该法术时，其专注可以维持至多8小时。使用环阶5+的法术位施展该法术时，其专注可以维持至多 24 小时。"
+  ],
+  "kind": "spell",
+  "level": 1,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "猎人印记",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "90尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "预言",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "距离：**90尺 **法术成分：**V **持续时间：**专注，至多1小时 你指定施法距离内一个你能看见的生物并以魔法标记其作为你的猎物。每当你以攻击检定命中该目标时，你对其额外造成1d6力场伤害，且每当你为寻找目标生物而进行感知（察觉或求生）检定时都具有优势，直至法术结束。 如果在法术结束前目标 HP 降至 0，则你可以用附赠动作将标记转移至施法距离内的另一个可见生物。 **升环施法。**使用三环或四环法术位施展该法术时，其专注可以维持至多8小时。使用环阶5+的法术位施展该法术时，其专注可以维持至多 24 小时。 # 猎人印记｜Hunter's Mark *一环 预言（游侠）* **施法时间：**附赠动作 **施法距离：**90尺 **法术成分：**V **持续时间：**专注，至多1小时 你指定施法距离内一个你能看见的生物并以魔法标记其作为你的猎物。每当你以攻击检定命中该目标时，你对其额外造成1d6力场伤害，且每当你为寻找目标生物而进行感知（察觉或求生）检定时都具有优势，直至法术结束。 如果在法术结束前目标 HP 降至 0，则你可以用附赠动作将标记转移至施法距离内的另一个可见生物。 **升环施法。**使用三环或四环法术位施展该法术时，其专注可以维持至多8小时。使用环阶5+的法术位施展该法术时，其专注可以维持至多 24 小时。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "fcb7992acc5a74c50fc425aba3e1b58d0b2a0883e89a33b8a0225b8749c1f6a2",
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 猎人印记｜Hunter's Mark\n\n*一环 预言（游侠）*\n**施法时间：**附赠动作\n**施法距离：**90尺\n**法术成分：**V\n**持续时间：**专注，至多1小时\n你指定施法距离内一个你能看见的生物并以魔法标记其作为你的猎物。每当你以攻击检定命中该目标时，你对其额外造成1d6力场伤害，且每当你为寻找目标生物而进行感知（察觉或求生）检定时都具有优势，直至法术结束。\n如果在法术结束前目标 HP 降至 0，则你可以用附赠动作将标记转移至施法距离内的另一个可见生物。\n**升环施法。**使用三环或四环法术位施展该法术时，其专注可以维持至多8小时。使用环阶5+的法术位施展该法术时，其专注可以维持至多\n24 小时。"
+  },
+  "source_fingerprint": "ca3493ac1ff56d892d8da3ed717ae7b04e2d1a2b274d2653ce7798873dae0ebe",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "fcb7992acc5a74c50fc425aba3e1b58d0b2a0883e89a33b8a0225b8749c1f6a2",
+    "source_relative_path": "玩家手册2024/法术详述/1环.htm"
+  },
+  "source_record_id": "63fb2360b8c30fb0419d9225",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:63fb2360b8c30fb0419d9225"
+}

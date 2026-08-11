@@ -1,0 +1,109 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "area": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "的时间段创造几段分散的声响。 > **影像Image。**如果你创造一个物件的影像，比如一把椅子、泥泞的脚印、一个小箱子等，则该物件各方向上大小不得大于5尺立方区域。该影像不具有声音、光亮、味道或任何其他的感官效应。由于影像可以被任何物体穿透，因此与之进行物理互动时都会揭露其幻象的本质。",
+      "source_heading": "次级幻象"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "#### 次级幻象｜Minor Illusion *幻术 戏法（吟游诗人、术士、魔契师、法师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**S、M（少量羊毛） **持续时间：**1分钟 你在施法距离内创造一段声响或一个物件的影像，并使之维持至法术持续时间结束，详见以下对应效应的描述。你可以再次施展该法术来终止幻象。 生物用研究动作调查该声响或影像时，其必须进行一次对抗该法术豁免 DC 的智力（调查）检定，检定成功则判断出是幻象。对于识破幻象的生物而言，幻象会变得模糊不清。 > **声响Sound。**如果你创造一段声响，其音量可以是低声耳语也可以是高声尖叫。它可以是你或其他任何人的嗓音，或者是一头狮子的咆哮、一段鼓声以及任何你指定",
+      "source_heading": "次级幻象"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:4d1ce8974e2e9fe11782b53f:target",
+    "core-phb-2024:spell:4d1ce8974e2e9fe11782b53f:area"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "#### 次级幻象｜Minor Illusion *幻术 戏法（吟游诗人、术士、魔契师、法师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**S、M（少量羊毛） **持续时间：**1分钟 你在施法距离内创造一段声响或一个物件的影像，并使之维持至法术持续时间结束，详见以下对应效应的描述。你可以再次施展该法术来终止幻象。 生物用研究动作调查该声响或影像时，其必须进行一次对抗该法术豁免 DC 的智力（调查）检定，检定成功则判断出是幻象。对于识破幻象的生物而言，幻象会变得模糊不清。 > **声响Sound。**如果你创造一段声响，其音量可以是低声耳语也可以是高声尖叫。它可以是你或其他任何人的嗓音，或者是一头狮子的咆哮、一段鼓声以及任何你指定",
+      "kind": "area",
+      "shape": "cube",
+      "size_ft": 5,
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "clause_id": "area",
+      "evidence_ref": "的时间段创造几段分散的声响。 > **影像Image。**如果你创造一个物件的影像，比如一把椅子、泥泞的脚印、一个小箱子等，则该物件各方向上大小不得大于5尺立方区域。该影像不具有声音、光亮、味道或任何其他的感官效应。由于影像可以被任何物体穿透，因此与之进行物理互动时都会揭露其幻象的本质。",
+      "origin": "source_explicit_origin",
+      "shape": "cube",
+      "size_ft": 5,
+      "type": "area"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "1分钟",
+  "edition": "2024",
+  "evidence": [
+    "area: 的时间段创造几段分散的声响。 > **影像Image。**如果你创造一个物件的影像，比如一把椅子、泥泞的脚印、一个小箱子等，则该物件各方向上大小不得大于5尺立方区域。该影像不具有声音、光亮、味道或任何其他的感官效应。由于影像可以被任何物体穿透，因此与之进行物理互动时都会揭露其幻象的本质。",
+    "target: #### 次级幻象｜Minor Illusion *幻术 戏法（吟游诗人、术士、魔契师、法师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**S、M（少量羊毛） **持续时间：**1分钟 你在施法距离内创造一段声响或一个物件的影像，并使之维持至法术持续时间结束，详见以下对应效应的描述。你可以再次施展该法术来终止幻象。 生物用研究动作调查该声响或影像时，其必须进行一次对抗该法术豁免 DC 的智力（调查）检定，检定成功则判断出是幻象。对于识破幻象的生物而言，幻象会变得模糊不清。 > **声响Sound。**如果你创造一段声响，其音量可以是低声耳语也可以是高声尖叫。它可以是你或其他任何人的嗓音，或者是一头狮子的咆哮、一段鼓声以及任何你指定"
+  ],
+  "kind": "spell",
+  "level": 0,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "次级幻象",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "30尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "幻术",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "#### 次级幻象｜Minor Illusion *幻术 戏法（吟游诗人、术士、魔契师、法师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**S、M（少量羊毛） **持续时间：**1分钟 你在施法距离内创造一段声响或一个物件的影像，并使之维持至法术持续时间结束，详见以下对应效应的描述。你可以再次施展该法术来终止幻象。 生物用研究动作调查该声响或影像时，其必须进行一次对抗该法术豁免 DC 的智力（调查）检定，检定成功则判断出是幻象。对于识破幻象的生物而言，幻象会变得模糊不清。 > **声响Sound。**如果你创造一段声响，其音量可以是低声耳语也可以是高声尖叫。它可以是你或其他任何人的嗓音，或者是一头狮子的咆哮、一段鼓声以及任何你指定 的时间段创造几段分散的声响。 > **影像Image。**如果你创造一个物件的影像，比如一把椅子、泥泞的脚印、一个小箱子等，则该物件各方向上大小不得大于5尺立方区域。该影像不具有声音、光亮、味道或任何其他的感官效应。由于影像可以被任何物体穿透，因此与之进行物理互动时都会揭露其幻象的本质。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "6f513ca80b040f66b719fdbdcaaebec5ca01ca9ab58ee6b4f0be0ba45702e01c",
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 次级幻象｜Minor Illusion\n\n*幻术 戏法（吟游诗人、术士、魔契师、法师）*\n**施法时间：**动作\n**施法距离：**30尺\n**法术成分：**S、M（少量羊毛）\n**持续时间：**1分钟\n你在施法距离内创造一段声响或一个物件的影像，并使之维持至法术持续时间结束，详见以下对应效应的描述。你可以再次施展该法术来终止幻象。\n生物用研究动作调查该声响或影像时，其必须进行一次对抗该法术豁免 DC 的智力（调查）检定，检定成功则判断出是幻象。对于识破幻象的生物而言，幻象会变得模糊不清。\n\n> **声响Sound。**如果你创造一段声响，其音量可以是低声耳语也可以是高声尖叫。它可以是你或其他任何人的嗓音，或者是一头狮子的咆哮、一段鼓声以及任何你指定的其他声响。声响在持续时间内不会减弱，或者你也可以于法术终止前在不同的时间段创造几段分散的声响。\n> **影像Image。**如果你创造一个物件的影像，比如一把椅子、泥泞的脚印、一个小箱子等，则该物件各方向上大小不得大于5尺立方区域。该影像不具有声音、光亮、味道或任何其他的感官效应。由于影像可以被任何物体穿透，因此与之进行物理互动时都会揭露其幻象的本质。"
+  },
+  "source_fingerprint": "fc741b5f2043bf2db35185e94477ea70d82e0034f92b6a68c43eb56f56f6da7d",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "6f513ca80b040f66b719fdbdcaaebec5ca01ca9ab58ee6b4f0be0ba45702e01c",
+    "source_relative_path": "玩家手册2024/法术详述/0环.htm"
+  },
+  "source_record_id": "4d1ce8974e2e9fe11782b53f",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:4d1ce8974e2e9fe11782b53f"
+}

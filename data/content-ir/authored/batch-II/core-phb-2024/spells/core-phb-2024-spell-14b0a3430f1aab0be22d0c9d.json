@@ -1,0 +1,124 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "area": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "#### 命令术｜Command *一环 惑控（吟游诗人、牧师、圣武士）* **施法时间：**动作 **施法距离：**60 尺 **法术成分：**V **持续时间：**立即 你对施法距离内一个你能看见的生物说出一个单词的命令。目标生物必须通过一次感知豁免，否则在它自己的下一回合中，其必须服从这道命令行事。从以下选项中选择一条命令： - **过来Approach。**目标以最短最直接的路线向你移动，若其到达你5尺范围内，其会结束自己的回合。**放下Drop。**目标放下持握的任何东西，然后结束自己的回合。**走开Flee。**目标消耗其整个回合，以最快最有效的方式远离你。**趴下Grovel。**目标陷入倒地状态并结束自己的回合。**",
+      "source_heading": "命令术"
+    },
+    "condition-0": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "Drop。**目标放下持握的任何东西，然后结束自己的回合。**走开Flee。**目标消耗其整个回合，以最快最有效的方式远离你。**趴下Grovel。**目标陷入倒地状态并结束自己的回合。**立定Halt。**在其回合内，目标不进行移动且不作任何动作和附赠动作。 **升环施法。**使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。",
+      "source_heading": "命令术"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "#### 命令术｜Command *一环 惑控（吟游诗人、牧师、圣武士）* **施法时间：**动作 **施法距离：**60 尺 **法术成分：**V **持续时间：**立即 你对施法距离内一个你能看见的生物说出一个单词的命令。目标生物必须通过一次感知豁免，否则在它自己的下一回合中，其必须服从这道命令行事。从以下选项中选择一条命令： - **过来Approach。**目标以最短最直接的路线向你移动，若其到达你5尺范围内，其会结束自己的回合。**放下Drop。**目标放下持握的任何东西，然后结束自己的回合。**走开Flee。**目标消耗其整个回合，以最快最有效的方式远离你。**趴下Grovel。**目标陷入倒地状态并结束自己的回合。**立定",
+      "source_heading": "命令术"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:14b0a3430f1aab0be22d0c9d:target",
+    "core-phb-2024:spell:14b0a3430f1aab0be22d0c9d:condition-0",
+    "core-phb-2024:spell:14b0a3430f1aab0be22d0c9d:area"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "#### 命令术｜Command *一环 惑控（吟游诗人、牧师、圣武士）* **施法时间：**动作 **施法距离：**60 尺 **法术成分：**V **持续时间：**立即 你对施法距离内一个你能看见的生物说出一个单词的命令。目标生物必须通过一次感知豁免，否则在它自己的下一回合中，其必须服从这道命令行事。从以下选项中选择一条命令： - **过来Approach。**目标以最短最直接的路线向你移动，若其到达你5尺范围内，其会结束自己的回合。**放下Drop。**目标放下持握的任何东西，然后结束自己的回合。**走开Flee。**目标消耗其整个回合，以最快最有效的方式远离你。**趴下Grovel。**目标陷入倒地状态并结束自己的回合。**立定",
+      "kind": "area",
+      "shape": "sphere",
+      "size_ft": 5,
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "condition-0",
+      "condition": "倒地",
+      "evidence_ref": "Drop。**目标放下持握的任何东西，然后结束自己的回合。**走开Flee。**目标消耗其整个回合，以最快最有效的方式远离你。**趴下Grovel。**目标陷入倒地状态并结束自己的回合。**立定Halt。**在其回合内，目标不进行移动且不作任何动作和附赠动作。 **升环施法。**使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。",
+      "target": "one_creature",
+      "type": "apply_condition"
+    },
+    {
+      "clause_id": "area",
+      "evidence_ref": "#### 命令术｜Command *一环 惑控（吟游诗人、牧师、圣武士）* **施法时间：**动作 **施法距离：**60 尺 **法术成分：**V **持续时间：**立即 你对施法距离内一个你能看见的生物说出一个单词的命令。目标生物必须通过一次感知豁免，否则在它自己的下一回合中，其必须服从这道命令行事。从以下选项中选择一条命令： - **过来Approach。**目标以最短最直接的路线向你移动，若其到达你5尺范围内，其会结束自己的回合。**放下Drop。**目标放下持握的任何东西，然后结束自己的回合。**走开Flee。**目标消耗其整个回合，以最快最有效的方式远离你。**趴下Grovel。**目标陷入倒地状态并结束自己的回合。**",
+      "origin": "source_explicit_origin",
+      "shape": "sphere",
+      "size_ft": 5,
+      "type": "area"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "立即",
+  "edition": "2024",
+  "evidence": [
+    "area: #### 命令术｜Command *一环 惑控（吟游诗人、牧师、圣武士）* **施法时间：**动作 **施法距离：**60 尺 **法术成分：**V **持续时间：**立即 你对施法距离内一个你能看见的生物说出一个单词的命令。目标生物必须通过一次感知豁免，否则在它自己的下一回合中，其必须服从这道命令行事。从以下选项中选择一条命令： - **过来Approach。**目标以最短最直接的路线向你移动，若其到达你5尺范围内，其会结束自己的回合。**放下Drop。**目标放下持握的任何东西，然后结束自己的回合。**走开Flee。**目标消耗其整个回合，以最快最有效的方式远离你。**趴下Grovel。**目标陷入倒地状态并结束自己的回合。**",
+    "condition-0: Drop。**目标放下持握的任何东西，然后结束自己的回合。**走开Flee。**目标消耗其整个回合，以最快最有效的方式远离你。**趴下Grovel。**目标陷入倒地状态并结束自己的回合。**立定Halt。**在其回合内，目标不进行移动且不作任何动作和附赠动作。 **升环施法。**使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。",
+    "target: #### 命令术｜Command *一环 惑控（吟游诗人、牧师、圣武士）* **施法时间：**动作 **施法距离：**60 尺 **法术成分：**V **持续时间：**立即 你对施法距离内一个你能看见的生物说出一个单词的命令。目标生物必须通过一次感知豁免，否则在它自己的下一回合中，其必须服从这道命令行事。从以下选项中选择一条命令： - **过来Approach。**目标以最短最直接的路线向你移动，若其到达你5尺范围内，其会结束自己的回合。**放下Drop。**目标放下持握的任何东西，然后结束自己的回合。**走开Flee。**目标消耗其整个回合，以最快最有效的方式远离你。**趴下Grovel。**目标陷入倒地状态并结束自己的回合。**立定"
+  ],
+  "kind": "spell",
+  "level": 1,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "命令术",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "60 尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": null,
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "#### 命令术｜Command *一环 惑控（吟游诗人、牧师、圣武士）* **施法时间：**动作 **施法距离：**60 尺 **法术成分：**V **持续时间：**立即 你对施法距离内一个你能看见的生物说出一个单词的命令。目标生物必须通过一次感知豁免，否则在它自己的下一回合中，其必须服从这道命令行事。从以下选项中选择一条命令： - **过来Approach。**目标以最短最直接的路线向你移动，若其到达你5尺范围内，其会结束自己的回合。**放下Drop。**目标放下持握的任何东西，然后结束自己的回合。**走开Flee。**目标消耗其整个回合，以最快最有效的方式远离你。**趴下Grovel。**目标陷入倒地状态并结束自己的回合。**立定 Drop。**目标放下持握的任何东西，然后结束自己的回合。**走开Flee。**目标消耗其整个回合，以最快最有效的方式远离你。**趴下Grovel。**目标陷入倒地状态并结束自己的回合。**立定Halt。**在其回合内，目标不进行移动且不作任何动作和附赠动作。 **升环施法。**使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。 #### 命令术｜Command *一环 惑控（吟游诗人、牧师、圣武士）* **施法时间：**动作 **施法距离：**60 尺 **法术成分：**V **持续时间：**立即 你对施法距离内一个你能看见的生物说出一个单词的命令。目标生物必须通过一次感知豁免，否则在它自己的下一回合中，其必须服从这道命令行事。从以下选项中选择一条命令： - **过来Approach。**目标以最短最直接的路线向你移动，若其到达你5尺范围内，其会结束自己的回合。**放下Drop。**目标放下持握的任何东西，然后结束自己的回合。**走开Flee。**目标消耗其整个回合，以最快最有效的方式远离你。**趴下Grovel。**目标陷入倒地状态并结束自己的回合。**",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "dbc01cfe3d4fcb2ed64ac67c376b6c352e5ac3959dc5ca69c8f880c3cbcec16c",
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 命令术｜Command\n\n*一环 惑控（吟游诗人、牧师、圣武士）*\n**施法时间：**动作\n**施法距离：**60 尺\n**法术成分：**V\n**持续时间：**立即\n你对施法距离内一个你能看见的生物说出一个单词的命令。目标生物必须通过一次感知豁免，否则在它自己的下一回合中，其必须服从这道命令行事。从以下选项中选择一条命令：\n\n- **过来Approach。**目标以最短最直接的路线向你移动，若其到达你5尺范围内，其会结束自己的回合。**放下Drop。**目标放下持握的任何东西，然后结束自己的回合。**走开Flee。**目标消耗其整个回合，以最快最有效的方式远离你。**趴下Grovel。**目标陷入倒地状态并结束自己的回合。**立定Halt。**在其回合内，目标不进行移动且不作任何动作和附赠动作。\n\n**升环施法。**使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。"
+  },
+  "source_fingerprint": "95518322b81947616d7e36432aa7dda24d76d2d80dbd5f420e5dd8e62b226361",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "dbc01cfe3d4fcb2ed64ac67c376b6c352e5ac3959dc5ca69c8f880c3cbcec16c",
+    "source_relative_path": "玩家手册2024/法术详述/1环.htm"
+  },
+  "source_record_id": "14b0a3430f1aab0be22d0c9d",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:14b0a3430f1aab0be22d0c9d"
+}

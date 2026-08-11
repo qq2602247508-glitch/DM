@@ -1,0 +1,106 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "concentration": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": " 神导术｜Guidance *预言 戏法（牧师、德鲁伊、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**专注，至多1分钟 你触碰一名自愿生物并选择一项技能。直到法术结束为止，受术生物在进行使用到所选技能的任何属性检定时，该次检定具有1d4加值。",
+      "source_heading": "神导术"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "言 戏法（牧师、德鲁伊、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**专注，至多1分钟 你触碰一名自愿生物并选择一项技能。直到法术结束为止，受术生物在进行使用到所选技能的任何属性检定时，该次检定具有1d4加值。",
+      "source_heading": "神导术"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:223c34bf8bf6032f64a4c85c:target",
+    "core-phb-2024:spell:223c34bf8bf6032f64a4c85c:concentration"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "言 戏法（牧师、德鲁伊、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**专注，至多1分钟 你触碰一名自愿生物并选择一项技能。直到法术结束为止，受术生物在进行使用到所选技能的任何属性检定时，该次检定具有1d4加值。",
+      "kind": "ally",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "clause_id": "concentration",
+      "duration": "专注，至多1分钟",
+      "evidence_ref": " 神导术｜Guidance *预言 戏法（牧师、德鲁伊、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**专注，至多1分钟 你触碰一名自愿生物并选择一项技能。直到法术结束为止，受术生物在进行使用到所选技能的任何属性检定时，该次检定具有1d4加值。",
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": true,
+  "duration": "专注，至多1分钟",
+  "edition": "2024",
+  "evidence": [
+    "concentration:  神导术｜Guidance *预言 戏法（牧师、德鲁伊、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**专注，至多1分钟 你触碰一名自愿生物并选择一项技能。直到法术结束为止，受术生物在进行使用到所选技能的任何属性检定时，该次检定具有1d4加值。",
+    "target: 言 戏法（牧师、德鲁伊、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**专注，至多1分钟 你触碰一名自愿生物并选择一项技能。直到法术结束为止，受术生物在进行使用到所选技能的任何属性检定时，该次检定具有1d4加值。"
+  ],
+  "kind": "spell",
+  "level": 0,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "神导术",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "触碰",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "预言",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "言 戏法（牧师、德鲁伊、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**专注，至多1分钟 你触碰一名自愿生物并选择一项技能。直到法术结束为止，受术生物在进行使用到所选技能的任何属性检定时，该次检定具有1d4加值。  神导术｜Guidance *预言 戏法（牧师、德鲁伊、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**专注，至多1分钟 你触碰一名自愿生物并选择一项技能。直到法术结束为止，受术生物在进行使用到所选技能的任何属性检定时，该次检定具有1d4加值。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "f86c408103f9909057a305c2f046ac33207d7686ea1b28a5ab5f93729a095e8d",
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 神导术｜Guidance\n\n*预言 戏法（牧师、德鲁伊、奇械师）*\n**施法时间：**动作\n**施法距离：**触碰\n**法术成分：**V、S\n**持续时间：**专注，至多1分钟\n你触碰一名自愿生物并选择一项技能。直到法术结束为止，受术生物在进行使用到所选技能的任何属性检定时，该次检定具有1d4加值。"
+  },
+  "source_fingerprint": "b6446da3e64f4ca8a92b63d2e286e2d25375f7dacaa342dcc798da9d68f8b4c6",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "f86c408103f9909057a305c2f046ac33207d7686ea1b28a5ab5f93729a095e8d",
+    "source_relative_path": "玩家手册2024/法术详述/0环.htm"
+  },
+  "source_record_id": "223c34bf8bf6032f64a4c85c",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:223c34bf8bf6032f64a4c85c"
+}

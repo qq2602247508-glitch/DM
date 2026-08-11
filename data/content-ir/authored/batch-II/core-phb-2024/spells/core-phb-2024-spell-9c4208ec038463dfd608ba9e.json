@@ -1,0 +1,109 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "area": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "30尺 **法术成分：**V、S **持续时间：**立即 你操控元素，在施法距离内创造下述效应之一。 > **召气Beckon > Air。**你在一处5尺立方区域内创造一股和风，其足以吹动布料、搅动灰尘、使落叶沙沙作响、关闭开着的门和百叶窗。若开着的门/百叶窗被某人/某物顶住，则其不受该效应影响。 > **召土Beckon > Earth。**你创造灰尘或沙子组成的薄帷，覆盖在5尺立方区域内的表面上，或者你可以在一堆泥土或沙子中使一个单词以你的手写体出现。 > **召火Beckon > Fire。**你在一处5尺立方区域内创造一片无害余烬与一股富有色彩和气味的烟。你选择烟的色彩和气味，而余烬可以点燃区域中的蜡烛、火把或油灯。烟的气味会存留1分钟。 > **召水Becko",
+      "source_heading": "四象法门"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "#### 四象法门｜Elementalism *变化 戏法（德鲁伊、术士、法师、奇械师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**V、S **持续时间：**立即 你操控元素，在施法距离内创造下述效应之一。 > **召气Beckon > Air。**你在一处5尺立方区域内创造一股和风，其足以吹动布料、搅动灰尘、使落叶沙沙作响、关闭开着的门和百叶窗。若开着的门/百叶窗被某人/某物顶住，则其不受该效应影响。 > **召土Beckon > Earth。**你创造灰尘或沙子组成的薄帷，覆盖在5尺立方区域内的表面上，或者你可以在一堆泥土或沙子中使一个单词以你的手写体出现。 > **召火Beckon > Fire。**你在一处5尺立方",
+      "source_heading": "四象法门"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:9c4208ec038463dfd608ba9e:target",
+    "core-phb-2024:spell:9c4208ec038463dfd608ba9e:area"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "#### 四象法门｜Elementalism *变化 戏法（德鲁伊、术士、法师、奇械师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**V、S **持续时间：**立即 你操控元素，在施法距离内创造下述效应之一。 > **召气Beckon > Air。**你在一处5尺立方区域内创造一股和风，其足以吹动布料、搅动灰尘、使落叶沙沙作响、关闭开着的门和百叶窗。若开着的门/百叶窗被某人/某物顶住，则其不受该效应影响。 > **召土Beckon > Earth。**你创造灰尘或沙子组成的薄帷，覆盖在5尺立方区域内的表面上，或者你可以在一堆泥土或沙子中使一个单词以你的手写体出现。 > **召火Beckon > Fire。**你在一处5尺立方",
+      "kind": "area",
+      "shape": "cube",
+      "size_ft": 5,
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "clause_id": "area",
+      "evidence_ref": "30尺 **法术成分：**V、S **持续时间：**立即 你操控元素，在施法距离内创造下述效应之一。 > **召气Beckon > Air。**你在一处5尺立方区域内创造一股和风，其足以吹动布料、搅动灰尘、使落叶沙沙作响、关闭开着的门和百叶窗。若开着的门/百叶窗被某人/某物顶住，则其不受该效应影响。 > **召土Beckon > Earth。**你创造灰尘或沙子组成的薄帷，覆盖在5尺立方区域内的表面上，或者你可以在一堆泥土或沙子中使一个单词以你的手写体出现。 > **召火Beckon > Fire。**你在一处5尺立方区域内创造一片无害余烬与一股富有色彩和气味的烟。你选择烟的色彩和气味，而余烬可以点燃区域中的蜡烛、火把或油灯。烟的气味会存留1分钟。 > **召水Becko",
+      "origin": "source_explicit_origin",
+      "shape": "cube",
+      "size_ft": 5,
+      "type": "area"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "立即",
+  "edition": "2024",
+  "evidence": [
+    "area: 30尺 **法术成分：**V、S **持续时间：**立即 你操控元素，在施法距离内创造下述效应之一。 > **召气Beckon > Air。**你在一处5尺立方区域内创造一股和风，其足以吹动布料、搅动灰尘、使落叶沙沙作响、关闭开着的门和百叶窗。若开着的门/百叶窗被某人/某物顶住，则其不受该效应影响。 > **召土Beckon > Earth。**你创造灰尘或沙子组成的薄帷，覆盖在5尺立方区域内的表面上，或者你可以在一堆泥土或沙子中使一个单词以你的手写体出现。 > **召火Beckon > Fire。**你在一处5尺立方区域内创造一片无害余烬与一股富有色彩和气味的烟。你选择烟的色彩和气味，而余烬可以点燃区域中的蜡烛、火把或油灯。烟的气味会存留1分钟。 > **召水Becko",
+    "target: #### 四象法门｜Elementalism *变化 戏法（德鲁伊、术士、法师、奇械师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**V、S **持续时间：**立即 你操控元素，在施法距离内创造下述效应之一。 > **召气Beckon > Air。**你在一处5尺立方区域内创造一股和风，其足以吹动布料、搅动灰尘、使落叶沙沙作响、关闭开着的门和百叶窗。若开着的门/百叶窗被某人/某物顶住，则其不受该效应影响。 > **召土Beckon > Earth。**你创造灰尘或沙子组成的薄帷，覆盖在5尺立方区域内的表面上，或者你可以在一堆泥土或沙子中使一个单词以你的手写体出现。 > **召火Beckon > Fire。**你在一处5尺立方"
+  ],
+  "kind": "spell",
+  "level": 0,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "四象法门",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "30尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "变化",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "#### 四象法门｜Elementalism *变化 戏法（德鲁伊、术士、法师、奇械师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**V、S **持续时间：**立即 你操控元素，在施法距离内创造下述效应之一。 > **召气Beckon > Air。**你在一处5尺立方区域内创造一股和风，其足以吹动布料、搅动灰尘、使落叶沙沙作响、关闭开着的门和百叶窗。若开着的门/百叶窗被某人/某物顶住，则其不受该效应影响。 > **召土Beckon > Earth。**你创造灰尘或沙子组成的薄帷，覆盖在5尺立方区域内的表面上，或者你可以在一堆泥土或沙子中使一个单词以你的手写体出现。 > **召火Beckon > Fire。**你在一处5尺立方 30尺 **法术成分：**V、S **持续时间：**立即 你操控元素，在施法距离内创造下述效应之一。 > **召气Beckon > Air。**你在一处5尺立方区域内创造一股和风，其足以吹动布料、搅动灰尘、使落叶沙沙作响、关闭开着的门和百叶窗。若开着的门/百叶窗被某人/某物顶住，则其不受该效应影响。 > **召土Beckon > Earth。**你创造灰尘或沙子组成的薄帷，覆盖在5尺立方区域内的表面上，或者你可以在一堆泥土或沙子中使一个单词以你的手写体出现。 > **召火Beckon > Fire。**你在一处5尺立方区域内创造一片无害余烬与一股富有色彩和气味的烟。你选择烟的色彩和气味，而余烬可以点燃区域中的蜡烛、火把或油灯。烟的气味会存留1分钟。 > **召水Becko",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "a329dae402bdc50341761dc3a87d468b41ebe2b9671b4758dd682d5bd51263ca",
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 四象法门｜Elementalism\n\n*变化 戏法（德鲁伊、术士、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**30尺\n**法术成分：**V、S\n**持续时间：**立即\n你操控元素，在施法距离内创造下述效应之一。\n\n> **召气Beckon\n> Air。**你在一处5尺立方区域内创造一股和风，其足以吹动布料、搅动灰尘、使落叶沙沙作响、关闭开着的门和百叶窗。若开着的门/百叶窗被某人/某物顶住，则其不受该效应影响。\n> **召土Beckon\n> Earth。**你创造灰尘或沙子组成的薄帷，覆盖在5尺立方区域内的表面上，或者你可以在一堆泥土或沙子中使一个单词以你的手写体出现。\n> **召火Beckon\n> Fire。**你在一处5尺立方区域内创造一片无害余烬与一股富有色彩和气味的烟。你选择烟的色彩和气味，而余烬可以点燃区域中的蜡烛、火把或油灯。烟的气味会存留1分钟。\n> **召水Beckon\n> Water。**你在一处5尺立方范围内创造一片凉爽的，使范围内生物和物件略微潮湿的雾气。或者，你可以在一个有开口的容器或表面上创造出一杯干净的水，水会在1分钟内蒸发。\n> **塑形元素Sculpt\n> Element。**你使1尺立方区域内的泥土、沙子、火焰、烟尘、雾气或水呈现出一个粗略的形状（如一名生物），持续1小时。"
+  },
+  "source_fingerprint": "70fb324f9b9be7245fc240b742430922792817645cb8cecf451f7663ec6d4330",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "a329dae402bdc50341761dc3a87d468b41ebe2b9671b4758dd682d5bd51263ca",
+    "source_relative_path": "玩家手册2024/法术详述/0环.htm"
+  },
+  "source_record_id": "9c4208ec038463dfd608ba9e",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:9c4208ec038463dfd608ba9e"
+}

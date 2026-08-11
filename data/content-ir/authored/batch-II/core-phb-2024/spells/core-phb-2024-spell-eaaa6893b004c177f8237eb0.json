@@ -1,0 +1,107 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "condition-0": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "**法术成分：**V、S、M（一点食物） **持续时间：**24 小时 在施法距离内指定一只你能看见的野兽。该野兽必须通过一次感知豁免，否则在法术持续时间内陷入魅惑状态。如果你或你的盟友对目标造成伤害，法术将提前终止。 **升环施法。**你使用的法术位每比一环高一环，就可以多选择一个野兽作为目标。",
+      "source_heading": "化兽为友"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "（一点食物） **持续时间：**24 小时 在施法距离内指定一只你能看见的野兽。该野兽必须通过一次感知豁免，否则在法术持续时间内陷入魅惑状态。如果你或你的盟友对目标造成伤害，法术将提前终止。 **升环施法。**你使用的法术位每比一环高一环，就可以多选择一个野兽作为目标。",
+      "source_heading": "化兽为友"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:eaaa6893b004c177f8237eb0:target",
+    "core-phb-2024:spell:eaaa6893b004c177f8237eb0:condition-0"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "（一点食物） **持续时间：**24 小时 在施法距离内指定一只你能看见的野兽。该野兽必须通过一次感知豁免，否则在法术持续时间内陷入魅惑状态。如果你或你的盟友对目标造成伤害，法术将提前终止。 **升环施法。**你使用的法术位每比一环高一环，就可以多选择一个野兽作为目标。",
+      "kind": "ally",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "condition-0",
+      "condition": "魅惑",
+      "evidence_ref": "**法术成分：**V、S、M（一点食物） **持续时间：**24 小时 在施法距离内指定一只你能看见的野兽。该野兽必须通过一次感知豁免，否则在法术持续时间内陷入魅惑状态。如果你或你的盟友对目标造成伤害，法术将提前终止。 **升环施法。**你使用的法术位每比一环高一环，就可以多选择一个野兽作为目标。",
+      "target": "one_creature",
+      "type": "apply_condition"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "24 小时",
+  "edition": "2024",
+  "evidence": [
+    "condition-0: **法术成分：**V、S、M（一点食物） **持续时间：**24 小时 在施法距离内指定一只你能看见的野兽。该野兽必须通过一次感知豁免，否则在法术持续时间内陷入魅惑状态。如果你或你的盟友对目标造成伤害，法术将提前终止。 **升环施法。**你使用的法术位每比一环高一环，就可以多选择一个野兽作为目标。",
+    "target: （一点食物） **持续时间：**24 小时 在施法距离内指定一只你能看见的野兽。该野兽必须通过一次感知豁免，否则在法术持续时间内陷入魅惑状态。如果你或你的盟友对目标造成伤害，法术将提前终止。 **升环施法。**你使用的法术位每比一环高一环，就可以多选择一个野兽作为目标。"
+  ],
+  "kind": "spell",
+  "level": 1,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "化兽为友",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "30 尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": null,
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "（一点食物） **持续时间：**24 小时 在施法距离内指定一只你能看见的野兽。该野兽必须通过一次感知豁免，否则在法术持续时间内陷入魅惑状态。如果你或你的盟友对目标造成伤害，法术将提前终止。 **升环施法。**你使用的法术位每比一环高一环，就可以多选择一个野兽作为目标。 **法术成分：**V、S、M（一点食物） **持续时间：**24 小时 在施法距离内指定一只你能看见的野兽。该野兽必须通过一次感知豁免，否则在法术持续时间内陷入魅惑状态。如果你或你的盟友对目标造成伤害，法术将提前终止。 **升环施法。**你使用的法术位每比一环高一环，就可以多选择一个野兽作为目标。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "b2d81a3a6b992249a6290da9b114e444b82f115e4c73bf625c2d38742b9723a5",
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 化兽为友｜Animal Friendship\n\n*一环 惑控（吟游诗人、德鲁伊、游侠）*\n**施法时间：**动作\n**施法距离：**30 尺\n**法术成分：**V、S、M（一点食物）\n**持续时间：**24 小时\n在施法距离内指定一只你能看见的野兽。该野兽必须通过一次感知豁免，否则在法术持续时间内陷入魅惑状态。如果你或你的盟友对目标造成伤害，法术将提前终止。\n**升环施法。**你使用的法术位每比一环高一环，就可以多选择一个野兽作为目标。"
+  },
+  "source_fingerprint": "63f53cf060c03dc893657f1155a47ed1c524275aa25191dbd6bc631f479aacb6",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "b2d81a3a6b992249a6290da9b114e444b82f115e4c73bf625c2d38742b9723a5",
+    "source_relative_path": "玩家手册2024/法术详述/1环.htm"
+  },
+  "source_record_id": "eaaa6893b004c177f8237eb0",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:eaaa6893b004c177f8237eb0"
+}

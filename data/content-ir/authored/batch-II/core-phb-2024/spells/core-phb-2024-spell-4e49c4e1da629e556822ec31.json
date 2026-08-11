@@ -1,0 +1,125 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "attack": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**立即 你放出闪电，击向一名你试图触碰的生物。对目标发动一次近战法术攻击。若命中，则目标受到 1d8 点闪电伤害，并且在其下一回合开始前不能执行借机攻击。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+      "source_heading": "电爪"
+    },
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "**触碰 **法术成分：**V、S **持续时间：**立即 你放出闪电，击向一名你试图触碰的生物。对目标发动一次近战法术攻击。若命中，则目标受到 1d8 点闪电伤害，并且在其下一回合开始前不能执行借机攻击。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+      "source_heading": "电爪"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "士、法师、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**立即 你放出闪电，击向一名你试图触碰的生物。对目标发动一次近战法术攻击。若命中，则目标受到 1d8 点闪电伤害，并且在其下一回合开始前不能执行借机攻击。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+      "source_heading": "电爪"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:4e49c4e1da629e556822ec31:target",
+    "core-phb-2024:spell:4e49c4e1da629e556822ec31:attack",
+    "core-phb-2024:spell:4e49c4e1da629e556822ec31:damage"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "士、法师、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**立即 你放出闪电，击向一名你试图触碰的生物。对目标发动一次近战法术攻击。若命中，则目标受到 1d8 点闪电伤害，并且在其下一回合开始前不能执行借机攻击。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "attack_ability": "spellcasting",
+      "clause_id": "attack",
+      "evidence_ref": "）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**立即 你放出闪电，击向一名你试图触碰的生物。对目标发动一次近战法术攻击。若命中，则目标受到 1d8 点闪电伤害，并且在其下一回合开始前不能执行借机攻击。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+      "target": "one_creature",
+      "type": "attack_roll"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "damage",
+      "damage": "1d8",
+      "damage_type": "闪电",
+      "evidence_ref": "**触碰 **法术成分：**V、S **持续时间：**立即 你放出闪电，击向一名你试图触碰的生物。对目标发动一次近战法术攻击。若命中，则目标受到 1d8 点闪电伤害，并且在其下一回合开始前不能执行借机攻击。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+      "expression": "1d8",
+      "target": "one_creature",
+      "timing": "on_hit",
+      "type": "damage"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "立即",
+  "edition": "2024",
+  "evidence": [
+    "attack: ）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**立即 你放出闪电，击向一名你试图触碰的生物。对目标发动一次近战法术攻击。若命中，则目标受到 1d8 点闪电伤害，并且在其下一回合开始前不能执行借机攻击。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+    "damage: **触碰 **法术成分：**V、S **持续时间：**立即 你放出闪电，击向一名你试图触碰的生物。对目标发动一次近战法术攻击。若命中，则目标受到 1d8 点闪电伤害，并且在其下一回合开始前不能执行借机攻击。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+    "target: 士、法师、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**立即 你放出闪电，击向一名你试图触碰的生物。对目标发动一次近战法术攻击。若命中，则目标受到 1d8 点闪电伤害，并且在其下一回合开始前不能执行借机攻击。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。"
+  ],
+  "kind": "spell",
+  "level": 0,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "电爪",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "触碰",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "塑能",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "士、法师、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**立即 你放出闪电，击向一名你试图触碰的生物。对目标发动一次近战法术攻击。若命中，则目标受到 1d8 点闪电伤害，并且在其下一回合开始前不能执行借机攻击。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。 ）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S **持续时间：**立即 你放出闪电，击向一名你试图触碰的生物。对目标发动一次近战法术攻击。若命中，则目标受到 1d8 点闪电伤害，并且在其下一回合开始前不能执行借机攻击。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。 **触碰 **法术成分：**V、S **持续时间：**立即 你放出闪电，击向一名你试图触碰的生物。对目标发动一次近战法术攻击。若命中，则目标受到 1d8 点闪电伤害，并且在其下一回合开始前不能执行借机攻击。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "c5ee4507633bfbe44917ab4f14509e27aa1ec92f18cef27586c7310437e311fe",
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 电爪｜Shocking Grasp\n\n*塑能 戏法（术士、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**触碰\n**法术成分：**V、S\n**持续时间：**立即\n你放出闪电，击向一名你试图触碰的生物。对目标发动一次近战法术攻击。若命中，则目标受到\n1d8\n点闪电伤害，并且在其下一回合开始前不能执行借机攻击。\n**戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。"
+  },
+  "source_fingerprint": "e3e6aea3bc33ec9c197a139a213db0798e96a39bb7590db5ecebc6ad7c90f687",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "c5ee4507633bfbe44917ab4f14509e27aa1ec92f18cef27586c7310437e311fe",
+    "source_relative_path": "玩家手册2024/法术详述/0环.htm"
+  },
+  "source_record_id": "4e49c4e1da629e556822ec31",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:4e49c4e1da629e556822ec31"
+}

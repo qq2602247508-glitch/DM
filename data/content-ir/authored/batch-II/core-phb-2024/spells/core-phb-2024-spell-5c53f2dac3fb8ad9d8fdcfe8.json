@@ -1,0 +1,160 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "area": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": " **施法时间：**动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**立即 你祈唤哈达的力量，让触须从你身上蔓延而出。源自你的10尺光环区域内，每个生物都必须进行一次力量豁免。豁免失败的生物将受到2d6点暗蚀伤害，并其直到下一回合前都无法执行反应。豁免成功的生物仅受到一半伤害。 **升环施法。**你使用的法术位每比一环高一环，法术的伤害就增加1d6点。",
+      "source_heading": "哈达之臂"
+    },
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "S **持续时间：**立即 你祈唤哈达的力量，让触须从你身上蔓延而出。源自你的10尺光环区域内，每个生物都必须进行一次力量豁免。豁免失败的生物将受到2d6点暗蚀伤害，并其直到下一回合前都无法执行反应。豁免成功的生物仅受到一半伤害。 **升环施法。**你使用的法术位每比一环高一环，法术的伤害就增加1d6点。",
+      "source_heading": "哈达之臂"
+    },
+    "save": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "距离：**自身 **法术成分：**V、S **持续时间：**立即 你祈唤哈达的力量，让触须从你身上蔓延而出。源自你的10尺光环区域内，每个生物都必须进行一次力量豁免。豁免失败的生物将受到2d6点暗蚀伤害，并其直到下一回合前都无法执行反应。豁免成功的生物仅受到一半伤害。 **升环施法。**你使用的法术位每比一环高一环，法术的伤害就增加1d6点。",
+      "source_heading": "哈达之臂"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "师）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**立即 你祈唤哈达的力量，让触须从你身上蔓延而出。源自你的10尺光环区域内，每个生物都必须进行一次力量豁免。豁免失败的生物将受到2d6点暗蚀伤害，并其直到下一回合前都无法执行反应。豁免成功的生物仅受到一半伤害。 **升环施法。**你使用的法术位每比一环高一环，法术的伤害就增加1d6点。",
+      "source_heading": "哈达之臂"
+    },
+    "upcast": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "的10尺光环区域内，每个生物都必须进行一次力量豁免。豁免失败的生物将受到2d6点暗蚀伤害，并其直到下一回合前都无法执行反应。豁免成功的生物仅受到一半伤害。 **升环施法。**你使用的法术位每比一环高一环，法术的伤害就增加1d6点。",
+      "source_heading": "哈达之臂"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:5c53f2dac3fb8ad9d8fdcfe8:target",
+    "core-phb-2024:spell:5c53f2dac3fb8ad9d8fdcfe8:save",
+    "core-phb-2024:spell:5c53f2dac3fb8ad9d8fdcfe8:damage",
+    "core-phb-2024:spell:5c53f2dac3fb8ad9d8fdcfe8:area",
+    "core-phb-2024:spell:5c53f2dac3fb8ad9d8fdcfe8:upcast"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "师）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**立即 你祈唤哈达的力量，让触须从你身上蔓延而出。源自你的10尺光环区域内，每个生物都必须进行一次力量豁免。豁免失败的生物将受到2d6点暗蚀伤害，并其直到下一回合前都无法执行反应。豁免成功的生物仅受到一半伤害。 **升环施法。**你使用的法术位每比一环高一环，法术的伤害就增加1d6点。",
+      "kind": "area",
+      "shape": "sphere",
+      "size_ft": 10,
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "save",
+      "evidence_ref": "距离：**自身 **法术成分：**V、S **持续时间：**立即 你祈唤哈达的力量，让触须从你身上蔓延而出。源自你的10尺光环区域内，每个生物都必须进行一次力量豁免。豁免失败的生物将受到2d6点暗蚀伤害，并其直到下一回合前都无法执行反应。豁免成功的生物仅受到一半伤害。 **升环施法。**你使用的法术位每比一环高一环，法术的伤害就增加1d6点。",
+      "half_on_success": true,
+      "save_ability": "力量",
+      "target": "one_creature",
+      "type": "saving_throw"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "damage",
+      "damage": "2d6",
+      "damage_type": "暗蚀",
+      "evidence_ref": "S **持续时间：**立即 你祈唤哈达的力量，让触须从你身上蔓延而出。源自你的10尺光环区域内，每个生物都必须进行一次力量豁免。豁免失败的生物将受到2d6点暗蚀伤害，并其直到下一回合前都无法执行反应。豁免成功的生物仅受到一半伤害。 **升环施法。**你使用的法术位每比一环高一环，法术的伤害就增加1d6点。",
+      "expression": "2d6",
+      "on_failure": "full",
+      "on_success": "half",
+      "target": "one_creature",
+      "timing": "immediate",
+      "type": "damage"
+    },
+    {
+      "clause_id": "area",
+      "evidence_ref": " **施法时间：**动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**立即 你祈唤哈达的力量，让触须从你身上蔓延而出。源自你的10尺光环区域内，每个生物都必须进行一次力量豁免。豁免失败的生物将受到2d6点暗蚀伤害，并其直到下一回合前都无法执行反应。豁免成功的生物仅受到一半伤害。 **升环施法。**你使用的法术位每比一环高一环，法术的伤害就增加1d6点。",
+      "origin": "source_explicit_origin",
+      "shape": "sphere",
+      "size_ft": 10,
+      "type": "area"
+    },
+    {
+      "applies_to": "damage",
+      "clause_id": "upcast",
+      "evidence_ref": "的10尺光环区域内，每个生物都必须进行一次力量豁免。豁免失败的生物将受到2d6点暗蚀伤害，并其直到下一回合前都无法执行反应。豁免成功的生物仅受到一半伤害。 **升环施法。**你使用的法术位每比一环高一环，法术的伤害就增加1d6点。",
+      "increments": "1d6",
+      "per_slot": 1,
+      "type": "upcast"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "立即",
+  "edition": "2024",
+  "evidence": [
+    "area:  **施法时间：**动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**立即 你祈唤哈达的力量，让触须从你身上蔓延而出。源自你的10尺光环区域内，每个生物都必须进行一次力量豁免。豁免失败的生物将受到2d6点暗蚀伤害，并其直到下一回合前都无法执行反应。豁免成功的生物仅受到一半伤害。 **升环施法。**你使用的法术位每比一环高一环，法术的伤害就增加1d6点。",
+    "damage: S **持续时间：**立即 你祈唤哈达的力量，让触须从你身上蔓延而出。源自你的10尺光环区域内，每个生物都必须进行一次力量豁免。豁免失败的生物将受到2d6点暗蚀伤害，并其直到下一回合前都无法执行反应。豁免成功的生物仅受到一半伤害。 **升环施法。**你使用的法术位每比一环高一环，法术的伤害就增加1d6点。",
+    "save: 距离：**自身 **法术成分：**V、S **持续时间：**立即 你祈唤哈达的力量，让触须从你身上蔓延而出。源自你的10尺光环区域内，每个生物都必须进行一次力量豁免。豁免失败的生物将受到2d6点暗蚀伤害，并其直到下一回合前都无法执行反应。豁免成功的生物仅受到一半伤害。 **升环施法。**你使用的法术位每比一环高一环，法术的伤害就增加1d6点。",
+    "target: 师）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**立即 你祈唤哈达的力量，让触须从你身上蔓延而出。源自你的10尺光环区域内，每个生物都必须进行一次力量豁免。豁免失败的生物将受到2d6点暗蚀伤害，并其直到下一回合前都无法执行反应。豁免成功的生物仅受到一半伤害。 **升环施法。**你使用的法术位每比一环高一环，法术的伤害就增加1d6点。",
+    "upcast: 的10尺光环区域内，每个生物都必须进行一次力量豁免。豁免失败的生物将受到2d6点暗蚀伤害，并其直到下一回合前都无法执行反应。豁免成功的生物仅受到一半伤害。 **升环施法。**你使用的法术位每比一环高一环，法术的伤害就增加1d6点。"
+  ],
+  "kind": "spell",
+  "level": 1,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "哈达之臂",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "自身",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "咒法",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "师）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**立即 你祈唤哈达的力量，让触须从你身上蔓延而出。源自你的10尺光环区域内，每个生物都必须进行一次力量豁免。豁免失败的生物将受到2d6点暗蚀伤害，并其直到下一回合前都无法执行反应。豁免成功的生物仅受到一半伤害。 **升环施法。**你使用的法术位每比一环高一环，法术的伤害就增加1d6点。 距离：**自身 **法术成分：**V、S **持续时间：**立即 你祈唤哈达的力量，让触须从你身上蔓延而出。源自你的10尺光环区域内，每个生物都必须进行一次力量豁免。豁免失败的生物将受到2d6点暗蚀伤害，并其直到下一回合前都无法执行反应。豁免成功的生物仅受到一半伤害。 **升环施法。**你使用的法术位每比一环高一环，法术的伤害就增加1d6点。 S **持续时间：**立即 你祈唤哈达的力量，让触须从你身上蔓延而出。源自你的10尺光环区域内，每个生物都必须进行一次力量豁免。豁免失败的生物将受到2d6点暗蚀伤害，并其直到下一回合前都无法执行反应。豁免成功的生物仅受到一半伤害。 **升环施法。**你使用的法术位每比一环高一环，法术的伤害就增加1d6点。  **施法时间：**动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**立即 你祈唤哈达的力量，让触须从你身上蔓延而出。源自你的10尺光环区域内，每个生物都必须进行一次力量豁免。豁免失败的生物将受到2d6点暗蚀伤害，并其直到下一回合前都无法执行反应。豁免成功的生物仅受到一半伤害。 **升环施法。**你使用的法术位每比一环高一环，法术的伤害就增加1d6点。 的10尺光环区域内，每个生物都必须进行一次力量豁免。豁免失败的生物将受到2d6点暗蚀伤害，并其直到下一回合前都无法执行反应。豁免成功的生物仅受到一半伤害。 **升环施法。**你使用的法术位每比一环高一环，法术的伤害就增加1d6点。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "2de7374a47f3bd3da0a5c2e3618c23c5aa0cb5cb3a3defa2763804f68b5d2044",
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 哈达之臂｜Arms of Hadar\n\n*一环 咒法（魔契师）*\n**施法时间：**动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**立即\n你祈唤哈达的力量，让触须从你身上蔓延而出。源自你的10尺光环区域内，每个生物都必须进行一次力量豁免。豁免失败的生物将受到2d6点暗蚀伤害，并其直到下一回合前都无法执行反应。豁免成功的生物仅受到一半伤害。\n**升环施法。**你使用的法术位每比一环高一环，法术的伤害就增加1d6点。"
+  },
+  "source_fingerprint": "005cdf6d0be8c110748c9d0351ccfedc980fe84169ba671de24ad5b741035e67",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "2de7374a47f3bd3da0a5c2e3618c23c5aa0cb5cb3a3defa2763804f68b5d2044",
+    "source_relative_path": "玩家手册2024/法术详述/1环.htm"
+  },
+  "source_record_id": "5c53f2dac3fb8ad9d8fdcfe8",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:5c53f2dac3fb8ad9d8fdcfe8"
+}

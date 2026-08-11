@@ -1,0 +1,140 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "attack": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": " **施法时间：**动作 **施法距离：**120尺 **法术成分：**V、S **持续时间：**1轮 你向施法距离内的一名生物掷出一道光箭。对目标进行一次远程法术攻击。命中时，目标受4d6点光耀伤害。在你下个回合结束前，对目标发动的下一次攻击检定具有优势。 **升环施法。**使用的法术位每比一环高一环，此法术的伤害就增加1d6点。",
+      "source_heading": "光导箭"
+    },
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "离：**120尺 **法术成分：**V、S **持续时间：**1轮 你向施法距离内的一名生物掷出一道光箭。对目标进行一次远程法术攻击。命中时，目标受4d6点光耀伤害。在你下个回合结束前，对目标发动的下一次攻击检定具有优势。 **升环施法。**使用的法术位每比一环高一环，此法术的伤害就增加1d6点。",
+      "source_heading": "光导箭"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": " 塑能（牧师）* **施法时间：**动作 **施法距离：**120尺 **法术成分：**V、S **持续时间：**1轮 你向施法距离内的一名生物掷出一道光箭。对目标进行一次远程法术攻击。命中时，目标受4d6点光耀伤害。在你下个回合结束前，对目标发动的下一次攻击检定具有优势。 **升环施法。**使用的法术位每比一环高一环，此法术的伤害就增加1d6点。",
+      "source_heading": "光导箭"
+    },
+    "upcast": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "你向施法距离内的一名生物掷出一道光箭。对目标进行一次远程法术攻击。命中时，目标受4d6点光耀伤害。在你下个回合结束前，对目标发动的下一次攻击检定具有优势。 **升环施法。**使用的法术位每比一环高一环，此法术的伤害就增加1d6点。",
+      "source_heading": "光导箭"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:8e0bb8fc40e2083c484b5139:target",
+    "core-phb-2024:spell:8e0bb8fc40e2083c484b5139:attack",
+    "core-phb-2024:spell:8e0bb8fc40e2083c484b5139:damage",
+    "core-phb-2024:spell:8e0bb8fc40e2083c484b5139:upcast"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": " 塑能（牧师）* **施法时间：**动作 **施法距离：**120尺 **法术成分：**V、S **持续时间：**1轮 你向施法距离内的一名生物掷出一道光箭。对目标进行一次远程法术攻击。命中时，目标受4d6点光耀伤害。在你下个回合结束前，对目标发动的下一次攻击检定具有优势。 **升环施法。**使用的法术位每比一环高一环，此法术的伤害就增加1d6点。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "attack_ability": "spellcasting",
+      "clause_id": "attack",
+      "evidence_ref": " **施法时间：**动作 **施法距离：**120尺 **法术成分：**V、S **持续时间：**1轮 你向施法距离内的一名生物掷出一道光箭。对目标进行一次远程法术攻击。命中时，目标受4d6点光耀伤害。在你下个回合结束前，对目标发动的下一次攻击检定具有优势。 **升环施法。**使用的法术位每比一环高一环，此法术的伤害就增加1d6点。",
+      "target": "one_creature",
+      "type": "attack_roll"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "damage",
+      "damage": "4d6",
+      "damage_type": "光耀",
+      "evidence_ref": "离：**120尺 **法术成分：**V、S **持续时间：**1轮 你向施法距离内的一名生物掷出一道光箭。对目标进行一次远程法术攻击。命中时，目标受4d6点光耀伤害。在你下个回合结束前，对目标发动的下一次攻击检定具有优势。 **升环施法。**使用的法术位每比一环高一环，此法术的伤害就增加1d6点。",
+      "expression": "4d6",
+      "target": "one_creature",
+      "timing": "on_hit",
+      "type": "damage"
+    },
+    {
+      "applies_to": "damage",
+      "clause_id": "upcast",
+      "evidence_ref": "你向施法距离内的一名生物掷出一道光箭。对目标进行一次远程法术攻击。命中时，目标受4d6点光耀伤害。在你下个回合结束前，对目标发动的下一次攻击检定具有优势。 **升环施法。**使用的法术位每比一环高一环，此法术的伤害就增加1d6点。",
+      "increments": "1d6",
+      "per_slot": 1,
+      "type": "upcast"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "1轮",
+  "edition": "2024",
+  "evidence": [
+    "attack:  **施法时间：**动作 **施法距离：**120尺 **法术成分：**V、S **持续时间：**1轮 你向施法距离内的一名生物掷出一道光箭。对目标进行一次远程法术攻击。命中时，目标受4d6点光耀伤害。在你下个回合结束前，对目标发动的下一次攻击检定具有优势。 **升环施法。**使用的法术位每比一环高一环，此法术的伤害就增加1d6点。",
+    "damage: 离：**120尺 **法术成分：**V、S **持续时间：**1轮 你向施法距离内的一名生物掷出一道光箭。对目标进行一次远程法术攻击。命中时，目标受4d6点光耀伤害。在你下个回合结束前，对目标发动的下一次攻击检定具有优势。 **升环施法。**使用的法术位每比一环高一环，此法术的伤害就增加1d6点。",
+    "target:  塑能（牧师）* **施法时间：**动作 **施法距离：**120尺 **法术成分：**V、S **持续时间：**1轮 你向施法距离内的一名生物掷出一道光箭。对目标进行一次远程法术攻击。命中时，目标受4d6点光耀伤害。在你下个回合结束前，对目标发动的下一次攻击检定具有优势。 **升环施法。**使用的法术位每比一环高一环，此法术的伤害就增加1d6点。",
+    "upcast: 你向施法距离内的一名生物掷出一道光箭。对目标进行一次远程法术攻击。命中时，目标受4d6点光耀伤害。在你下个回合结束前，对目标发动的下一次攻击检定具有优势。 **升环施法。**使用的法术位每比一环高一环，此法术的伤害就增加1d6点。"
+  ],
+  "kind": "spell",
+  "level": 1,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "光导箭",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "120尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "塑能",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": " 塑能（牧师）* **施法时间：**动作 **施法距离：**120尺 **法术成分：**V、S **持续时间：**1轮 你向施法距离内的一名生物掷出一道光箭。对目标进行一次远程法术攻击。命中时，目标受4d6点光耀伤害。在你下个回合结束前，对目标发动的下一次攻击检定具有优势。 **升环施法。**使用的法术位每比一环高一环，此法术的伤害就增加1d6点。  **施法时间：**动作 **施法距离：**120尺 **法术成分：**V、S **持续时间：**1轮 你向施法距离内的一名生物掷出一道光箭。对目标进行一次远程法术攻击。命中时，目标受4d6点光耀伤害。在你下个回合结束前，对目标发动的下一次攻击检定具有优势。 **升环施法。**使用的法术位每比一环高一环，此法术的伤害就增加1d6点。 离：**120尺 **法术成分：**V、S **持续时间：**1轮 你向施法距离内的一名生物掷出一道光箭。对目标进行一次远程法术攻击。命中时，目标受4d6点光耀伤害。在你下个回合结束前，对目标发动的下一次攻击检定具有优势。 **升环施法。**使用的法术位每比一环高一环，此法术的伤害就增加1d6点。 你向施法距离内的一名生物掷出一道光箭。对目标进行一次远程法术攻击。命中时，目标受4d6点光耀伤害。在你下个回合结束前，对目标发动的下一次攻击检定具有优势。 **升环施法。**使用的法术位每比一环高一环，此法术的伤害就增加1d6点。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "a7060092f3035e004b1de22e485a07aeaab9b3c14c9a8a2fa89bfc119d2f386b",
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 光导箭｜Guiding Bolt\n\n*一环 塑能（牧师）*\n**施法时间：**动作\n**施法距离：**120尺\n**法术成分：**V、S\n**持续时间：**1轮\n你向施法距离内的一名生物掷出一道光箭。对目标进行一次远程法术攻击。命中时，目标受4d6点光耀伤害。在你下个回合结束前，对目标发动的下一次攻击检定具有优势。\n**升环施法。**使用的法术位每比一环高一环，此法术的伤害就增加1d6点。"
+  },
+  "source_fingerprint": "01bae299d4b437210ac388d97f2e837085770b9b615925360643198a7152475e",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "a7060092f3035e004b1de22e485a07aeaab9b3c14c9a8a2fa89bfc119d2f386b",
+    "source_relative_path": "玩家手册2024/法术详述/1环.htm"
+  },
+  "source_record_id": "8e0bb8fc40e2083c484b5139",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:8e0bb8fc40e2083c484b5139"
+}

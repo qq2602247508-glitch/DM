@@ -1,0 +1,92 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "附赠动作",
+  "clause_boundaries": {
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "**V、S、M（一块镜子碎片） **持续时间：**1 分钟 你为施法距离内的一名生物施加守护。在法术终止前，当任何生物将受守护的生物定为其攻击检定或伤害性法术的目标时，该生物都必须成功通过一次感知豁免，否则该生物必须改为选定另一名生物作为新的目标或者失去本次的攻击或法术。不过此法术无法令受术者免受区域效应的影响。 若受保护生物发动一次攻击，施展一道法术，或是造成任何伤害，则该法术随之终止。",
+      "source_heading": "庇护术"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:f0e1229e39b1dfb476f90c6b:target"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "**V、S、M（一块镜子碎片） **持续时间：**1 分钟 你为施法距离内的一名生物施加守护。在法术终止前，当任何生物将受守护的生物定为其攻击检定或伤害性法术的目标时，该生物都必须成功通过一次感知豁免，否则该生物必须改为选定另一名生物作为新的目标或者失去本次的攻击或法术。不过此法术无法令受术者免受区域效应的影响。 若受保护生物发动一次攻击，施展一道法术，或是造成任何伤害，则该法术随之终止。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "1 分钟",
+  "edition": "2024",
+  "evidence": [
+    "target: **V、S、M（一块镜子碎片） **持续时间：**1 分钟 你为施法距离内的一名生物施加守护。在法术终止前，当任何生物将受守护的生物定为其攻击检定或伤害性法术的目标时，该生物都必须成功通过一次感知豁免，否则该生物必须改为选定另一名生物作为新的目标或者失去本次的攻击或法术。不过此法术无法令受术者免受区域效应的影响。 若受保护生物发动一次攻击，施展一道法术，或是造成任何伤害，则该法术随之终止。"
+  ],
+  "kind": "spell",
+  "level": 1,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "庇护术",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "30 尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "防护",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "**V、S、M（一块镜子碎片） **持续时间：**1 分钟 你为施法距离内的一名生物施加守护。在法术终止前，当任何生物将受守护的生物定为其攻击检定或伤害性法术的目标时，该生物都必须成功通过一次感知豁免，否则该生物必须改为选定另一名生物作为新的目标或者失去本次的攻击或法术。不过此法术无法令受术者免受区域效应的影响。 若受保护生物发动一次攻击，施展一道法术，或是造成任何伤害，则该法术随之终止。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "73d7dcdc95ce31c1c1308702be0bb53c8be28c381ef04dd37b9ef135fe3a6dcf",
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 庇护术｜Sanctuary\n\n*一环 防护（牧师、奇械师）*\n**施法时间：**附赠动作\n**施法距离：**30 尺\n**法术成分：**V、S、M（一块镜子碎片）\n**持续时间：**1 分钟\n你为施法距离内的一名生物施加守护。在法术终止前，当任何生物将受守护的生物定为其攻击检定或伤害性法术的目标时，该生物都必须成功通过一次感知豁免，否则该生物必须改为选定另一名生物作为新的目标或者失去本次的攻击或法术。不过此法术无法令受术者免受区域效应的影响。\n若受保护生物发动一次攻击，施展一道法术，或是造成任何伤害，则该法术随之终止。"
+  },
+  "source_fingerprint": "44f60ddec39a46ccd408e95285abc4ed08e0f519098d2969d1e0df5d5973fa37",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "73d7dcdc95ce31c1c1308702be0bb53c8be28c381ef04dd37b9ef135fe3a6dcf",
+    "source_relative_path": "玩家手册2024/法术详述/1环.htm"
+  },
+  "source_record_id": "f0e1229e39b1dfb476f90c6b",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:f0e1229e39b1dfb476f90c6b"
+}

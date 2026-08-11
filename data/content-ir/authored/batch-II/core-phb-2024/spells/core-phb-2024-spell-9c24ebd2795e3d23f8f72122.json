@@ -1,0 +1,143 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "60尺 **法术成分：**V **持续时间：**立即 一名施法距离内你选择的可见生物的心灵中听见一段不协和旋律。目标进行一次感知豁免。豁免失败则受到3d6点心灵伤害，并立即执行其反应（若可用）尽可能往远离你的方向移动，并采取最安全的路径。豁免成功则只受一半伤害。 **升环施法。**使用的法术位每比一环高一环，伤害就提高1d6。",
+      "source_heading": "不谐低语"
+    },
+    "save": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "间：**动作 **施法距离：**60尺 **法术成分：**V **持续时间：**立即 一名施法距离内你选择的可见生物的心灵中听见一段不协和旋律。目标进行一次感知豁免。豁免失败则受到3d6点心灵伤害，并立即执行其反应（若可用）尽可能往远离你的方向移动，并采取最安全的路径。豁免成功则只受一半伤害。 **升环施法。**使用的法术位每比一环高一环，伤害就提高1d6。",
+      "source_heading": "不谐低语"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "）* **施法时间：**动作 **施法距离：**60尺 **法术成分：**V **持续时间：**立即 一名施法距离内你选择的可见生物的心灵中听见一段不协和旋律。目标进行一次感知豁免。豁免失败则受到3d6点心灵伤害，并立即执行其反应（若可用）尽可能往远离你的方向移动，并采取最安全的路径。豁免成功则只受一半伤害。 **升环施法。**使用的法术位每比一环高一环，伤害就提高1d6。",
+      "source_heading": "不谐低语"
+    },
+    "upcast": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "律。目标进行一次感知豁免。豁免失败则受到3d6点心灵伤害，并立即执行其反应（若可用）尽可能往远离你的方向移动，并采取最安全的路径。豁免成功则只受一半伤害。 **升环施法。**使用的法术位每比一环高一环，伤害就提高1d6。",
+      "source_heading": "不谐低语"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:9c24ebd2795e3d23f8f72122:target",
+    "core-phb-2024:spell:9c24ebd2795e3d23f8f72122:save",
+    "core-phb-2024:spell:9c24ebd2795e3d23f8f72122:damage",
+    "core-phb-2024:spell:9c24ebd2795e3d23f8f72122:upcast"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "）* **施法时间：**动作 **施法距离：**60尺 **法术成分：**V **持续时间：**立即 一名施法距离内你选择的可见生物的心灵中听见一段不协和旋律。目标进行一次感知豁免。豁免失败则受到3d6点心灵伤害，并立即执行其反应（若可用）尽可能往远离你的方向移动，并采取最安全的路径。豁免成功则只受一半伤害。 **升环施法。**使用的法术位每比一环高一环，伤害就提高1d6。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "save",
+      "evidence_ref": "间：**动作 **施法距离：**60尺 **法术成分：**V **持续时间：**立即 一名施法距离内你选择的可见生物的心灵中听见一段不协和旋律。目标进行一次感知豁免。豁免失败则受到3d6点心灵伤害，并立即执行其反应（若可用）尽可能往远离你的方向移动，并采取最安全的路径。豁免成功则只受一半伤害。 **升环施法。**使用的法术位每比一环高一环，伤害就提高1d6。",
+      "half_on_success": true,
+      "save_ability": "感知",
+      "target": "one_creature",
+      "type": "saving_throw"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "damage",
+      "damage": "3d6",
+      "damage_type": "心灵",
+      "evidence_ref": "60尺 **法术成分：**V **持续时间：**立即 一名施法距离内你选择的可见生物的心灵中听见一段不协和旋律。目标进行一次感知豁免。豁免失败则受到3d6点心灵伤害，并立即执行其反应（若可用）尽可能往远离你的方向移动，并采取最安全的路径。豁免成功则只受一半伤害。 **升环施法。**使用的法术位每比一环高一环，伤害就提高1d6。",
+      "expression": "3d6",
+      "on_failure": "full",
+      "on_success": "half",
+      "target": "one_creature",
+      "timing": "immediate",
+      "type": "damage"
+    },
+    {
+      "applies_to": "damage",
+      "clause_id": "upcast",
+      "evidence_ref": "律。目标进行一次感知豁免。豁免失败则受到3d6点心灵伤害，并立即执行其反应（若可用）尽可能往远离你的方向移动，并采取最安全的路径。豁免成功则只受一半伤害。 **升环施法。**使用的法术位每比一环高一环，伤害就提高1d6。",
+      "increments": "1d6",
+      "per_slot": 1,
+      "type": "upcast"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "立即",
+  "edition": "2024",
+  "evidence": [
+    "damage: 60尺 **法术成分：**V **持续时间：**立即 一名施法距离内你选择的可见生物的心灵中听见一段不协和旋律。目标进行一次感知豁免。豁免失败则受到3d6点心灵伤害，并立即执行其反应（若可用）尽可能往远离你的方向移动，并采取最安全的路径。豁免成功则只受一半伤害。 **升环施法。**使用的法术位每比一环高一环，伤害就提高1d6。",
+    "save: 间：**动作 **施法距离：**60尺 **法术成分：**V **持续时间：**立即 一名施法距离内你选择的可见生物的心灵中听见一段不协和旋律。目标进行一次感知豁免。豁免失败则受到3d6点心灵伤害，并立即执行其反应（若可用）尽可能往远离你的方向移动，并采取最安全的路径。豁免成功则只受一半伤害。 **升环施法。**使用的法术位每比一环高一环，伤害就提高1d6。",
+    "target: ）* **施法时间：**动作 **施法距离：**60尺 **法术成分：**V **持续时间：**立即 一名施法距离内你选择的可见生物的心灵中听见一段不协和旋律。目标进行一次感知豁免。豁免失败则受到3d6点心灵伤害，并立即执行其反应（若可用）尽可能往远离你的方向移动，并采取最安全的路径。豁免成功则只受一半伤害。 **升环施法。**使用的法术位每比一环高一环，伤害就提高1d6。",
+    "upcast: 律。目标进行一次感知豁免。豁免失败则受到3d6点心灵伤害，并立即执行其反应（若可用）尽可能往远离你的方向移动，并采取最安全的路径。豁免成功则只受一半伤害。 **升环施法。**使用的法术位每比一环高一环，伤害就提高1d6。"
+  ],
+  "kind": "spell",
+  "level": 1,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "不谐低语",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "60尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": null,
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "）* **施法时间：**动作 **施法距离：**60尺 **法术成分：**V **持续时间：**立即 一名施法距离内你选择的可见生物的心灵中听见一段不协和旋律。目标进行一次感知豁免。豁免失败则受到3d6点心灵伤害，并立即执行其反应（若可用）尽可能往远离你的方向移动，并采取最安全的路径。豁免成功则只受一半伤害。 **升环施法。**使用的法术位每比一环高一环，伤害就提高1d6。 间：**动作 **施法距离：**60尺 **法术成分：**V **持续时间：**立即 一名施法距离内你选择的可见生物的心灵中听见一段不协和旋律。目标进行一次感知豁免。豁免失败则受到3d6点心灵伤害，并立即执行其反应（若可用）尽可能往远离你的方向移动，并采取最安全的路径。豁免成功则只受一半伤害。 **升环施法。**使用的法术位每比一环高一环，伤害就提高1d6。 60尺 **法术成分：**V **持续时间：**立即 一名施法距离内你选择的可见生物的心灵中听见一段不协和旋律。目标进行一次感知豁免。豁免失败则受到3d6点心灵伤害，并立即执行其反应（若可用）尽可能往远离你的方向移动，并采取最安全的路径。豁免成功则只受一半伤害。 **升环施法。**使用的法术位每比一环高一环，伤害就提高1d6。 律。目标进行一次感知豁免。豁免失败则受到3d6点心灵伤害，并立即执行其反应（若可用）尽可能往远离你的方向移动，并采取最安全的路径。豁免成功则只受一半伤害。 **升环施法。**使用的法术位每比一环高一环，伤害就提高1d6。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "a5415d70b27d0f336eeca01b011054b9abbcc58c3bac6361916ae3bdf3f31dbc",
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 不谐低语｜Dissonant Whispers\n\n*一环 惑控（吟游诗人）*\n**施法时间：**动作\n**施法距离：**60尺\n**法术成分：**V\n**持续时间：**立即\n一名施法距离内你选择的可见生物的心灵中听见一段不协和旋律。目标进行一次感知豁免。豁免失败则受到3d6点心灵伤害，并立即执行其反应（若可用）尽可能往远离你的方向移动，并采取最安全的路径。豁免成功则只受一半伤害。\n**升环施法。**使用的法术位每比一环高一环，伤害就提高1d6。"
+  },
+  "source_fingerprint": "d161393563e55ba7a5c333a8549b97c42c16823cba9a838fca442277bb45de30",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "a5415d70b27d0f336eeca01b011054b9abbcc58c3bac6361916ae3bdf3f31dbc",
+    "source_relative_path": "玩家手册2024/法术详述/1环.htm"
+  },
+  "source_record_id": "9c24ebd2795e3d23f8f72122",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:9c24ebd2795e3d23f8f72122"
+}

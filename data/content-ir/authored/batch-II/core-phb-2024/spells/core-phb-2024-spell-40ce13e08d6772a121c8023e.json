@@ -1,0 +1,92 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "1分钟",
+  "clause_boundaries": {
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "、术士、法师）* **施法时间：**1分钟 **施法距离：**触碰 **法术成分：**V、S、M（两块天然磁石） **持续时间：**立即 该法术修复你所触碰一个物件上的一处破损或裂缝，例如修复一条断裂的链条、一把碎成两半的钥匙、一件撕裂的斗篷、一个漏了的酒袋等。只要破损或断裂处在任意方向上都不超过 1 尺，你就可以不留痕迹地修复它。 该法术可以物理性地修复一件魔法物品，但无法恢复其上的魔法。 （编注：奇械师的职业特性直接给予了这一法术，因此这一法术现不在奇械师法术列表上。）",
+      "source_heading": "修复术"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:40ce13e08d6772a121c8023e:target"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "、术士、法师）* **施法时间：**1分钟 **施法距离：**触碰 **法术成分：**V、S、M（两块天然磁石） **持续时间：**立即 该法术修复你所触碰一个物件上的一处破损或裂缝，例如修复一条断裂的链条、一把碎成两半的钥匙、一件撕裂的斗篷、一个漏了的酒袋等。只要破损或断裂处在任意方向上都不超过 1 尺，你就可以不留痕迹地修复它。 该法术可以物理性地修复一件魔法物品，但无法恢复其上的魔法。 （编注：奇械师的职业特性直接给予了这一法术，因此这一法术现不在奇械师法术列表上。）",
+      "kind": "object",
+      "type": "target_selection",
+      "visibility": "visible"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "立即",
+  "edition": "2024",
+  "evidence": [
+    "target: 、术士、法师）* **施法时间：**1分钟 **施法距离：**触碰 **法术成分：**V、S、M（两块天然磁石） **持续时间：**立即 该法术修复你所触碰一个物件上的一处破损或裂缝，例如修复一条断裂的链条、一把碎成两半的钥匙、一件撕裂的斗篷、一个漏了的酒袋等。只要破损或断裂处在任意方向上都不超过 1 尺，你就可以不留痕迹地修复它。 该法术可以物理性地修复一件魔法物品，但无法恢复其上的魔法。 （编注：奇械师的职业特性直接给予了这一法术，因此这一法术现不在奇械师法术列表上。）"
+  ],
+  "kind": "spell",
+  "level": 0,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "修复术",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "触碰",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "变化",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "、术士、法师）* **施法时间：**1分钟 **施法距离：**触碰 **法术成分：**V、S、M（两块天然磁石） **持续时间：**立即 该法术修复你所触碰一个物件上的一处破损或裂缝，例如修复一条断裂的链条、一把碎成两半的钥匙、一件撕裂的斗篷、一个漏了的酒袋等。只要破损或断裂处在任意方向上都不超过 1 尺，你就可以不留痕迹地修复它。 该法术可以物理性地修复一件魔法物品，但无法恢复其上的魔法。 （编注：奇械师的职业特性直接给予了这一法术，因此这一法术现不在奇械师法术列表上。）",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "963539a0c05e91db641f3fda5ae2ac387832474a2bafd6af28f0d44c502cdb8b",
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 修复术｜Mending\n\n*变化 戏法（吟游诗人、牧师、德鲁伊、术士、法师）*\n**施法时间：**1分钟\n**施法距离：**触碰\n**法术成分：**V、S、M（两块天然磁石）\n**持续时间：**立即\n该法术修复你所触碰一个物件上的一处破损或裂缝，例如修复一条断裂的链条、一把碎成两半的钥匙、一件撕裂的斗篷、一个漏了的酒袋等。只要破损或断裂处在任意方向上都不超过 1 尺，你就可以不留痕迹地修复它。\n该法术可以物理性地修复一件魔法物品，但无法恢复其上的魔法。\n（编注：奇械师的职业特性直接给予了这一法术，因此这一法术现不在奇械师法术列表上。）"
+  },
+  "source_fingerprint": "29ef68da2153d9e826bfbfee58ef6de9659a65a639125b4056e26900b38d47a9",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "963539a0c05e91db641f3fda5ae2ac387832474a2bafd6af28f0d44c502cdb8b",
+    "source_relative_path": "玩家手册2024/法术详述/0环.htm"
+  },
+  "source_record_id": "40ce13e08d6772a121c8023e",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:40ce13e08d6772a121c8023e"
+}
