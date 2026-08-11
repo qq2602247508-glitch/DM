@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 from __future__ import annotations
 
 import argparse
@@ -5,6 +6,13 @@ import json
 from pathlib import Path
 from typing import Any
 
+from dnd_dm_assistant.application.content_ir_templates import (
+    build_template_catalog,
+    candidate_report,
+    compile_reviewed_directory,
+    generate_candidates,
+    validate_review_authority,
+)
 from dnd_dm_assistant.application.content_ir_workbench import (
     _registered_pack,
     _select_records,
@@ -22,6 +30,7 @@ ROOT = Path(__file__).resolve().parents[3]
 JSON_ROOT = ROOT / "data/generated-content/dnd5e_chm/json"
 SOURCE_ROOT = ROOT / "data/sources/dnd5e_chm"
 DEFAULT_WORKBENCH_ROOT = Path("/tmp/content-ir-workbench")
+DEFAULT_TEMPLATE_CATALOG = ROOT / "data/content-ir/templates/catalog.json"
 
 
 def _dump(value: Any) -> None:
@@ -108,6 +117,11 @@ def _cmd_extract(args: argparse.Namespace) -> int:
 
 
 def _cmd_compile(args: argparse.Namespace) -> int:
+    if getattr(args, "mode", None) == "reviewed":
+        if args.output is None:
+            raise SystemExit("compile reviewed requires --output")
+        _dump(compile_reviewed_directory(args.input, args.output))
+        return 0
     result = compile_artifact_directory(args.input, output_dir=args.output, write_files=True)
     _dump(result)
     return 0
@@ -120,7 +134,97 @@ def _cmd_dry_run(args: argparse.Namespace) -> int:
 
 
 def _cmd_report(args: argparse.Namespace) -> int:
-    _dump(report_from_artifacts(args.input))
+    report = report_from_artifacts(args.input)
+    if args.include_runtime_levels:
+        report["runtime_levels"] = _runtime_levels_from_artifacts(args.input, report)
+    _dump(report)
+    return 0
+
+
+def _runtime_levels_from_artifacts(input_dir: Path, report: dict[str, Any]) -> dict[str, Any]:
+    """Expose the three status levels without upgrading preview to production."""
+
+    compile_result = report.get("compile_result") or {}
+    results = compile_result.get("results") or []
+    production_path = input_dir / "production-runtime-results.json"
+    production: dict[str, Any] = {}
+    if production_path.exists():
+        try:
+            loaded = json.loads(production_path.read_text(encoding="utf-8"))
+            if isinstance(loaded, dict):
+                production = loaded
+        except (OSError, json.JSONDecodeError):
+            production = {}
+    production_ids = {
+        str(item)
+        for item in production.get("production_runtime_full_ids") or []
+        if str(item).strip()
+    }
+    levels = []
+    for item in results:
+        item_id = str(item.get("spell_id") or item.get("feature_id") or "")
+        compile_full = item.get("compile_status") == "full" and bool(item.get("materialized"))
+        runtime_definition = item.get("runtime_spell_definition") or item.get("runtime_definition")
+        preview_full = compile_full and isinstance(runtime_definition, dict)
+        levels.append(
+            {
+                "id": item_id,
+                "compile_full": compile_full,
+                "runtime_preview_full": preview_full,
+                "production_runtime_full": item_id in production_ids,
+                "production_evidence": production.get("evidence_by_id", {}).get(item_id),
+            }
+        )
+    return {
+        "compile_full_count": sum(bool(item["compile_full"]) for item in levels),
+        "runtime_preview_full_count": sum(bool(item["runtime_preview_full"]) for item in levels),
+        "production_runtime_full_count": sum(
+            bool(item["production_runtime_full"]) for item in levels
+        ),
+        "items": levels,
+        "production_gate": "evidence_file_required",
+    }
+
+
+def _cmd_templates_build(args: argparse.Namespace) -> int:
+    _dump(build_template_catalog(args.input, args.output))
+    return 0
+
+
+def _cmd_candidates_generate(args: argparse.Namespace) -> int:
+    _dump(
+        generate_candidates(
+            JSON_ROOT,
+            args.catalog,
+            book=args.book,
+            kind=args.kind,
+            output=args.output,
+            limit=args.limit,
+        )
+    )
+    return 0
+
+
+def _cmd_candidates_report(args: argparse.Namespace) -> int:
+    result = candidate_report(args.input)
+    if args.output:
+        write_json = args.output
+        write_json.parent.mkdir(parents=True, exist_ok=True)
+        write_json.write_text(
+            json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+    _dump(result)
+    return 0
+
+
+def _cmd_review_validate(args: argparse.Namespace) -> int:
+    _dump(validate_review_authority(args.input, args.catalog))
+    return 0
+
+
+def _cmd_compile_reviewed(args: argparse.Namespace) -> int:
+    _dump(compile_reviewed_directory(args.input, args.output))
     return 0
 
 
@@ -153,6 +257,7 @@ def main() -> int:
     extract.set_defaults(func=_cmd_extract)
 
     compile_parser = subparsers.add_parser("compile")
+    compile_parser.add_argument("mode", nargs="?", choices=("reviewed",))
     compile_parser.add_argument("--input", type=Path, required=True)
     compile_parser.add_argument("--output", type=Path)
     compile_parser.set_defaults(func=_cmd_compile)
@@ -164,7 +269,36 @@ def main() -> int:
 
     report = subparsers.add_parser("report")
     report.add_argument("--input", type=Path, required=True)
+    report.add_argument("--include-runtime-levels", action="store_true")
     report.set_defaults(func=_cmd_report)
+
+    templates = subparsers.add_parser("templates")
+    templates_sub = templates.add_subparsers(dest="templates_command", required=True)
+    templates_build = templates_sub.add_parser("build")
+    templates_build.add_argument("--input", type=Path, required=True)
+    templates_build.add_argument("--output", type=Path, required=True)
+    templates_build.set_defaults(func=_cmd_templates_build)
+
+    candidates = subparsers.add_parser("candidates")
+    candidates_sub = candidates.add_subparsers(dest="candidates_command", required=True)
+    candidates_generate = candidates_sub.add_parser("generate")
+    candidates_generate.add_argument("--book", required=True)
+    candidates_generate.add_argument("--kind", choices=("spell", "feature"), required=True)
+    candidates_generate.add_argument("--catalog", type=Path, default=DEFAULT_TEMPLATE_CATALOG)
+    candidates_generate.add_argument("--output", type=Path, required=True)
+    candidates_generate.add_argument("--limit", type=int)
+    candidates_generate.set_defaults(func=_cmd_candidates_generate)
+    candidates_report = candidates_sub.add_parser("report")
+    candidates_report.add_argument("--input", type=Path, required=True)
+    candidates_report.add_argument("--output", type=Path)
+    candidates_report.set_defaults(func=_cmd_candidates_report)
+
+    review = subparsers.add_parser("review")
+    review_sub = review.add_subparsers(dest="review_command", required=True)
+    review_validate = review_sub.add_parser("validate")
+    review_validate.add_argument("--input", type=Path, required=True)
+    review_validate.add_argument("--catalog", type=Path, default=DEFAULT_TEMPLATE_CATALOG)
+    review_validate.set_defaults(func=_cmd_review_validate)
 
     scan_all = subparsers.add_parser("scan-all-official")
     scan_all.add_argument("--output", type=Path, required=True)
