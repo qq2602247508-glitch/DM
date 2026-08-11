@@ -38,6 +38,14 @@
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-libram-of-souls-and-flesh-011",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-lyre-of-building-012",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-planecaller-s-codex-014",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-8d7814d75b94-003",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-b9cb8e43543d-007",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-c27398cf29fe-010",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-coiling-004",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-eldritch-005",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-ghost-step-tattoo-008",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-illuminator-s-tattoo-000",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-lifewell-tattoo-009",
           "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list",
           "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech",
           "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant",
@@ -115,8 +123,8 @@
     },
     "current_project_compile_only": 35,
     "current_project_compiled_unique": 111,
-    "current_project_production_full": 150,
-    "current_project_production_registry_fingerprint": "a0d95fbc8734a3db782abc3615757c943cbef6b80eacd3d431a41ea8c45dbfbe",
+    "current_project_production_full": 158,
+    "current_project_production_registry_fingerprint": "917f37b81e8d41ce225a8d8fb6fe13e5911fcfd347eb9f6b4900c89f543182f5",
     "dm_assisted": 2,
     "dm_reference": 107,
     "draft_total": 407,
@@ -141,7 +149,7 @@
       "implemented": true,
       "inventory_atom_count": 47,
       "isolated_runtime_validated_count": 37,
-      "production_count": 16,
+      "production_count": 24,
       "typed_count": 47,
       "unlock_ranking": [
         {
@@ -286,6 +294,14 @@
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-libram-of-souls-and-flesh-011",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-lyre-of-building-012",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-planecaller-s-codex-014",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-8d7814d75b94-003",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-b9cb8e43543d-007",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-c27398cf29fe-010",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-coiling-004",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-eldritch-005",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-ghost-step-tattoo-008",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-illuminator-s-tattoo-000",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-lifewell-tattoo-009",
           "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list",
           "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech",
           "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant",
@@ -363,8 +379,8 @@
     },
     "current_project_compile_only": 35,
     "current_project_compiled_unique": 111,
-    "current_project_production_full": 150,
-    "current_project_production_registry_fingerprint": "a0d95fbc8734a3db782abc3615757c943cbef6b80eacd3d431a41ea8c45dbfbe",
+    "current_project_production_full": 158,
+    "current_project_production_registry_fingerprint": "917f37b81e8d41ce225a8d8fb6fe13e5911fcfd347eb9f6b4900c89f543182f5",
     "dm_assisted": 2,
     "dm_reference": 107,
     "draft_total": 407,
@@ -389,7 +405,7 @@
       "implemented": true,
       "inventory_atom_count": 47,
       "isolated_runtime_validated_count": 37,
-      "production_count": 16,
+      "production_count": 24,
       "typed_count": 47,
       "unlock_ranking": [
         {
@@ -19595,7 +19611,7 @@
       "item.granted_action.v1",
       "item.granted_spell.v1"
     ],
-    "game_usable": 16,
+    "game_usable": 24,
     "isolated_registry_reload": {
       "blocked": 10,
       "compile_full": 37,
@@ -19716,7 +19732,7 @@
     "isolated_runtime_validated": 37,
     "item_spec_total": 47,
     "pack_id": "tashas-cauldron",
-    "registered_production_full": 16,
+    "registered_production_full": 24,
     "runtime_preview_full": 37,
     "schema_version": "tashas-item-runtime-validation-II-1",
     "temporary_db_validation": "passed:test_tashas_recovery.py::test_typed_item_api_uses_attunement_action_and_idempotency",
@@ -19736,7 +19752,7 @@
     "compile_full": 37,
     "compile_only": 10,
     "dm_assisted": 0,
-    "game_usable": 16,
+    "game_usable": 24,
     "inventory": [
       {
         "atom_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000",
@@ -22378,8 +22394,8 @@
     "magic_tattoo_atom_total": 11,
     "name_branch_count": 0,
     "pack_id": "tashas-cauldron",
-    "production_full": 16,
-    "registered_production_full": 16,
+    "production_full": 24,
+    "registered_production_full": 24,
     "requires_dm": 10,
     "reviewed": 47,
     "runtime_preview_full": 37,
@@ -26149,6 +26165,14 @@
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-libram-of-souls-and-flesh-011",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-lyre-of-building-012",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-planecaller-s-codex-014",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-8d7814d75b94-003",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-b9cb8e43543d-007",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-c27398cf29fe-010",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-coiling-004",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-eldritch-005",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-ghost-step-tattoo-008",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-illuminator-s-tattoo-000",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-lifewell-tattoo-009",
           "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list",
           "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech",
           "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant",
@@ -26296,7 +26320,7 @@
       "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:arcane-firearm:004",
       "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:explosive-cannon:005"
     ],
-    "registry_production_runtime_full_count": 93,
+    "registry_production_runtime_full_count": 101,
     "runtime_evidence": {
       "content.tashas-cauldron.feature.alchemist-chemical-mastery": {
         "confirm_status": 200,
@@ -27736,6 +27760,1178 @@
           "item.equipment_modifier.v1"
         ]
       },
+      "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-8d7814d75b94-003": {
+        "attunement_persisted": true,
+        "charge_lifecycle_persisted": true,
+        "compile_status": "full",
+        "consumer_ids": [
+          "item.attunement.v1",
+          "item.equipment_modifier.v1"
+        ],
+        "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-8d7814d75b94-003",
+        "content_kind": "item",
+        "created": true,
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-XIV.json",
+        "item_name": "屏障刺青",
+        "item_state_persisted": true,
+        "operation_transaction_persisted": true,
+        "operations": [
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "attune",
+            "output": {
+              "after": {
+                "active_attunements": 1,
+                "armor_class": 10,
+                "attuned": true,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:8d7814d75b94:003:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": true,
+                  "needle_state": "ink",
+                  "operation": "ink_manifestation",
+                  "phase": "manifested"
+                }
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": null,
+                "equipped": false,
+                "quantity": 1,
+                "tattoo_lifecycle": null
+              },
+              "confirmed": true,
+              "operation": "attune",
+              "slot": null,
+              "tattoo_lifecycle": {
+                "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:8d7814d75b94:003:tattoo-lifecycle",
+                "consumer_id": "item.attunement.v1",
+                "effects_active": true,
+                "needle_state": "ink",
+                "operation": "ink_manifestation",
+                "phase": "manifested"
+              },
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          },
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "unattune",
+            "output": {
+              "after": {
+                "armor_class": 10,
+                "attuned": false,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:8d7814d75b94:003:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": false,
+                  "needle_state": "needle",
+                  "operation": "needle_returns_and_effects_removed",
+                  "phase": "needle_returned"
+                }
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": null,
+                "equipped": false,
+                "quantity": 1,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:8d7814d75b94:003:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": true,
+                  "needle_state": "ink",
+                  "operation": "ink_manifestation",
+                  "phase": "manifested"
+                }
+              },
+              "confirmed": true,
+              "operation": "unattune",
+              "slot": null,
+              "tattoo_lifecycle": {
+                "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:8d7814d75b94:003:tattoo-lifecycle",
+                "consumer_id": "item.attunement.v1",
+                "effects_active": false,
+                "needle_state": "needle",
+                "operation": "needle_returns_and_effects_removed",
+                "phase": "needle_returned"
+              },
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          }
+        ],
+        "persisted": {
+          "attuned": false,
+          "charges": null,
+          "item_fingerprint": "44b5ad3c88eb5504ad520e021f131c695d1f99a47e7d22eb174ac9721a2f66ec",
+          "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-8d7814d75b94-003",
+          "operation_transaction_count": 2,
+          "tattoo_lifecycle": {
+            "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:8d7814d75b94:003:tattoo-lifecycle",
+            "consumer_id": "item.attunement.v1",
+            "effects_active": false,
+            "needle_state": "needle",
+            "operation": "needle_returns_and_effects_removed",
+            "phase": "needle_returned"
+          },
+          "version": 3
+        },
+        "preview_confirm_replay": true,
+        "tattoo_lifecycle_persisted": true,
+        "typed_consumer": true,
+        "typed_projection_consumers": [
+          "item.attunement.v1",
+          "item.equipment_modifier.v1"
+        ]
+      },
+      "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-b9cb8e43543d-007": {
+        "attunement_persisted": true,
+        "charge_lifecycle_persisted": true,
+        "compile_status": "full",
+        "consumer_ids": [
+          "item.attunement.v1",
+          "item.equipment_modifier.v1"
+        ],
+        "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-b9cb8e43543d-007",
+        "content_kind": "item",
+        "created": true,
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-XIV.json",
+        "item_name": "吸收刺青",
+        "item_state_persisted": true,
+        "operation_transaction_persisted": true,
+        "operations": [
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "attune",
+            "output": {
+              "after": {
+                "active_attunements": 1,
+                "armor_class": 10,
+                "attuned": true,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:b9cb8e43543d:007:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": true,
+                  "needle_state": "ink",
+                  "operation": "ink_manifestation",
+                  "phase": "manifested"
+                }
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": null,
+                "equipped": false,
+                "quantity": 1,
+                "tattoo_lifecycle": null
+              },
+              "confirmed": true,
+              "operation": "attune",
+              "slot": null,
+              "tattoo_lifecycle": {
+                "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:b9cb8e43543d:007:tattoo-lifecycle",
+                "consumer_id": "item.attunement.v1",
+                "effects_active": true,
+                "needle_state": "ink",
+                "operation": "ink_manifestation",
+                "phase": "manifested"
+              },
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          },
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "unattune",
+            "output": {
+              "after": {
+                "armor_class": 10,
+                "attuned": false,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:b9cb8e43543d:007:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": false,
+                  "needle_state": "needle",
+                  "operation": "needle_returns_and_effects_removed",
+                  "phase": "needle_returned"
+                }
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": null,
+                "equipped": false,
+                "quantity": 1,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:b9cb8e43543d:007:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": true,
+                  "needle_state": "ink",
+                  "operation": "ink_manifestation",
+                  "phase": "manifested"
+                }
+              },
+              "confirmed": true,
+              "operation": "unattune",
+              "slot": null,
+              "tattoo_lifecycle": {
+                "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:b9cb8e43543d:007:tattoo-lifecycle",
+                "consumer_id": "item.attunement.v1",
+                "effects_active": false,
+                "needle_state": "needle",
+                "operation": "needle_returns_and_effects_removed",
+                "phase": "needle_returned"
+              },
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          }
+        ],
+        "persisted": {
+          "attuned": false,
+          "charges": null,
+          "item_fingerprint": "c3b426f62242abdd9e1ec05696e564f4057bf6c1e23775ca479b4587ae64aae8",
+          "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-b9cb8e43543d-007",
+          "operation_transaction_count": 2,
+          "tattoo_lifecycle": {
+            "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:b9cb8e43543d:007:tattoo-lifecycle",
+            "consumer_id": "item.attunement.v1",
+            "effects_active": false,
+            "needle_state": "needle",
+            "operation": "needle_returns_and_effects_removed",
+            "phase": "needle_returned"
+          },
+          "version": 3
+        },
+        "preview_confirm_replay": true,
+        "tattoo_lifecycle_persisted": true,
+        "typed_consumer": true,
+        "typed_projection_consumers": [
+          "item.attunement.v1",
+          "item.equipment_modifier.v1"
+        ]
+      },
+      "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-c27398cf29fe-010": {
+        "attunement_persisted": true,
+        "charge_lifecycle_persisted": true,
+        "compile_status": "full",
+        "consumer_ids": [
+          "item.attunement.v1",
+          "item.charge_resource.v1",
+          "item.equipment_modifier.v1"
+        ],
+        "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-c27398cf29fe-010",
+        "content_kind": "item",
+        "created": true,
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-XIV.json",
+        "item_name": "血怒刺青",
+        "item_state_persisted": true,
+        "operation_transaction_persisted": true,
+        "operations": [
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "attune",
+            "output": {
+              "after": {
+                "active_attunements": 1,
+                "armor_class": 10,
+                "attuned": true,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:c27398cf29fe:010:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": true,
+                  "needle_state": "ink",
+                  "operation": "ink_manifestation",
+                  "phase": "manifested"
+                }
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": 10,
+                "equipped": false,
+                "quantity": 1,
+                "tattoo_lifecycle": null
+              },
+              "confirmed": true,
+              "operation": "attune",
+              "slot": null,
+              "tattoo_lifecycle": {
+                "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:c27398cf29fe:010:tattoo-lifecycle",
+                "consumer_id": "item.attunement.v1",
+                "effects_active": true,
+                "needle_state": "ink",
+                "operation": "ink_manifestation",
+                "phase": "manifested"
+              },
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          },
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "use_charge",
+            "output": {
+              "after": {
+                "armor_class": 10,
+                "charges": 9
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": 10,
+                "equipped": false,
+                "quantity": 1
+              },
+              "confirmed": true,
+              "operation": "use_charge",
+              "slot": null,
+              "tattoo_lifecycle": null,
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          },
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "unattune",
+            "output": {
+              "after": {
+                "armor_class": 10,
+                "attuned": false,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:c27398cf29fe:010:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": false,
+                  "needle_state": "needle",
+                  "operation": "needle_returns_and_effects_removed",
+                  "phase": "needle_returned"
+                }
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": 9,
+                "equipped": false,
+                "quantity": 1,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:c27398cf29fe:010:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": true,
+                  "needle_state": "ink",
+                  "operation": "ink_manifestation",
+                  "phase": "manifested"
+                }
+              },
+              "confirmed": true,
+              "operation": "unattune",
+              "slot": null,
+              "tattoo_lifecycle": {
+                "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:c27398cf29fe:010:tattoo-lifecycle",
+                "consumer_id": "item.attunement.v1",
+                "effects_active": false,
+                "needle_state": "needle",
+                "operation": "needle_returns_and_effects_removed",
+                "phase": "needle_returned"
+              },
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          }
+        ],
+        "persisted": {
+          "attuned": false,
+          "charges": 9,
+          "item_fingerprint": "c6185a2e9abb89a5d57211048f6bcecdecde727b75a01bc11caa975127731908",
+          "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-c27398cf29fe-010",
+          "operation_transaction_count": 3,
+          "tattoo_lifecycle": {
+            "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:c27398cf29fe:010:tattoo-lifecycle",
+            "consumer_id": "item.attunement.v1",
+            "effects_active": false,
+            "needle_state": "needle",
+            "operation": "needle_returns_and_effects_removed",
+            "phase": "needle_returned"
+          },
+          "version": 4
+        },
+        "preview_confirm_replay": true,
+        "tattoo_lifecycle_persisted": true,
+        "typed_consumer": true,
+        "typed_projection_consumers": [
+          "item.attunement.v1",
+          "item.charge_resource.v1",
+          "item.equipment_modifier.v1"
+        ]
+      },
+      "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-coiling-004": {
+        "attunement_persisted": true,
+        "charge_lifecycle_persisted": true,
+        "compile_status": "full",
+        "consumer_ids": [
+          "item.attunement.v1",
+          "item.equipment_modifier.v1",
+          "item.granted_action.v1"
+        ],
+        "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-coiling-004",
+        "content_kind": "item",
+        "created": true,
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-XIV.json",
+        "item_name": "缠爪刺青|Coiling",
+        "item_state_persisted": true,
+        "operation_transaction_persisted": true,
+        "operations": [
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "attune",
+            "output": {
+              "after": {
+                "active_attunements": 1,
+                "armor_class": 10,
+                "attuned": true,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:coiling:004:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": true,
+                  "needle_state": "ink",
+                  "operation": "ink_manifestation",
+                  "phase": "manifested"
+                }
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": null,
+                "equipped": false,
+                "quantity": 1,
+                "tattoo_lifecycle": null
+              },
+              "confirmed": true,
+              "operation": "attune",
+              "slot": null,
+              "tattoo_lifecycle": {
+                "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:coiling:004:tattoo-lifecycle",
+                "consumer_id": "item.attunement.v1",
+                "effects_active": true,
+                "needle_state": "ink",
+                "operation": "ink_manifestation",
+                "phase": "manifested"
+              },
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          },
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "use_action",
+            "output": {
+              "after": {
+                "action_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:coiling:004:action:1",
+                "armor_class": 10,
+                "charges": null,
+                "rules_kernel_consumer": "item.granted_action.v1"
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": null,
+                "equipped": false,
+                "quantity": 1
+              },
+              "confirmed": true,
+              "operation": "use_action",
+              "slot": null,
+              "tattoo_lifecycle": null,
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          },
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "unattune",
+            "output": {
+              "after": {
+                "armor_class": 10,
+                "attuned": false,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:coiling:004:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": false,
+                  "needle_state": "needle",
+                  "operation": "needle_returns_and_effects_removed",
+                  "phase": "needle_returned"
+                }
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": null,
+                "equipped": false,
+                "quantity": 1,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:coiling:004:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": true,
+                  "needle_state": "ink",
+                  "operation": "ink_manifestation",
+                  "phase": "manifested"
+                }
+              },
+              "confirmed": true,
+              "operation": "unattune",
+              "slot": null,
+              "tattoo_lifecycle": {
+                "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:coiling:004:tattoo-lifecycle",
+                "consumer_id": "item.attunement.v1",
+                "effects_active": false,
+                "needle_state": "needle",
+                "operation": "needle_returns_and_effects_removed",
+                "phase": "needle_returned"
+              },
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          }
+        ],
+        "persisted": {
+          "attuned": false,
+          "charges": null,
+          "item_fingerprint": "26426940fcdd5e259488d88284489012db53f6dc5bee0d67f54d238ee1195212",
+          "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-coiling-004",
+          "operation_transaction_count": 3,
+          "tattoo_lifecycle": {
+            "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:coiling:004:tattoo-lifecycle",
+            "consumer_id": "item.attunement.v1",
+            "effects_active": false,
+            "needle_state": "needle",
+            "operation": "needle_returns_and_effects_removed",
+            "phase": "needle_returned"
+          },
+          "version": 4
+        },
+        "preview_confirm_replay": true,
+        "tattoo_lifecycle_persisted": true,
+        "typed_consumer": true,
+        "typed_projection_consumers": [
+          "item.attunement.v1",
+          "item.equipment_modifier.v1",
+          "item.granted_action.v1"
+        ]
+      },
+      "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-eldritch-005": {
+        "attunement_persisted": true,
+        "charge_lifecycle_persisted": true,
+        "compile_status": "full",
+        "consumer_ids": [
+          "item.attunement.v1",
+          "item.equipment_modifier.v1",
+          "item.granted_action.v1"
+        ],
+        "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-eldritch-005",
+        "content_kind": "item",
+        "created": true,
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-XIV.json",
+        "item_name": "魔能爪刺青|Eldritch",
+        "item_state_persisted": true,
+        "operation_transaction_persisted": true,
+        "operations": [
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "attune",
+            "output": {
+              "after": {
+                "active_attunements": 1,
+                "armor_class": 10,
+                "attuned": true,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:eldritch:005:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": true,
+                  "needle_state": "ink",
+                  "operation": "ink_manifestation",
+                  "phase": "manifested"
+                }
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": null,
+                "equipped": false,
+                "quantity": 1,
+                "tattoo_lifecycle": null
+              },
+              "confirmed": true,
+              "operation": "attune",
+              "slot": null,
+              "tattoo_lifecycle": {
+                "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:eldritch:005:tattoo-lifecycle",
+                "consumer_id": "item.attunement.v1",
+                "effects_active": true,
+                "needle_state": "ink",
+                "operation": "ink_manifestation",
+                "phase": "manifested"
+              },
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          },
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "use_action",
+            "output": {
+              "after": {
+                "action_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:eldritch:005:action:1",
+                "armor_class": 10,
+                "charges": null,
+                "rules_kernel_consumer": "item.granted_action.v1"
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": null,
+                "equipped": false,
+                "quantity": 1
+              },
+              "confirmed": true,
+              "operation": "use_action",
+              "slot": null,
+              "tattoo_lifecycle": null,
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          },
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "unattune",
+            "output": {
+              "after": {
+                "armor_class": 10,
+                "attuned": false,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:eldritch:005:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": false,
+                  "needle_state": "needle",
+                  "operation": "needle_returns_and_effects_removed",
+                  "phase": "needle_returned"
+                }
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": null,
+                "equipped": false,
+                "quantity": 1,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:eldritch:005:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": true,
+                  "needle_state": "ink",
+                  "operation": "ink_manifestation",
+                  "phase": "manifested"
+                }
+              },
+              "confirmed": true,
+              "operation": "unattune",
+              "slot": null,
+              "tattoo_lifecycle": {
+                "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:eldritch:005:tattoo-lifecycle",
+                "consumer_id": "item.attunement.v1",
+                "effects_active": false,
+                "needle_state": "needle",
+                "operation": "needle_returns_and_effects_removed",
+                "phase": "needle_returned"
+              },
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          }
+        ],
+        "persisted": {
+          "attuned": false,
+          "charges": null,
+          "item_fingerprint": "ba628f240db8e192698158fef419be53a50b0177ccd3d86e06fb8061cb9e0acb",
+          "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-eldritch-005",
+          "operation_transaction_count": 3,
+          "tattoo_lifecycle": {
+            "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:eldritch:005:tattoo-lifecycle",
+            "consumer_id": "item.attunement.v1",
+            "effects_active": false,
+            "needle_state": "needle",
+            "operation": "needle_returns_and_effects_removed",
+            "phase": "needle_returned"
+          },
+          "version": 4
+        },
+        "preview_confirm_replay": true,
+        "tattoo_lifecycle_persisted": true,
+        "typed_consumer": true,
+        "typed_projection_consumers": [
+          "item.attunement.v1",
+          "item.equipment_modifier.v1",
+          "item.granted_action.v1"
+        ]
+      },
+      "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-ghost-step-tattoo-008": {
+        "attunement_persisted": true,
+        "charge_lifecycle_persisted": true,
+        "compile_status": "full",
+        "consumer_ids": [
+          "item.attunement.v1",
+          "item.charge_resource.v1",
+          "item.equipment_modifier.v1",
+          "item.granted_action.v1"
+        ],
+        "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-ghost-step-tattoo-008",
+        "content_kind": "item",
+        "created": true,
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-XIV.json",
+        "item_name": "鬼步刺青|Ghost Step Tattoo",
+        "item_state_persisted": true,
+        "operation_transaction_persisted": true,
+        "operations": [
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "attune",
+            "output": {
+              "after": {
+                "active_attunements": 1,
+                "armor_class": 10,
+                "attuned": true,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:ghost-step-tattoo:008:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": true,
+                  "needle_state": "ink",
+                  "operation": "ink_manifestation",
+                  "phase": "manifested"
+                }
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": 3,
+                "equipped": false,
+                "quantity": 1,
+                "tattoo_lifecycle": null
+              },
+              "confirmed": true,
+              "operation": "attune",
+              "slot": null,
+              "tattoo_lifecycle": {
+                "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:ghost-step-tattoo:008:tattoo-lifecycle",
+                "consumer_id": "item.attunement.v1",
+                "effects_active": true,
+                "needle_state": "ink",
+                "operation": "ink_manifestation",
+                "phase": "manifested"
+              },
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          },
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "use_action",
+            "output": {
+              "after": {
+                "action_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:ghost-step-tattoo:008:action:1",
+                "armor_class": 10,
+                "charges": 2,
+                "rules_kernel_consumer": "item.granted_action.v1"
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": 3,
+                "equipped": false,
+                "quantity": 1
+              },
+              "confirmed": true,
+              "operation": "use_action",
+              "slot": null,
+              "tattoo_lifecycle": null,
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          },
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "unattune",
+            "output": {
+              "after": {
+                "armor_class": 10,
+                "attuned": false,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:ghost-step-tattoo:008:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": false,
+                  "needle_state": "needle",
+                  "operation": "needle_returns_and_effects_removed",
+                  "phase": "needle_returned"
+                }
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": 2,
+                "equipped": false,
+                "quantity": 1,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:ghost-step-tattoo:008:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": true,
+                  "needle_state": "ink",
+                  "operation": "ink_manifestation",
+                  "phase": "manifested"
+                }
+              },
+              "confirmed": true,
+              "operation": "unattune",
+              "slot": null,
+              "tattoo_lifecycle": {
+                "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:ghost-step-tattoo:008:tattoo-lifecycle",
+                "consumer_id": "item.attunement.v1",
+                "effects_active": false,
+                "needle_state": "needle",
+                "operation": "needle_returns_and_effects_removed",
+                "phase": "needle_returned"
+              },
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          }
+        ],
+        "persisted": {
+          "attuned": false,
+          "charges": 2,
+          "item_fingerprint": "8b7984138c5c8988ea6dba5632aeed17401a19d0252700efb4db7469fcd13eeb",
+          "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-ghost-step-tattoo-008",
+          "operation_transaction_count": 3,
+          "tattoo_lifecycle": {
+            "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:ghost-step-tattoo:008:tattoo-lifecycle",
+            "consumer_id": "item.attunement.v1",
+            "effects_active": false,
+            "needle_state": "needle",
+            "operation": "needle_returns_and_effects_removed",
+            "phase": "needle_returned"
+          },
+          "version": 4
+        },
+        "preview_confirm_replay": true,
+        "tattoo_lifecycle_persisted": true,
+        "typed_consumer": true,
+        "typed_projection_consumers": [
+          "item.attunement.v1",
+          "item.charge_resource.v1",
+          "item.equipment_modifier.v1",
+          "item.granted_action.v1"
+        ]
+      },
+      "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-illuminator-s-tattoo-000": {
+        "attunement_persisted": true,
+        "charge_lifecycle_persisted": true,
+        "compile_status": "full",
+        "consumer_ids": [
+          "item.attunement.v1",
+          "item.equipment_modifier.v1",
+          "item.granted_action.v1"
+        ],
+        "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-illuminator-s-tattoo-000",
+        "content_kind": "item",
+        "created": true,
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-XIV.json",
+        "item_name": "解文刺青|Illuminator's tattoo",
+        "item_state_persisted": true,
+        "operation_transaction_persisted": true,
+        "operations": [
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "attune",
+            "output": {
+              "after": {
+                "active_attunements": 1,
+                "armor_class": 10,
+                "attuned": true,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:illuminator-s-tattoo:000:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": true,
+                  "needle_state": "ink",
+                  "operation": "ink_manifestation",
+                  "phase": "manifested"
+                }
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": null,
+                "equipped": false,
+                "quantity": 1,
+                "tattoo_lifecycle": null
+              },
+              "confirmed": true,
+              "operation": "attune",
+              "slot": null,
+              "tattoo_lifecycle": {
+                "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:illuminator-s-tattoo:000:tattoo-lifecycle",
+                "consumer_id": "item.attunement.v1",
+                "effects_active": true,
+                "needle_state": "ink",
+                "operation": "ink_manifestation",
+                "phase": "manifested"
+              },
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          },
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "use_action",
+            "output": {
+              "after": {
+                "action_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:illuminator-s-tattoo:000:action:1",
+                "armor_class": 10,
+                "charges": null,
+                "rules_kernel_consumer": "item.granted_action.v1"
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": null,
+                "equipped": false,
+                "quantity": 1
+              },
+              "confirmed": true,
+              "operation": "use_action",
+              "slot": null,
+              "tattoo_lifecycle": null,
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          },
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "unattune",
+            "output": {
+              "after": {
+                "armor_class": 10,
+                "attuned": false,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:illuminator-s-tattoo:000:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": false,
+                  "needle_state": "needle",
+                  "operation": "needle_returns_and_effects_removed",
+                  "phase": "needle_returned"
+                }
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": null,
+                "equipped": false,
+                "quantity": 1,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:illuminator-s-tattoo:000:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": true,
+                  "needle_state": "ink",
+                  "operation": "ink_manifestation",
+                  "phase": "manifested"
+                }
+              },
+              "confirmed": true,
+              "operation": "unattune",
+              "slot": null,
+              "tattoo_lifecycle": {
+                "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:illuminator-s-tattoo:000:tattoo-lifecycle",
+                "consumer_id": "item.attunement.v1",
+                "effects_active": false,
+                "needle_state": "needle",
+                "operation": "needle_returns_and_effects_removed",
+                "phase": "needle_returned"
+              },
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          }
+        ],
+        "persisted": {
+          "attuned": false,
+          "charges": null,
+          "item_fingerprint": "70bd873c873317922c43ebc57174596a78494ee00450f1efa5dbb7eeacb65418",
+          "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-illuminator-s-tattoo-000",
+          "operation_transaction_count": 3,
+          "tattoo_lifecycle": {
+            "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:illuminator-s-tattoo:000:tattoo-lifecycle",
+            "consumer_id": "item.attunement.v1",
+            "effects_active": false,
+            "needle_state": "needle",
+            "operation": "needle_returns_and_effects_removed",
+            "phase": "needle_returned"
+          },
+          "version": 4
+        },
+        "preview_confirm_replay": true,
+        "tattoo_lifecycle_persisted": true,
+        "typed_consumer": true,
+        "typed_projection_consumers": [
+          "item.attunement.v1",
+          "item.equipment_modifier.v1",
+          "item.granted_action.v1"
+        ]
+      },
+      "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-lifewell-tattoo-009": {
+        "attunement_persisted": true,
+        "charge_lifecycle_persisted": true,
+        "compile_status": "full",
+        "consumer_ids": [
+          "item.attunement.v1",
+          "item.equipment_modifier.v1"
+        ],
+        "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-lifewell-tattoo-009",
+        "content_kind": "item",
+        "created": true,
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-XIV.json",
+        "item_name": "命源刺青|Lifewell Tattoo",
+        "item_state_persisted": true,
+        "operation_transaction_persisted": true,
+        "operations": [
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "attune",
+            "output": {
+              "after": {
+                "active_attunements": 1,
+                "armor_class": 10,
+                "attuned": true,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:lifewell-tattoo:009:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": true,
+                  "needle_state": "ink",
+                  "operation": "ink_manifestation",
+                  "phase": "manifested"
+                }
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": null,
+                "equipped": false,
+                "quantity": 1,
+                "tattoo_lifecycle": null
+              },
+              "confirmed": true,
+              "operation": "attune",
+              "slot": null,
+              "tattoo_lifecycle": {
+                "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:lifewell-tattoo:009:tattoo-lifecycle",
+                "consumer_id": "item.attunement.v1",
+                "effects_active": true,
+                "needle_state": "ink",
+                "operation": "ink_manifestation",
+                "phase": "manifested"
+              },
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          },
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "unattune",
+            "output": {
+              "after": {
+                "armor_class": 10,
+                "attuned": false,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:lifewell-tattoo:009:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": false,
+                  "needle_state": "needle",
+                  "operation": "needle_returns_and_effects_removed",
+                  "phase": "needle_returned"
+                }
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": null,
+                "equipped": false,
+                "quantity": 1,
+                "tattoo_lifecycle": {
+                  "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:lifewell-tattoo:009:tattoo-lifecycle",
+                  "consumer_id": "item.attunement.v1",
+                  "effects_active": true,
+                  "needle_state": "ink",
+                  "operation": "ink_manifestation",
+                  "phase": "manifested"
+                }
+              },
+              "confirmed": true,
+              "operation": "unattune",
+              "slot": null,
+              "tattoo_lifecycle": {
+                "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:lifewell-tattoo:009:tattoo-lifecycle",
+                "consumer_id": "item.attunement.v1",
+                "effects_active": false,
+                "needle_state": "needle",
+                "operation": "needle_returns_and_effects_removed",
+                "phase": "needle_returned"
+              },
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          }
+        ],
+        "persisted": {
+          "attuned": false,
+          "charges": null,
+          "item_fingerprint": "12c4efc4bd85db4ca3ef15a537b35aac80186957832cc7958293c6ee1b60bc19",
+          "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-lifewell-tattoo-009",
+          "operation_transaction_count": 2,
+          "tattoo_lifecycle": {
+            "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:lifewell-tattoo:009:tattoo-lifecycle",
+            "consumer_id": "item.attunement.v1",
+            "effects_active": false,
+            "needle_state": "needle",
+            "operation": "needle_returns_and_effects_removed",
+            "phase": "needle_returned"
+          },
+          "version": 3
+        },
+        "preview_confirm_replay": true,
+        "tattoo_lifecycle_persisted": true,
+        "typed_consumer": true,
+        "typed_projection_consumers": [
+          "item.attunement.v1",
+          "item.equipment_modifier.v1"
+        ]
+      },
       "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list": {
         "character_cas": true,
         "choice_lifecycle": false,
@@ -28921,7 +30117,15 @@
       "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-heart-weaver-s-primer-010",
       "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-libram-of-souls-and-flesh-011",
       "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-lyre-of-building-012",
-      "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-planecaller-s-codex-014"
+      "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-planecaller-s-codex-014",
+      "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-8d7814d75b94-003",
+      "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-b9cb8e43543d-007",
+      "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-c27398cf29fe-010",
+      "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-coiling-004",
+      "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-eldritch-005",
+      "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-ghost-step-tattoo-008",
+      "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-illuminator-s-tattoo-000",
+      "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-lifewell-tattoo-009"
     ]
   },
   "schema_version": "tashas-whole-pack-report-1",

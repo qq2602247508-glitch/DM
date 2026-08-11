@@ -16,6 +16,13 @@
 - Round XI 产物：`scripts/validate-tashas-item-production-consumer-round-XI.py`、Round XI report/result、`docs/tashas-item-production-consumer-round-XI-2026-08-12.md`；仍 formal_apply=false、formal registry/database 未写入、name branch=0。
 - Round XI 实现提交 `0f3eccf0bcef428ff70932412d891708efc2c176` 已于 2026-08-12 05:08:31 +0800 推送到 `origin/main`；receipt 更新随后单独提交。
 
+# 2026-08-12 Round 12 检查点：Typed Tattoo Lifecycle Consumer
+
+- `item.attunement.v1` 已按 typed `tattoo_lifecycle` clause 持久化刺青状态：同调 `manifested/ink/effects_active`，解除同调 `needle_returned/needle/effects_removed`；使用 character/equipment CAS、OperationTransaction、idempotency，无 item-name branch。
+- 8/8 完整刺青真实 API roundtrip 通过，21 transactions，2 charge lifecycle，8/8 transition、metadata、Attunement ended 和 replay 通过。ItemSpec：`47 / 37 / 37 / 24 / 24`（total / compile / isolated / registered / game usable）。
+- 证据入口：`scripts/validate-tashas-item-production-consumer-round-XII.py`、Round XII report/result、`docs/tashas-item-production-consumer-round-XII-2026-08-12.md`。
+- 当前 formal_apply/database/registry 仍 false/unchanged；下一轮继续 explicit spell-cast、partial tattoos 与 unresolved item effects。
+
 # 2026-08-12 Round 9 检查点：Resource Profile / Exchange / Event Window Consumer 扩展
 
 - Round 9 作为 platform/core growth round，完成剩余 6 条 full Feature contract 的真实 production evidence：Psi Warrior Psionic Power resource profile、Battle Master Brace/Quick Toss triggered attack windows、Paladin Harness Divine Power resource exchange、Paladin Interception/ Rune Knight Runic Shield reaction windows。

@@ -199,10 +199,10 @@
     "compile_full": true,
     "dm_assisted": false,
     "draft": true,
-    "game_usable": false,
-    "highest_status": "isolated_runtime_validated",
+    "game_usable": true,
+    "highest_status": "game_usable",
     "isolated_runtime_validated": true,
-    "registered_production_full": false,
+    "registered_production_full": true,
     "reviewed": true,
     "runtime_preview_full": true,
     "source_identified": true

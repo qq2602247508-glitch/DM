@@ -1,7 +1,7 @@
 {
   "after": {
     "compile_only": 35,
-    "production_full": 150,
+    "production_full": 158,
     "tasha_atom_pack": {
       "authored_typed_ir": 94,
       "candidate_generated": 407,
@@ -41,6 +41,14 @@
             "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-libram-of-souls-and-flesh-011",
             "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-lyre-of-building-012",
             "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-planecaller-s-codex-014",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-8d7814d75b94-003",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-b9cb8e43543d-007",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-c27398cf29fe-010",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-coiling-004",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-eldritch-005",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-ghost-step-tattoo-008",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-illuminator-s-tattoo-000",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-lifewell-tattoo-009",
             "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list",
             "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech",
             "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant",
@@ -118,8 +126,8 @@
       },
       "current_project_compile_only": 35,
       "current_project_compiled_unique": 111,
-      "current_project_production_full": 150,
-      "current_project_production_registry_fingerprint": "a0d95fbc8734a3db782abc3615757c943cbef6b80eacd3d431a41ea8c45dbfbe",
+      "current_project_production_full": 158,
+      "current_project_production_registry_fingerprint": "917f37b81e8d41ce225a8d8fb6fe13e5911fcfd347eb9f6b4900c89f543182f5",
       "dm_assisted": 2,
       "dm_reference": 107,
       "draft_total": 407,
@@ -144,7 +152,7 @@
         "implemented": true,
         "inventory_atom_count": 47,
         "isolated_runtime_validated_count": 37,
-        "production_count": 16,
+        "production_count": 24,
         "typed_count": 47,
         "unlock_ranking": [
           {
@@ -234,7 +242,7 @@
   },
   "baseline": {
     "compile_only": 35,
-    "production_full": 150,
+    "production_full": 158,
     "unique_compiled": 111
   },
   "database_unchanged": true,

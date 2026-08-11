@@ -891,6 +891,7 @@ class SpellEconomyService:
             if op == "use_charge" and (e.charges is None or e.charges < data["amount"]):
                 raise ValueError("insufficient charges")
             item_spec = e.metadata_json.get("item_spec")
+            tattoo_lifecycle = self._typed_tattoo_lifecycle(item_spec)
             if op == "use_action":
                 if not isinstance(item_spec, dict):
                     raise ValueError("item has no typed granted action")
@@ -911,8 +912,6 @@ class SpellEconomyService:
                 required = int(action.get("charge_cost") or 0)
                 if required and (e.charges is None or e.charges < required):
                     raise ValueError("insufficient charges for item action")
-            if op == "unattune":
-                item_spec = e.metadata_json.get("item_spec")
             if op == "unequip" and not e.equipped:
                 raise ValueError("item is not equipped")
             if op == "attune":
@@ -951,6 +950,10 @@ class SpellEconomyService:
                 },
                 "rule_reference": RULE,
             }
+            if tattoo_lifecycle and op in {"attune", "unattune"}:
+                out["before"]["tattoo_lifecycle"] = e.metadata_json.get(
+                    "item_tattoo_lifecycle"
+                )
             if op == "equip":
                 after_ac, ac_baseline = self._equipment_armor_class(
                     c, equipped_all, add=e
@@ -988,6 +991,16 @@ class SpellEconomyService:
                 }
             elif op == "attune":
                 out["after"] = {"attuned": True, "active_attunements": active + 1}
+                if tattoo_lifecycle:
+                    out["tattoo_lifecycle"] = {
+                        "consumer_id": "item.attunement.v1",
+                        "clause_id": tattoo_lifecycle["clause_id"],
+                        "operation": tattoo_lifecycle["on_attune"],
+                        "phase": "manifested",
+                        "needle_state": "ink",
+                        "effects_active": True,
+                    }
+                    out["after"]["tattoo_lifecycle"] = out["tattoo_lifecycle"]
             elif op == "unattune":
                 existing = s.scalar(
                     select(Attunement).where(
@@ -997,6 +1010,16 @@ class SpellEconomyService:
                 if existing is None:
                     raise ValueError("item is not attuned")
                 out["after"] = {"attuned": False}
+                if tattoo_lifecycle:
+                    out["tattoo_lifecycle"] = {
+                        "consumer_id": "item.attunement.v1",
+                        "clause_id": tattoo_lifecycle["clause_id"],
+                        "operation": tattoo_lifecycle["on_unattune"],
+                        "phase": "needle_returned",
+                        "needle_state": "needle",
+                        "effects_active": False,
+                    }
+                    out["after"]["tattoo_lifecycle"] = out["tattoo_lifecycle"]
             out["preview_token"] = _token({"data": data, "out": out, "version": c.version})
             return out
 
@@ -1081,6 +1104,11 @@ class SpellEconomyService:
                 else:
                     old_attunement.status = "active"
                     old_attunement.version += 1
+                if preview.get("tattoo_lifecycle"):
+                    e.metadata_json = {
+                        **e.metadata_json,
+                        "item_tattoo_lifecycle": preview["tattoo_lifecycle"],
+                    }
             elif op == "unattune":
                 att = s.scalar(
                     select(Attunement).where(
@@ -1091,6 +1119,11 @@ class SpellEconomyService:
                     raise ValueError("item is not attuned")
                 att.status = "ended"
                 att.version += 1
+                if preview.get("tattoo_lifecycle"):
+                    e.metadata_json = {
+                        **e.metadata_json,
+                        "item_tattoo_lifecycle": preview["tattoo_lifecycle"],
+                    }
             c.version += 1
             e.version += 1
             out = {
@@ -1110,6 +1143,28 @@ class SpellEconomyService:
                 )
             )
             return out
+
+    @staticmethod
+    def _typed_tattoo_lifecycle(item_spec: object) -> dict[str, str] | None:
+        if not isinstance(item_spec, dict):
+            return None
+        for raw_clause in item_spec.get("clauses", []):
+            if not isinstance(raw_clause, dict) or raw_clause.get("clause_type") != "tattoo_lifecycle":
+                continue
+            parameters = raw_clause.get("parameters")
+            if not isinstance(parameters, dict):
+                raise ValueError("tattoo lifecycle clause parameters must be typed")
+            on_attune = str(parameters.get("on_attune") or "").strip()
+            on_unattune = str(parameters.get("on_unattune") or "").strip()
+            clause_id = str(raw_clause.get("clause_id") or "").strip()
+            if not clause_id or not on_attune or not on_unattune:
+                raise ValueError("tattoo lifecycle clause requires typed transitions")
+            return {
+                "clause_id": clause_id,
+                "on_attune": on_attune,
+                "on_unattune": on_unattune,
+            }
+        return None
 
     @staticmethod
     def _item_adjudication_clause(

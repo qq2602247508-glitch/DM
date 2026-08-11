@@ -18,6 +18,16 @@
 - 证据：`docs/tashas-feature-production-consumer-round-IX-2026-08-12.md`、Round IX report/result、`reports/tashas-status-layer-audit-2026-08-11.json` 和 whole-pack report。
 - 下一步：继续处理 unresolved ItemSpec consumer 与 vessel/entity、exhaustion、spectral object、teleport destination、psionic payment 的真实 event producer/consumer；已补齐的 generic window/resource consumer 继续复用。
 
+## Round 12：Typed Tattoo Lifecycle Consumer
+
+当前状态：`in_progress`；本轮已完成通用 tattoo lifecycle 实现和 8 条真实 evidence，待最终门禁、提交和推送。
+
+- `equipment_preview/confirm` 现在按 typed `tattoo_lifecycle` clause 持久化 `manifested/ink/effects_active` 与 `needle_returned/needle/effects_removed`，并继续复用 `item.attunement.v1`、character CAS、OperationTransaction 和 idempotency；没有 item-name dispatch。
+- 8/8 完整刺青通过 create→attune→action/charge→unattune 的 preview→confirm→replay；8/8 transition、metadata snapshot、Attunement ended、CAS/replay 通过，共 21 transactions，2 条 charge lifecycle。
+- ItemSpec 当前状态：`47 total / 37 compile_full / 37 isolated / 24 registered_production_full / 24 game_usable`；Feature Tasha 仍 `74/2/76`，分开计数。
+- 证据：Round XII report/result、Round XII doc/test、更新后的 ItemSpec catalog 与 whole-pack migration；formal registry/database 未写入，name branch=0。
+- 下一步：继续剩余 explicit spell-cast、partial tattoo variants 和 unresolved item effects；ItemSpec production 尚未达到整包阈值。
+
 ## Round 11：ItemSpec Content Quality Correction / Equipment Consumer Expansion
 
 当前状态：`accepted`；本轮完成 parser 质量修复和 8 条真实 ItemSpec evidence，已提交并推送。

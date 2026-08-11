@@ -107,13 +107,21 @@ def _confirm_operation(
             "confirmed": output.get("confirmed"),
             "slot": output.get("slot"),
             "warnings": output.get("warnings", []),
+            "tattoo_lifecycle": output.get("tattoo_lifecycle"),
             "before": output.get("before", {}),
             "after": output.get("after", {}),
         },
     }
 
 
-def _run_item(client: TestClient, database_url: str, spec: ItemSpec, index: int) -> dict[str, Any]:
+def _run_item(
+    client: TestClient,
+    database_url: str,
+    spec: ItemSpec,
+    index: int,
+    *,
+    tattoo_roundtrip: bool = False,
+) -> dict[str, Any]:
     campaign = client.post("/api/v1/campaigns", json={"name": f"Tasha Round X Item {index}"}).json()
     base = f"/api/v1/campaigns/{campaign['id']}"
     character = client.post(
@@ -202,6 +210,18 @@ def _run_item(client: TestClient, database_url: str, spec: ItemSpec, index: int)
                 key=f"round-x-{index}-charge",
             )
         )
+    if tattoo_roundtrip:
+        current = client.get(f"{base}/characters/{character['id']}").json()
+        operations.append(
+            _confirm_operation(
+                client,
+                base,
+                current,
+                equipment["id"],
+                operation="unattune",
+                key=f"round-x-{index}-unattune",
+            )
+        )
     engine = create_engine(database_url)
     with Session(engine) as session:
         row = session.get(EquipmentInstance, equipment["id"])
@@ -229,6 +249,7 @@ def _run_item(client: TestClient, database_url: str, spec: ItemSpec, index: int)
             "charges": row.charges,
             "version": row.version,
             "operation_transaction_count": transaction_count,
+            "tattoo_lifecycle": row.metadata_json.get("item_tattoo_lifecycle"),
         }
     return {
         "content_id": spec.item_id,
@@ -242,7 +263,20 @@ def _run_item(client: TestClient, database_url: str, spec: ItemSpec, index: int)
         "preview_confirm_replay": all(item["preview"] and item["confirm"] and item["replay"] for item in operations),
         "typed_consumer": sorted(typed_projection.get("consumer_ids", [])) == sorted(expected_consumers),
         "item_state_persisted": persisted["item_id"] == spec.item_id and bool(persisted["item_fingerprint"]),
-        "attunement_persisted": persisted["attuned"] == spec.requires_attunement,
+        "attunement_persisted": (
+            persisted["attuned"] is False
+            if tattoo_roundtrip
+            else persisted["attuned"] == spec.requires_attunement
+        ),
+        "tattoo_lifecycle_persisted": (
+            not tattoo_roundtrip
+            or (
+                persisted["tattoo_lifecycle"] is not None
+                and persisted["tattoo_lifecycle"].get("phase") == "needle_returned"
+                and persisted["tattoo_lifecycle"].get("needle_state") == "needle"
+                and persisted["tattoo_lifecycle"].get("effects_active") is False
+            )
+        ),
         "charge_lifecycle_persisted": (
             not spec.charges
             or persisted["charges"] is not None

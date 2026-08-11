@@ -10,7 +10,7 @@
 
 ## ItemSpec 与运行时
 
-- `item-ir-1` typed/reviewed：47/47；compile full：37；isolated runtime validated：37；registered production full：16；game usable：16；保留 DM 边界：10；name branch：0。
+- `item-ir-1` typed/reviewed：47/47；compile full：37；isolated runtime validated：37；registered production full：24；game usable：24；保留 DM 边界：10；name branch：0。
 - 通用 consumer：equipment modifier、attunement/tattoo lifecycle、charge/recovery、granted action/spell、consumable、triggered effect；复用 EquipmentInstance、Attunement、RestService、Rules Kernel projection 和 transaction/CAS/idempotency。
 - 隔离测试已覆盖同调、Item action charge、DM decision window、replay、rollback、短/长休 charge recovery；dawn 不被错误转换成 long rest。
 
