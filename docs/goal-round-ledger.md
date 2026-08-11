@@ -6,6 +6,19 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 15：Typed Item-Cast Spell Consumer
+
+当前状态：`accepted`；本轮解锁 3 条 artifact ItemSpec 的显式 spell list，并已提交推送。
+
+- 解析器支持显式“施展”后的单法术与列表式 inline identities；generic “这道法术”、职业法器 prose、变量蕴法刺青仍 fail closed。鲁芭的灵魂塔罗卡、拉奥圣杖和伊格薇尔伏恶魔志从 partial 解锁为 compile/isolated full。
+- `item.granted_spell.v1` 已接到 equipment action preview/transaction snapshot，返回 typed `item_spell_cast`、`grant_mode=item_cast` 和去重排序 spell identities；3/3 preview/confirm/replay、16 identities、2 charge lifecycle、6 transactions、CAS/state 全通过，name branch=0。
+- ItemSpec status layers：`47 total / 40 compile_full / 40 isolated_runtime_validated / 40 registered_production_full / 40 game_usable`；项目 production full `171→174`。Feature Tasha 仍独立为 `74/2/76`。
+- formal registry/database、campaign/character、source corpus 未写入；随机表、DM choice、变量 spell、entity/exhaustion 语义的剩余 7 条 partial 不因有动作文字而自动升级。
+- Round XV validator、whole-pack migration 各运行两次且 byte-identical；Round X–XV 定向测试 21 项、backend 全量 pytest 890 项、Ruff、compileall 和 `git diff --check` 通过。
+- 证据：`docs/tashas-item-production-consumer-round-XV-2026-08-12.md`、Round XV report/result、ItemSpec catalog 与 whole-pack migration 输出。
+- 实现与证据提交 `f34148d9c6c4d40a9e965c625bc4f006b27f9a9c` 已推送到 `origin/main`；ledger/handoff receipt 随后单独提交。
+- 下一步：继续剩余 7 条 partial ItemSpec 的真实 typed semantic unlock；不把 generic/variable/DM-reference prose 伪装成 production。
+
 ## Round 14：Residual Complete ItemSpec Closeout / Dawn Boundary
 
 当前状态：`accepted`；本轮关闭剩余 5 条完整 ItemSpec，已提交并推送。

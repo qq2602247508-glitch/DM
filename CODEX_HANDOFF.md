@@ -1,3 +1,12 @@
+# 2026-08-12 Round 15 检查点：Typed Item-Cast Spell Consumer
+
+- Round XV 修复显式“施展”后的 inline spell identity parser，支持单法术与 `施展以下/下列法术：...` 列表；generic “这道法术”、职业法器 prose 和变量蕴法刺青仍 fail closed。鲁芭的灵魂塔罗卡、拉奥圣杖、伊格薇尔伏恶魔志 3 条从 partial 解锁为 compile/isolated full。
+- `item.granted_spell.v1` 现在在 equipment action preview/transaction snapshot 中物化 typed `item_spell_cast`、`grant_mode=item_cast` 和 16 个去重 spell identities；3/3 preview→confirm→幂等 replay、2 charge lifecycles、6 transactions、CAS/state 全通过，`name_branch_count=0`。
+- ItemSpec status layers：`47 total / 40 compile_full / 40 isolated_runtime_validated / 40 registered_production_full / 40 game_usable`；项目 production full `171→174`。Tasha Feature 独立维持 `74 production / 2 dm-assisted / 76 game-usable`。
+- 新增/更新：`backend/src/dnd_dm_assistant/application/tashas_recovery.py`、`infrastructure/database/spell_economy_service.py`、Round XV validator/test/report/result/doc、ItemSpec catalog/runtime registry 与 whole-pack reports；Round X–XV 定向测试 21 项、backend 全量 pytest `890 passed`、Ruff、compileall、`git diff --check` 通过。
+- formal registry/database/campaign/character、source corpus、3D 和永久保护路径未写入。剩余 7 条 partial 仍因随机表、DM choice、变量 spell 或 entity/exhaustion 语义保持 fail-closed。永久指纹保持：database `f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad`、formal registry `f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b`、integrations `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`、ollama `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`。
+- 实现/证据提交 `f34148d9c6c4d40a9e965c625bc4f006b27f9a9c` 已推送到 `origin/main`；本交接 receipt 更新随后单独提交。下一轮继续剩余 partial 的 typed semantic unlock，不将 generic/variable/DM-reference prose 计入 production。
+
 # 2026-08-12 Round 14 检查点：Residual Complete ItemSpec Closeout / Dawn Boundary
 
 - Round XIV 关闭当前 inventory 中剩余的 5 条完整 ItemSpec：堕影冥界碎晶、伪装刺青、堕影冥界印记刺青、重生坩埚、凝晶年纪。5/5 通过 equipment create、attunement/equip、granted action 或 charge、preview→confirm→幂等 replay。

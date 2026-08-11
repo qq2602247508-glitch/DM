@@ -1,7 +1,120 @@
 {
-  "current_round": "round-14",
+  "current_round": "round-15",
   "goal": "Local AI D&D DM Assistant complete official-content rules platform",
   "rounds": [
+    {
+      "authored_count": 0,
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 171,
+            "unique_compiled": 111
+          },
+          "formal_499": {
+            "dm_only": 61,
+            "full": 328,
+            "partial": 110,
+            "total": 499
+          },
+          "protected_fingerprints": {
+            "database": "f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad",
+            "formal_registry": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+            "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+            "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+          },
+          "tashas": {
+            "authored_typed_ir": 94,
+            "compile_only": 17,
+            "content_atoms_after_qa": 524,
+            "executable": 407,
+            "game_usable": 76,
+            "item_spec_compile_full": 37,
+            "item_spec_isolated_runtime_validated": 37,
+            "item_spec_registered_production_full": 37,
+            "item_spec_game_usable": 37,
+            "manual_authoring": 314,
+            "production_full": 74,
+            "runtime_preview_full": 93,
+            "source_records": 144
+          }
+        },
+        "difference": "Round 15 adds a typed inline spell-list parser and real item.granted_spell.v1 equipment consumer for three artifact ItemSpecs; generic prose and variable/manual spells remain fail-closed.",
+        "prompt_baseline": {"round_target_item_production": 8, "residual_partial_item_count": 10}
+      },
+      "commits": ["f34148d"],
+      "compile_full_delta": 0,
+      "dm_assisted_delta": 0,
+      "files_changed": [
+        "backend/src/dnd_dm_assistant/application/tashas_recovery.py",
+        "backend/src/dnd_dm_assistant/infrastructure/database/spell_economy_service.py",
+        "backend/tests/test_tashas_item_production_consumer_round_XI.py",
+        "backend/tests/test_tashas_item_production_consumer_round_XV.py",
+        "scripts/validate-tashas-item-production-consumer-round-XV.py",
+        "data/content-ir/compiled/production-runtime-results-XVII.json",
+        "reports/tashas-item-production-consumer-round-XV-2026-08-12.json",
+        "reports/tashas-item-spec-catalog-2026-08-11.json",
+        "docs/tashas-item-production-consumer-round-XV-2026-08-12.md"
+      ],
+      "item_compile_full_delta": 3,
+      "manual_delta": 0,
+      "next_round_reason": "Seven ItemSpecs remain partial because their random tables, DM choices, variable embedded spells, or entity/exhaustion semantics are not yet fully typed; continue only with real semantic producers/consumers.",
+      "objective": "Unlock explicit item-cast spell lists with a typed parser and a generic equipment transaction consumer, without promoting generic or variable spell prose.",
+      "pack_coverage_delta": {
+        "content_ir_production_full_before": 171,
+        "content_ir_production_full_after": 174,
+        "item_compile_full_before": 37,
+        "item_compile_full_after": 40,
+        "item_production_evidence_selected": 3,
+        "item_registered_production_full_before": 37,
+        "item_registered_production_full_after": 40,
+        "item_game_usable_before": 37,
+        "item_game_usable_after": 40,
+        "tasha_feature_game_usable_unchanged": 76,
+        "tasha_feature_registered_production_unchanged": 74
+      },
+      "phase": "I",
+      "push_receipt": {
+        "branch": "main",
+        "commit_hash": "f34148d9c6c4d40a9e965c625bc4f006b27f9a9c",
+        "pushed_at": "2026-08-12T06:06:34+0800",
+        "remote": "origin",
+        "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
+        "result": "success"
+      },
+      "reports": [
+        "reports/tashas-item-production-consumer-round-XV-2026-08-12.json",
+        "data/content-ir/compiled/production-runtime-results-XVII.json",
+        "reports/tashas-item-spec-catalog-2026-08-11.json",
+        "docs/tashas-item-production-consumer-round-XV-2026-08-12.md"
+      ],
+      "reviewed_count": 0,
+      "selected_clusters": [
+        "item.granted_spell",
+        "item.spell_identity",
+        "item.attunement",
+        "item.charge_resource",
+        "item.granted_action"
+      ],
+      "selected_platforms": [
+        "item_explicit_spell_identity_parser",
+        "item.granted_spell.v1",
+        "spell_economy.equipment_preview",
+        "spell_economy.equipment_confirm",
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "operation_transaction",
+        "character_version_cas",
+        "character_assets_snapshot"
+      ],
+      "status": "accepted",
+      "tests": [
+        "Round XV validator: 3/3 artifact ItemSpecs and 16 typed spell identities",
+        "item.granted_spell.v1: 3/3 transaction snapshots; 2 charge lifecycles and 6 operation transactions",
+        "Round X–XV targeted tests: 21 passed; backend pytest: 890 passed",
+        "Round XV validator and whole-pack migration twice: byte-identical output"
+      ]
+    },
     {
       "authored_count": 0,
       "baseline": {
