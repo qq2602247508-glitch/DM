@@ -1,0 +1,106 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "1附赠动作",
+  "clause_boundaries": {
+    "concentration": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "士、法师）* **施法时间：**1附赠动作 **施法距离：**60尺 **法术成分：**V、S、M（一枚镀上铂金的龙鳞，价值至少500gp） **持续时间：**专注，至多 1分钟 你创造一道闪着银光的力场，环绕在施法距离内你所选择的一个生物周围（你可以选择你自己）。该力场散发5尺微光光照。被力场保护的生物获得以下好处： > **掩护Cover。**该生物具有半身掩护。 > > > > **伤害抗性Damage > Resistance。**该生物获得对强酸，寒冷，火焰，闪电以及毒素伤害的抗性。 > > > > **反射闪避Evasion。**如果该生物受到可以由成功通过敏捷豁免来使伤害减半的效应影响，该生物在成功通过豁免时改为不受任何伤害，失败则受到一半伤害。 在之后的回",
+      "source_heading": "费资本铂金盾"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "术成分：**V、S、M（一枚镀上铂金的龙鳞，价值至少500gp） **持续时间：**专注，至多 1分钟 你创造一道闪着银光的力场，环绕在施法距离内你所选择的一个生物周围（你可以选择你自己）。该力场散发5尺微光光照。被力场保护的生物获得以下好处： > **掩护Cover。**该生物具有半身掩护。 > > > > **伤害抗性Damage > Resistance。**该生物获得对强酸，寒冷，火焰，闪电以及毒素伤害的抗性。 > > > > **反射闪避Evasion。**如果该生物受到可以由成功通过敏捷豁免来使伤害减半的效应影响，该生物在成功通过豁免时改为不受任何伤害，失败则受到一半伤害。 在之后的回合内以一个附赠动作，你可以将该力场移动至力场周围60尺内的另一个生物身上。",
+      "source_heading": "费资本铂金盾"
+    }
+  },
+  "clause_identity": [
+    "fizbans-treasury:spell:843fb135e4cc8a1fb34c46be:target",
+    "fizbans-treasury:spell:843fb135e4cc8a1fb34c46be:concentration"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "术成分：**V、S、M（一枚镀上铂金的龙鳞，价值至少500gp） **持续时间：**专注，至多 1分钟 你创造一道闪着银光的力场，环绕在施法距离内你所选择的一个生物周围（你可以选择你自己）。该力场散发5尺微光光照。被力场保护的生物获得以下好处： > **掩护Cover。**该生物具有半身掩护。 > > > > **伤害抗性Damage > Resistance。**该生物获得对强酸，寒冷，火焰，闪电以及毒素伤害的抗性。 > > > > **反射闪避Evasion。**如果该生物受到可以由成功通过敏捷豁免来使伤害减半的效应影响，该生物在成功通过豁免时改为不受任何伤害，失败则受到一半伤害。 在之后的回合内以一个附赠动作，你可以将该力场移动至力场周围60尺内的另一个生物身上。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "clause_id": "concentration",
+      "duration": "专注，至多 \n1分钟",
+      "evidence_ref": "士、法师）* **施法时间：**1附赠动作 **施法距离：**60尺 **法术成分：**V、S、M（一枚镀上铂金的龙鳞，价值至少500gp） **持续时间：**专注，至多 1分钟 你创造一道闪着银光的力场，环绕在施法距离内你所选择的一个生物周围（你可以选择你自己）。该力场散发5尺微光光照。被力场保护的生物获得以下好处： > **掩护Cover。**该生物具有半身掩护。 > > > > **伤害抗性Damage > Resistance。**该生物获得对强酸，寒冷，火焰，闪电以及毒素伤害的抗性。 > > > > **反射闪避Evasion。**如果该生物受到可以由成功通过敏捷豁免来使伤害减半的效应影响，该生物在成功通过豁免时改为不受任何伤害，失败则受到一半伤害。 在之后的回",
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": true,
+  "duration": "专注，至多 \n1分钟",
+  "edition": "2014",
+  "evidence": [
+    "concentration: 士、法师）* **施法时间：**1附赠动作 **施法距离：**60尺 **法术成分：**V、S、M（一枚镀上铂金的龙鳞，价值至少500gp） **持续时间：**专注，至多 1分钟 你创造一道闪着银光的力场，环绕在施法距离内你所选择的一个生物周围（你可以选择你自己）。该力场散发5尺微光光照。被力场保护的生物获得以下好处： > **掩护Cover。**该生物具有半身掩护。 > > > > **伤害抗性Damage > Resistance。**该生物获得对强酸，寒冷，火焰，闪电以及毒素伤害的抗性。 > > > > **反射闪避Evasion。**如果该生物受到可以由成功通过敏捷豁免来使伤害减半的效应影响，该生物在成功通过豁免时改为不受任何伤害，失败则受到一半伤害。 在之后的回",
+    "target: 术成分：**V、S、M（一枚镀上铂金的龙鳞，价值至少500gp） **持续时间：**专注，至多 1分钟 你创造一道闪着银光的力场，环绕在施法距离内你所选择的一个生物周围（你可以选择你自己）。该力场散发5尺微光光照。被力场保护的生物获得以下好处： > **掩护Cover。**该生物具有半身掩护。 > > > > **伤害抗性Damage > Resistance。**该生物获得对强酸，寒冷，火焰，闪电以及毒素伤害的抗性。 > > > > **反射闪避Evasion。**如果该生物受到可以由成功通过敏捷豁免来使伤害减半的效应影响，该生物在成功通过豁免时改为不受任何伤害，失败则受到一半伤害。 在之后的回合内以一个附赠动作，你可以将该力场移动至力场周围60尺内的另一个生物身上。"
+  ],
+  "kind": "spell",
+  "level": 6,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "费资本铂金盾",
+  "namespace": "content.fizbans-treasury",
+  "pack_id": "fizbans-treasury",
+  "pack_version": "source-7011166c19bd",
+  "range": "60尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "spell-ir-1",
+  "school": "防护",
+  "source_book": "费资本的巨龙宝库",
+  "source_evidence": {
+    "selected_clause_excerpt": "术成分：**V、S、M（一枚镀上铂金的龙鳞，价值至少500gp） **持续时间：**专注，至多 1分钟 你创造一道闪着银光的力场，环绕在施法距离内你所选择的一个生物周围（你可以选择你自己）。该力场散发5尺微光光照。被力场保护的生物获得以下好处： > **掩护Cover。**该生物具有半身掩护。 > > > > **伤害抗性Damage > Resistance。**该生物获得对强酸，寒冷，火焰，闪电以及毒素伤害的抗性。 > > > > **反射闪避Evasion。**如果该生物受到可以由成功通过敏捷豁免来使伤害减半的效应影响，该生物在成功通过豁免时改为不受任何伤害，失败则受到一半伤害。 在之后的回合内以一个附赠动作，你可以将该力场移动至力场周围60尺内的另一个生物身上。 士、法师）* **施法时间：**1附赠动作 **施法距离：**60尺 **法术成分：**V、S、M（一枚镀上铂金的龙鳞，价值至少500gp） **持续时间：**专注，至多 1分钟 你创造一道闪着银光的力场，环绕在施法距离内你所选择的一个生物周围（你可以选择你自己）。该力场散发5尺微光光照。被力场保护的生物获得以下好处： > **掩护Cover。**该生物具有半身掩护。 > > > > **伤害抗性Damage > Resistance。**该生物获得对强酸，寒冷，火焰，闪电以及毒素伤害的抗性。 > > > > **反射闪避Evasion。**如果该生物受到可以由成功通过敏捷豁免来使伤害减半的效应影响，该生物在成功通过豁免时改为不受任何伤害，失败则受到一半伤害。 在之后的回",
+    "source_book": "费资本的巨龙宝库",
+    "source_checksum": "d67ab7f538b593d54f8f53dbaabe3aaffb0f4919fa78965f3554386c25978564",
+    "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+    "source_text": "#### 费资本铂金盾｜Fizban's Platinum Shield\n\n*六环 防护（术士、法师）*\n**施法时间：**1附赠动作\n**施法距离：**60尺\n**法术成分：**V、S、M（一枚镀上铂金的龙鳞，价值至少500gp）\n**持续时间：**专注，至多\n1分钟\n你创造一道闪着银光的力场，环绕在施法距离内你所选择的一个生物周围（你可以选择你自己）。该力场散发5尺微光光照。被力场保护的生物获得以下好处：\n\n> **掩护Cover。**该生物具有半身掩护。\n>\n>\n>\n> **伤害抗性Damage\n>  Resistance。**该生物获得对强酸，寒冷，火焰，闪电以及毒素伤害的抗性。\n>\n>\n>\n> **反射闪避Evasion。**如果该生物受到可以由成功通过敏捷豁免来使伤害减半的效应影响，该生物在成功通过豁免时改为不受任何伤害，失败则受到一半伤害。\n\n在之后的回合内以一个附赠动作，你可以将该力场移动至力场周围60尺内的另一个生物身上。"
+  },
+  "source_fingerprint": "57e7601f49856c8bdf29f8b7af10763fb401e71bd714363cb1a94b4bbfea373c",
+  "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+  "source_provenance": {
+    "officiality": "unknown",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "费资本的巨龙宝库",
+    "source_checksum": "d67ab7f538b593d54f8f53dbaabe3aaffb0f4919fa78965f3554386c25978564",
+    "source_relative_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm"
+  },
+  "source_record_id": "843fb135e4cc8a1fb34c46be",
+  "source_trust": "authored_ir",
+  "spell_id": "fizbans-treasury:spell:843fb135e4cc8a1fb34c46be"
+}

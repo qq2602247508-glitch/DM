@@ -1,0 +1,42 @@
+{
+  "pack_id": "tashas-cauldron",
+  "records": [
+    {
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "f89f22081e9640e4d0c57e5d3a54de9fb8460447670d7eb03c2894b4c458b8a3",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+      "source_record_id": "0036d7dc058c496ef08fe340"
+    },
+    {
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "f051639e10dfdc7e9d340120f61a8c2bb3cd942f767a6d07da361717f178a5d8",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+      "source_record_id": "083419d9de551806a5ca9748"
+    },
+    {
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "f57b0e2559fd8a0edbef3ef77cf0ead4daa815a664e1c412bd7e26a337961d50",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/2环.html",
+      "source_record_id": "54c8c29188db1442473d9dc1"
+    },
+    {
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "a46cfddb318a653a5d382a9191c6e7694ba244217f505f74b15fc0669b05c3ee",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/2环.html",
+      "source_record_id": "7947fb03852a7bc77d69e3ac"
+    },
+    {
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "f86c958ce95034df82a6a6301688c2c5117bcb4976c5bd9f15bc48d644ee8c31",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+      "source_record_id": "b4ea0dc1907dd5ac08666af3"
+    },
+    {
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "022825b2cb1bbc7bef6261662caa98cc2964ffad60ed5f6d00085bf46f86c736",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/1环.html",
+      "source_record_id": "bef5ef39397ea7aa8a0856ea"
+    }
+  ],
+  "schema_version": "content-ir-source-inventory-1"
+}

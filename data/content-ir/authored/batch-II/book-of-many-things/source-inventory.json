@@ -1,0 +1,24 @@
+{
+  "pack_id": "book-of-many-things",
+  "records": [
+    {
+      "source_book": "万象无常书",
+      "source_fingerprint": "04237b4fa49a007d2be3bea8c09c32c0bd6320afcd6ee61a4ab255200a39106b",
+      "source_path": "万象无常书/贤者/卡牌法术详述.htm",
+      "source_record_id": "164b86c070175f43296670a8"
+    },
+    {
+      "source_book": "万象无常书",
+      "source_fingerprint": "04503730c3ea0119d17b2bde803d307413328d4a88f46c49718277fba6909f5c",
+      "source_path": "万象无常书/贤者/卡牌法术详述.htm",
+      "source_record_id": "69822f264262f10066c621b3"
+    },
+    {
+      "source_book": "万象无常书",
+      "source_fingerprint": "d7e081a1df4439bed52e981e488b38231d5a1b37bec9ad28cd03492a5d169298",
+      "source_path": "万象无常书/贤者/卡牌法术详述.htm",
+      "source_record_id": "d52d8cc60a51205a85548bf1"
+    }
+  ],
+  "schema_version": "content-ir-source-inventory-1"
+}

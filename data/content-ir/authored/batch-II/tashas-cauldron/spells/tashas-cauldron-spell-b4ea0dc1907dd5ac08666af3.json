@@ -1,0 +1,106 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "1 动作",
+  "clause_boundaries": {
+    "concentration": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "ess *三环 防护（奇械师、吟游诗人、术士、魔契师、法师）* **施法时间：**1 动作 **施法距离：**30 尺 **法术成分：**V **持续时间：**专注，最长 1 小时 在法术持续时间内，你或一个施法距离内的可见生物获得对心灵伤害的抗性，同时在智力、感知和魅力豁免检定上具有优势。 **升环施法。**使用四环或更高环阶的法术位施展该法术时，你使用的法术位每比三环高 1 环，就可以多选择一个生物作为目标。而各目标之间距离不能超过 30 尺。",
+      "source_heading": "智能壁垒"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "同时在智力、感知和魅力豁免检定上具有优势。 **升环施法。**使用四环或更高环阶的法术位施展该法术时，你使用的法术位每比三环高 1 环，就可以多选择一个生物作为目标。而各目标之间距离不能超过 30 尺。",
+      "source_heading": "智能壁垒"
+    }
+  },
+  "clause_identity": [
+    "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3:target",
+    "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3:concentration"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "同时在智力、感知和魅力豁免检定上具有优势。 **升环施法。**使用四环或更高环阶的法术位施展该法术时，你使用的法术位每比三环高 1 环，就可以多选择一个生物作为目标。而各目标之间距离不能超过 30 尺。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "clause_id": "concentration",
+      "duration": "专注，最长 1 \n小时",
+      "evidence_ref": "ess *三环 防护（奇械师、吟游诗人、术士、魔契师、法师）* **施法时间：**1 动作 **施法距离：**30 尺 **法术成分：**V **持续时间：**专注，最长 1 小时 在法术持续时间内，你或一个施法距离内的可见生物获得对心灵伤害的抗性，同时在智力、感知和魅力豁免检定上具有优势。 **升环施法。**使用四环或更高环阶的法术位施展该法术时，你使用的法术位每比三环高 1 环，就可以多选择一个生物作为目标。而各目标之间距离不能超过 30 尺。",
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": true,
+  "duration": "专注，最长 1 \n小时",
+  "edition": "2014",
+  "evidence": [
+    "concentration: ess *三环 防护（奇械师、吟游诗人、术士、魔契师、法师）* **施法时间：**1 动作 **施法距离：**30 尺 **法术成分：**V **持续时间：**专注，最长 1 小时 在法术持续时间内，你或一个施法距离内的可见生物获得对心灵伤害的抗性，同时在智力、感知和魅力豁免检定上具有优势。 **升环施法。**使用四环或更高环阶的法术位施展该法术时，你使用的法术位每比三环高 1 环，就可以多选择一个生物作为目标。而各目标之间距离不能超过 30 尺。",
+    "target: 同时在智力、感知和魅力豁免检定上具有优势。 **升环施法。**使用四环或更高环阶的法术位施展该法术时，你使用的法术位每比三环高 1 环，就可以多选择一个生物作为目标。而各目标之间距离不能超过 30 尺。"
+  ],
+  "kind": "spell",
+  "level": 3,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "智能壁垒",
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "range": "30 \n尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "spell-ir-1",
+  "school": "防护",
+  "source_book": "塔莎的万事坩埚",
+  "source_evidence": {
+    "selected_clause_excerpt": "同时在智力、感知和魅力豁免检定上具有优势。 **升环施法。**使用四环或更高环阶的法术位施展该法术时，你使用的法术位每比三环高 1 环，就可以多选择一个生物作为目标。而各目标之间距离不能超过 30 尺。 ess *三环 防护（奇械师、吟游诗人、术士、魔契师、法师）* **施法时间：**1 动作 **施法距离：**30 尺 **法术成分：**V **持续时间：**专注，最长 1 小时 在法术持续时间内，你或一个施法距离内的可见生物获得对心灵伤害的抗性，同时在智力、感知和魅力豁免检定上具有优势。 **升环施法。**使用四环或更高环阶的法术位施展该法术时，你使用的法术位每比三环高 1 环，就可以多选择一个生物作为目标。而各目标之间距离不能超过 30 尺。",
+    "source_book": "塔莎的万事坩埚",
+    "source_checksum": "780dfff0497c82e88fb265546e7a542be97ac58e432c6a015518a84261d6f64d",
+    "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+    "source_text": "#### 智能壁垒｜Intellect Fortress\n\n*三环 防护（奇械师、吟游诗人、术士、魔契师、法师）*\n**施法时间：**1 动作\n**施法距离：**30\n尺\n**法术成分：**V\n**持续时间：**专注，最长 1\n小时\n在法术持续时间内，你或一个施法距离内的可见生物获得对心灵伤害的抗性，同时在智力、感知和魅力豁免检定上具有优势。\n**升环施法。**使用四环或更高环阶的法术位施展该法术时，你使用的法术位每比三环高\n1 环，就可以多选择一个生物作为目标。而各目标之间距离不能超过 30 尺。"
+  },
+  "source_fingerprint": "f86c958ce95034df82a6a6301688c2c5117bcb4976c5bd9f15bc48d644ee8c31",
+  "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+  "source_provenance": {
+    "officiality": "unknown",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "塔莎的万事坩埚",
+    "source_checksum": "780dfff0497c82e88fb265546e7a542be97ac58e432c6a015518a84261d6f64d",
+    "source_relative_path": "塔莎的万事坩埚/法术/法术详述/3环.html"
+  },
+  "source_record_id": "b4ea0dc1907dd5ac08666af3",
+  "source_trust": "authored_ir",
+  "spell_id": "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3"
+}

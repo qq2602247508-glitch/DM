@@ -1,0 +1,106 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "1 动作",
+  "clause_boundaries": {
+    "concentration": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "d *一环 预言（德鲁伊、游侠）* **施法时间：**1 动作 **施法距离：**触碰 **法术成分：**V、S、M（一小块被布包裹的毛皮） **持续时间：**专注，至多 10 分钟 你和一个你接触的，对你友好或被你魅惑的野兽建立起一道心灵链接。若该野兽的智力不低于 4，则此法术失败。直到法术终结，只要你和该野兽相互处于彼此的视觉线内，此链接便处于活动状态。通过此链接，该野兽可以理解你以心灵感应传递的信息，而其也会以心灵感应向你传递其基本的情绪和意愿。只要此链接处于活动状态，该野兽在对你周围 5 尺，你能看见的任何生物所进行的攻击检定中获得优势。",
+      "source_heading": "兽之联结"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "通过此链接，该野兽可以理解你以心灵感应传递的信息，而其也会以心灵感应向你传递其基本的情绪和意愿。只要此链接处于活动状态，该野兽在对你周围 5 尺，你能看见的任何生物所进行的攻击检定中获得优势。",
+      "source_heading": "兽之联结"
+    }
+  },
+  "clause_identity": [
+    "xanathars-guide:spell:6d32a73dbc7bf6f5fac303bd:target",
+    "xanathars-guide:spell:6d32a73dbc7bf6f5fac303bd:concentration"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "通过此链接，该野兽可以理解你以心灵感应传递的信息，而其也会以心灵感应向你传递其基本的情绪和意愿。只要此链接处于活动状态，该野兽在对你周围 5 尺，你能看见的任何生物所进行的攻击检定中获得优势。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "clause_id": "concentration",
+      "duration": "专注，至多 \n10 分钟",
+      "evidence_ref": "d *一环 预言（德鲁伊、游侠）* **施法时间：**1 动作 **施法距离：**触碰 **法术成分：**V、S、M（一小块被布包裹的毛皮） **持续时间：**专注，至多 10 分钟 你和一个你接触的，对你友好或被你魅惑的野兽建立起一道心灵链接。若该野兽的智力不低于 4，则此法术失败。直到法术终结，只要你和该野兽相互处于彼此的视觉线内，此链接便处于活动状态。通过此链接，该野兽可以理解你以心灵感应传递的信息，而其也会以心灵感应向你传递其基本的情绪和意愿。只要此链接处于活动状态，该野兽在对你周围 5 尺，你能看见的任何生物所进行的攻击检定中获得优势。",
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": true,
+  "duration": "专注，至多 \n10 分钟",
+  "edition": "2014",
+  "evidence": [
+    "concentration: d *一环 预言（德鲁伊、游侠）* **施法时间：**1 动作 **施法距离：**触碰 **法术成分：**V、S、M（一小块被布包裹的毛皮） **持续时间：**专注，至多 10 分钟 你和一个你接触的，对你友好或被你魅惑的野兽建立起一道心灵链接。若该野兽的智力不低于 4，则此法术失败。直到法术终结，只要你和该野兽相互处于彼此的视觉线内，此链接便处于活动状态。通过此链接，该野兽可以理解你以心灵感应传递的信息，而其也会以心灵感应向你传递其基本的情绪和意愿。只要此链接处于活动状态，该野兽在对你周围 5 尺，你能看见的任何生物所进行的攻击检定中获得优势。",
+    "target: 通过此链接，该野兽可以理解你以心灵感应传递的信息，而其也会以心灵感应向你传递其基本的情绪和意愿。只要此链接处于活动状态，该野兽在对你周围 5 尺，你能看见的任何生物所进行的攻击检定中获得优势。"
+  ],
+  "kind": "spell",
+  "level": 1,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "兽之联结",
+  "namespace": "content.xanathars-guide",
+  "pack_id": "xanathars-guide",
+  "pack_version": "source-7011166c19bd",
+  "range": "触碰",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "spell-ir-1",
+  "school": "预言",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "selected_clause_excerpt": "通过此链接，该野兽可以理解你以心灵感应传递的信息，而其也会以心灵感应向你传递其基本的情绪和意愿。只要此链接处于活动状态，该野兽在对你周围 5 尺，你能看见的任何生物所进行的攻击检定中获得优势。 d *一环 预言（德鲁伊、游侠）* **施法时间：**1 动作 **施法距离：**触碰 **法术成分：**V、S、M（一小块被布包裹的毛皮） **持续时间：**专注，至多 10 分钟 你和一个你接触的，对你友好或被你魅惑的野兽建立起一道心灵链接。若该野兽的智力不低于 4，则此法术失败。直到法术终结，只要你和该野兽相互处于彼此的视觉线内，此链接便处于活动状态。通过此链接，该野兽可以理解你以心灵感应传递的信息，而其也会以心灵感应向你传递其基本的情绪和意愿。只要此链接处于活动状态，该野兽在对你周围 5 尺，你能看见的任何生物所进行的攻击检定中获得优势。",
+    "source_book": "珊娜萨的万事指南",
+    "source_checksum": "1a269911bd4ed778875429004f05923c6922b19d3f1c3dba1bd853230ea0b8ae",
+    "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+    "source_text": "#### 兽之联结｜Beast Bond\n\n*一环 预言（德鲁伊、游侠）*\n**施法时间：**1 动作\n**施法距离：**触碰\n**法术成分：**V、S、M（一小块被布包裹的毛皮）\n**持续时间：**专注，至多\n10 分钟\n你和一个你接触的，对你友好或被你魅惑的野兽建立起一道心灵链接。若该野兽的智力不低于\n4，则此法术失败。直到法术终结，只要你和该野兽相互处于彼此的视觉线内，此链接便处于活动状态。通过此链接，该野兽可以理解你以心灵感应传递的信息，而其也会以心灵感应向你传递其基本的情绪和意愿。只要此链接处于活动状态，该野兽在对你周围\n5 尺，你能看见的任何生物所进行的攻击检定中获得优势。"
+  },
+  "source_fingerprint": "d3240455ebc564a3e59c8d37a6520578aa6adcb6ac6350833503c9534f2de1f3",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+  "source_provenance": {
+    "officiality": "unknown",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "珊娜萨的万事指南",
+    "source_checksum": "1a269911bd4ed778875429004f05923c6922b19d3f1c3dba1bd853230ea0b8ae",
+    "source_relative_path": "珊娜萨的万事指南/法术/法术详述/1环.html"
+  },
+  "source_record_id": "6d32a73dbc7bf6f5fac303bd",
+  "source_trust": "authored_ir",
+  "spell_id": "xanathars-guide:spell:6d32a73dbc7bf6f5fac303bd"
+}

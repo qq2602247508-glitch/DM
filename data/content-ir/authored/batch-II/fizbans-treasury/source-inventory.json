@@ -1,0 +1,36 @@
+{
+  "pack_id": "fizbans-treasury",
+  "records": [
+    {
+      "source_book": "费资本的巨龙宝库",
+      "source_fingerprint": "584be8b73690eabf58d6e3c413e36a01297e293a20d051cf69c5ad18871b1903",
+      "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+      "source_record_id": "051cb2f9130d4b712da3aa90"
+    },
+    {
+      "source_book": "费资本的巨龙宝库",
+      "source_fingerprint": "cdbd9cb32dc130fb627e55ea76e3dd1ca83b0b99fc58702825592cc439098468",
+      "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+      "source_record_id": "084712e58fd3714db50148c5"
+    },
+    {
+      "source_book": "费资本的巨龙宝库",
+      "source_fingerprint": "45786e6c57e4c56a29800259cf32e1d236b08990ffc7d61efc793cb30a5fbbdc",
+      "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+      "source_record_id": "49a5bacc752aa90fbbfbf316"
+    },
+    {
+      "source_book": "费资本的巨龙宝库",
+      "source_fingerprint": "57e7601f49856c8bdf29f8b7af10763fb401e71bd714363cb1a94b4bbfea373c",
+      "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+      "source_record_id": "843fb135e4cc8a1fb34c46be"
+    },
+    {
+      "source_book": "费资本的巨龙宝库",
+      "source_fingerprint": "be9cd13062116e1928605e32a9742d1303e5b12f8899b6f91d06b612278a211b",
+      "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+      "source_record_id": "cadce71b1ba7a42354f785dc"
+    }
+  ],
+  "schema_version": "content-ir-source-inventory-1"
+}

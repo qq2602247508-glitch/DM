@@ -1,0 +1,72 @@
+{
+  "pack_id": "xanathars-guide",
+  "records": [
+    {
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "0a3022a43e497585172bdec69d7e39c21df0e04be4ab08ba26e1b567646bcfc0",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "source_record_id": "32029f628876bce678c798d1"
+    },
+    {
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "fb4ddcdbc2be19d027734b69335bb7d3f2d9b95cec8e6e90cf4578977cfd8f05",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "source_record_id": "483e4b174da746100d0f873b"
+    },
+    {
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "252f05cc02ca6b371fc79abc09f96cfea99d4e40991d9d709a5191bd1424b27d",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "source_record_id": "5aa5cf7f93be0fa149fdcd62"
+    },
+    {
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "7338870954005f22e908e7152cbd75be2a5fb43a1754dd8bbb988be0f0dc33e6",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+      "source_record_id": "647e44fd3b93b2e4dafd2323"
+    },
+    {
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "d3240455ebc564a3e59c8d37a6520578aa6adcb6ac6350833503c9534f2de1f3",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "source_record_id": "6d32a73dbc7bf6f5fac303bd"
+    },
+    {
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "8abaae753b06c1a7369a3648d712d4ac6153cd3c06b7315cc4c3ddc228d64e3b",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "source_record_id": "6f0ba0ecbcd8a90021afd407"
+    },
+    {
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "bbc5ba53f4b4f4e20fc37e375d35c129d3a9e83e9c0721a0fe2572673a7ae83b",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "source_record_id": "805cbf82765f6710391cc75f"
+    },
+    {
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "778a1c90232969699e09941b70e190af34cf7ef6c147860e319f08a94acd2a9c",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "source_record_id": "868117360db3137344a7e04d"
+    },
+    {
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "0a3e8780679f11352f3e01fd7a63fced6dcb633f2f3fa42fa020ac6a211a0090",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "source_record_id": "96d5c3265bc938448c4aef58"
+    },
+    {
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "b91f38e132025eee4b219a00092f1c994822911f90d6c130cac15c4a01f87499",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+      "source_record_id": "aadf89719f073bfca1fefb3a"
+    },
+    {
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "d9427224492c27ab4734ac66c5ccd56ef45b43afc6e11b188b543de16059945a",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "source_record_id": "c9d315871dc96f3fed66c29b"
+    }
+  ],
+  "schema_version": "content-ir-source-inventory-1"
+}
