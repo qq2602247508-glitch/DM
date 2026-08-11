@@ -21,7 +21,8 @@
     "core-phb-2024:spell:fb279ff13dba2abcce376201"
   ],
   "source_book": "玩家手册 2024",
-  "total_records": 650,
+  "total_records": 411,
+  "total_source_records": 650,
   "whole_book_status_before_authored": {
     "full": 0,
     "invalid": 0,

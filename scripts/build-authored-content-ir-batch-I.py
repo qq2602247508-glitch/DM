@@ -1304,6 +1304,12 @@ def main() -> int:
             "selected_batch_status": result["counts"],
         }
     core_spell_counts = _status_counts(all_core, "spell_draft")
+    core_spell_records = sum(
+        1
+        for record in records
+        if record.get("source_book") == "玩家手册 2024"
+        and record.get("content_type") == "spells"
+    )
     feature_audit_before = {"full": 328, "partial": 110, "dm_only": 61, "total": 499}
     _report(
         REPORT_ROOT / "content-ir-authored-batch-I-2026-08-11.json",
@@ -1343,7 +1349,8 @@ def main() -> int:
         {
             "schema_version": "spell-ir-batch-report-1",
             "source_book": "玩家手册 2024",
-            "total_records": all_core.total_records,
+            "total_records": core_spell_records,
+            "total_source_records": all_core.total_records,
             "detail_candidates": all_core.spell_count,
             "authored_typed_ir": len(core_assets),
             "full": packs["core-2024-golden"]["counts"]["full"],
