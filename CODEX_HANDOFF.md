@@ -1,3 +1,12 @@
+# 2026-08-12 Round 16 检查点：Character Growth Proficiency Consumer Expansion
+
+- Round XVI 在真实 `advancement_service.character_growth.v1` 上完成 Battle Smith、Armorer、Alchemist、Artillerist 四条工具熟练 FeatureSpec：4/4 preview→confirm→幂等 replay，5 个 proficiency grants、character CAS、OperationTransaction、feature snapshot 全通过，`name_branch_count=0`。
+- Tasha Feature status layers：`production_full=78`（74→78）、`dm_assisted=2`、`game_usable=80`、`compile_only=13`、`authored Typed IR=94`、`runtime_preview_full=93`、`manual_authoring=314`。ItemSpec 分开为 `40 compile / 40 isolated / 40 registered / 40 game usable`。
+- Oceanic Soul 只证明寒冷抗性不够，因为同一合同还有未建模的水下互通；Bottled Respite、Psychic Teleportation、Manifest Mind、Tireless、Psionic Sorcery、Ambush、Commanding Presence 保持 fail-closed。未把单个可执行子句冒充整条 full。
+- 新增 Round XVI validator/test/report/result/doc，更新 Feature IR/runtime/whole-pack reports 与历史单调断言；Round X–XVI 定向测试 22 项、backend 全量 pytest `891 passed`、Ruff、compileall、`git diff --check` 通过。formal registry/database/campaign/character、source corpus、3D、永久保护路径未写入。
+- 永久指纹保持：database `f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad`、formal registry `f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b`、integrations `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`、ollama `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`。
+- 实现/证据提交 `d61e5ad7a5fdc313d929deac195efc2fa703e6e0` 已推送到 `origin/main`；本交接 receipt 更新随后单独提交。下一轮继续剩余 feature compile-only/ItemSpec partial 的通用 typed consumer 解锁，不增加名称分支。
+
 # 2026-08-12 Round 15 检查点：Typed Item-Cast Spell Consumer
 
 - Round XV 修复显式“施展”后的 inline spell identity parser，支持单法术与 `施展以下/下列法术：...` 列表；generic “这道法术”、职业法器 prose 和变量蕴法刺青仍 fail closed。鲁芭的灵魂塔罗卡、拉奥圣杖、伊格薇尔伏恶魔志 3 条从 partial 解锁为 compile/isolated full。

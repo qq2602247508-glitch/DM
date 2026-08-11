@@ -6,6 +6,19 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 16：Character Growth Proficiency Consumer Expansion
+
+当前状态：`accepted`；本轮完成 4 条安全 proficiency FeatureSpec 的真实角色成长 evidence，已提交推送。
+
+- Battle Smith、Armorer、Alchemist、Artillerist 的工具熟练通过真实 `advancement_service.character_growth.v1` preview → confirm → 幂等 replay；4/4、5 个 proficiency grants、character CAS、OperationTransaction、feature snapshot 全通过，name branch=0。
+- Feature Tasha status layers：`production_full=78`（74→78）、`dm_assisted=2`、`game_usable=80`；`compile_only=13`、`authored Typed IR=94`、`runtime_preview_full=93`、`manual_authoring=314`。ItemSpec 独立维持 `40/40/40`（compile/registered/game usable）。
+- 本轮只有 4 条，因为它们是当前剩余 compile-only 中唯一无未建模通信、实体、随机表或 DM 语义的安全 proficiency cluster；Oceanic Soul 的水下互通仍阻止 full，不被抗性子句单独冒充完成。
+- formal registry/database、campaign/character、source corpus 未写入；Bottled Respite、Psychic Teleportation、Manifest Mind、Tireless、Psionic Sorcery 和两条战技继续保持各自 typed/manual 边界。
+- Round XVI validator、whole-pack migration 各运行两次且 byte-identical；Round X–XVI 定向测试 22 项、backend 全量 pytest 891 项、Ruff、compileall 和 `git diff --check` 通过。
+- 证据：`docs/tashas-feature-production-consumer-round-XVI-2026-08-12.md`、Round XVI report/result、Feature IR/runtime report 与 whole-pack migration 输出。
+- 实现与证据提交 `d61e5ad7a5fdc313d929deac195efc2fa703e6e0` 已推送到 `origin/main`；ledger/handoff receipt 随后单独提交。
+- 下一步：继续剩余 13 条 feature compile-only 与 7 条 partial ItemSpec，仅在存在通用 typed event/entity/teleport consumer 时解锁。
+
 ## Round 15：Typed Item-Cast Spell Consumer
 
 当前状态：`accepted`；本轮解锁 3 条 artifact ItemSpec 的显式 spell list，并已提交推送。

@@ -1,7 +1,114 @@
 {
-  "current_round": "round-15",
+  "current_round": "round-16",
   "goal": "Local AI D&D DM Assistant complete official-content rules platform",
   "rounds": [
+    {
+      "authored_count": 0,
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 174,
+            "unique_compiled": 111
+          },
+          "formal_499": {
+            "dm_only": 61,
+            "full": 328,
+            "partial": 110,
+            "total": 499
+          },
+          "protected_fingerprints": {
+            "database": "f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad",
+            "formal_registry": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+            "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+            "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+          },
+          "tashas": {
+            "authored_typed_ir": 94,
+            "compile_only": 17,
+            "content_atoms_after_qa": 524,
+            "executable": 407,
+            "game_usable": 76,
+            "item_spec_compile_full": 40,
+            "item_spec_isolated_runtime_validated": 40,
+            "item_spec_registered_production_full": 40,
+            "item_spec_game_usable": 40,
+            "manual_authoring": 314,
+            "production_full": 74,
+            "runtime_preview_full": 93,
+            "source_records": 144
+          }
+        },
+        "difference": "Round 16 starts from 94 authored Tasha Typed IR and expands the existing character-growth consumer over the remaining safe proficiency cluster; communication/entity/action-window blockers remain explicit.",
+        "prompt_baseline": {"round_target_feature_production": 8, "safe_proficiency_cluster_count": 4}
+      },
+      "commits": ["d61e5ad"],
+      "compile_full_delta": 0,
+      "dm_assisted_delta": 0,
+      "files_changed": [
+        "backend/tests/test_tashas_feature_production_consumer_round_III.py",
+        "backend/tests/test_tashas_feature_production_consumer_round_XVI.py",
+        "backend/tests/test_tashas_whole_pack_migration.py",
+        "scripts/validate-tashas-feature-production-consumer-round-XVI.py",
+        "data/content-ir/compiled/production-runtime-results-XVIII.json",
+        "reports/tashas-feature-production-consumer-round-XVI-2026-08-12.json",
+        "reports/tashas-feature-ir-report-2026-08-11.json",
+        "reports/tashas-feature-option-runtime-batch-I-2026-08-11.json",
+        "docs/tashas-feature-production-consumer-round-XVI-2026-08-12.md"
+      ],
+      "item_compile_full_delta": 0,
+      "manual_delta": 0,
+      "next_round_reason": "The safe proficiency cluster is closed; continue the remaining 13 feature compile-only contracts and 7 partial ItemSpecs only where typed event/entity/teleport semantics have a real generic consumer.",
+      "objective": "Harvest four typed proficiency advancement FeatureSpecs through the existing character-growth consumer with isolated CAS and persistence evidence.",
+      "pack_coverage_delta": {
+        "content_ir_production_full_before": 174,
+        "content_ir_production_full_after": 178,
+        "tasha_feature_compile_only_before": 17,
+        "tasha_feature_compile_only_after": 13,
+        "tasha_feature_registered_production_before": 74,
+        "tasha_feature_registered_production_after": 78,
+        "tasha_feature_game_usable_before": 76,
+        "tasha_feature_game_usable_after": 80,
+        "item_registered_production_full_unchanged": 40,
+        "item_game_usable_unchanged": 40
+      },
+      "phase": "I",
+      "push_receipt": {
+        "branch": "main",
+        "commit_hash": "d61e5ad7a5fdc313d929deac195efc2fa703e6e0",
+        "pushed_at": "2026-08-12T06:22:20+0800",
+        "remote": "origin",
+        "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
+        "result": "success"
+      },
+      "reports": [
+        "reports/tashas-feature-production-consumer-round-XVI-2026-08-12.json",
+        "data/content-ir/compiled/production-runtime-results-XVIII.json",
+        "reports/tashas-feature-ir-report-2026-08-11.json",
+        "docs/tashas-feature-production-consumer-round-XVI-2026-08-12.md"
+      ],
+      "reviewed_count": 0,
+      "selected_clusters": [
+        "advancement.proficiency",
+        "advancement.character_growth",
+        "character.feature_snapshot",
+        "character.version_cas"
+      ],
+      "selected_platforms": [
+        "advancement_service.character_growth.v1",
+        "content_ir_runtime.preview_confirm_replay",
+        "character_version_cas",
+        "operation_transaction",
+        "character_assets_snapshot"
+      ],
+      "status": "accepted",
+      "tests": [
+        "Round XVI validator: 4/4 typed proficiency growth contracts",
+        "5 proficiency grants, 4/4 preview/confirm/replay, CAS and feature persistence",
+        "Round X–XVI targeted tests: 22 passed; backend pytest: 891 passed",
+        "Round XVI validator and whole-pack migration twice: byte-identical output"
+      ]
+    },
     {
       "authored_count": 0,
       "baseline": {
