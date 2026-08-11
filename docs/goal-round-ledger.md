@@ -6,6 +6,17 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 6：Passive Modifier / Inspection Consumer Expansion
+
+当前状态：`accepted`；本轮完成 8 条真实 API evidence，8 条 registered production，整包 game usable 达到 54。
+
+- 8/8 条 Round-II Feature contracts 通过真实 `ContentIRRuntimeService` passive inspection preview→confirm→幂等 replay；临时迁移 SQLite，所有 passive block 均与 runtime ID 绑定，consumer 为 `combat_engine.feature_action.v1`。formal apply/database/campaign/character 写入均为 false。
+- Tasha status layers：`registered_production_full=52`（44→52）、`dm_assisted=2`、`game_usable=54`；`manual_authoring=314`、`compile-only=39`、`authored Typed IR=94`、`runtime_preview_full=93`。
+- 真实断言覆盖 spell/passive、速度、armor、sight、attack-context/social-check modifier；name branch=0，typed consumer=8/8，passive binding=8/8，inspection resolution=8/8。
+- 完整 backend pytest、Round VI/历史 Tasha 定向回归、whole-pack migration 两次 deterministic hash、compileall、变更源 Ruff、`git diff --check` 通过。保护指纹保持：database `f3abdcf5…a6ad`、`backend/tests/ollama.py` `8027a6d8…e6ab`、integrations manifest `ae4ef9f5…cd91`；499 formal audit 仍为 328/110/61。
+- 证据：`docs/tashas-feature-production-consumer-round-VI-2026-08-12.md`、Round VI report/result、`reports/tashas-status-layer-audit-2026-08-11.json` 和 whole-pack report。
+- 下一步：继续推进 vessel/entity、exhaustion、spectral object、teleport destination、psionic payment 和 unresolved ItemSpec lifecycle；isolated-only 和 DM-reference 继续不计 production。
+
 ## Round 5：Typed Advancement / Character Growth Consumer Expansion
 
 当前状态：`accepted`；本轮完成 8 条真实 API evidence，8 条 registered production，整包 game usable 达到 46。

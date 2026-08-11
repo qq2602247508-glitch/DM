@@ -1,3 +1,12 @@
+# 2026-08-12 Round 6 检查点：Passive Modifier / Inspection Consumer 扩展
+
+- Round 6 在 Round-II authored Feature IR 上完成 8 条真实 passive production evidence：炼金术掌握、动力步伐、工具精通、奥法枪械、星之铠甲、星之视觉、粉碎者、妖冶娴都。8/8 均通过真实 `ContentIRRuntimeService` preview→confirm→幂等 replay，typed passive block 绑定和 `combat_engine.feature_action.v1` inspection consumer。
+- Tasha status layers：`registered_production_full=52`（Round 5 的 44→52）、`dm_assisted=2`、`game_usable=54`；`manual_authoring=314`、`compile-only=39`、`authored Typed IR=94`、`runtime_preview_full=93`。严格口径仍为 `game_usable = registered_production_full + dm_assisted`。
+- 本轮复用现有 feature runtime registry、passive inspection、actor/target CAS、transaction/idempotency；没有新增 feature-name/name-based runtime branch。
+- 新增证据入口：`scripts/validate-tashas-feature-production-consumer-round-VI.py`、`reports/tashas-feature-production-consumer-round-VI-2026-08-12.json`、`data/content-ir/compiled/production-runtime-results-VIII.json`、`docs/tashas-feature-production-consumer-round-VI-2026-08-12.md`。Round VI validator 两次关键输出 hash 一致；whole-pack migration 两次关键报告/runtime hash 一致。
+- formal apply/database/campaign/character 仍为 false；3D、source corpus、formal 499 audit 未改。受保护的 `backend/tests/integrations/` 和 `backend/tests/ollama.py` 未暂存/提交，database fingerprint 仍为 `f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad`。
+- Round VI 后继续处理 vessel/entity、exhaustion、spectral object、teleport destination、psionic payment 与 ItemSpec lifecycle；不要把 isolated-only / DM-reference 伪装成 production，也不要迁移下一本扩展包。
+
 # 2026-08-12 Round 5 检查点：Typed Advancement / Character Growth Consumer 扩展
 
 - Round 5 在 Round-II authored Feature IR 上完成 8 条真实角色成长 production evidence：Bladesinger、Peace Cleric、Rune Knight、Twilight Cleric、Order Cleric、Skill Expert、Ranger Canny、Aberrant Mind Psionic Spell List。8/8 均通过真实 `ContentIRRuntimeService` preview→confirm→幂等 replay、character CAS、operation transaction 和 feature snapshot 持久化。

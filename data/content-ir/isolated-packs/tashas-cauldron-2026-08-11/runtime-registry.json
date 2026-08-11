@@ -154,7 +154,7 @@
       "atom_id": "tashas-cauldron:atom:1924837fba5aec4d15a290b8:crusher:003",
       "content_id": "content.tashas-cauldron.round2.feature.feat-crusher",
       "content_kind": "feat",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "e3303420750fb2e6a4ed58dbedb70cad6b708dd090efee93ef4903af07434755",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.feat-crusher"
@@ -244,7 +244,7 @@
       "atom_id": "tashas-cauldron:atom:2ceef8846dfb30c175abe0dd:tool-expertise:007",
       "content_id": "content.tashas-cauldron.round2.feature.artificer-tool-expertise",
       "content_kind": "class_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "1b4ba456b9cb7fb043ff44848d69fe948b4efc396b77c87bbeeadd2fbda0d330",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.artificer-tool-expertise"
@@ -345,7 +345,7 @@
       "atom_id": "tashas-cauldron:atom:6ac3dd8adf2acd63eeabf4ea:otherworldly-glamour:003",
       "content_id": "content.tashas-cauldron.round2.feature.fey-wanderer-otherworldly-glamour",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "dc82c5d6a753d9625cf335d1f87905b24e6bebbd352ced98c0ffe54916128871",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.fey-wanderer-otherworldly-glamour"
@@ -595,7 +595,7 @@
       "atom_id": "tashas-cauldron:atom:b6d0bbfbdc36f195e62683c5:armor-of-the-spirit:010",
       "content_id": "content.tashas-cauldron.round2.feature.astral-self-armor-of-the-spirit",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "d83b3a738e366be13f11b1df8b195d73bdeeaca2dd87de106f26ede5523bd52e",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.astral-self-armor-of-the-spirit"
@@ -605,7 +605,7 @@
       "atom_id": "tashas-cauldron:atom:b6d0bbfbdc36f195e62683c5:astral-sight:003",
       "content_id": "content.tashas-cauldron.round2.feature.astral-self-astral-sight",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "d83b3a738e366be13f11b1df8b195d73bdeeaca2dd87de106f26ede5523bd52e",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.astral-self-astral-sight"
@@ -705,7 +705,7 @@
       "atom_id": "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:powered-steps:010",
       "content_id": "content.tashas-cauldron.round2.feature.armorer-powered-steps",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "84df7f2476a3c44de86be0476fe4fb0dc8fcaf53b1b954b2b43c26f49ce39ae6",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.armorer-powered-steps"
@@ -765,7 +765,7 @@
       "atom_id": "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:alchemical-savant:004",
       "content_id": "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "a992e0b66f70a6a864aeaa19305e7636912ac00ef4525354841e75c78a33f107",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant"
@@ -895,7 +895,7 @@
       "atom_id": "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:arcane-firearm:004",
       "content_id": "content.tashas-cauldron.round2.feature.artillerist-arcane-firearm",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "245f8fff6a10113c6d0062a26dd054611122b8d830fe6e98b84855467c44d541",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.artillerist-arcane-firearm"
