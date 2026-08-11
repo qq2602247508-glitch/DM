@@ -55,6 +55,8 @@
 - 最终门禁：`PYTHONPATH=backend/src backend/.venv/bin/pytest -q backend/tests` 全量通过；
   `backend/.venv/bin/ruff check backend/src backend/tests`、脚本 Ruff、compileall、
   `git diff --check` 全部通过。前端未修改，未运行前端门禁。
+- 提交：实现层 `b6aa971`，批量验证与报告 `73dac26`，协议文档与 handoff `d701d51`，
+  迁移文件格式修正 `4987f8e`。
 - 下一优先级由真实 blocker/fan-out 决定：先收割 `kernel.dm.adjudication` 的
   `target_semantics`，并为 `duration.multi_phase`/`spatial.area` 补字段级 typed contract、
   validator、materializer 和 runtime evidence；不得按内容名字增加分支。
