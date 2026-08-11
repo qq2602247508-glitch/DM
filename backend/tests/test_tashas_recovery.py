@@ -11,6 +11,9 @@ from sqlalchemy.orm import Session
 from dnd_dm_assistant.application.content_ir_production_registry import (
     resolve_production_consumers,
 )
+from dnd_dm_assistant.application.content_pack_runtime_registry import (
+    ContentPackRuntimeRegistry,
+)
 from dnd_dm_assistant.application.tashas_recovery import (
     build_template_catalog,
 )
@@ -182,6 +185,27 @@ def test_tashas_catalogs_have_real_denominators() -> None:
     assert sum(item["content_kind"] == "magic_tattoo" for item in migration["atoms"]) == 11
     templates = build_template_catalog(migration["atoms"], {"cluster_count": 15}, item_catalog)
     assert templates["template_total"] >= 15
+
+
+def test_tasha_isolated_registry_keeps_item_layers_separate() -> None:
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[2]
+    registry = ContentPackRuntimeRegistry(
+        root / "data/content-ir/isolated-packs/tashas-cauldron-2026-08-11"
+    )
+    summary = registry.reload()
+    assert summary["formal_apply"] is False
+    assert summary["entry_total"] == 47
+    assert summary["compile_full"] == 41
+    assert summary["runtime_preview_full"] == 41
+    assert summary["isolated_runtime_validated"] == 41
+    assert summary["registered_production_full"] == 0
+    assert summary["game_usable"] == 0
+    first = registry.lookup(summary["isolated_runtime_validated_ids"][0])
+    assert first is not None
+    assert first["status_layers"]["isolated_runtime_validated"] is True
+    assert first["status_layers"]["registered_production_full"] is False
 
 
 def test_item_charge_recovery_is_typed_and_dawn_is_not_a_rest(tmp_path: Any) -> None:

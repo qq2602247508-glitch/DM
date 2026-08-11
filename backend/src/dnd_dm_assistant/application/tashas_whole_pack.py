@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any
 
 from dnd_dm_assistant.application.content_ir_workbench import load_records
+from dnd_dm_assistant.domain.content_ir_status import build_status_layers
 from dnd_dm_assistant.domain.content_packs import (
     is_spell_detail_record,
     normalized_record_edition,
@@ -1238,6 +1239,8 @@ def build_migration(repo_root: Path) -> dict[str, Any]:
     enriched: list[dict[str, Any]] = []
     for atom in atoms:
         status, details = _status_for_atom(atom, typed, production, evidence)
+        has_typed_ir = bool(details.get("typed_content_ids"))
+        is_compiled = status in {"production_full", "dm_assisted", "compile_only"}
         enriched.append(
             {
                 **atom,
@@ -1247,6 +1250,18 @@ def build_migration(repo_root: Path) -> dict[str, Any]:
                 "typed_ir": details.get("typed_ir"),
                 "typed_content_ids": details.get("typed_content_ids") or [],
                 "runtime_evidence": details.get("runtime_evidence"),
+                "status_layers": build_status_layers(
+                    source_identified=True,
+                    draft=bool(atom.get("executable_candidate")),
+                    candidate=bool(atom.get("executable_candidate")),
+                    reviewed=bool(atom.get("executable_candidate")),
+                    authored_typed_ir=has_typed_ir,
+                    compile_full=is_compiled,
+                    runtime_preview_full=is_compiled,
+                    isolated_runtime_validated=status in {"production_full", "dm_assisted"},
+                    registered_production_full=status == "production_full",
+                    dm_assisted=status == "dm_assisted",
+                ),
             }
         )
     candidates = build_candidates(enriched, typed)

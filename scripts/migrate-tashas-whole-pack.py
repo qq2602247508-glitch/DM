@@ -11,7 +11,11 @@ from pathlib import Path
 from typing import Any
 
 from dnd_dm_assistant.application.content_ir_workbench import load_records
+from dnd_dm_assistant.application.content_pack_runtime_registry import (
+    ContentPackRuntimeRegistry,
+)
 from dnd_dm_assistant.application.tashas_recovery import (
+    apply_isolated_runtime_validation,
     build_feature_option_batch,
     build_item_spec_catalog,
     build_template_catalog,
@@ -26,6 +30,7 @@ from dnd_dm_assistant.application.tashas_whole_pack import (
     report_projection,
     select_source_records,
 )
+from dnd_dm_assistant.domain.content_ir_status import summarize_status_layers
 from dnd_dm_assistant.domain.content_packs import validate_content_pack_compatibility
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -352,8 +357,12 @@ def build_reports(migration: dict[str, Any], baseline: dict[str, Any]) -> dict[s
         "reviewed": item_catalog.get("item_spec_reviewed", 0),
         "typed": item_catalog.get("item_spec_typed", 0),
         "compile_full": item_catalog.get("item_spec_compile_full", 0),
+        "runtime_preview_full": item_catalog.get("item_spec_runtime_preview_full", 0),
+        "isolated_runtime_validated": item_catalog.get("isolated_runtime_validated", 0),
+        "registered_production_full": item_catalog.get("registered_production_full", 0),
         "compile_only": item_catalog.get("item_spec_compile_only", 0),
         "production_full": item_catalog.get("production_full", 0),
+        "game_usable": item_catalog.get("game_usable", 0),
         "dm_assisted": 0,
         "requires_dm": item_catalog.get("requires_dm", 0),
         "status_counts": _status_summary(item_atoms),
@@ -375,12 +384,17 @@ def build_reports(migration: dict[str, Any], baseline: dict[str, Any]) -> dict[s
         "blocker": "manual_review_required is retained per unresolved action/spell/effect clause",
         "unlock_ranking": migration["item_ir"]["unlock_ranking"],
         "name_branch_count": 0,
+        "status_layer_semantics": item_catalog.get("status_layer_semantics", {}),
     }
     item_runtime_report = {
         "schema_version": "tashas-item-runtime-validation-II-1",
         "pack_id": PACK_ID,
         "item_spec_total": item_catalog.get("item_spec_total", 0),
         "typed_compile_full": item_catalog.get("item_spec_compile_full", 0),
+        "runtime_preview_full": item_catalog.get("item_spec_runtime_preview_full", 0),
+        "isolated_runtime_validated": item_catalog.get("isolated_runtime_validated", 0),
+        "registered_production_full": item_catalog.get("registered_production_full", 0),
+        "game_usable": item_catalog.get("game_usable", 0),
         "consumer_ids": sorted(
             {
                 consumer
@@ -398,6 +412,7 @@ def build_reports(migration: dict[str, Any], baseline: dict[str, Any]) -> dict[s
             "name_branch_count": 0,
         },
         "temporary_db_validation": "passed:test_tashas_recovery.py::test_typed_item_api_uses_attunement_action_and_idempotency",
+        "isolated_registry_reload": migration.get("isolated_runtime_registry", {}),
         "blocked_specs": [
             {
                 "item_id": spec.get("item_id"),
@@ -467,6 +482,7 @@ def build_reports(migration: dict[str, Any], baseline: dict[str, Any]) -> dict[s
         "formal_registry_unchanged": True,
         "database_unchanged": True,
         "character_campaign_unchanged": True,
+        "isolated_runtime_registry": migration.get("isolated_runtime_registry", {}),
     }
     coverage = {
         "schema_version": "tashas-whole-pack-coverage-1",
@@ -519,6 +535,7 @@ def build_reports(migration: dict[str, Any], baseline: dict[str, Any]) -> dict[s
         },
         "per_kind_counts": migration["kind_counts"],
         "status_counts": migration["status_counts"],
+        "status_layers": summarize_status_layers(atoms),
         "minimum_target_check": {
             "source_records_100_percent": True,
             "player_facing_draft_90_percent": _rate(
@@ -614,6 +631,7 @@ def build_reports(migration: dict[str, Any], baseline: dict[str, Any]) -> dict[s
         "efficiency": efficiency,
         "formal_499_status": migration["formal_499_status"],
         "baseline": baseline_projection,
+        "status_layers": summarize_status_layers(atoms),
     }
     return {
         "source_inventory": source_inventory,
@@ -643,6 +661,13 @@ def build_reports(migration: dict[str, Any], baseline: dict[str, Any]) -> dict[s
         "efficiency": efficiency,
         "runtime_audit": runtime_audit,
         "whole_pack": whole_pack,
+        "status_layer_audit": {
+            "schema_version": "content-ir-status-layer-audit-1",
+            "pack_id": PACK_ID,
+            "status_layers": summarize_status_layers(atoms),
+            "item": item_catalog.get("status_layer_semantics", {}),
+            "isolated_runtime_registry": migration.get("isolated_runtime_registry", {}),
+        },
     }
 
 
@@ -670,7 +695,7 @@ def build_closeout(migration: dict[str, Any], reports: dict[str, Any]) -> str:
             "",
             "## 真实阻塞",
             "",
-            f"- ItemSpec：{item['item_spec_total']} 件物品/刺青均已 typed；compile/production full {item['compile_full']}/{item['production_full']}，剩余 {item['requires_dm']} 个保留逐条 DM/人工语义边界。",
+            f"- ItemSpec：{item['item_spec_total']} 件物品/刺青均已 typed；compile full {item['compile_full']}，isolated runtime validated {item['isolated_runtime_validated']}，registered production full {item['registered_production_full']}，game usable {item['game_usable']}；剩余 {item['requires_dm']} 个保留逐条 DM/人工语义边界。",
             "- 角色成长：pack pin、升级、历史快照降级、选择/资源/快照重建和 CAS/幂等已有隔离闭环；整包 feature/option typed/production 阈值仍未达到，不宣称整包 production closed。",
             "- 复杂召唤的既有 production evidence 使用正式 typed DM continuation，因此计入 dm_assisted，而不是把“请 DM 决定”文本当作可用。",
             "",
@@ -703,7 +728,7 @@ def build_recovery_doc(migration: dict[str, Any], reports: dict[str, Any]) -> st
             "",
             "## ItemSpec 与运行时",
             "",
-            f"- `item-ir-1` typed/reviewed：{item['item_spec_typed']}/{item['item_spec_reviewed']}；compile full：{item['item_spec_compile_full']}；production full：{item['production_full']}；保留 DM 边界：{item['requires_dm']}；name branch：0。",
+            f"- `item-ir-1` typed/reviewed：{item['item_spec_typed']}/{item['item_spec_reviewed']}；compile full：{item['item_spec_compile_full']}；isolated runtime validated：{item['isolated_runtime_validated']}；registered production full：{item['registered_production_full']}；game usable：{item['game_usable']}；保留 DM 边界：{item['requires_dm']}；name branch：0。",
             "- 通用 consumer：equipment modifier、attunement/tattoo lifecycle、charge/recovery、granted action/spell、consumable、triggered effect；复用 EquipmentInstance、Attunement、RestService、Rules Kernel projection 和 transaction/CAS/idempotency。",
             "- 隔离测试已覆盖同调、Item action charge、DM decision window、replay、rollback、短/长休 charge recovery；dawn 不被错误转换成 long rest。",
             "",
@@ -748,6 +773,7 @@ def write_isolated_pack(root: Path, migration: dict[str, Any], reports: dict[str
         "review_index": "review-index.json",
         "duplicate_version_map": "duplicate-version-map.json",
         "runtime_definitions": "runtime-definitions.json",
+        "runtime_registry": "runtime-registry.json",
         "item_spec_catalog": "item-spec-catalog.json",
         "item_spec_paths": "items/",
         "compatibility": "compatibility.json",
@@ -777,6 +803,7 @@ def write_isolated_pack(root: Path, migration: dict[str, Any], reports: dict[str
                 "compile_status": spec["compile"]["compile_status"],
                 "consumer_ids": spec["compile"]["consumer_ids"],
                 "source_fingerprint": spec["source_fingerprint"],
+                "status_layers": spec.get("status_layers", {}),
             }
         )
     compatibility = {
@@ -798,6 +825,22 @@ def write_isolated_pack(root: Path, migration: dict[str, Any], reports: dict[str
     write_json(
         pack_dir / "runtime-definitions.json",
         {"definitions": runtime_definitions, "item_definitions": item_definitions},
+    )
+    write_json(
+        pack_dir / "runtime-registry.json",
+        {
+            "schema_version": "content-pack-runtime-registry-1",
+            "pack_id": PACK_ID,
+            "pack_version": f"whole-pack-{REPORT_DATE}",
+            "formal_apply": False,
+            "state_semantics": {
+                "production_full": "registered_production_full; formal registry only",
+                "isolated_runtime_validated": "reloaded isolated pack with generic consumers",
+                "game_usable": "registered_production_full + dm_assisted",
+            },
+            "content_entries": runtime_definitions,
+            "item_entries": item_definitions,
+        },
     )
     write_json(
         pack_dir / "item-spec-catalog.json",
@@ -878,6 +921,24 @@ def main() -> int:
     migration["previous_atom_catalog_source"] = previous_catalog_source
     migration["previous_atom_catalog"] = previous_value
     baseline = build_baseline(migration)
+    pre_reports = build_reports(migration, baseline)
+    write_isolated_pack(ROOT, migration, pre_reports)
+    isolated_pack_dir = ROOT / "data" / "content-ir" / "isolated-packs" / f"{PACK_ID}-{REPORT_DATE}"
+    isolated_registry = ContentPackRuntimeRegistry(isolated_pack_dir)
+    isolated_registry_summary = isolated_registry.reload()
+    migration["isolated_runtime_registry"] = isolated_registry_summary
+    migration["item_spec_catalog"] = apply_isolated_runtime_validation(
+        migration["item_spec_catalog"], isolated_registry_summary
+    )
+    migration["item_ir"] = {
+        **migration["item_ir"],
+        "isolated_runtime_validated_count": migration["item_spec_catalog"].get(
+            "isolated_runtime_validated", 0
+        ),
+        "production_count": migration["item_spec_catalog"].get(
+            "registered_production_full", 0
+        ),
+    }
     reports = build_reports(migration, baseline)
     reports["template_unlock_ranking"] = {
         "schema_version": "tashas-template-unlock-ranking-II-1",
@@ -1069,6 +1130,7 @@ def main() -> int:
         "runtime_audit": "content-ir-runtime-level-audit-IV",
         "runtime_audit_V": "content-ir-runtime-level-audit-V",
         "dm_assisted_validation_II": "tashas-dm-assisted-validation-II",
+        "status_layer_audit": "tashas-status-layer-audit",
         "whole_pack": "tashas-whole-pack-report",
     }
     for key, stem in names.items():

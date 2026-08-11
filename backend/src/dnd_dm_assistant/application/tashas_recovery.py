@@ -14,6 +14,7 @@ from dnd_dm_assistant.application.tashas_whole_pack import (
     _record_id,
     _text,
 )
+from dnd_dm_assistant.domain.content_ir_status import build_status_layers
 from dnd_dm_assistant.domain.item_spec import ItemSpec, compile_item_spec
 
 RECOVERY_DATE = "2026-08-11"
@@ -399,7 +400,92 @@ def item_spec_for_atom(
     spec["review_fingerprint"] = validated.fingerprint()
     spec["compile"] = compiled
     spec["manual_review_required"] = manual_review
+    spec["status_layers"] = build_status_layers(
+        source_identified=True,
+        draft=True,
+        candidate=True,
+        reviewed=True,
+        authored_typed_ir=True,
+        compile_full=compiled["compile_status"] == "full",
+        runtime_preview_full=compiled["runtime_preview_full"],
+    )
     return spec
+
+
+def apply_isolated_runtime_validation(
+    catalog: Mapping[str, Any],
+    validation: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Attach isolated-registry evidence without promoting formal production."""
+
+    validated_ids = {
+        str(item)
+        for item in validation.get("isolated_runtime_validated_ids", [])
+    }
+    registered_ids = {
+        str(item)
+        for item in validation.get("registered_production_full_ids", [])
+    }
+    dm_ids = {str(item) for item in validation.get("dm_assisted_ids", [])}
+    result = {str(key): value for key, value in catalog.items()}
+    specs: list[dict[str, Any]] = []
+    for raw in catalog.get("specs", []):
+        spec = dict(raw)
+        compile_status = spec.get("compile", {}).get("compile_status") == "full"
+        item_id = str(spec.get("item_id") or "")
+        spec["status_layers"] = build_status_layers(
+            source_identified=True,
+            draft=True,
+            candidate=True,
+            reviewed=spec.get("review_status") == "reviewed",
+            authored_typed_ir=True,
+            compile_full=compile_status,
+            runtime_preview_full=bool(spec.get("compile", {}).get("runtime_preview_full")),
+            isolated_runtime_validated=item_id in validated_ids,
+            registered_production_full=item_id in registered_ids,
+            dm_assisted=item_id in dm_ids,
+        )
+        specs.append(spec)
+    result["specs"] = sorted(specs, key=lambda item: str(item.get("item_id")))
+    total = len(specs)
+    compile_full = sum(
+        item.get("compile", {}).get("compile_status") == "full" for item in specs
+    )
+    isolated_full = sum(
+        item.get("status_layers", {}).get("isolated_runtime_validated") for item in specs
+    )
+    registered_full = sum(
+        item.get("status_layers", {}).get("registered_production_full") for item in specs
+    )
+    dm_assisted = sum(item.get("status_layers", {}).get("dm_assisted") for item in specs)
+    result.update(
+        {
+            "item_spec_runtime_preview_full": compile_full,
+            "isolated_runtime_validated": isolated_full,
+            "registered_production_full": registered_full,
+            "production_full": registered_full,
+            "game_usable": registered_full + dm_assisted,
+            "item_spec_compile_full": compile_full,
+            "item_spec_compile_only": total - compile_full,
+            "rates": {
+                "reviewed": (sum(item.get("review_status") == "reviewed" for item in specs) / total) if total else 0.0,
+                "typed": 1.0 if total else 0.0,
+                "compile_full": compile_full / total if total else 0.0,
+                "runtime_preview_full": compile_full / total if total else 0.0,
+                "isolated_runtime_validated": isolated_full / total if total else 0.0,
+                "registered_production_full": registered_full / total if total else 0.0,
+                "production_full": registered_full / total if total else 0.0,
+                "game_usable": (registered_full + dm_assisted) / total if total else 0.0,
+            },
+            "status_layer_semantics": {
+                "production_full": "registered_production_full; formal registry only",
+                "isolated_runtime_validated": "reloaded isolated pack with generic consumers",
+                "game_usable": "registered_production_full + dm_assisted",
+            },
+            "catalog_fingerprint": __import__("dnd_dm_assistant.domain.item_spec", fromlist=["fingerprint"]).fingerprint(specs),
+        }
+    )
+    return result
 
 
 def build_item_spec_catalog(
@@ -427,12 +513,16 @@ def build_item_spec_catalog(
         "production_full": 0.45,
         "game_usable": 0.60,
     }
+    compile_full = sum(item["compile"]["compile_status"] == "full" for item in specs)
     rates = {
         "reviewed": (sum(item.get("review_status") == "reviewed" for item in specs) / len(specs)) if specs else 0.0,
         "typed": (len(specs) / len(specs)) if specs else 0.0,
-        "compile_full": (sum(item["compile"]["compile_status"] == "full" for item in specs) / len(specs)) if specs else 0.0,
-        "production_full": (sum(item["compile"]["compile_status"] == "full" for item in specs) / len(specs)) if specs else 0.0,
-        "game_usable": (sum(item["compile"]["compile_status"] == "full" for item in specs) / len(specs)) if specs else 0.0,
+        "compile_full": compile_full / len(specs) if specs else 0.0,
+        "runtime_preview_full": compile_full / len(specs) if specs else 0.0,
+        "isolated_runtime_validated": 0.0,
+        "registered_production_full": 0.0,
+        "production_full": 0.0,
+        "game_usable": 0.0,
     }
     return {
         "schema_version": "tashas-item-spec-catalog-1",
@@ -443,12 +533,25 @@ def build_item_spec_catalog(
         "item_spec_compile_full": sum(item["compile"]["compile_status"] == "full" for item in specs),
         "item_spec_compile_only": sum(item["compile"]["compile_status"] == "partial" for item in specs),
         "compile_status_counts": dict(sorted(compile_counts.items())),
-        "production_full": sum(item["compile"]["compile_status"] == "full" for item in specs),
+        "item_spec_runtime_preview_full": compile_full,
+        "isolated_runtime_validated": 0,
+        "registered_production_full": 0,
+        "production_full": 0,
+        "game_usable": 0,
         "requires_dm": sum(bool(item.get("manual_review_required")) for item in specs),
         "name_branch_count": 0,
-        "thresholds": thresholds,
+        "thresholds": {
+            **thresholds,
+            "isolated_runtime_validated": thresholds["compile_full"],
+            "registered_production_full": thresholds["production_full"],
+        },
         "rates": rates,
-        "threshold_gate": all(rates[key] >= thresholds[key] for key in thresholds),
+        "threshold_gate": False,
+        "status_layer_semantics": {
+            "production_full": "registered_production_full; formal registry only",
+            "isolated_runtime_validated": "not inferred from compile; requires isolated registry reload",
+            "game_usable": "registered_production_full + dm_assisted",
+        },
         "specs": specs,
         "catalog_fingerprint": __import__("dnd_dm_assistant.domain.item_spec", fromlist=["fingerprint"]).fingerprint(specs),
     }
