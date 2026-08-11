@@ -1,3 +1,13 @@
+# 2026-08-12 Round 13 检查点：Additional ItemSpec Equipment Consumer Batch
+
+- Round XIII 在隔离 SQLite 上完成月镰、自然护符、巴巴·雅加的魔法扫帚、星界碎片、重复手稿、爆裂论文、防护诗篇和狂欢者风笛共 8 条完整 ItemSpec 的 equipment create、attunement/equip、granted action 或 charge、preview→confirm→幂等 replay。
+- 8/8 create/preview/confirm/replay、typed consumer、item state、attunement CAS、production runtime full 通过；4 条 charge lifecycle、17 个 operation transactions、`name_branch_count=0`。
+- ItemSpec status layers：`47 total / 37 compile_full / 37 isolated_runtime_validated / 32 registered_production_full / 32 game_usable`；项目 production full `158→166`。Tasha Feature 独立维持 `74 production / 2 dm-assisted / 76 game-usable`。
+- 新增/更新：`scripts/validate-tashas-item-production-consumer-round-XIII.py`、Round XIII test/report/result/doc、ItemSpec catalog、isolated runtime definitions/registry 和 whole-pack migration reports；Round X/XI/XII 累计 evidence 断言已更新。
+- Round XIII validator 与 whole-pack migration 各运行两次且 byte-identical；targeted Tasha tests 19 项、backend 全量 pytest `888 passed`、Ruff、compileall 和 `git diff --check` 通过。formal registry/database/campaign/character、source corpus、3D 和永久保护路径未写入。
+- 实现/证据提交 `5ceb72ad077227364d9b33beccea9ddf7e73e3b2` 已推送到 `origin/main`；本交接 receipt 更新随后单独提交。永久指纹：database `f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad`、formal registry `f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b`、integrations `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`、ollama `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`。
+- 下一轮继续剩余 5 条完整 ItemSpec；`32/47` 已过 production 60% gate，但 game usable 尚未达到 75% gate，不得提前收口。
+
 # 2026-08-12 Round 10 检查点：ItemSpec Equipment Consumer Production Evidence
 
 - Round 10 在隔离 SQLite 上完成 8 条 `compile_full` ItemSpec 的真实 equipment create、attune/equip、granted action、charge operation preview→confirm→幂等 replay；14 个 operation transaction 均持久化，守护者纹章与炼金总纲充能均落到 2。

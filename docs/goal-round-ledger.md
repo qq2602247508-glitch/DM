@@ -6,6 +6,19 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 13：Additional ItemSpec Equipment Consumer Batch
+
+当前状态：`accepted`；本轮完成 8 条真实 ItemSpec evidence，已提交并推送。
+
+- 月镰、自然护符、巴巴·雅加的魔法扫帚、星界碎片、重复手稿、爆裂论文、防护诗篇和狂欢者风笛，全部通过临时迁移 SQLite 的 equipment create → attunement/equip → granted action 或 charge → preview → confirm → 幂等 replay。
+- 8/8 create/preview/confirm/replay、typed consumer、item state、attunement CAS 和 production runtime full 通过；4 条 charge lifecycle、17 个 operation transactions，`name_branch_count=0`。
+- ItemSpec status layers：`47 total / 37 compile_full / 37 isolated_runtime_validated / 32 registered_production_full / 32 game_usable`；项目 `current_project_production_full` 从 158 增至 166。Feature Tasha 仍独立为 `74/2/76`。
+- formal registry/database、正式 campaign/character 和 source corpus 未写入；isolated pack 仍与正式 registry 分账。永久保护的 database、formal registry、`backend/tests/ollama.py` 与 integrations manifest 指纹保持不变。
+- Round XIII validator、whole-pack migration 各运行两次且 byte-identical；targeted Tasha tests 19 项、backend 全量 pytest 888 项、Ruff、compileall 和 `git diff --check` 通过。
+- 证据：`docs/tashas-item-production-consumer-round-XIII-2026-08-12.md`、Round XIII report/result、ItemSpec catalog 与 whole-pack migration 输出。
+- 实现与证据提交 `5ceb72ad077227364d9b33beccea9ddf7e73e3b2` 已推送到 `origin/main`；ledger/handoff receipt 随后单独提交。
+- 下一步：继续剩余 5 条完整 ItemSpec；当前 production `32/47` 已过 60% gate，但 game usable `32/47` 尚未达到 75% gate，不能提前收口。
+
 ## Round 9：Resource Profile / Exchange / Event Window Consumer Expansion
 
 当前状态：`accepted`；本轮完成 6 条真实 API evidence，属于 platform/core growth round，已提交并推送，整包 game usable 达到 76。
