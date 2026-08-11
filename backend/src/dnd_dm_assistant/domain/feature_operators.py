@@ -137,6 +137,14 @@ class OperatorContract:
             "speed_source" not in parameters and "speed_ft" not in parameters
         ):
             errors.append("grant_movement_mode requires one of 'speed_source' or 'speed_ft'")
+        if self.operator_id == "grant_movement_mode":
+            multiplier = parameters.get("speed_multiplier")
+            if multiplier is not None and (
+                not isinstance(multiplier, int)
+                or isinstance(multiplier, bool)
+                or multiplier < 1
+            ):
+                errors.append("grant_movement_mode speed_multiplier must be a positive integer")
         if self.operator_id == "grant_sight_mode" and (
             "range_ft" not in parameters and "range_source" not in parameters
         ):
@@ -657,6 +665,7 @@ def default_operator_contracts() -> dict[str, OperatorContract]:
             optional=(
                 "speed_source",
                 "speed_ft",
+                "speed_multiplier",
                 "requires_not_wearing_heavy_armor",
                 "applies_when",
                 "selection_binding",
@@ -666,6 +675,7 @@ def default_operator_contracts() -> dict[str, OperatorContract]:
                 "mode": "string",
                 "speed_source": "string",
                 "speed_ft": "integer",
+                "speed_multiplier": "integer",
                 "requires_not_wearing_heavy_armor": "boolean",
                 "applies_when": "string",
                 "selection_binding": "object",
@@ -678,7 +688,6 @@ def default_operator_contracts() -> dict[str, OperatorContract]:
             materializer="movement.mode",
             capability="movement.mode",
             mutually_exclusive=(frozenset({"speed_source", "speed_ft"}),),
-            conditional=(ConditionalRequirement("mode", "fly", ("speed_source",)),),
         ),
         _contract(
             "grant_sight_mode",

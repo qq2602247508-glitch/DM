@@ -1,3 +1,13 @@
+# 2026-08-12 Round 4 检查点：Movement / Sight / Choice / Lifecycle consumer 扩展
+
+- Round 4 在 Round-II authored Feature IR 上完成 8 条真实生产 evidence：`fathomless-gift-of-the-sea`、`ranger-roving`、`beast-barbarian-bestial-soul`、两条 `blind-fighting`、`genie-elemental-gift`、`swarmkeeper-writhing-tide`、`twilight-cleric-steps-of-night`。8/8 均通过真实 `ContentIRRuntimeService` preview→confirm→幂等 replay、CAS、transaction，并经回合边界刷新移动 / 视觉快照。
+- Tasha status layers：`registered_production_full=36`（Round 3 的 28→36）、`dm_assisted=2`、`game_usable=38`；`manual_authoring=314`、`compile-only=55`、`authored Typed IR=94`、`runtime_preview_full=93`。严格口径仍为 `game_usable = registered_production_full + dm_assisted`。
+- 通用实现：`grant_movement_mode` 支持选择绑定、climb、walking speed、fixed speed、speed multiplier；显式移动 clause 生成通用 `activate_movement_mode` feature action，支持 ten-minute / one-minute state 和角色资源 CAS；`grant_sight_mode` 的 `set` block 进入冻结 `rule_modifiers` / `active_sight_modes`。带同一资源键的既有状态动作会合并移动 effect，保留条件生命周期和 parity。
+- 新增证据入口：`scripts/validate-tashas-feature-production-consumer-round-IV.py`、`reports/tashas-feature-production-consumer-round-IV-2026-08-12.json`、`data/content-ir/compiled/production-runtime-results-VI.json`、`docs/tashas-feature-production-consumer-round-IV-2026-08-12.md`。Round IV validator 两次关键输出 hash 一致；whole-pack migration 两次关键报告/runtime hash 一致。
+- 完整 backend pytest 通过；变更 production source、Round IV test/validator 的 Ruff 通过；`git diff --check` 通过。仓库已有全量 test import-order 的 I001 噪音没有做无关格式化。
+- formal apply/database/campaign/character 仍为 false；3D、source corpus、formal 499 audit 未改。受保护的 `backend/tests/integrations/` 和 `backend/tests/ollama.py` 未暂存/提交，database fingerprint 仍为 `f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad`。
+- 下一轮：继续 vessel/entity、exhaustion、spectral object、teleport destination、psionic payment 与 ItemSpec lifecycle；不要把 isolated-only / DM-reference 伪装成 production，也不要迁移下一本扩展包。
+
 # 2026-08-12 Round 3 检查点：Feature production consumer evidence 收割
 
 - Round 3 从 Round 2 的 isolated full contracts 中选择 12 条，全部通过真实 `ContentIRRuntimeService` preview→confirm→幂等 replay；11 条为 typed production，1 条辉煌防御为 DM-confirmed typed reaction，并实际消费 reaction resource。

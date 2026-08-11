@@ -1,12 +1,12 @@
 {
   "after": {
     "compile_only": 35,
-    "production_full": 88,
+    "production_full": 96,
     "tasha_atom_pack": {
       "authored_typed_ir": 94,
       "candidate_generated": 407,
       "compile_full": 93,
-      "compile_only": 63,
+      "compile_only": 55,
       "consumer_unlocks": {
         "existing_generic_consumer": {
           "content_ids": [
@@ -29,14 +29,22 @@
             "content.tashas-cauldron.round2.feature.artillerist-explosive-cannon",
             "content.tashas-cauldron.round2.feature.astral-self-word-of-the-spirit",
             "content.tashas-cauldron.round2.feature.battle-master-bait-and-switch",
+            "content.tashas-cauldron.round2.feature.beast-barbarian-bestial-soul",
+            "content.tashas-cauldron.round2.feature.fathomless-gift-of-the-sea",
             "content.tashas-cauldron.round2.feature.feat-telepathic",
+            "content.tashas-cauldron.round2.feature.genie-elemental-gift",
             "content.tashas-cauldron.round2.feature.genie-genies-wrath",
             "content.tashas-cauldron.round2.feature.glory-paladin-glorious-defense",
+            "content.tashas-cauldron.round2.feature.paladin-blind-fighting",
             "content.tashas-cauldron.round2.feature.psi-warrior-guarded-mind",
+            "content.tashas-cauldron.round2.feature.ranger-blind-fighting",
+            "content.tashas-cauldron.round2.feature.ranger-roving",
             "content.tashas-cauldron.round2.feature.rune-knight-giants-might",
             "content.tashas-cauldron.round2.feature.rune-knight-great-stature",
             "content.tashas-cauldron.round2.feature.soulknife-psychic-whispers",
+            "content.tashas-cauldron.round2.feature.swarmkeeper-writhing-tide",
             "content.tashas-cauldron.round2.feature.twilight-cleric-eyes-of-night",
+            "content.tashas-cauldron.round2.feature.twilight-cleric-steps-of-night",
             "tashas-cauldron:spell:0036d7dc058c496ef08fe340",
             "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac",
             "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
@@ -48,16 +56,16 @@
       },
       "content_atom_total": 524,
       "content_id_funnel": {
-        "compile_only": 63,
+        "compile_only": 55,
         "dm_assisted": 2,
         "matched_typed_ir": 94,
-        "production_full": 29,
+        "production_full": 37,
         "relation_holds": true
       },
       "current_project_compile_only": 35,
       "current_project_compiled_unique": 111,
-      "current_project_production_full": 88,
-      "current_project_production_registry_fingerprint": "f91dfe573844ca4fd36891117f06a87dff9d0164b3595caf9e1df19cf3dbc41d",
+      "current_project_production_full": 96,
+      "current_project_production_registry_fingerprint": "91176a5228094bfe34b768c84f081099080597a53d5e054d6f792df5af2fe936",
       "dm_assisted": 2,
       "dm_reference": 107,
       "draft_total": 407,
@@ -74,7 +82,7 @@
         },
         "total": 499
       },
-      "game_usable": 30,
+      "game_usable": 38,
       "invalid_source": 0,
       "item_ir": {
         "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
@@ -146,7 +154,7 @@
         "spell": 21,
         "subclass_feature": 232
       },
-      "production_full": 28,
+      "production_full": 36,
       "reviewed_total": 407,
       "runtime_preview_full": 93,
       "schema_version": "tashas-whole-pack-migration-1",
@@ -156,7 +164,7 @@
       "source_record_total": 144,
       "source_record_unclassified": 0,
       "status_counts": {
-        "compile_only": 63,
+        "compile_only": 55,
         "dm_assisted": 2,
         "dm_reference": 107,
         "duplicate_or_reprint": 0,
@@ -164,7 +172,7 @@
         "manual_authoring": 314,
         "non_instantiable": 10,
         "out_of_scope_with_reason": 0,
-        "production_full": 28
+        "production_full": 36
       },
       "template_matched": 93
     },
@@ -172,7 +180,7 @@
   },
   "baseline": {
     "compile_only": 35,
-    "production_full": 88,
+    "production_full": 96,
     "unique_compiled": 111
   },
   "database_unchanged": true,

@@ -477,6 +477,14 @@ class SqlAlchemyCampaignStateGateway:
                         "advantage",
                         "disadvantage",
                         "grant_proficiency",
+                        "set",
+                    }:
+                        continue
+                    if operation == "set" and stat not in {
+                        "blindsight_ft",
+                        "darkvision_ft",
+                        "truesight_ft",
+                        "tremorsense_ft",
                     }:
                         continue
                     if not isinstance(value, int) and operation == "add":
@@ -496,6 +504,20 @@ class SqlAlchemyCampaignStateGateway:
                                 continue
                         else:
                             continue
+                    if not isinstance(value, int) and operation == "set":
+                        if isinstance(modifier.get("range_ft"), int):
+                            value = int(modifier["range_ft"])
+                        else:
+                            range_sources = {
+                                "twilight_domain_darkvision": 300,
+                            }
+                            source_value = range_sources.get(
+                                str(modifier.get("range_source") or "")
+                            )
+                            if isinstance(source_value, int):
+                                value = source_value
+                            else:
+                                continue
                     scope = str(modifier.get("scope") or "all")
                     skill = str(modifier.get("skill") or "")
                     key = f"{stat}:{scope}:{skill}:{index}"

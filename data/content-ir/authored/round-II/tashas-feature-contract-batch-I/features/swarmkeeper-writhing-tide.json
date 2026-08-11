@@ -25,7 +25,15 @@
           "parameters": {
             "applies_when": "swarmkeeper",
             "mode": "fly",
-            "speed_source": "fixed_10_feet"
+            "speed_ft": 10
+          }
+        },
+        {
+          "operator": "consume_resource",
+          "parameters": {
+            "amount": 1,
+            "operation": "consume",
+            "resource_key": "writhing_tide_uses"
           }
         }
       ],

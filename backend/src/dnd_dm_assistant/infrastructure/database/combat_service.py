@@ -6872,10 +6872,60 @@ class CombatEngineService:
                     continue
                 mode = str(raw.get("mode") or "").strip()
                 speed_source = str(raw.get("speed_source") or "").strip()
-                speed = actor.speed_ft if speed_source == "current_speed" else raw.get("speed_ft")
-                if mode in {"fly", "swim", "burrow"} and isinstance(speed, int) and speed >= 0:
+                if speed_source in {"current_speed", "walking_speed"}:
+                    speed = actor.speed_ft
+                elif speed_source == "fixed_10_feet":
+                    speed = 10
+                else:
+                    speed = raw.get("speed_ft")
+                multiplier = raw.get("speed_multiplier")
+                if (
+                    isinstance(multiplier, int)
+                    and not isinstance(multiplier, bool)
+                    and multiplier > 0
+                    and isinstance(speed, int)
+                ):
+                    speed *= multiplier
+                if (
+                    mode in {"fly", "swim", "burrow", "climb", "walk"}
+                    and isinstance(speed, int)
+                    and speed >= 0
+                ):
+                    active_modes[mode] = max(active_modes.get(mode, 0), speed)
+            for raw in snapshot.get("active_movement_mode_effects", []):
+                if not isinstance(raw, dict):
+                    continue
+                expires_round = raw.get("expires_round")
+                if (
+                    isinstance(expires_round, int)
+                    and isinstance(round_number, int)
+                    and expires_round < round_number
+                ):
+                    continue
+                mode = str(raw.get("mode") or "").strip()
+                speed = raw.get("speed_ft")
+                if (
+                    mode in {"fly", "swim", "burrow", "climb", "walk"}
+                    and isinstance(speed, int)
+                    and speed >= 0
+                ):
                     active_modes[mode] = max(active_modes.get(mode, 0), speed)
             snapshot["active_movement_modes"] = active_modes
+            active_sight_modes: dict[str, int] = {}
+            for sight_mode in ("blindsight", "darkvision", "truesight", "tremorsense"):
+                for modifier in cls._feature_rule_modifiers(
+                    actor,
+                    stat=f"{sight_mode}_ft",
+                    scope="self",
+                ):
+                    if modifier.get("operation") not in {"set", "add"}:
+                        continue
+                    value = modifier.get("value")
+                    if isinstance(value, int) and value >= 0:
+                        active_sight_modes[sight_mode] = max(
+                            active_sight_modes.get(sight_mode, 0), value
+                        )
+            snapshot["active_sight_modes"] = active_sight_modes
             actor.snapshot_json = snapshot
         actor.movement_remaining_ft = 0 if movement_blocked else movement_budget
         can_act = not bool(cls._condition_set(actor) & cls._ACTION_BLOCKING_CONDITIONS)
@@ -17261,6 +17311,69 @@ class CombatEngineService:
                         result["targeted_timed_modifier_granted"]["light_radius_ft"] = (
                             self._state_int(effect.get("light_radius_ft"), 0)
                         )
+                    continue
+                if kind == "activate_movement_mode":
+                    mode = str(effect.get("mode") or "").strip()
+                    if mode not in {"fly", "swim", "burrow", "climb", "walk"}:
+                        raise ValueError("移动模式积木的 mode 不受支持")
+                    speed_source = str(effect.get("speed_source") or "").strip()
+                    if speed_source in {"current_speed", "walking_speed"}:
+                        speed = actor.speed_ft
+                    elif speed_source == "fixed_10_feet":
+                        speed = 10
+                    else:
+                        speed = effect.get("speed_ft")
+                    multiplier = effect.get("speed_multiplier")
+                    if (
+                        isinstance(multiplier, int)
+                        and not isinstance(multiplier, bool)
+                        and multiplier > 0
+                        and isinstance(speed, int)
+                    ):
+                        speed *= multiplier
+                    if not isinstance(speed, int) or speed < 0:
+                        raise ValueError("移动模式积木缺少有效速度")
+                    snapshot = dict(actor.snapshot_json or {})
+                    raw_effects = snapshot.get("active_movement_mode_effects")
+                    mode_effects = (
+                        [dict(item) for item in raw_effects if isinstance(item, dict)]
+                        if isinstance(raw_effects, list)
+                        else []
+                    )
+                    source_id = str(action.get("id") or command.feature_id).strip()
+                    mode_effects = [
+                        item
+                        for item in mode_effects
+                        if str(item.get("source_id") or "") != source_id
+                    ]
+                    duration = str(effect.get("duration") or "current_turn")
+                    duration_rounds = {
+                        "one_minute": 10,
+                        "ten_minutes": 100,
+                    }.get(duration, 1)
+                    expires_round = combat.round_number + duration_rounds - 1
+                    mode_effects.append(
+                        {
+                            "source_id": source_id,
+                            "feature_id": command.feature_id,
+                            "mode": mode,
+                            "speed_ft": speed,
+                            "expires_round": expires_round,
+                        }
+                    )
+                    snapshot["active_movement_mode_effects"] = mode_effects
+                    active_modes = dict(snapshot.get("active_movement_modes") or {})
+                    active_modes[mode] = max(int(active_modes.get(mode) or 0), speed)
+                    snapshot["active_movement_modes"] = active_modes
+                    actor.snapshot_json = snapshot
+                    result.setdefault("movement_modes_activated", []).append(
+                        {
+                            "mode": mode,
+                            "speed_ft": speed,
+                            "duration": duration,
+                            "expires_round": expires_round,
+                        }
+                    )
                     continue
                 if kind == "activate_condition":
                     condition = str(effect.get("condition") or "").strip()

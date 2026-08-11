@@ -27,6 +27,14 @@
             "mode": "fly",
             "speed_source": "walking_speed"
           }
+        },
+        {
+          "operator": "consume_resource",
+          "parameters": {
+            "amount": 1,
+            "operation": "consume",
+            "resource_key": "steps_of_night_uses"
+          }
         }
       ],
       "expiry": null,

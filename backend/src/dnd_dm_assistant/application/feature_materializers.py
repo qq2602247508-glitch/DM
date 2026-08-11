@@ -300,12 +300,22 @@ def _materialize_movement(context: MaterializerContext) -> MaterializedBlock:
     for key in (
         "speed_source",
         "speed_ft",
+        "speed_multiplier",
         "requires_not_wearing_heavy_armor",
         "applies_when",
         "selection_binding",
     ):
         if key in params:
             entry[key] = params[key]
+    if entry.get("speed_source") == "fixed_10_feet":
+        entry.pop("speed_source", None)
+        entry["speed_ft"] = 10
+    selection_binding = params.get("selection_binding")
+    if isinstance(selection_binding, Mapping):
+        choice_key = str(selection_binding.get("choice_key") or "").strip()
+        if choice_key:
+            entry["selection_resource_key"] = choice_key
+            entry["selection_value"] = str(params.get("selection_value") or entry["mode"])
     return MaterializedBlock("movement_modes", entry)
 
 

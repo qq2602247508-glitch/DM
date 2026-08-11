@@ -635,7 +635,76 @@ def materialize_runtime_definition(
                         "requires_dm_adjudication": False,
                     }
         elif section == "movement_modes":
+            # Keep the typed block in the passive registry as well as the
+            # explicit action. Its ``applies_when`` predicate prevents a
+            # premature grant, while the action handles temporary activation.
             definition["combat_start"]["movement_modes"].append(entry)
+            if clause.trigger == "explicit_activation":
+                # An explicitly activated movement clause is an action, not a
+                # passive combat-start grant. The same typed movement block is
+                # carried by the action so the combat consumer can persist its
+                # duration and CAS transition.
+                action_id = f"{spec.feature_id}:activate:{clause.clause_id}"
+                consume_effect = next(
+                    (
+                        dict(effect.to_dict()).get("parameters") or {}
+                        for effect in clause.effects
+                        if effect.operator == "consume_resource"
+                    ),
+                    None,
+                )
+                consume_key = (
+                    str(consume_effect.get("resource_key") or "").strip()
+                    if isinstance(consume_effect, dict)
+                    else ""
+                )
+                action = next(
+                    (
+                        candidate
+                        for candidate in definition["actions"].values()
+                        if isinstance(candidate, dict)
+                        and consume_key
+                        and str(candidate.get("resource_key") or "").strip() == consume_key
+                    ),
+                    None,
+                )
+                if not isinstance(action, dict):
+                    action = definition["actions"].get(spec.feature_id)
+                if not isinstance(action, dict):
+                    action = {
+                        "id": action_id,
+                        "feature_id": spec.feature_id,
+                        "feature_name": spec.source_name,
+                        "name": spec.source_name,
+                        "kind": "feature_action",
+                        "action_cost": clause.action_economy,
+                        "target": "self",
+                        "target_policy": {"mode": "self"},
+                        "resolution_kind": "movement_mode_activation",
+                        "effects": [],
+                        "automation_status": "full",
+                        "requires_dm_adjudication": False,
+                        "runtime_execution": {
+                            "status": "ready",
+                            "consumer": "combat_feature_action",
+                            "contract_version": "feature-action-movement-mode-1",
+                        },
+                    }
+                    definition["actions"][spec.feature_id] = action
+                action["effects"].append(
+                    {
+                        "kind": "activate_movement_mode",
+                        "mode": entry.get("mode"),
+                        "speed_source": entry.get("speed_source"),
+                        "speed_ft": entry.get("speed_ft"),
+                        "speed_multiplier": entry.get("speed_multiplier"),
+                        "applies_when": entry.get("applies_when"),
+                        "duration": clause.duration,
+                    }
+                )
+                if isinstance(consume_effect, dict) and consume_effect.get("resource_key"):
+                    action["resource_key"] = str(consume_effect["resource_key"])
+                    action["resource_cost"] = int(consume_effect.get("amount") or 1)
         elif section == "actions":
             if operator == "activate_condition" and clause_id in explicit_clause_effects:
                 entry["kind"] = "feature_action"

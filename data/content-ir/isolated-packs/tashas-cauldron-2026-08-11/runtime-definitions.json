@@ -14,7 +14,7 @@
       "atom_id": "tashas-cauldron:atom:008f917eace997a6a54939d5:gift-of-the-sea:003",
       "content_id": "content.tashas-cauldron.round2.feature.fathomless-gift-of-the-sea",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "74fbe2468e9de195cc806d2504240777ab5b59e655b609bd77c38accf80ea1a0",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.fathomless-gift-of-the-sea"
@@ -214,7 +214,7 @@
       "atom_id": "tashas-cauldron:atom:28894d328bca545cc65f7eb9:blind-fighting:004",
       "content_id": "content.tashas-cauldron.round2.feature.paladin-blind-fighting",
       "content_kind": "class_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "bedeef4bfaf1f4e3298ed0b820fe64250b6eddc8c32e6cc46fa8a3e4a04df2d0",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.paladin-blind-fighting"
@@ -335,7 +335,7 @@
       "atom_id": "tashas-cauldron:atom:63d0abe27f6ad161f0820593:steps-of-night:006",
       "content_id": "content.tashas-cauldron.round2.feature.twilight-cleric-steps-of-night",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "add482a99ecb03f656b4f0411eb340b3887a648abf46b16b152f3997d2a1b553",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.twilight-cleric-steps-of-night"
@@ -355,7 +355,7 @@
       "atom_id": "tashas-cauldron:atom:752d57e35706db428895da0a:blind-fighting:008",
       "content_id": "content.tashas-cauldron.round2.feature.ranger-blind-fighting",
       "content_kind": "class_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "a39b8159a253eda7998dfdeb1cfd5f664ea39dacfaaa05d80111fd13d23066d5",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.ranger-blind-fighting"
@@ -385,7 +385,7 @@
       "atom_id": "tashas-cauldron:atom:752d57e35706db428895da0a:roving-6:003",
       "content_id": "content.tashas-cauldron.round2.feature.ranger-roving",
       "content_kind": "class_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "6595588adee5a89e586f32b1ebed8f455611391f090c9ce43dfe895b02151297",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.ranger-roving"
@@ -445,7 +445,7 @@
       "atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:elemental-gift:005",
       "content_id": "content.tashas-cauldron.round2.feature.genie-elemental-gift",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "0281762f3f17d10d7da5e74e4ed47ecc3b306de5a5f4a4259bcd675e73739c1d",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.genie-elemental-gift"
@@ -535,7 +535,7 @@
       "atom_id": "tashas-cauldron:atom:b23e97de6529e42be59f8b0d:bestial-soul:005",
       "content_id": "content.tashas-cauldron.round2.feature.beast-barbarian-bestial-soul",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "41babb65982a971e9e339f7be5c634a6b703ffa9d4187f9c30e225296980a888",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.beast-barbarian-bestial-soul"
@@ -885,7 +885,7 @@
       "atom_id": "tashas-cauldron:atom:f8e42149abd618bfa3d0eac1:writhing-tide:003",
       "content_id": "content.tashas-cauldron.round2.feature.swarmkeeper-writhing-tide",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "1fd37d80663219dc8205cf97c9fc2b23fb6ee9975c86f3f868f73d9b2c29f821",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.swarmkeeper-writhing-tide"

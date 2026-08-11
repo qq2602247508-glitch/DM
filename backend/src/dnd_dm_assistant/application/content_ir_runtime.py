@@ -250,6 +250,7 @@ class ContentIRRuntimeService:
                 start_blocks = [
                     *[item for item in combat_start.get("defenses", []) if isinstance(item, Mapping)],
                     *[item for item in combat_start.get("modifiers", []) if isinstance(item, Mapping)],
+                    *[item for item in combat_start.get("movement_modes", []) if isinstance(item, Mapping)],
                 ]
             raw_action = next(
                 (

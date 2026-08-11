@@ -1,0 +1,211 @@
+{
+  "checks": {
+    "all_preview_confirm_replay": true,
+    "all_typed_consumers": true,
+    "formal_database_written": false,
+    "formal_registry_written": false,
+    "movement_choice_lifecycle_consumers": 8,
+    "name_branch_count": 0,
+    "production_runtime_full_count": 8,
+    "selected_count": 8
+  },
+  "evidence_by_id": {
+    "content.tashas-cauldron.round2.feature.beast-barbarian-bestial-soul": {
+      "active_movement_modes": {
+        "swim": 30
+      },
+      "active_sight_modes": {},
+      "actor_target_cas": true,
+      "confirm": true,
+      "content_id": "content.tashas-cauldron.round2.feature.beast-barbarian-bestial-soul",
+      "content_kind": "feature",
+      "execution_mode": "typed",
+      "movement_activation": true,
+      "pack_id": "tashas-cauldron",
+      "preview": true,
+      "production_runtime_full": true,
+      "replay": true,
+      "resource_cas": true,
+      "runtime_registry": true,
+      "sight_activation": true,
+      "source": "round-II-authored-feature-contract-through-round-IV-consumer",
+      "transaction": true,
+      "turn_boundary_refresh": true,
+      "typed_consumer": "combat_engine.feature_action.v1"
+    },
+    "content.tashas-cauldron.round2.feature.fathomless-gift-of-the-sea": {
+      "active_movement_modes": {
+        "swim": 40
+      },
+      "active_sight_modes": {},
+      "actor_target_cas": true,
+      "confirm": true,
+      "content_id": "content.tashas-cauldron.round2.feature.fathomless-gift-of-the-sea",
+      "content_kind": "feature",
+      "execution_mode": "typed",
+      "movement_activation": true,
+      "pack_id": "tashas-cauldron",
+      "preview": true,
+      "production_runtime_full": true,
+      "replay": true,
+      "resource_cas": true,
+      "runtime_registry": true,
+      "sight_activation": true,
+      "source": "round-II-authored-feature-contract-through-round-IV-consumer",
+      "transaction": true,
+      "turn_boundary_refresh": true,
+      "typed_consumer": "combat_engine.feature_action.v1"
+    },
+    "content.tashas-cauldron.round2.feature.genie-elemental-gift": {
+      "active_movement_modes": {
+        "fly": 30
+      },
+      "active_sight_modes": {},
+      "actor_target_cas": true,
+      "confirm": true,
+      "content_id": "content.tashas-cauldron.round2.feature.genie-elemental-gift",
+      "content_kind": "feature",
+      "execution_mode": "typed",
+      "movement_activation": true,
+      "pack_id": "tashas-cauldron",
+      "preview": true,
+      "production_runtime_full": true,
+      "replay": true,
+      "resource_cas": true,
+      "runtime_registry": true,
+      "sight_activation": true,
+      "source": "round-II-authored-feature-contract-through-round-IV-consumer",
+      "transaction": true,
+      "turn_boundary_refresh": true,
+      "typed_consumer": "combat_engine.feature_action.v1"
+    },
+    "content.tashas-cauldron.round2.feature.paladin-blind-fighting": {
+      "active_movement_modes": {},
+      "active_sight_modes": {
+        "blindsight": 10
+      },
+      "actor_target_cas": true,
+      "confirm": true,
+      "content_id": "content.tashas-cauldron.round2.feature.paladin-blind-fighting",
+      "content_kind": "feature",
+      "execution_mode": "typed",
+      "movement_activation": true,
+      "pack_id": "tashas-cauldron",
+      "preview": true,
+      "production_runtime_full": true,
+      "replay": true,
+      "resource_cas": true,
+      "runtime_registry": true,
+      "sight_activation": true,
+      "source": "round-II-authored-feature-contract-through-round-IV-consumer",
+      "transaction": true,
+      "turn_boundary_refresh": true,
+      "typed_consumer": "combat_engine.feature_action.v1"
+    },
+    "content.tashas-cauldron.round2.feature.ranger-blind-fighting": {
+      "active_movement_modes": {},
+      "active_sight_modes": {
+        "blindsight": 10
+      },
+      "actor_target_cas": true,
+      "confirm": true,
+      "content_id": "content.tashas-cauldron.round2.feature.ranger-blind-fighting",
+      "content_kind": "feature",
+      "execution_mode": "typed",
+      "movement_activation": true,
+      "pack_id": "tashas-cauldron",
+      "preview": true,
+      "production_runtime_full": true,
+      "replay": true,
+      "resource_cas": true,
+      "runtime_registry": true,
+      "sight_activation": true,
+      "source": "round-II-authored-feature-contract-through-round-IV-consumer",
+      "transaction": true,
+      "turn_boundary_refresh": true,
+      "typed_consumer": "combat_engine.feature_action.v1"
+    },
+    "content.tashas-cauldron.round2.feature.ranger-roving": {
+      "active_movement_modes": {
+        "climb": 30,
+        "swim": 30
+      },
+      "active_sight_modes": {},
+      "actor_target_cas": true,
+      "confirm": true,
+      "content_id": "content.tashas-cauldron.round2.feature.ranger-roving",
+      "content_kind": "feature",
+      "execution_mode": "typed",
+      "movement_activation": true,
+      "pack_id": "tashas-cauldron",
+      "preview": true,
+      "production_runtime_full": true,
+      "replay": true,
+      "resource_cas": true,
+      "runtime_registry": true,
+      "sight_activation": true,
+      "source": "round-II-authored-feature-contract-through-round-IV-consumer",
+      "transaction": true,
+      "turn_boundary_refresh": true,
+      "typed_consumer": "combat_engine.feature_action.v1"
+    },
+    "content.tashas-cauldron.round2.feature.swarmkeeper-writhing-tide": {
+      "active_movement_modes": {
+        "fly": 10
+      },
+      "active_sight_modes": {},
+      "actor_target_cas": true,
+      "confirm": true,
+      "content_id": "content.tashas-cauldron.round2.feature.swarmkeeper-writhing-tide",
+      "content_kind": "feature",
+      "execution_mode": "typed",
+      "movement_activation": true,
+      "pack_id": "tashas-cauldron",
+      "preview": true,
+      "production_runtime_full": true,
+      "replay": true,
+      "resource_cas": true,
+      "runtime_registry": true,
+      "sight_activation": true,
+      "source": "round-II-authored-feature-contract-through-round-IV-consumer",
+      "transaction": true,
+      "turn_boundary_refresh": true,
+      "typed_consumer": "combat_engine.feature_action.v1"
+    },
+    "content.tashas-cauldron.round2.feature.twilight-cleric-steps-of-night": {
+      "active_movement_modes": {
+        "fly": 30
+      },
+      "active_sight_modes": {},
+      "actor_target_cas": true,
+      "confirm": true,
+      "content_id": "content.tashas-cauldron.round2.feature.twilight-cleric-steps-of-night",
+      "content_kind": "feature",
+      "execution_mode": "typed",
+      "movement_activation": true,
+      "pack_id": "tashas-cauldron",
+      "preview": true,
+      "production_runtime_full": true,
+      "replay": true,
+      "resource_cas": true,
+      "runtime_registry": true,
+      "sight_activation": true,
+      "source": "round-II-authored-feature-contract-through-round-IV-consumer",
+      "transaction": true,
+      "turn_boundary_refresh": true,
+      "typed_consumer": "combat_engine.feature_action.v1"
+    }
+  },
+  "production_runtime_full_ids": [
+    "content.tashas-cauldron.round2.feature.beast-barbarian-bestial-soul",
+    "content.tashas-cauldron.round2.feature.fathomless-gift-of-the-sea",
+    "content.tashas-cauldron.round2.feature.genie-elemental-gift",
+    "content.tashas-cauldron.round2.feature.paladin-blind-fighting",
+    "content.tashas-cauldron.round2.feature.ranger-blind-fighting",
+    "content.tashas-cauldron.round2.feature.ranger-roving",
+    "content.tashas-cauldron.round2.feature.swarmkeeper-writhing-tide",
+    "content.tashas-cauldron.round2.feature.twilight-cleric-steps-of-night"
+  ],
+  "schema_version": "content-ir-production-runtime-results-VI-1",
+  "source": "Round-II reviewed Feature IR through real ContentIRRuntimeService on an isolated migrated database"
+}

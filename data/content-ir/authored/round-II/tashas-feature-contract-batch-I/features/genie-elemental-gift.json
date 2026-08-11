@@ -56,7 +56,7 @@
       "visibility": "owner"
     },
     {
-      "action_economy": "none",
+      "action_economy": "bonus_action",
       "activation": "automatic",
       "audit": {
         "reviewed_by": "codex-manual-review-2026-08-12-round-II",
@@ -66,14 +66,22 @@
       },
       "clause_id": "flight",
       "conditions": [],
-      "duration": "advancement_persistent",
+      "duration": "ten_minutes",
       "effects": [
         {
           "operator": "grant_movement_mode",
           "parameters": {
             "applies_when": "elemental_gift",
             "mode": "fly",
-            "speed_source": "walking_speed"
+            "speed_ft": 30
+          }
+        },
+        {
+          "operator": "consume_resource",
+          "parameters": {
+            "amount": 1,
+            "operation": "consume",
+            "resource_key": "elemental_gift_uses"
           }
         }
       ],
@@ -97,7 +105,7 @@
         "kind": "self",
         "parameters": {}
       },
-      "trigger": "advancement_confirmed",
+      "trigger": "explicit_activation",
       "visibility": "owner"
     }
   ],

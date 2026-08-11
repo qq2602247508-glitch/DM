@@ -3489,6 +3489,7 @@ def _feature_action_executor_ready(action: Mapping[str, Any]) -> bool:
         str(effect.get("kind") or "") for effect in effect_list if isinstance(effect, Mapping)
     }
     supported = {
+        "activate_movement_mode",
         "activate_condition",
         "activate_duration_condition",
         "activate_timed_condition",

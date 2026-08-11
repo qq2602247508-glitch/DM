@@ -6,6 +6,17 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 4：Movement / Sight / Choice / Lifecycle Consumer Expansion
+
+当前状态：`accepted`；本轮完成 8 条真实 API evidence，8 条 registered production，整包 game usable 达到 38。
+
+- 8/8 条 Round-II Feature contracts 通过真实 `ContentIRRuntimeService` preview→confirm→幂等 replay；临时迁移 SQLite，并经 combat turn boundary 刷新移动 / 视觉快照。formal apply/database/campaign/character 写入均为 false。
+- Tasha status layers：`registered_production_full=36`（28→36）、`dm_assisted=2`、`game_usable=38`；`manual_authoring=314`、`compile-only=55`、`authored Typed IR=94`、`runtime preview full=93`。
+- 通用修复：选择绑定落到 `resources.selected`；显式移动模式生成通用 feature action 并持久化限时速度；支持 climb / walking speed / fixed speed；视觉 `set` 模式进入冻结 `rule_modifiers` 与 `active_sight_modes`；资源消耗继续走角色资源 CAS。没有 feature-name/name-based runtime branch。
+- 真实断言覆盖海洋馈赠游泳、越野攀爬/游泳、兽性之魂选择、两条盲斗盲视、元素赐福/翻腾浪涌/午夜飞步飞行与资源扣减。完整 backend pytest 通过；whole-pack migration 和 Round IV validator 双次关键输出 byte-identical。
+- 保护指纹保持：database `f3abdcf5…a6ad`、`backend/tests/ollama.py` `8027a6d8…e6ab`、integrations manifest `ae4ef9f5…cd91`；499 formal audit 仍为 328/110/61。
+- 下一步：继续推进 vessel/entity、exhaustion、spectral object、teleport destination、psionic payment 与 unresolved ItemSpec lifecycle；isolated-only 和 DM-reference 继续不计 production。
+
 ## Round 3：Formal Production Consumer Evidence Harvest
 
 当前状态：`accepted`；本轮完成 12 条真实 API evidence，11 条 registered production、1 条 DM-assisted，整包 game usable 达到 30。

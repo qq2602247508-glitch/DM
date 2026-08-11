@@ -1,5 +1,5 @@
 {
-  "current_round": "round-3",
+  "current_round": "round-4",
   "goal": "Local AI D&D DM Assistant complete official-content rules platform",
   "rounds": [
     {
@@ -306,6 +306,107 @@
         "backend/.venv/bin/python -m compileall -q backend/src scripts backend/tests/*.py",
         "git diff --check",
         "Round III validator: 12/12 preview-confirm-replay; migration: 28 production + 2 DM + 30 game usable"
+      ]
+    },
+    {
+      "authored_count": 0,
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 76,
+            "unique_compiled": 111
+          },
+          "formal_499": {
+            "dm_only": 61,
+            "full": 328,
+            "partial": 110,
+            "total": 499
+          },
+          "protected_fingerprints": {
+            "database": "f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad",
+            "formal_registry": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+            "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+            "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+          },
+          "tashas": {
+            "authored_typed_ir": 94,
+            "compile_only": 63,
+            "content_atoms_after_qa": 524,
+            "executable": 407,
+            "game_usable": 30,
+            "manual_authoring": 314,
+            "production_full": 28,
+            "runtime_preview_full": 93,
+            "source_records": 144
+          }
+        },
+        "difference": "Round 4 promotes eight Round-II Feature contracts through real movement, sight, choice and resource consumers; formal campaign/character/database rows remain outside the evidence boundary.",
+        "prompt_baseline": {
+          "round_target_production_or_dm": 8
+        }
+      },
+      "commits": [],
+      "compile_full_delta": 0,
+      "dm_assisted_delta": 0,
+      "files_changed": [
+        "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+        "backend/src/dnd_dm_assistant/application/feature_compiler.py",
+        "backend/src/dnd_dm_assistant/application/feature_materializers.py",
+        "backend/src/dnd_dm_assistant/domain/feature_operators.py",
+        "backend/src/dnd_dm_assistant/domain/feature_runtime.py",
+        "backend/src/dnd_dm_assistant/infrastructure/database/campaign_service.py",
+        "backend/src/dnd_dm_assistant/infrastructure/database/combat_service.py",
+        "backend/tests/test_tashas_feature_production_consumer_round_IV.py",
+        "scripts/validate-tashas-feature-production-consumer-round-IV.py",
+        "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/genie-elemental-gift.json",
+        "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/swarmkeeper-writhing-tide.json",
+        "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/twilight-cleric-steps-of-night.json",
+        "data/content-ir/compiled/production-runtime-results-VI.json"
+      ],
+      "manual_delta": 0,
+      "next_round_reason": "Continue remaining vessel/entity, exhaustion, spectral object, teleport destination, psionic payment and unresolved item lifecycle consumers; do not promote isolated-only or DM-reference content.",
+      "objective": "Close the generic movement, sight, choice binding and activation/resource lifecycle consumers for the next real Tasha Feature batch.",
+      "pack_coverage_delta": {
+        "feature_production_evidence_selected": 8,
+        "feature_registered_production_full": 8,
+        "feature_dm_assisted": 0,
+        "tasha_registered_production_full": 36,
+        "tasha_dm_assisted": 2,
+        "tasha_game_usable": 38
+      },
+      "phase": "D",
+      "reports": [
+        "reports/tashas-feature-production-consumer-round-IV-2026-08-12.json",
+        "data/content-ir/compiled/production-runtime-results-VI.json",
+        "reports/tashas-status-layer-audit-2026-08-11.json",
+        "reports/tashas-whole-pack-report-2026-08-11.json",
+        "docs/tashas-feature-production-consumer-round-IV-2026-08-12.md"
+      ],
+      "reviewed_count": 0,
+      "selected_clusters": [
+        "feature.movement_mode",
+        "feature.sight_mode",
+        "feature.choice_binding",
+        "feature.activation_lifecycle",
+        "feature.resource_cas"
+      ],
+      "selected_platforms": [
+        "content_ir_runtime_service",
+        "combat_engine.feature_action",
+        "authoritative_grid_movement",
+        "combat_visibility_and_attack_context",
+        "character_resource_lifecycle"
+      ],
+      "status": "accepted",
+      "tests": [
+        "backend/.venv/bin/pytest -q backend/tests",
+        "backend/.venv/bin/pytest -q backend/tests/test_tashas_feature_production_consumer_round_IV.py",
+        "backend/.venv/bin/ruff check --config backend/pyproject.toml changed production sources and Round IV validator",
+        "backend/.venv/bin/python -m compileall -q backend/src backend/tests scripts/validate-tashas-feature-production-consumer-round-IV.py",
+        "git diff --check",
+        "Round IV validator: 8/8 preview-confirm-replay with movement/sight/resource assertions",
+        "whole-pack migration twice: stdout and key report/runtime hashes byte-identical"
       ]
     }
   ],
