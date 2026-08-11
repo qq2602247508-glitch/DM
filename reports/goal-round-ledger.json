@@ -1,5 +1,5 @@
 {
-  "current_round": "round-1",
+  "current_round": "round-2",
   "goal": "Local AI D&D DM Assistant complete official-content rules platform",
   "rounds": [
     {
@@ -98,6 +98,113 @@
         "backend/.venv/bin/python -m compileall -q backend/src scripts backend/tests/*.py",
         "git diff --check",
         "migration script twice: stdout byte-identical"
+      ]
+    },
+    {
+      "authored_count": 64,
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 76,
+            "unique_compiled": 111
+          },
+          "formal_499": {
+            "dm_only": 61,
+            "full": 328,
+            "partial": 110,
+            "total": 499
+          },
+          "protected_fingerprints": {
+            "database": "f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad",
+            "formal_registry": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+            "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+            "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+          },
+          "tashas": {
+            "authored_typed_ir_before_round": 30,
+            "compile_only_before_round": 11,
+            "content_atoms_after_qa": 524,
+            "executable": 407,
+            "game_usable_before_round": 18,
+            "manual_authoring_before_round": 378,
+            "production_full": 17,
+            "runtime_preview_full_before_round": 29,
+            "source_records": 144
+          }
+        },
+        "difference": "Round 1 had 30 authored Tasha Typed IR entries; Round 2 adds 64 explicit Feature/Option contracts. Isolated runtime validation remains separate from formal production.",
+        "prompt_baseline": {
+          "round_target_reviewed": 60,
+          "round_target_authored_typed_ir": 50,
+          "round_target_compile_full": 40,
+          "round_target_production_or_dm": 30
+        }
+      },
+      "commits": ["5049db3"],
+      "compile_full_delta": 58,
+      "dm_assisted_delta": 0,
+      "files_changed": [
+        "backend/src/dnd_dm_assistant/application/feature_compiler.py",
+        "backend/src/dnd_dm_assistant/application/feature_materializers.py",
+        "backend/src/dnd_dm_assistant/domain/feature_runtime.py",
+        "backend/src/dnd_dm_assistant/infrastructure/database/combat_service.py",
+        "backend/tests/test_tashas_feature_contract_batch_I.py",
+        "scripts/author-tashas-feature-contract-batch-I.py",
+        "scripts/validate-tashas-feature-contract-batch-I.py",
+        "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/",
+        "data/content-ir/isolated-packs/tashas-cauldron-2026-08-12/feature-contract-batch-I/"
+      ],
+      "manual_delta": -64,
+      "next_round_reason": "Formal production target remains open because isolated capability cannot be counted as registered production; Round 3 must collect real production evidence through existing generic consumers.",
+      "objective": "Author and validate the first explicit Tasha Feature/Option semantic-contract batch and close its isolated character-growth loop.",
+      "pack_coverage_delta": {
+        "feature_reviewed": 64,
+        "feature_authored_typed_ir": 64,
+        "feature_compile_full": 58,
+        "feature_isolated_runtime_validated": 58,
+        "feature_registered_production_full": 0,
+        "feature_game_usable": 0,
+        "character_growth_closed_loop": 58
+      },
+      "phase": "B",
+      "push_receipt": {
+        "branch": "main",
+        "commit_hash": "pending-docs-commit",
+        "remote": "origin",
+        "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
+        "result": "pending"
+      },
+      "reports": [
+        "reports/tashas-feature-contract-batch-I-2026-08-12.json",
+        "reports/tashas-feature-contract-runtime-batch-I-2026-08-12.json",
+        "reports/tashas-feature-option-reviewed-batch-I-2026-08-11.json",
+        "reports/tashas-feature-option-runtime-batch-I-2026-08-11.json",
+        "docs/tashas-feature-option-contract-batch-I-2026-08-12.md"
+      ],
+      "reviewed_count": 64,
+      "selected_clusters": [
+        "feature.advancement",
+        "feature.proficiency",
+        "feature.movement",
+        "feature.resource",
+        "feature.information",
+        "feature.spell_grants"
+      ],
+      "selected_platforms": [
+        "feature_contract_authoring",
+        "feature_pack_runtime_registry",
+        "character_growth_runtime_compiler",
+        "authorized_information_consumer"
+      ],
+      "status": "completed_with_formal_boundary_open",
+      "tests": [
+        "backend/.venv/bin/pytest -q backend/tests",
+        "backend/.venv/bin/ruff check backend/src backend/tests",
+        "backend/.venv/bin/ruff check --config backend/pyproject.toml --ignore E402,E501 scripts/author-tashas-feature-contract-batch-I.py scripts/validate-tashas-feature-contract-batch-I.py",
+        "backend/.venv/bin/python -m compileall -q backend/src scripts backend/tests/*.py",
+        "git diff --check",
+        "author/validate/migrate scripts: deterministic 64/58/58 and 94/93/314/75 outputs"
       ]
     }
   ],

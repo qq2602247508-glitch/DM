@@ -16,12 +16,12 @@
 
 ## Feature/Option 与角色成长
 
-- Feature/Option reviewed：339；typed 21；compile 21；production 14；DM-assisted 0。该批次仍未达到 120/100/80/50/10 硬阈值，保持 partial，不虚报覆盖。
+- Feature/Option reviewed：339；typed 85；compile 85；production 14；DM-assisted 0。该批次仍未达到 120/100/80/50/10 硬阈值，保持 partial，不虚报覆盖。
 - 新增 28 个 name-independent semantic/template interfaces，其中 item 相关 5 个达到保守 unlock gate；feature/option cluster 的未知合同字段仍阻断 unlock。
 - 角色成长增加历史快照支撑的降级、不可变 pack pin、选择/资源/动作/休息重建和 CAS/幂等验证；整包 feature/option 资产不足以宣称 whole-pack production closed。
 
 ## Provenance / DM / 门禁
 
-- Authored provenance：31 total；orphan 0；2 条工具熟练别名已协调，Precision Attack 已按 build recommendation source 明确退役。
+- Authored provenance：95 total；orphan 0；2 条工具熟练别名已协调，Precision Attack 已按 build recommendation source 明确退役。
 - DM continuation contract 已实现并由隔离 API fixture 验证；本轮真正新增并记账的 DM-assisted 仍为 0，已有 DM-assisted 为 1；未把 pending/manual 条目冒充成完成。
 - 下一阶段：逐字段收割 FeatureSpec/Option IR，优先选择/资源/触发/目标/持续时间/召唤实体生命周期；继续保持单线程、临时 DB/隔离 pack 和 fail-closed。

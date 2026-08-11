@@ -1,3 +1,12 @@
+# 2026-08-12 Round 2 检查点：Feature/Option 合同扩产与角色成长隔离闭环
+
+- 本轮严格保持 isolated/formal 边界：64 条真实 Tasha Feature/Option atom 完成 reviewed + authored Typed IR，58 条 compile full；6 条保持 partial，不以名称分支或 fallback 冒充 full。
+- 58 条 full 合同经过 `FeaturePackImporter` 隔离 apply、reload、幂等重放和 registry lookup；角色成长回路实际接收 58 grants，编译为 58 runtime contracts，`closed_loop=true`。formal apply=false，正式 registry/database/campaign/character 未写入。
+- 整包迁移重跑后的真实分母为 144 source records、524 QA atoms、407 executable；94 authored Typed IR、93 runtime preview full、314 manual authoring、75 compile-only。正式 Tasha production 17、DM-assisted 1、game usable 18；本轮没有把隔离能力计入生产。
+- 通用实现：多 advancement/prepared-spell block 合并并保留逐 grant 元数据；显式 stable feature ID 防止同 class/level 授予碰撞；typed authorized-information materializer/consumer；未添加 feature-name/name-based runtime branch。
+- 6 个 partial blocker 已记录：水下互通、vessel/entity lifecycle、exhaustion timing、spectral object lifecycle、teleport destination、psionic component/payment。下一 Round 负责已有 generic consumer 的正式 production evidence 收割。
+- 证据入口：`scripts/author-tashas-feature-contract-batch-I.py`、`scripts/validate-tashas-feature-contract-batch-I.py`、`reports/tashas-feature-contract-batch-I-2026-08-12.json`、`reports/tashas-feature-contract-runtime-batch-I-2026-08-12.json`、`docs/tashas-feature-option-contract-batch-I-2026-08-12.md`。
+
 # 2026-08-11 Round 1 检查点：状态口径与塔莎 Item Registry 收口
 
 - 当前分支 `main`，Round 1 目标是修正 `ItemSpec compile/preview full`、隔离运行时和正式 production registry 的统计混用。

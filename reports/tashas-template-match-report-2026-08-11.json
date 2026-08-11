@@ -1,17 +1,18 @@
 {
   "by_kind": {
-    "class_feature:unmatched_requires_review": 63,
-    "feat:unmatched_requires_review": 15,
+    "class_feature:reviewed_typed_mapping": 10,
+    "class_feature:unmatched_requires_review": 53,
+    "feat:reviewed_typed_mapping": 5,
+    "feat:unmatched_requires_review": 10,
     "infusion:unmatched_requires_review": 15,
     "invocation:unmatched_requires_review": 7,
     "magic_item:unmatched_requires_review": 36,
     "magic_tattoo:unmatched_requires_review": 11,
-    "maneuver:reviewed_typed_mapping": 2,
-    "maneuver:unmatched_requires_review": 5,
+    "maneuver:reviewed_typed_mapping": 7,
     "spell:reviewed_typed_mapping": 8,
     "spell:unmatched_requires_review": 13,
-    "subclass_feature:reviewed_typed_mapping": 19,
-    "subclass_feature:unmatched_requires_review": 213
+    "subclass_feature:reviewed_typed_mapping": 63,
+    "subclass_feature:unmatched_requires_review": 169
   },
   "candidate_total": 407,
   "candidates": [
@@ -181,15 +182,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "海洋馈赠 Gift of the Sea",
       "required_review_fields": [
         "name",
@@ -211,10 +207,8 @@
       "source_fingerprint": "74fbe2468e9de195cc806d2504240777ab5b59e655b609bd77c38accf80ea1a0",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/深海意志.html",
       "source_record_id": "008f917eace997a6a54939d5",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "6e363f3d242f75b389c58cf82733221cef9cb10556534ac8321506b8f289e92e",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:008f917eace997a6a54939d5:grasping-tentacles:006",
@@ -340,15 +334,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "海渊魂灵 Oceanic Soul",
       "required_review_fields": [
         "name",
@@ -370,10 +359,8 @@
       "source_fingerprint": "475e8e508d9a9f46c5df17d310287b38645f6be7adb5650f1251b2ad27b1dbe2",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/深海意志.html",
       "source_record_id": "008f917eace997a6a54939d5",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "eb5689b8ddcb1441ec67567f008dddff55c47322414ff981633c3e562d2037a5",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:008f917eace997a6a54939d5:tentacle-of-the-deeps:002",
@@ -756,15 +743,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "额外熟练项 Bonus Proficiencies",
       "required_review_fields": [
         "name",
@@ -786,10 +768,8 @@
       "source_fingerprint": "d2487b5cf34bb9da95bf52d8a4dde0c5a60e884cef6a87074242cf97d4a902e6",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/符文骑士.html",
       "source_record_id": "0739d5dfe5855a9afc8f3a53",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "4049bc727242a51ef6adbbeaa064f9afe339af1e94c3932706d2d81ad3d985b3",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:cloud-rune:003",
@@ -965,15 +945,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "巨人之力 Giant's Might",
       "required_review_fields": [
         "name",
@@ -995,10 +970,8 @@
       "source_fingerprint": "98de6619ac28cf66d7cb76212aa301e422069c9a426890b516f1f79ce3b75a26",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/符文骑士.html",
       "source_record_id": "0739d5dfe5855a9afc8f3a53",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "2259783c2c988525313aace1a9210b2ce6902d29012157ed6c36ff9d2a6d7272",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:great-stature:011",
@@ -1018,15 +991,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "奇伟身躯 Great Stature",
       "required_review_fields": [
         "name",
@@ -1048,10 +1016,8 @@
       "source_fingerprint": "1173de6691918d04d1fd1b689f87d0269fe5b1427c3ab7c4db33ede3872e1fa2",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/符文骑士.html",
       "source_record_id": "0739d5dfe5855a9afc8f3a53",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "9f480d4e87b168b8119c40e2ef50604793657d8312a22138ebb09f9cf0094b62",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:hill-rune:007",
@@ -1279,15 +1245,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "符文之盾 Runic Shield",
       "required_review_fields": [
         "name",
@@ -1309,10 +1270,8 @@
       "source_fingerprint": "27625f088579223b3d51f2b336e2a8a1b69be4834972cda58b1c6646490524fe",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/符文骑士.html",
       "source_record_id": "0739d5dfe5855a9afc8f3a53",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "17b063561bc6847515bfd9a98145728d487db0ea34b02edfda1c203d0e21752e",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:stone-rune:006",
@@ -1520,15 +1479,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "换位诈术Bait and Switch",
       "required_review_fields": [
         "name",
@@ -1550,10 +1504,8 @@
       "source_fingerprint": "a33e1f993493f9e77e6863153218a10353ac2bbbde0a95cbe5ffc471ac891465",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/战技选项.htm",
       "source_record_id": "12139219bf7e575f9cde019c",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "5f680a7a85b50077af2575c4dd3162a8af829a940dbc04629f315af5d477c47e",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:12139219bf7e575f9cde019c:brace:003",
@@ -1571,15 +1523,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "警戒Brace",
       "required_review_fields": [
         "name",
@@ -1601,10 +1548,8 @@
       "source_fingerprint": "6a5a2625011b50bfee3b95ad6333595cd27c195444316d11b31b670c1278dcbe",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/战技选项.htm",
       "source_record_id": "12139219bf7e575f9cde019c",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "992bcd9ea3c183b3e5c85a8b74f206722e34b34dc8c22c2b3260c40124ac997b",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:12139219bf7e575f9cde019c:commanding-presence:004",
@@ -1666,15 +1611,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "擒拿击Grappling Strike",
       "required_review_fields": [
         "name",
@@ -1696,10 +1636,8 @@
       "source_fingerprint": "6471c3b585d7f07ed7f01bafd6e847bee56bc38c376bcba9fa7079c4111d308d",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/战技选项.htm",
       "source_record_id": "12139219bf7e575f9cde019c",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "3a5d671b63976e7b1cf1bdf4fab7fb01d304f11cb89b6feb6cb0aed53a41677d",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:12139219bf7e575f9cde019c:quick-toss:006",
@@ -1717,15 +1655,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "快手投掷Quick Toss",
       "required_review_fields": [
         "name",
@@ -1747,10 +1680,8 @@
       "source_fingerprint": "4a4a22bf8fdd2ed8eba31db397881043468613d514e1454f628147ff5dd5896c",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/战技选项.htm",
       "source_record_id": "12139219bf7e575f9cde019c",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "d05ab071b9b398181cfad69eef48debab53f190d5a3c08362fb4d6f91bd3b095",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:12139219bf7e575f9cde019c:tactical-assessment:007",
@@ -1768,15 +1699,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "战术预估Tactical Assessment",
       "required_review_fields": [
         "name",
@@ -1798,10 +1724,8 @@
       "source_fingerprint": "269cb432a4324415c04a77c8977926c262cbef478f93c2f6f73deb3d5ea249ae",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/战技选项.htm",
       "source_record_id": "12139219bf7e575f9cde019c",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "bf5c6b762a5d03a40ad04da5ec2e712beca7441477940c71fb37232402ae8c5a",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:186b6f8d92a18280c411d71f:18adac47cc2b:000",
@@ -1964,15 +1888,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "粉碎者 Crusher",
       "required_review_fields": [
         "name",
@@ -1994,10 +1913,8 @@
       "source_fingerprint": "e3303420750fb2e6a4ed58dbedb70cad6b708dd090efee93ef4903af07434755",
       "source_path": "塔莎的万事坩埚/玩家选项/专长.html",
       "source_record_id": "1924837fba5aec4d15a290b8",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "a8d76f9585e61b43f63e72c5aeb8724695bdd7f6ffbe5ea4c8e34053a68a4a56",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:1924837fba5aec4d15a290b8:eldritch-adept:004",
@@ -2064,15 +1981,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "妖精触碰 Fey Touched",
       "required_review_fields": [
         "name",
@@ -2094,10 +2006,8 @@
       "source_fingerprint": "d5cc7fd982478d0c2b13d3cb035057c6963f5df14123fb3ebea0e19efe746cb5",
       "source_path": "塔莎的万事坩埚/玩家选项/专长.html",
       "source_record_id": "1924837fba5aec4d15a290b8",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "ace532ebc2587311364e8804f1b5d467d93f7e5cd1e81a475496ebf4545fe8c4",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:1924837fba5aec4d15a290b8:fighting-initiate:006",
@@ -2362,15 +2272,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "影界触碰 Shadow Touched",
       "required_review_fields": [
         "name",
@@ -2392,10 +2297,8 @@
       "source_fingerprint": "70d7286100e2fce8d19f264f1a5def09f241c523035046b05a4a5ec90029c167",
       "source_path": "塔莎的万事坩埚/玩家选项/专长.html",
       "source_record_id": "1924837fba5aec4d15a290b8",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "9a0524e5e29242ad822a76ee349df90acc71b4d0f6a1ec0441d70f0c6c12fc93",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:1924837fba5aec4d15a290b8:skill-expert:012",
@@ -2411,15 +2314,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "技艺专家 Skill Expert",
       "required_review_fields": [
         "name",
@@ -2441,10 +2339,8 @@
       "source_fingerprint": "8819ac1debf7f8a661dc0cbc426a60c63aa191b16b9837698c4a35ce6e030e59",
       "source_path": "塔莎的万事坩埚/玩家选项/专长.html",
       "source_record_id": "1924837fba5aec4d15a290b8",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "48533956a8117608a40f9a23407e777542f7735feaf4153d0f07b6efe14ab67a",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:1924837fba5aec4d15a290b8:slasher:013",
@@ -2558,15 +2454,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "心电感应 Telepathic",
       "required_review_fields": [
         "name",
@@ -2588,10 +2479,8 @@
       "source_fingerprint": "75245c4b8d8ca10c99b4011816e42d47b36e10f3af099b37403798669cabef5a",
       "source_path": "塔莎的万事坩埚/玩家选项/专长.html",
       "source_record_id": "1924837fba5aec4d15a290b8",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "21f6e9f2c425be68e16b7f00fdfa1c1a16a01c472434ed6650382bebf2468cbb",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:1ac1466462ef7c0514a3ea44:fe782ac2e6fd:000",
@@ -2710,15 +2599,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "受祝福的勇士Blessed Warrior",
       "required_review_fields": [
         "name",
@@ -2740,10 +2624,8 @@
       "source_fingerprint": "f4e75bcff563a7751bf92c7ca912ab7d57fabeb057a567e8661569e7beff5ccf",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/圣武士（TCE）.html",
       "source_record_id": "28894d328bca545cc65f7eb9",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "073f6ef1c560ae5a9453d1a3ad1c41f0384f27bcd2561d0bdb210e7059ac3dda",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:28894d328bca545cc65f7eb9:blind-fighting:004",
@@ -2761,15 +2643,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "盲斗Blind Fighting",
       "required_review_fields": [
         "name",
@@ -2791,10 +2668,8 @@
       "source_fingerprint": "bedeef4bfaf1f4e3298ed0b820fe64250b6eddc8c32e6cc46fa8a3e4a04df2d0",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/圣武士（TCE）.html",
       "source_record_id": "28894d328bca545cc65f7eb9",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "ce78b663217381d71a8ec73991bafdd4c672772801e6bea44bb8300129936116",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:28894d328bca545cc65f7eb9:fighting-style-options:002",
@@ -2865,15 +2740,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "神力掌控 Harness Divine Power",
       "required_review_fields": [
         "name",
@@ -2895,10 +2765,8 @@
       "source_fingerprint": "e340ad42c5b8cb10573dab8b8f71d22f43ffe1645d418ff548b9f148e8ef3dab",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/圣武士（TCE）.html",
       "source_record_id": "28894d328bca545cc65f7eb9",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "95ca4835f8202d445ad9f8201f2ecba7d0f49d76215412991094cf7111377749",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:28894d328bca545cc65f7eb9:interception:005",
@@ -2916,15 +2784,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "拦截Interception",
       "required_review_fields": [
         "name",
@@ -2946,10 +2809,8 @@
       "source_fingerprint": "e1195ccbd5173abc450a0cb3e52b67c29c0feb697cd99cd97f5b393ad777070e",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/圣武士（TCE）.html",
       "source_record_id": "28894d328bca545cc65f7eb9",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "60ee4401bb5589631ae5d149cff6f87bd771b8643a2318a01f0a50fde83f71db",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:28894d328bca545cc65f7eb9:martial-versatility:007",
@@ -3693,15 +3554,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "工具专精 Tool Expertise",
       "required_review_fields": [
         "name",
@@ -3723,10 +3579,8 @@
       "source_fingerprint": "1b4ba456b9cb7fb043ff44848d69fe948b4efc396b77c87bbeeadd2fbda0d330",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师.html",
       "source_record_id": "2ceef8846dfb30c175abe0dd",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "987b0582f24a076c3c04118028332bbec74cab4d389554f7a792df54497c2fef",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:330d678db7b9b2739830f839:eldritch-versatility:003",
@@ -3951,15 +3805,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "附赠熟练项 Bonus Proficiencies",
       "required_review_fields": [
         "name",
@@ -3981,10 +3830,8 @@
       "source_fingerprint": "18f02efc476e93883b7e6cbb8052a27f2827dee7b21a849cd60b374279ee9b4a",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/秩序领域.html",
       "source_record_id": "38a389e4b25a6eeec6c7835f",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "727a280ab2d92049384c7b4aec72f01646f935bfa8b50bb255dce5c5554a8119",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:38a389e4b25a6eeec6c7835f:channel-divinity-order-s-demand:004",
@@ -4321,15 +4168,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "战歌训练 Training in Sword and Song",
       "required_review_fields": [
         "name",
@@ -4351,10 +4193,8 @@
       "source_fingerprint": "f819eec7176ec837481935e4097fc313ba6d41dbacef772baa1bfa58a6d6bfdd",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/法师（TCE）/剑咏.html",
       "source_record_id": "4041ef4e8e0a5b7375019c27",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "b9ccf426736415b9edbbcab3c8251f57d7e2b9240b938d4c9ddf5297dec044ed",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000",
@@ -6408,15 +6248,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "附赠熟练项 Bonus Proficiencies",
       "required_review_fields": [
         "name",
@@ -6438,10 +6273,8 @@
       "source_fingerprint": "4d42b7a9f01641ddfceddd9af35ddc869f2beee919f10c3c4e240a670165ee86",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/暮光领域.html",
       "source_record_id": "63d0abe27f6ad161f0820593",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "33296ac9e09aa490dfd5e7774ec524318e9f1922fe1e1a9163ca9a203f0718cd",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:63d0abe27f6ad161f0820593:divine-strike:007",
@@ -6567,15 +6400,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "黑夜明目 Eyes of Night",
       "required_review_fields": [
         "name",
@@ -6597,10 +6425,8 @@
       "source_fingerprint": "3e93325df3b95c00b70e62e4858111dd3f3086ec7e3ffccfef8db7ae612b4eb7",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/暮光领域.html",
       "source_record_id": "63d0abe27f6ad161f0820593",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "f19f8c229c888cfbff7e73159798ed359d468d4a77f3bc134437beaf8d2ddc40",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:63d0abe27f6ad161f0820593:steps-of-night:006",
@@ -6620,15 +6446,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "午夜飞步 Steps of Night",
       "required_review_fields": [
         "name",
@@ -6650,10 +6471,8 @@
       "source_fingerprint": "add482a99ecb03f656b4f0411eb340b3887a648abf46b16b152f3997d2a1b553",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/暮光领域.html",
       "source_record_id": "63d0abe27f6ad161f0820593",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "4ad4fa9a1beef582b617e9cc3bdfef43e302576d800b23b48c24bcb7a1d29388",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:63d0abe27f6ad161f0820593:twilight-sanctuary:005",
@@ -7097,15 +6916,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "妖冶娴都 Otherworldly Glamour",
       "required_review_fields": [
         "name",
@@ -7127,10 +6941,8 @@
       "source_fingerprint": "dc82c5d6a753d9625cf335d1f87905b24e6bebbd352ced98c0ffe54916128871",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）/妖精漫游者.html",
       "source_record_id": "6ac3dd8adf2acd63eeabf4ea",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "4c6206bf82b039ead4d0e7baa3a48e55ada2b99e35439b1dcf6e24c4c75958be",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:72fefe733acdf83cf3e1c860:bond-of-the-talisman:007",
@@ -7558,15 +7370,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "盲斗Blind Fighting",
       "required_review_fields": [
         "name",
@@ -7588,10 +7395,8 @@
       "source_fingerprint": "a39b8159a253eda7998dfdeb1cfd5f664ea39dacfaaa05d80111fd13d23066d5",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）.html",
       "source_record_id": "752d57e35706db428895da0a",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "aab13a6a4e4ee44be0e012b0cf6f638dbb83b3ff227122d67b31bbdff586c291",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:752d57e35706db428895da0a:canny-1:002",
@@ -7609,15 +7414,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "精明 Canny（1级）",
       "required_review_fields": [
         "name",
@@ -7639,10 +7439,8 @@
       "source_fingerprint": "0daafdbd8cee1a602938173f853a0c62fddacd03b89ddca6e836017ff3b5cfac",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）.html",
       "source_record_id": "752d57e35706db428895da0a",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "dc50b9aabc40c3aad4ab1d406540f9931236fa737121ad8d4ad0c24ed3ea11a5",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:752d57e35706db428895da0a:deft-explorer:001",
@@ -7712,15 +7510,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "德鲁伊教战士Druidic Warrior",
       "required_review_fields": [
         "name",
@@ -7742,10 +7535,8 @@
       "source_fingerprint": "2406e185269ccb82c1cdde24a706f7814f2576449e57bfd98ffad84cc3bb4809",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）.html",
       "source_record_id": "752d57e35706db428895da0a",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "d0fd695b1fd47156fdd316a63f231b6502e234368428787ab777a4040f081492",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:752d57e35706db428895da0a:favored-foe:005",
@@ -8023,15 +7814,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "越野 Roving（6级）",
       "required_review_fields": [
         "name",
@@ -8053,10 +7839,8 @@
       "source_fingerprint": "6595588adee5a89e586f32b1ebed8f455611391f090c9ce43dfe895b02151297",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）.html",
       "source_record_id": "752d57e35706db428895da0a",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "3fe30acfa2857648a0f556d201cb644f57c1c23eaa9006ce01226d58ae6e2b4e",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:752d57e35706db428895da0a:spellcasting-focus:011",
@@ -8177,15 +7961,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "不知疲倦 Tireless（10级）",
       "required_review_fields": [
         "name",
@@ -8207,10 +7986,8 @@
       "source_fingerprint": "d877b14749084e924899962f5fbeb75ecaf81c43e042c3c31a57bf7fc143ab25",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）.html",
       "source_record_id": "752d57e35706db428895da0a",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "5eae67bfb1af22e71b32b6bedd96bf06515be3fef1a00663c07843a883f846fd",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004",
@@ -8735,15 +8512,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "和平执行 Implement of Peace",
       "required_review_fields": [
         "name",
@@ -8765,10 +8537,8 @@
       "source_fingerprint": "15684662cfef5ade8a2a4936ccfdb89cf0a05de2b56f45d03841da7762a1c055",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/和平领域.html",
       "source_record_id": "790ce45021cc1901403353e1",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "f05d555a2175dd8d583c0a687d3a42ce9e12711fd6db2a9a4fff4b7b7fc35a9a",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:790ce45021cc1901403353e1:potent-spellcasting:006",
@@ -10705,15 +10475,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "辉煌防御 Glorious Defense",
       "required_review_fields": [
         "name",
@@ -10735,10 +10500,8 @@
       "source_fingerprint": "f8b34dc43426edf2300e193c0b0e360a8a9abf0ba118bdca226a575956d21dc7",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/圣武士（TCE）/荣耀之誓.html",
       "source_record_id": "867896faa26eb295d846a574",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "8229a7acfb10dae1926d1eea78186efea568e1aace64bcd0b7540f39ce5f78c7",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:867896faa26eb295d846a574:inspiring-smite:008",
@@ -12594,15 +12357,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "瓶中小憩 Bottled Respit。",
       "required_review_fields": [
         "name",
@@ -12624,10 +12382,8 @@
       "source_fingerprint": "e81b718b2ee8728e75cf77c2f00c33312a283a9e12d3654d9bb377a64ec745c7",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/巨灵宗主.html",
       "source_record_id": "98620543cf94e974361c6567",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "a951dec065c2ab4e77f6803474f07ca6a6369fbeb77fad41891717073b6799e3",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:elemental-gift:005",
@@ -12647,15 +12403,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "元素赐福 Elemental Gift",
       "required_review_fields": [
         "name",
@@ -12677,10 +12428,8 @@
       "source_fingerprint": "0281762f3f17d10d7da5e74e4ed47ecc3b306de5a5f4a4259bcd675e73739c1d",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/巨灵宗主.html",
       "source_record_id": "98620543cf94e974361c6567",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "61a9cd49d364707e521959b0b6338544c75f5cde47d4ee005e96c825beee8a47",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:expanded-spell-list:001",
@@ -12805,15 +12554,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "巨灵之怒 Genie's Wrath。",
       "required_review_fields": [
         "name",
@@ -12835,10 +12579,8 @@
       "source_fingerprint": "23d8800203ffc916ccb50f5e9257369eb56811a830c49a7e9b670b4f6562abc6",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/巨灵宗主.html",
       "source_record_id": "98620543cf94e974361c6567",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "6327a443fee78f5d775a7ff3e6ce5bc786964ba7e8a8268371859eb2076e23a0",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:limited-wish:007",
@@ -13066,15 +12808,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "意念守护 Guarded Mind",
       "required_review_fields": [
         "name",
@@ -13096,10 +12833,8 @@
       "source_fingerprint": "8d34393b37cc2217820b951ac7ea00c366d2e783eb35c995a894a2bbff253811",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/灵能武士.html",
       "source_record_id": "a13253dc90904c96eaa719ab",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "d934109f98d3a986b7a2f1ccfa47132a3b1b7107833ddd346c4a390b584f898e",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:a13253dc90904c96eaa719ab:protective-field:002",
@@ -13163,15 +12898,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "灵力跃动Psi-Powered Leap。",
       "required_review_fields": [
         "name",
@@ -13193,10 +12923,8 @@
       "source_fingerprint": "77c72c1586a767410a2310c68833f137a2ddf36d456e33f393b1475ebe443499",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/灵能武士.html",
       "source_record_id": "a13253dc90904c96eaa719ab",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "f8294aba68b99adb45db960cd444dd8425da226cc5ffb68d1b58dc9848e4a786",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:a13253dc90904c96eaa719ab:psionic-strike:003",
@@ -13261,15 +12989,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "灵能力量Psionic",
       "required_review_fields": [
         "name",
@@ -13291,10 +13014,8 @@
       "source_fingerprint": "ae992cb3f24babe6aa406a6cc188d8d8243598b6d32ee71610a058e3d6e8274d",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/灵能武士.html",
       "source_record_id": "a13253dc90904c96eaa719ab",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "87d8061a743485aa5b9b6b862855fed25a737e356b464e5614e7ba5a94cbe69a",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:a13253dc90904c96eaa719ab:telekinetic-adept:005",
@@ -13367,15 +13088,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "念力宗师 Telekinetic Master",
       "required_review_fields": [
         "name",
@@ -13397,10 +13113,8 @@
       "source_fingerprint": "10f5712d3e4d609a13f930b64b2817c88383c4d8cd5c88cee8a7f6ceeef6bee6",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/灵能武士.html",
       "source_record_id": "a13253dc90904c96eaa719ab",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "6cc93341cb233a5f48d9636e71918d4445e9f1d0fda698aa0d89270b7efc4ba4",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:a13253dc90904c96eaa719ab:telekinetic-movement:004",
@@ -14181,15 +13895,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "兽性之魂 Bestial Soul",
       "required_review_fields": [
         "name",
@@ -14211,10 +13920,8 @@
       "source_fingerprint": "41babb65982a971e9e339f7be5c634a6b703ffa9d4187f9c30e225296980a888",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/野蛮人（TCE）/野兽道途.html",
       "source_record_id": "b23e97de6529e42be59f8b0d",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "57776173d8ffb4c0293c86fb02e99464cd91a8dd2349d53abc71781f8b83518e",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:b23e97de6529e42be59f8b0d:bite:002",
@@ -14589,15 +14296,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "寻的攻击Homing Strikes。",
       "required_review_fields": [
         "name",
@@ -14619,10 +14321,8 @@
       "source_fingerprint": "183231e9b0318ffebefa8d10d3e58bad5e898c7d95343a9e7bde5cf129e9b3c3",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/游荡者（TCE）/魂刃.html",
       "source_record_id": "b63c217774b977cdb0c1a23e",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "7d4267573a756b90e0d9c2a84db1254b9f2ebb126386d8f91296134e67540e1e",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:b63c217774b977cdb0c1a23e:psi-bolstered-knack:002",
@@ -14641,15 +14341,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "灵振诀窍Psi-Bolstered Knack。",
       "required_review_fields": [
         "name",
@@ -14671,10 +14366,8 @@
       "source_fingerprint": "183231e9b0318ffebefa8d10d3e58bad5e898c7d95343a9e7bde5cf129e9b3c3",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/游荡者（TCE）/魂刃.html",
       "source_record_id": "b63c217774b977cdb0c1a23e",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "04b9e3851b00a37b323803c5a491d501046b76ee6ff85f2c35b2ff75a7c8374a",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:b63c217774b977cdb0c1a23e:psionic-power:001",
@@ -14799,15 +14492,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "心灵传送Psychic Teleportation。",
       "required_review_fields": [
         "name",
@@ -14829,10 +14517,8 @@
       "source_fingerprint": "6806e8e7559a74d901c4eb97994d4e89f4a3bbdce9a489439d344041940d9044",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/游荡者（TCE）/魂刃.html",
       "source_record_id": "b63c217774b977cdb0c1a23e",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "e16f2e00bea9b5e489c0ff93e56927dea940ba19c1888a8e2aea0f86e34be27b",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:b63c217774b977cdb0c1a23e:psychic-veil:008",
@@ -14904,15 +14590,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "心灵低语Psychic Whispers。",
       "required_review_fields": [
         "name",
@@ -14934,10 +14615,8 @@
       "source_fingerprint": "3728573c1b800cdafc22bc100ce73fa09327c20e244f80bf20305b9fef26386b",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/游荡者（TCE）/魂刃.html",
       "source_record_id": "b63c217774b977cdb0c1a23e",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "cc7f4beca03dba977cb9c4c0d6076e567a12f9ec63abb4eed47da224936b315e",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:b63c217774b977cdb0c1a23e:rend-mind:009",
@@ -15062,15 +14741,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "精魂护甲Armor of the Spirit。",
       "required_review_fields": [
         "name",
@@ -15092,10 +14766,8 @@
       "source_fingerprint": "d83b3a738e366be13f11b1df8b195d73bdeeaca2dd87de106f26ede5523bd52e",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/武僧（TCE）/星我宗.html",
       "source_record_id": "b6d0bbfbdc36f195e62683c5",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "52bbb03f342a529b1ca65e97b949e5687493bda980c02c516704858c63f25066",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:b6d0bbfbdc36f195e62683c5:arms-of-the-astral-self:001",
@@ -15219,15 +14891,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "星之视觉Astral Sight。",
       "required_review_fields": [
         "name",
@@ -15249,10 +14916,8 @@
       "source_fingerprint": "d83b3a738e366be13f11b1df8b195d73bdeeaca2dd87de106f26ede5523bd52e",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/武僧（TCE）/星我宗.html",
       "source_record_id": "b6d0bbfbdc36f195e62683c5",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "6eef6a29bc09207207826495d81eb923f87741189a2c0613c10ac87ad5c15147",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:b6d0bbfbdc36f195e62683c5:awakened-astral-self:009",
@@ -15586,15 +15251,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "精魂之语Word of the Spirit。",
       "required_review_fields": [
         "name",
@@ -15616,10 +15276,8 @@
       "source_fingerprint": "d2c28dba464993b83df7c113030e103062ba998e7b04ee47af9ecd47e8ef10a9",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/武僧（TCE）/星我宗.html",
       "source_record_id": "b6d0bbfbdc36f195e62683c5",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "5d382458ed3f5b0c749718ba910b46eb1739cf45ee9a553d3a147a1fc86d962e",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:b79182b9e28e7cac95e7c7a5:archer:003",
@@ -15848,15 +15506,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "灿若繁星 Full of Stars",
       "required_review_fields": [
         "name",
@@ -15878,10 +15531,8 @@
       "source_fingerprint": "0f3c3676902ae51a3a69a833a4eefdd34f7b368372029b88d96fd27c02b85471",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/德鲁伊（TCE）/星辰结社.html",
       "source_record_id": "b79182b9e28e7cac95e7c7a5",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "5225671e74e874dd4023af3bd495ec1c371136774ac9097f7041c31eb3eddcb1",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:b79182b9e28e7cac95e7c7a5:star-map:001",
@@ -16059,15 +15710,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "吉兆Weal（偶数）。",
       "required_review_fields": [
         "name",
@@ -16089,10 +15735,8 @@
       "source_fingerprint": "618bf518f69b075c8335565cf8fbc6ae01f6ad85d0e16c84e51c17479d1d73dd",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/德鲁伊（TCE）/星辰结社.html",
       "source_record_id": "b79182b9e28e7cac95e7c7a5",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "457f6f01106a3f5741ab5218e340a5716096120ea90b13b63101f189c12876dd",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:b79182b9e28e7cac95e7c7a5:woe:008",
@@ -16111,15 +15755,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "凶兆Woe（奇数）。",
       "required_review_fields": [
         "name",
@@ -16141,10 +15780,8 @@
       "source_fingerprint": "011c5ed7256bcbb995e75bbe1402c0e50f1b44aa28d684fd6217de3db2387019",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/德鲁伊（TCE）/星辰结社.html",
       "source_record_id": "b79182b9e28e7cac95e7c7a5",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "11795ed6252c2a85d4405f019b18b9d042c36d109f238098570f15ddf4894db5",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:bef5ef39397ea7aa8a0856ea:1d00c9156655:000",
@@ -16859,15 +16496,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "动力步伐 Powered Steps。",
       "required_review_fields": [
         "name",
@@ -16889,10 +16521,8 @@
       "source_fingerprint": "84df7f2476a3c44de86be0476fe4fb0dc8fcaf53b1b954b2b43c26f49ce39ae6",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/装甲师.html",
       "source_record_id": "cf864e58ba0d62c93110f5c6",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "2e75694caf6cad5ce01066b4303ee311dadcd19fb58fecc115a6227ce4f205df",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:thunder-gauntlets:006",
@@ -18297,15 +17927,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "炼金术掌握 Alchemical Savant",
       "required_review_fields": [
         "name",
@@ -18327,10 +17952,8 @@
       "source_fingerprint": "a992e0b66f70a6a864aeaa19305e7636912ac00ef4525354841e75c78a33f107",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/炼金师.html",
       "source_record_id": "dc4f2bf18baca6ec97d7d0bf",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "570ea787c9fabcbbdfcdc759213e3869c9e6bcf6b237974d72e69d0d6c3da6ce",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:alchemist-spells:002",
@@ -18350,15 +17973,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "炼金师法术 Alchemist Spells",
       "required_review_fields": [
         "name",
@@ -18380,10 +17998,8 @@
       "source_fingerprint": "5022f3119f776ae5d49994ab31ebbe1edbb7fc11990271ba96ef91ad6be8250f",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/炼金师.html",
       "source_record_id": "dc4f2bf18baca6ec97d7d0bf",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "1758244c1541592bf4c8167514e3782e75b5ddf80cdc758f68ad692f0ecf9498",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:chemical-mastery:006",
@@ -18695,15 +18311,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "灵能术法 Psionic Sorcery",
       "required_review_fields": [
         "name",
@@ -18725,10 +18336,8 @@
       "source_fingerprint": "edc9b2cf480295475fe7a1452cc257465c1037f3a2dd01903d13df83701ae683",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/术士（TCE）/畸变心智.html",
       "source_record_id": "e94f0c903dd025796d7a2d22",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "e44ef165abce37ecf26c058efa07be9757c98084b3fa1e264d648f2b06a21bc5",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:e94f0c903dd025796d7a2d22:psionic-spells:001",
@@ -18748,15 +18357,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "灵能法术 Psionic Spells",
       "required_review_fields": [
         "name",
@@ -18778,10 +18382,8 @@
       "source_fingerprint": "db31fec9d3bc16dcb820716e3757b8abfd701c57d52a03652da1442c284e4911",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/术士（TCE）/畸变心智.html",
       "source_record_id": "e94f0c903dd025796d7a2d22",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "d3ea2f342292a1bd83656261cf86eb9d15221646819183724c0a3d92b4707164",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:e94f0c903dd025796d7a2d22:psychic-defenses:004",
@@ -18907,15 +18509,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "传心谈话 Telepathic Speech",
       "required_review_fields": [
         "name",
@@ -18937,10 +18534,8 @@
       "source_fingerprint": "bb05fdaef266761765ca639770796cfc0caa722984e1c66a1b5ce1d8ac99f83d",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/术士（TCE）/畸变心智.html",
       "source_record_id": "e94f0c903dd025796d7a2d22",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "711fa8ada237d441316f917d1fdfaeba74f865c96926f9c0aea80b8b96e79058",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:e94f0c903dd025796d7a2d22:warping-implosion:006",
@@ -19119,15 +18714,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "时械魔法 Clockwork Magic",
       "required_review_fields": [
         "name",
@@ -19149,10 +18739,8 @@
       "source_fingerprint": "a75a70d4de1c06e7df15582cdac7b2cb3aa471140cd48e6f0d5d9f87923dd3ca",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/术士（TCE）/时械之魂.html",
       "source_record_id": "ee901996f0fcc3e576657e06",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "7c0f5125afce3109b69841ea43b384b905baa4c25fd38e4e5e51514b9fad0aa5",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:ee901996f0fcc3e576657e06:restore-balance:002",
@@ -20342,15 +19930,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "集群牧者魔法 Swarmkeeper Magic",
       "required_review_fields": [
         "name",
@@ -20372,10 +19955,8 @@
       "source_fingerprint": "b041fc5c2ffc39fb41a13028f08dac2e6526050fecd6e848c5d21964a2121f82",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）/集群牧者.html",
       "source_record_id": "f8e42149abd618bfa3d0eac1",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "999b0217430022371fa77c7012ca41fb6ca5a04137f2187b33fa91076a9d3d95",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:f8e42149abd618bfa3d0eac1:writhing-tide:003",
@@ -20395,15 +19976,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "翻腾浪涌 Writhing Tide",
       "required_review_fields": [
         "name",
@@ -20425,10 +20001,8 @@
       "source_fingerprint": "1fd37d80663219dc8205cf97c9fc2b23fb6ee9975c86f3f868f73d9b2c29f821",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）/集群牧者.html",
       "source_record_id": "f8e42149abd618bfa3d0eac1",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "0140499e106b38c364c801cd3012e1066b4aa0f98664fbdf3a23cbe8955ad32e",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:arcane-firearm:004",
@@ -20447,15 +20021,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "奥法枪械 Arcane Firearm",
       "required_review_fields": [
         "name",
@@ -20477,10 +20046,8 @@
       "source_fingerprint": "245f8fff6a10113c6d0062a26dd054611122b8d830fe6e98b84855467c44d541",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/魔炮师.html",
       "source_record_id": "fbf8451f879a169fb17a01e9",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "786c64e0ca6939e6d65391dcaaf4b127267c0a102847161b47c30e91489b797e",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:artillerist-spells:002",
@@ -20606,15 +20173,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "高爆炮台 Explosive Cannon",
       "required_review_fields": [
         "name",
@@ -20636,10 +20198,8 @@
       "source_fingerprint": "6b015bff0dd2bdde035ef1d9c805409786a79abea38627c306344a2873854d16",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/魔炮师.html",
       "source_record_id": "fbf8451f879a169fb17a01e9",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "47b9b1e7877998a1c7da30043bfc7004e23468f76f674229007d2a4cad957cba",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:fortified-position:006",
@@ -20758,15 +20318,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "神识显现 Manifest Mind",
       "required_review_fields": [
         "name",
@@ -20788,10 +20343,8 @@
       "source_fingerprint": "dbbdb5b3ca9d86ece43c2f919d8483683f99068a478bccc401906057fccb920a",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/法师（TCE）/书士会.html",
       "source_record_id": "ff7049c6a4d0aad0dae4adf5",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "b7dfb57a42f05dd396e45c1c6a59260cf45efd2784c157c2196439fdf36b3e1d",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:ff7049c6a4d0aad0dae4adf5:wizardly-quill:001",
@@ -20881,6 +20434,6 @@
   ],
   "pack_id": "tashas-cauldron",
   "schema_version": "tashas-template-match-report-1",
-  "template_match_rate": 0.071253,
-  "template_matched": 29
+  "template_match_rate": 0.228501,
+  "template_matched": 93
 }

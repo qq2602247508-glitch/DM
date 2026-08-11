@@ -8,15 +8,15 @@
     "maneuver": 7,
     "subclass_feature": 232
   },
-  "compile_full_total": 21,
+  "compile_full_total": 85,
   "dm_assisted_total": 0,
   "gate_status": "partial",
-  "manual_total": 318,
+  "manual_total": 254,
   "pack_id": "tashas-cauldron",
   "production_full_total": 14,
   "review_blocker_counts": {
-    "reviewed_typed_mapping": 21,
-    "unmatched_requires_review": 318
+    "reviewed_typed_mapping": 85,
+    "unmatched_requires_review": 254
   },
   "reviewed_total": 339,
   "schema_version": "tashas-feature-option-batch-I-1",
@@ -28,5 +28,5 @@
     "reviewed": 120,
     "typed": 100
   },
-  "typed_total": 21
+  "typed_total": 85
 }

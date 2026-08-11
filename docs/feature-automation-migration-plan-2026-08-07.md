@@ -1,5 +1,13 @@
 # 特性自动化迁移预审报告
 
+## 持续 Goal Round 2：Feature/Option Semantic Contract Batch I（2026-08-12）
+
+- 64 条真实 Tasha Feature/Option atom 完成显式 reviewed/authored Typed IR；58 条 compile full，6 条 partial 保留真实 consumer/lifecycle/payment 边界。
+- 隔离 runtime 已完成 58 条 apply/reload/幂等重放和 registry lookup；角色成长编译回路完成 58 grants→58 runtime contracts，`closed_loop=true`。这些结果不改变正式 production registry。
+- 通用修复覆盖多 advancement/prepared-spell 合并、stable feature ID、typed authorized-information materializer/consumer；未按特性名称增加分支。
+- Round 2 的正式 production 增量为 0；Tasha 正式基线仍为 17 production、1 DM-assisted、18 game usable。下一阶段必须补真实 production evidence 后才能登记正式 full。
+- 详见 `docs/tashas-feature-option-contract-batch-I-2026-08-12.md` 及两份 2026-08-12 batch/runtime report。
+
 ## 持续 Goal Round 1：状态层与 Item isolated registry（2026-08-11）
 
 - 已统一 Content IR 状态层：`source_identified`、`draft`、`candidate`、`reviewed`、`authored_typed_ir`、`compile_full`、`runtime_preview_full`、`isolated_runtime_validated`、`registered_production_full`、`dm_assisted`、`game_usable`。

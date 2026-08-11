@@ -1,11 +1,11 @@
 {
-  "cluster_count": 15,
-  "cluster_fingerprint": "8328b7316ebf89ebb9db8464009d137bf7a95daf66bd38743a9c2b04665e38dd",
+  "cluster_count": 14,
+  "cluster_fingerprint": "ddd2d18315cfceeb0e469507e3f43504ce220479057b6adb394bcaab8c5ca5e3",
   "clusters": [
     {
       "cluster_id": "tashas.manual.cluster.001",
       "complete_content_unlock_count": 0,
-      "content_count": 46,
+      "content_count": 44,
       "exact_contract_signature": {
         "action_economy": "action_economy_unknown",
         "attack_or_save": "attack_or_save_unknown",
@@ -33,7 +33,7 @@
         "trigger": "trigger_unknown"
       },
       "existing_template_match": false,
-      "feature_count": 46,
+      "feature_count": 44,
       "item_count": 0,
       "missing_capability": [
         "typed_contract"
@@ -53,8 +53,8 @@
         "tashas-cauldron:atom:05cd5d50f2cb202bbd493805:sorcerous-versatility:005",
         "tashas-cauldron:atom:28894d328bca545cc65f7eb9:addtional-paladin-spells:001",
         "tashas-cauldron:atom:28894d328bca545cc65f7eb9:fighting-style-options:002",
-        "tashas-cauldron:atom:28894d328bca545cc65f7eb9:harness-divine-power:006",
-        "tashas-cauldron:atom:28894d328bca545cc65f7eb9:martial-versatility:007"
+        "tashas-cauldron:atom:28894d328bca545cc65f7eb9:martial-versatility:007",
+        "tashas-cauldron:atom:2ceef8846dfb30c175abe0dd:ability-score-improvement:006"
       ],
       "required_review_fields": [
         "action_economy",
@@ -73,7 +73,7 @@
     {
       "cluster_id": "tashas.manual.cluster.002",
       "complete_content_unlock_count": 0,
-      "content_count": 17,
+      "content_count": 9,
       "exact_contract_signature": {
         "action_economy": "action_economy_unknown",
         "attack_or_save": "attack_or_save_unknown",
@@ -101,7 +101,7 @@
         "trigger": "trigger_unknown"
       },
       "existing_template_match": false,
-      "feature_count": 17,
+      "feature_count": 9,
       "item_count": 0,
       "missing_capability": [
         "typed_contract"
@@ -117,12 +117,12 @@
       "representative_atoms": [
         "tashas-cauldron:atom:05cd5d50f2cb202bbd493805:seeking-spell:003",
         "tashas-cauldron:atom:05cd5d50f2cb202bbd493805:transmuted-spell:004",
-        "tashas-cauldron:atom:28894d328bca545cc65f7eb9:blessed-warrior:003",
-        "tashas-cauldron:atom:28894d328bca545cc65f7eb9:blind-fighting:004",
-        "tashas-cauldron:atom:28894d328bca545cc65f7eb9:interception:005",
-        "tashas-cauldron:atom:752d57e35706db428895da0a:blind-fighting:008",
-        "tashas-cauldron:atom:752d57e35706db428895da0a:canny-1:002",
-        "tashas-cauldron:atom:752d57e35706db428895da0a:druidic-warrior:009"
+        "tashas-cauldron:atom:752d57e35706db428895da0a:thrown-weapon-fighting:010",
+        "tashas-cauldron:atom:aeed3d971b4bc4fca5538117:blind-fighting:002",
+        "tashas-cauldron:atom:aeed3d971b4bc4fca5538117:interception:003",
+        "tashas-cauldron:atom:aeed3d971b4bc4fca5538117:martial-versatility:007",
+        "tashas-cauldron:atom:aeed3d971b4bc4fca5538117:superior-technique:004",
+        "tashas-cauldron:atom:aeed3d971b4bc4fca5538117:thrown-weapon-fighting:005"
       ],
       "required_review_fields": [
         "action_economy",
@@ -204,7 +204,7 @@
     {
       "cluster_id": "tashas.manual.cluster.004",
       "complete_content_unlock_count": 0,
-      "content_count": 12,
+      "content_count": 7,
       "exact_contract_signature": {
         "action_economy": "action_economy_unknown",
         "attack_or_save": "attack_or_save_unknown",
@@ -244,16 +244,15 @@
         "closed_world_consumer"
       ],
       "missing_template": true,
-      "option_count": 12,
+      "option_count": 7,
       "representative_atoms": [
         "tashas-cauldron:atom:1924837fba5aec4d15a290b8:artificer-initiate:001",
         "tashas-cauldron:atom:1924837fba5aec4d15a290b8:chef:002",
-        "tashas-cauldron:atom:1924837fba5aec4d15a290b8:crusher:003",
-        "tashas-cauldron:atom:1924837fba5aec4d15a290b8:fey-touched:005",
         "tashas-cauldron:atom:1924837fba5aec4d15a290b8:gunner:007",
         "tashas-cauldron:atom:1924837fba5aec4d15a290b8:piercer:009",
         "tashas-cauldron:atom:1924837fba5aec4d15a290b8:poisoner:010",
-        "tashas-cauldron:atom:1924837fba5aec4d15a290b8:shadow-touched:011"
+        "tashas-cauldron:atom:1924837fba5aec4d15a290b8:slasher:013",
+        "tashas-cauldron:atom:1924837fba5aec4d15a290b8:telekinetic:014"
       ],
       "required_review_fields": [
         "action_economy",
@@ -727,71 +726,6 @@
     {
       "cluster_id": "tashas.manual.cluster.012",
       "complete_content_unlock_count": 0,
-      "content_count": 5,
-      "exact_contract_signature": {
-        "action_economy": "action_economy_unknown",
-        "attack_or_save": "attack_or_save_unknown",
-        "attunement_shape": "none",
-        "charge_shape": "none",
-        "choice_shape": "choice_unknown",
-        "condition_shape": "condition_shape_unknown",
-        "content_kind": "maneuver",
-        "damage_healing_shape": "damage_healing_unknown",
-        "dm_adjudication_shape": "dm_adjudication_unknown",
-        "duration_shape": "duration_shape_unknown",
-        "equipment_shape": "none",
-        "grant_shape": "missing_template",
-        "modifier_shape": "modifier_shape_unknown",
-        "movement_shape": "movement_shape_unknown",
-        "persistence_shape": "persistence_unknown",
-        "recovery_shape": "recovery_shape_unknown",
-        "resource_shape": "resource_shape_unknown",
-        "runtime_consumer_shape": "runtime_consumer_unknown",
-        "scaling_shape": "scaling_shape_unknown",
-        "spell_grant_shape": "none",
-        "success_failure_shape": "success_failure_unknown",
-        "summon_shape": "summon_shape_unknown",
-        "target_shape": "target_shape_unknown",
-        "trigger": "trigger_unknown"
-      },
-      "existing_template_match": false,
-      "feature_count": 0,
-      "item_count": 0,
-      "missing_capability": [
-        "typed_contract"
-      ],
-      "missing_materializer": [
-        "content_ir_runtime"
-      ],
-      "missing_runtime_consumer": [
-        "closed_world_consumer"
-      ],
-      "missing_template": true,
-      "option_count": 5,
-      "representative_atoms": [
-        "tashas-cauldron:atom:12139219bf7e575f9cde019c:bait-and-switch:002",
-        "tashas-cauldron:atom:12139219bf7e575f9cde019c:brace:003",
-        "tashas-cauldron:atom:12139219bf7e575f9cde019c:grappling-strike:005",
-        "tashas-cauldron:atom:12139219bf7e575f9cde019c:quick-toss:006",
-        "tashas-cauldron:atom:12139219bf7e575f9cde019c:tactical-assessment:007"
-      ],
-      "required_review_fields": [
-        "action_economy",
-        "clauses",
-        "content_kind",
-        "dm_boundary",
-        "level",
-        "name",
-        "prerequisites",
-        "resource_and_recovery",
-        "target_policy",
-        "trigger"
-      ],
-      "spell_count": 0
-    },
-    {
-      "cluster_id": "tashas.manual.cluster.013",
-      "complete_content_unlock_count": 0,
       "content_count": 13,
       "exact_contract_signature": {
         "action_economy": "action_economy_unknown",
@@ -858,9 +792,9 @@
       "spell_count": 13
     },
     {
-      "cluster_id": "tashas.manual.cluster.014",
+      "cluster_id": "tashas.manual.cluster.013",
       "complete_content_unlock_count": 0,
-      "content_count": 140,
+      "content_count": 111,
       "exact_contract_signature": {
         "action_economy": "action_economy_unknown",
         "attack_or_save": "attack_or_save_unknown",
@@ -888,7 +822,7 @@
         "trigger": "trigger_unknown"
       },
       "existing_template_match": false,
-      "feature_count": 140,
+      "feature_count": 111,
       "item_count": 0,
       "missing_capability": [
         "typed_contract"
@@ -904,12 +838,12 @@
       "representative_atoms": [
         "tashas-cauldron:atom:008f917eace997a6a54939d5:expanded-spell-list:001",
         "tashas-cauldron:atom:008f917eace997a6a54939d5:fathomless-plunge:007",
-        "tashas-cauldron:atom:008f917eace997a6a54939d5:gift-of-the-sea:003",
         "tashas-cauldron:atom:008f917eace997a6a54939d5:grasping-tentacles:006",
         "tashas-cauldron:atom:008f917eace997a6a54939d5:guardian-coil:005",
-        "tashas-cauldron:atom:008f917eace997a6a54939d5:oceanic-soul:004",
         "tashas-cauldron:atom:008f917eace997a6a54939d5:tentacle-of-the-deeps:002",
-        "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:bonus-proficiencies:001"
+        "tashas-cauldron:atom:38a389e4b25a6eeec6c7835f:channel-divinity-order-s-demand:004",
+        "tashas-cauldron:atom:38a389e4b25a6eeec6c7835f:divine-strike:006",
+        "tashas-cauldron:atom:38a389e4b25a6eeec6c7835f:embodiment-of-the-law:005"
       ],
       "required_review_fields": [
         "action_economy",
@@ -926,9 +860,9 @@
       "spell_count": 0
     },
     {
-      "cluster_id": "tashas.manual.cluster.015",
+      "cluster_id": "tashas.manual.cluster.014",
       "complete_content_unlock_count": 0,
-      "content_count": 73,
+      "content_count": 58,
       "exact_contract_signature": {
         "action_economy": "action_economy_unknown",
         "attack_or_save": "attack_or_save_unknown",
@@ -956,7 +890,7 @@
         "trigger": "trigger_unknown"
       },
       "existing_template_match": false,
-      "feature_count": 73,
+      "feature_count": 58,
       "item_count": 0,
       "missing_capability": [
         "typed_contract"
