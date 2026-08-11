@@ -41,7 +41,10 @@
         },
         "difference": "41 was ItemSpec compile/preview capability, not formal or whole-pack registered production; this round makes the isolated-runtime boundary explicit."
       },
-      "commits": [],
+      "commits": [
+        "776c7fe",
+        "ecd6606"
+      ],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [
