@@ -1,7 +1,207 @@
 {
-  "current_round": "round-16",
+  "current_round": "round-18",
   "goal": "Local AI D&D DM Assistant complete official-content rules platform",
   "rounds": [
+    {
+      "round_id": "round-18",
+      "status": "accepted",
+      "started_at": "2026-08-12",
+      "accepted_at": "2026-08-12",
+      "objective": "Expand the generic typed roll-intervention consumer and close two Tasha Battle Master Feature runtime loops with actor-side resource CAS, replay, and source-declared authored subclause atom coverage.",
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 179,
+            "unique_compiled": 111
+          },
+          "formal_499": {
+            "dm_only": 61,
+            "full": 328,
+            "partial": 110,
+            "total": 499
+          },
+          "protected_fingerprints": {
+            "database": "f3abdcf57b0d71888f085ca081511df4f4e23f100066b402d49d769089fa6aad",
+            "formal_registry": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+            "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+            "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+          },
+          "tashas": {
+            "authored_typed_ir": 94,
+            "compile_only": 12,
+            "content_atoms_after_qa": 524,
+            "executable": 407,
+            "game_usable": 81,
+            "item_spec_compile_full": 40,
+            "item_spec_isolated_runtime_validated": 40,
+            "item_spec_registered_production_full": 40,
+            "item_spec_game_usable": 40,
+            "manual_authoring": 314,
+            "production_full": 79,
+            "runtime_preview_full": 93,
+            "source_records": 144
+          }
+        },
+        "difference": "Round XVIII starts from the accepted Round XVII rest-condition consumer state; the new round is a platform-core exception because one generic roll window unlocks multiple typed Feature semantics.",
+        "prompt_baseline": {
+          "round_target_feature_production": 2,
+          "platform_core_exception_batch_size": 2,
+          "source_subclause_atom_recovery": 1
+        }
+      },
+      "commits": ["0509c93a9c7cd7462c67098a1b0c53d709d0fba3"],
+      "compile_full_delta": 1,
+      "dm_assisted_delta": 0,
+      "item_compile_full_delta": 0,
+      "manual_delta": 0,
+      "pack_coverage_delta": {
+        "content_ir_production_full_before": 179,
+        "content_ir_production_full_after": 181,
+        "tasha_content_atoms_before": 524,
+        "tasha_content_atoms_after": 525,
+        "tasha_feature_authored_typed_ir_before": 94,
+        "tasha_feature_authored_typed_ir_after": 95,
+        "tasha_feature_compile_full_before": 93,
+        "tasha_feature_compile_full_after": 94,
+        "tasha_feature_compile_only_before": 12,
+        "tasha_feature_compile_only_after": 11,
+        "tasha_feature_registered_production_before": 79,
+        "tasha_feature_registered_production_after": 81,
+        "tasha_feature_game_usable_before": 81,
+        "tasha_feature_game_usable_after": 83,
+        "item_registered_production_full_unchanged": 40,
+        "item_game_usable_unchanged": 40
+      },
+      "reports": [
+        "reports/tashas-feature-production-consumer-round-XVIII-2026-08-12.json",
+        "data/content-ir/compiled/production-runtime-results-XX.json"
+      ],
+      "selected_clusters": [
+        "combat.roll_intervention",
+        "feature.superiority_die",
+        "combat.actor_resource_cas",
+        "content_atom.authored_subclause"
+      ],
+      "selected_platforms": [
+        "player_roll_resolution.feature.roll_intervention.v1",
+        "feature.roll_intervention",
+        "character_resource_and_operation_transaction",
+        "content_ir_runtime.preview_confirm_replay"
+      ],
+      "next_round_reason": "After Round XVIII acceptance, continue only where another typed semantic cluster has a real generic consumer; do not promote Ambush until Dexterity (Stealth) and initiative are represented as complete typed eligibility.",
+      "formal_registry_written": false,
+      "formal_database_written": false,
+      "protected_paths_untouched": true,
+      "push_receipt": {
+        "branch": "main",
+        "commit_hash": "0509c93a9c7cd7462c67098a1b0c53d709d0fba3",
+        "pushed_at": "2026-08-12",
+        "remote": "origin",
+        "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
+        "result": "success"
+      },
+      "tests": [
+        "Round XVIII validator: 2/2 typed roll-intervention Features",
+        "Commanding Presence 12+4=16 and Precision Attack 12+5=17 with superiority dice CAS 4→3→2",
+        "weapon_attack opens Precision Attack; spell_attack boundary stays closed",
+        "backend full pytest: 895 passed; Ruff, compileall, git diff --check passed",
+        "whole-pack migration repeated with byte-identical key report/runtime hashes"
+      ]
+    },
+    {
+      "round_id": "round-17",
+      "status": "accepted",
+      "objective": "Close the generic typed rest-condition consumer for Ranger Tireless with persisted condition lifecycle and character CAS/replay evidence.",
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 178,
+            "unique_compiled": 111
+          },
+          "formal_499": {
+            "dm_only": 61,
+            "full": 328,
+            "partial": 110,
+            "total": 499
+          },
+          "protected_fingerprints": {
+            "database": "f3abdcf57b0d71888f085ca081511df4f4e23f100066b402d49d769089fa6aad",
+            "formal_registry": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+            "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+            "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+          },
+          "tashas": {
+            "authored_typed_ir": 94,
+            "compile_only": 13,
+            "content_atoms_after_qa": 524,
+            "executable": 407,
+            "game_usable": 80,
+            "item_spec_compile_full": 40,
+            "item_spec_isolated_runtime_validated": 40,
+            "item_spec_registered_production_full": 40,
+            "item_spec_game_usable": 40,
+            "manual_authoring": 314,
+            "production_full": 78,
+            "runtime_preview_full": 93,
+            "source_records": 144
+          }
+        }
+      },
+      "commits": [
+        "ecde5e8ccb79bc622f6a179af9e95b8bb39d1e3d",
+        "a739f0a82c72c0aa4541c5e1d5008f3c90d65f63"
+      ],
+      "compile_full_delta": 0,
+      "dm_assisted_delta": 0,
+      "item_compile_full_delta": 0,
+      "manual_delta": 0,
+      "pack_coverage_delta": {
+        "content_ir_production_full_before": 178,
+        "content_ir_production_full_after": 179,
+        "tasha_feature_compile_only_before": 13,
+        "tasha_feature_compile_only_after": 12,
+        "tasha_feature_registered_production_before": 78,
+        "tasha_feature_registered_production_after": 79,
+        "tasha_feature_game_usable_before": 80,
+        "tasha_feature_game_usable_after": 81,
+        "item_registered_production_full_unchanged": 40,
+        "item_game_usable_unchanged": 40
+      },
+      "phase": "I",
+      "push_receipt": {
+        "branch": "main",
+        "commit_hash": "a739f0a82c72c0aa4541c5e1d5008f3c90d65f63",
+        "pushed_at": "2026-08-12",
+        "remote": "origin",
+        "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
+        "result": "success"
+      },
+      "reports": [
+        "reports/tashas-feature-production-consumer-round-XVII-2026-08-12.json",
+        "data/content-ir/compiled/production-runtime-results-XIX.json",
+        "docs/tashas-feature-production-consumer-round-XVII-2026-08-12.md"
+      ],
+      "selected_clusters": [
+        "rest.condition_lifecycle",
+        "feature.remove_condition",
+        "character.version_cas"
+      ],
+      "selected_platforms": [
+        "rest_service.typed_rest_condition_effect.v1",
+        "content_ir_runtime.preview_confirm_replay",
+        "character_version_cas",
+        "operation_transaction"
+      ],
+      "next_round_reason": "The generic rest condition consumer is closed; continue with a separate typed combat-roll semantic cluster.",
+      "status_note": "Round XVII accepted with formal registry and formal database unchanged.",
+      "tests": [
+        "Round XVII validator: 1/1 typed rest-condition Feature",
+        "Preview/confirm/replay, condition persistence, character CAS and operation transaction passed",
+        "Round XVI validator and whole-pack migration remained passing"
+      ]
+    },
     {
       "authored_count": 0,
       "baseline": {
@@ -42,6 +242,7 @@
         "difference": "Round 16 starts from 94 authored Tasha Typed IR and expands the existing character-growth consumer over the remaining safe proficiency cluster; communication/entity/action-window blockers remain explicit.",
         "prompt_baseline": {"round_target_feature_production": 8, "safe_proficiency_cluster_count": 4}
       },
+      "round_id": "round-16",
       "commits": ["d61e5ad"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
@@ -149,6 +350,7 @@
         "difference": "Round 15 adds a typed inline spell-list parser and real item.granted_spell.v1 equipment consumer for three artifact ItemSpecs; generic prose and variable/manual spells remain fail-closed.",
         "prompt_baseline": {"round_target_item_production": 8, "residual_partial_item_count": 10}
       },
+      "round_id": "round-15",
       "commits": ["f34148d"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
@@ -262,6 +464,7 @@
         "difference": "Round 14 closes the final five complete ItemSpecs and verifies the typed dawn boundary; no complete ItemSpec remains below registered production.",
         "prompt_baseline": {"round_target_item_production": 8, "residual_complete_item_count": 5}
       },
+      "round_id": "round-14",
       "commits": ["d6cae79"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
@@ -374,6 +577,7 @@
         "difference": "Round 13 starts from 24 registered ItemSpecs and adds eight remaining complete items through the shared equipment, attunement, granted-action and charge consumers.",
         "prompt_baseline": {"round_target_item_production": 8}
       },
+      "round_id": "round-13",
       "commits": ["5ceb72a"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
@@ -485,6 +689,7 @@
         "difference": "Round 12 starts from the corrected 37 full ItemSpec catalog and 16 registered items; it closes the typed tattoo lifecycle transition through the same equipment/attunement consumer.",
         "prompt_baseline": {"round_target_item_production": 8}
       },
+      "round_id": "round-12",
       "commits": ["8947eff"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
@@ -590,6 +795,7 @@
         "difference": "Round 11 starts from Round 10's 8 registered ItemSpecs, corrects false granted-spell extraction fail-closed, and adds eight further complete ItemSpecs through the shared equipment consumer.",
         "prompt_baseline": {"round_target_item_production": 8}
       },
+      "round_id": "round-11",
       "commits": ["0f3eccf"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
@@ -699,6 +905,7 @@
         "difference": "Round 10 starts from the accepted Round 9 state and promotes a bounded batch of complete ItemSpec contracts through the existing equipment, attunement, charge and granted-action consumers; item production remains separate from Feature status layers.",
         "prompt_baseline": {"round_target_item_production": 8}
       },
+      "round_id": "round-10",
       "commits": ["42153f2"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
@@ -797,6 +1004,7 @@
         "difference": "Round 9 is a platform/core growth round: it closes the remaining six full Tasha Feature contracts by adding generic typed resource profile, exchange and event-window consumers; formal rows remain outside the evidence boundary.",
         "prompt_baseline": {"round_target_production_or_dm": 8}
       },
+      "round_id": "round-9",
       "commits": ["b2c6421"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
@@ -890,6 +1098,7 @@
         "difference": "Round 8 starts from the accepted Round 7 state and selects only full contracts whose typed combat snapshot already has a generic passive/feature-action consumer; unresolved reaction-window and resource-exchange contracts remain ranked but unpromoted.",
         "prompt_baseline": {"round_target_production_or_dm": 8}
       },
+      "round_id": "round-8",
       "commits": ["c2e0a65"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
@@ -995,6 +1204,7 @@
         "difference": "Round 7 harvests eight remaining full advancement/spell-list Feature contracts through the existing typed character-growth consumer; formal campaign/character/database rows remain outside the evidence boundary.",
         "prompt_baseline": {"round_target_production_or_dm": 8}
       },
+      "round_id": "round-7",
       "commits": ["0f49029"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
@@ -1102,6 +1312,7 @@
         "difference": "Round 6 harvests eight remaining full Feature contracts through the existing typed passive/inspection consumer; formal campaign/character/database rows remain outside the evidence boundary.",
         "prompt_baseline": {"round_target_production_or_dm": 8}
       },
+      "round_id": "round-6",
       "commits": ["8df8ca3"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
@@ -1202,6 +1413,7 @@
         "difference": "Round 5 adds a generic typed advancement consumer and promotes eight compile-only Tasha Feature contracts through real character snapshot growth; formal campaign/character/database rows remain outside the evidence boundary.",
         "prompt_baseline": {"round_target_production_or_dm": 8}
       },
+      "round_id": "round-5",
       "commits": ["2125670"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
@@ -1309,6 +1521,7 @@
         },
         "difference": "41 was ItemSpec compile/preview capability, not formal or whole-pack registered production; this round makes the isolated-runtime boundary explicit."
       },
+      "round_id": "round-4",
       "commits": [
         "776c7fe",
         "ecd6606",
@@ -1409,6 +1622,7 @@
           "round_target_production_or_dm": 30
         }
       },
+      "round_id": "round-3",
       "commits": ["5049db3", "a981cd4"],
       "compile_full_delta": 58,
       "dm_assisted_delta": 0,
@@ -1514,6 +1728,7 @@
           "round_target_production_or_dm": 30
         }
       },
+      "round_id": "round-2",
       "commits": ["21b61ac", "ca13067"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 1,
@@ -1614,6 +1829,7 @@
           "round_target_production_or_dm": 8
         }
       },
+      "round_id": "round-1",
       "commits": ["8776dcb"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,

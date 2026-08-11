@@ -1,3 +1,13 @@
+# 2026-08-12 Round 18 检查点：Generic Roll Intervention / Battle Master Closure
+
+- Round XVIII 已完成平台核心实现：typed `roll_intervention` materializer/consumer 接入玩家掷骰窗口，扫描 actor 与 target 的 Feature Runtime；`attack_type` 进入 Player Roll schema/resolver，精准攻击只接受 `weapon_attack`，非 AC prompt fail closed。
+- 真实隔离 SQLite evidence：领导风范 `12+4=16`、卓越骰 `4→3`；精准攻击 `12+5=17`、`3→2`；两者 preview/open→confirm→幂等 replay、character CAS、资源 transaction 均通过，spell attack 不开精准攻击窗口，name branch=0。
+- source-declared authored subclause atom bridge 已恢复精准攻击的 Content Atom 追踪，整包实际结果为 `525 atoms / 408 player-facing / 408 executable / 95 authored typed IR / 94 compile+preview / 81 production / 2 DM-assisted / 83 game usable / 11 compile-only / 314 manual / 107 DM reference`；当前项目 production full `181`，ItemSpec 仍 `47/40/40/40`。
+- Round XVIII 只有 2 条，是共享玩家掷骰/actor resource CAS 的 platform-core exception；Ambush 因敏捷（隐匿）与先攻双触发未形成完整 typed eligibility，未提升。formal registry/database/campaign/character、source corpus、3D、永久保护路径未写入。
+- 新增/更新：`backend/src/dnd_dm_assistant/application/feature_materializers.py`、`application/tashas_whole_pack.py`、`infrastructure/database/combat_service.py`、`api/schemas.py`、Round XVIII validator/test/report/result/doc、Precision Attack provenance、whole-pack reports/isolated pack、goal ledger。
+- Round XVIII validator、Feature contract batch、Round XVI character-growth、Round XVII rest validator、targeted combat tests、Ruff、compileall、`git diff --check` 已通过；backend full pytest 为 `895 passed`，whole-pack migration 连续运行关键 report/registry hashes 完全一致。
+- 实现提交 `0509c93a9c7cd7462c67098a1b0c53d709d0fba3` 已推送到 `origin/main`；本交接 receipt 已单独写入 ledger/handoff/memory。Round XVIII 现为 accepted，正式 registry/database 与保护路径仍未写入。
+
 # 2026-08-12 Round 17 检查点：Generic Rest Condition Consumer / Tireless Closure
 
 - Round XVII 完成 `remove_condition` 的 rest trigger contract、compiler fail-closed guard 和 `rest_condition_effect` materializer；Tireless 从 partial 解锁为 full，短休时自身 exhaustion 降低 1 级。

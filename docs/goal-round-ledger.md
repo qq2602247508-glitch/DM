@@ -6,6 +6,18 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 18：Generic Roll Intervention / Battle Master Closure
+
+当前状态：`accepted`；实现、隔离 evidence、提交与 push 已完成。
+
+- 新增通用 typed `roll_intervention` materializer/consumer：领导风范绑定魅力社交检定，精准攻击绑定 `weapon_attack` 的 AC 攻击检定；actor-side Feature Runtime 会进入玩家掷骰窗口，`attack_type` 进入 schema/resolver eligibility，非武器攻击 fail closed。
+- 两条 Feature 在隔离 SQLite 上真实完成 preview/open → confirm → 幂等 replay、卓越骰输入、character version CAS、OperationTransaction/资源事务：领导风范 `12+4=16`、`4→3`；精准攻击 `12+5=17`、`3→2`；spell attack 不开精准攻击窗口，`name_branch=0`。
+- atomizer 新增通用 source-declared authored subclause atom 桥，精准攻击从旧显式 retirement 恢复为可追溯独立 atom；整包分母变为 `525 atoms / 408 player-facing / 408 executable`，source records 仍 `144`。
+- Tasha status layers：`production_full=81`、`dm_assisted=2`、`game_usable=83`、`compile_only=11`、`authored Typed IR=95`、`compile_full=94`、`runtime_preview_full=94`、`manual_authoring=314`、`DM reference=107`。ItemSpec 独立维持 `47/40/40/40`（total/compile/isolated/registered/game usable）。当前项目 production full `181`。
+- 本轮只有 2 条，是共享玩家掷骰/actor resource CAS 的 platform-core exception；Ambush 因敏捷（隐匿）与先攻双触发尚未形成完整 typed eligibility，继续 fail closed。formal registry/database、campaign/character、source corpus、3D 与保护路径未写入。
+- 证据：`docs/tashas-feature-production-consumer-round-XVIII-2026-08-12.md`、Round XVIII report/result、Feature contract/character-growth/rest validators、whole-pack report 与 isolated runtime registry。第二、第三次 whole-pack migration 关键 SHA-256 完全一致。
+- 实现提交 `0509c93a9c7cd7462c67098a1b0c53d709d0fba3` 已推送到 `origin/main`；receipt 已写入 ledger/handoff/memory。下一步继续下一个已有 typed semantic cluster，不增加名称分支。
+
 ## Round 17：Generic Rest Condition Consumer / Tireless Closure
 
 当前状态：`accepted`；本轮完成一个平台核心消费者 seam，关闭 1 条 typed Feature 的真实生产闭环。
