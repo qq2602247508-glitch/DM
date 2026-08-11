@@ -346,7 +346,7 @@
           "round_target_production_or_dm": 8
         }
       },
-      "commits": [],
+      "commits": ["8776dcb"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [
@@ -376,6 +376,14 @@
         "tasha_game_usable": 38
       },
       "phase": "D",
+      "push_receipt": {
+        "branch": "main",
+        "commit_hash": "8776dcb",
+        "pushed_at": "2026-08-12T02:42:15+0800",
+        "remote": "origin",
+        "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
+        "result": "success"
+      },
       "reports": [
         "reports/tashas-feature-production-consumer-round-IV-2026-08-12.json",
         "data/content-ir/compiled/production-runtime-results-VI.json",
