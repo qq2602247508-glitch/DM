@@ -1217,7 +1217,7 @@ class CombatFeatureActionCommand(BaseModel):
     destination_row: int | None = Field(default=None, ge=1, le=10_000)
     destination_col: int | None = Field(default=None, ge=1, le=10_000)
     movement_roll_total: int | None = Field(default=None, ge=1, le=1_000)
-    reset_spell_slot_level: int | None = Field(default=None, ge=2, le=9)
+    reset_spell_slot_level: int | None = Field(default=None, ge=1, le=9)
     dm_override: bool = False
     override_reason: str | None = Field(default=None, max_length=1_000)
 
@@ -2507,6 +2507,7 @@ class ContentIRRuntimeRequest(BaseModel):
     save_succeeded_by_target: dict[str, bool] = Field(default_factory=dict, max_length=20)
     attack_hit: bool | None = None
     reaction_triggered: bool = False
+    reset_spell_slot_level: int | None = Field(default=None, ge=1, le=9)
     condition_to_remove: Literal["charmed", "frightened", "poisoned"] | None = None
     advancement_choices: dict[str, list[str]] = Field(default_factory=dict, max_length=50)
     runtime_contract: dict[str, Any] | None = None

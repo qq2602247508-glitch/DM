@@ -64,7 +64,7 @@
       "atom_id": "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:runic-shield:010",
       "content_id": "content.tashas-cauldron.round2.feature.rune-knight-runic-shield",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "27625f088579223b3d51f2b336e2a8a1b69be4834972cda58b1c6646490524fe",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.rune-knight-runic-shield"
@@ -104,7 +104,7 @@
       "atom_id": "tashas-cauldron:atom:12139219bf7e575f9cde019c:brace:003",
       "content_id": "content.tashas-cauldron.round2.feature.battle-master-brace",
       "content_kind": "maneuver",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "6a5a2625011b50bfee3b95ad6333595cd27c195444316d11b31b670c1278dcbe",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.battle-master-brace"
@@ -134,7 +134,7 @@
       "atom_id": "tashas-cauldron:atom:12139219bf7e575f9cde019c:quick-toss:006",
       "content_id": "content.tashas-cauldron.round2.feature.battle-master-quick-toss",
       "content_kind": "maneuver",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "4a4a22bf8fdd2ed8eba31db397881043468613d514e1454f628147ff5dd5896c",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.battle-master-quick-toss"
@@ -224,7 +224,7 @@
       "atom_id": "tashas-cauldron:atom:28894d328bca545cc65f7eb9:harness-divine-power:006",
       "content_id": "content.tashas-cauldron.round2.feature.paladin-harness-divine-power",
       "content_kind": "class_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "e340ad42c5b8cb10573dab8b8f71d22f43ffe1645d418ff548b9f148e8ef3dab",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.paladin-harness-divine-power"
@@ -234,7 +234,7 @@
       "atom_id": "tashas-cauldron:atom:28894d328bca545cc65f7eb9:interception:005",
       "content_id": "content.tashas-cauldron.round2.feature.paladin-interception",
       "content_kind": "class_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "e1195ccbd5173abc450a0cb3e52b67c29c0feb697cd99cd97f5b393ad777070e",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.paladin-interception"
@@ -505,7 +505,7 @@
       "atom_id": "tashas-cauldron:atom:a13253dc90904c96eaa719ab:psionic:001",
       "content_id": "content.tashas-cauldron.round2.feature.psi-warrior-psionic-power",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "ae992cb3f24babe6aa406a6cc188d8d8243598b6d32ee71610a058e3d6e8274d",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.psi-warrior-psionic-power"

@@ -809,6 +809,133 @@ def materialize_runtime_definition(
                 if existing.get(key) != entry.get(key):
                     merged.pop(key, None)
             definition["prepared_spell_list"] = merged
+
+    # Event-window and resource-exchange clauses are actions even when their
+    # source contract is represented by a trigger/resource block.  Project
+    # them into one generic action envelope so the combat service can consume
+    # the typed window without interpreting a feature name.
+    for clause in spec.clauses:
+        if clause.trigger == "advancement_confirmed":
+            continue
+        effects = [dict(effect.to_dict()) for effect in clause.effects]
+        consume = next(
+            (
+                dict(effect.get("parameters") or {})
+                for effect in effects
+                if effect.get("operator") == "consume_resource"
+            ),
+            None,
+        )
+        window_effect = next(
+            (
+                effect
+                for effect in effects
+                if effect.get("operator")
+                in {"create_reaction_window", "create_triggered_attack_window"}
+            ),
+            None,
+        )
+        exchange_effect = next(
+            (
+                dict(effect.get("parameters") or {})
+                for effect in effects
+                if effect.get("operator") == "exchange_resource"
+            ),
+            None,
+        )
+        if window_effect is not None:
+            operator = str(window_effect.get("operator") or "")
+            parameters = dict(window_effect.get("parameters") or {})
+            raw_policy = parameters.get("target_policy")
+            raw_policy = dict(raw_policy) if isinstance(raw_policy, Mapping) else {}
+            if operator == "create_triggered_attack_window":
+                target_mode = "enemy"
+                policy_mode = str(raw_policy.get("mode") or "enemy")
+                if policy_mode in {"triggering_enemy", "chosen_enemy"}:
+                    policy_mode = "enemy"
+                attack_profile = dict(parameters.get("attack_profile") or {})
+                attack_profile.setdefault("mode", "weapon_only")
+                window_spec = {
+                    "window_type": "triggered_attack_window",
+                    "window_kind": str(parameters.get("window_kind") or "typed_attack"),
+                    "event": clause.trigger,
+                    "expires": clause.duration,
+                    "action_cost": str(parameters.get("reaction_type") or clause.action_economy),
+                    "target_policy": {**raw_policy, "mode": policy_mode},
+                    "attack_profile": attack_profile,
+                    "parent_action": parameters.get("parent_action"),
+                }
+                resolution_kind = "triggered_attack_window"
+            else:
+                target_mode = "ally_or_self"
+                window_spec = {
+                    "window_type": "reaction_window",
+                    "window_kind": str(parameters.get("window_kind") or "typed_reaction"),
+                    "event": clause.trigger,
+                    "expires": clause.duration,
+                    "action_cost": str(clause.action_economy or "reaction"),
+                    "target_policy": raw_policy,
+                }
+                resolution_kind = "reaction_window"
+            action = {
+                "id": f"{spec.feature_id}:activate:{clause.clause_id}",
+                "feature_id": spec.feature_id,
+                "feature_name": spec.source_name,
+                "name": spec.source_name,
+                "class_name": spec.class_name or "unclassified",
+                "class_level": spec.level or 0,
+                "kind": "feature_action",
+                "operator": operator,
+                "clause_id": clause.clause_id,
+                "trigger": clause.trigger,
+                "action_cost": window_spec["action_cost"],
+                "target": target_mode,
+                "target_policy": {
+                    "mode": target_mode,
+                    "typed_policy": window_spec["target_policy"],
+                },
+                "resolution_kind": resolution_kind,
+                "window_spec": window_spec,
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "combat_feature_event_window",
+                    "contract_version": "feature-event-window-1",
+                    "persistence": "combat_actions",
+                },
+            }
+            if isinstance(consume, dict) and consume.get("resource_key"):
+                action["resource_key"] = str(consume["resource_key"])
+                action["resource_cost"] = int(consume.get("amount") or 1)
+            definition["actions"][spec.feature_id] = action
+        elif exchange_effect is not None:
+            action = {
+                "id": f"{spec.feature_id}:activate:{clause.clause_id}",
+                "feature_id": spec.feature_id,
+                "feature_name": spec.source_name,
+                "name": spec.source_name,
+                "class_name": spec.class_name or "unclassified",
+                "class_level": spec.level or 0,
+                "kind": "feature_action",
+                "operator": "exchange_resource",
+                "clause_id": clause.clause_id,
+                "trigger": clause.trigger,
+                "action_cost": clause.action_economy,
+                "target": "self",
+                "target_policy": {"mode": "self"},
+                "resolution_kind": "resource_exchange",
+                "resource_exchange": exchange_effect,
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "combat_feature_resource_exchange",
+                    "contract_version": "feature-resource-exchange-1",
+                    "persistence": "character.resources",
+                },
+            }
+            definition["actions"][spec.feature_id] = action
     definition.setdefault("automation_status", "full")
     definition.setdefault("requires_dm_adjudication", False)
     return definition

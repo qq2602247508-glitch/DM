@@ -1,6 +1,6 @@
 {
   "atom_dm_assisted_count": 2,
-  "atom_production_full_count": 68,
+  "atom_production_full_count": 74,
   "dm_assisted_atoms": [
     "tashas-cauldron:atom:0036d7dc058c496ef08fe340:a27f6b57964b:000",
     "tashas-cauldron:atom:867896faa26eb295d846a574:glorious-defense:010"
@@ -35,7 +35,9 @@
         "content.tashas-cauldron.round2.feature.astral-self-astral-sight",
         "content.tashas-cauldron.round2.feature.astral-self-word-of-the-spirit",
         "content.tashas-cauldron.round2.feature.battle-master-bait-and-switch",
+        "content.tashas-cauldron.round2.feature.battle-master-brace",
         "content.tashas-cauldron.round2.feature.battle-master-grappling-strike",
+        "content.tashas-cauldron.round2.feature.battle-master-quick-toss",
         "content.tashas-cauldron.round2.feature.battle-master-tactical-assessment",
         "content.tashas-cauldron.round2.feature.beast-barbarian-bestial-soul",
         "content.tashas-cauldron.round2.feature.bladesinger-training-in-sword-and-song",
@@ -53,9 +55,12 @@
         "content.tashas-cauldron.round2.feature.order-cleric-bonus-proficiencies",
         "content.tashas-cauldron.round2.feature.paladin-blessed-warrior",
         "content.tashas-cauldron.round2.feature.paladin-blind-fighting",
+        "content.tashas-cauldron.round2.feature.paladin-harness-divine-power",
+        "content.tashas-cauldron.round2.feature.paladin-interception",
         "content.tashas-cauldron.round2.feature.peace-cleric-implement-of-peace",
         "content.tashas-cauldron.round2.feature.psi-warrior-guarded-mind",
         "content.tashas-cauldron.round2.feature.psi-warrior-psi-powered-leap",
+        "content.tashas-cauldron.round2.feature.psi-warrior-psionic-power",
         "content.tashas-cauldron.round2.feature.psi-warrior-telekinetic-master",
         "content.tashas-cauldron.round2.feature.ranger-blind-fighting",
         "content.tashas-cauldron.round2.feature.ranger-canny",
@@ -64,6 +69,7 @@
         "content.tashas-cauldron.round2.feature.rune-knight-bonus-proficiencies",
         "content.tashas-cauldron.round2.feature.rune-knight-giants-might",
         "content.tashas-cauldron.round2.feature.rune-knight-great-stature",
+        "content.tashas-cauldron.round2.feature.rune-knight-runic-shield",
         "content.tashas-cauldron.round2.feature.soulknife-homing-strikes",
         "content.tashas-cauldron.round2.feature.soulknife-psi-bolstered-knack",
         "content.tashas-cauldron.round2.feature.soulknife-psychic-whispers",
@@ -84,7 +90,7 @@
       "new_consumer_count": 0
     }
   },
-  "matched_atom_production_runtime_full_count": 71,
+  "matched_atom_production_runtime_full_count": 77,
   "name_branch_count": 0,
   "new_consumer_count": 0,
   "pack_id": "tashas-cauldron",
@@ -93,8 +99,11 @@
     "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:bonus-proficiencies:001",
     "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:giant-s-might:009",
     "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:great-stature:011",
+    "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:runic-shield:010",
     "tashas-cauldron:atom:12139219bf7e575f9cde019c:bait-and-switch:002",
+    "tashas-cauldron:atom:12139219bf7e575f9cde019c:brace:003",
     "tashas-cauldron:atom:12139219bf7e575f9cde019c:grappling-strike:005",
+    "tashas-cauldron:atom:12139219bf7e575f9cde019c:quick-toss:006",
     "tashas-cauldron:atom:12139219bf7e575f9cde019c:tactical-assessment:007",
     "tashas-cauldron:atom:1924837fba5aec4d15a290b8:crusher:003",
     "tashas-cauldron:atom:1924837fba5aec4d15a290b8:fey-touched:005",
@@ -103,6 +112,8 @@
     "tashas-cauldron:atom:1924837fba5aec4d15a290b8:telepathic:015",
     "tashas-cauldron:atom:28894d328bca545cc65f7eb9:blessed-warrior:003",
     "tashas-cauldron:atom:28894d328bca545cc65f7eb9:blind-fighting:004",
+    "tashas-cauldron:atom:28894d328bca545cc65f7eb9:harness-divine-power:006",
+    "tashas-cauldron:atom:28894d328bca545cc65f7eb9:interception:005",
     "tashas-cauldron:atom:2ceef8846dfb30c175abe0dd:tool-expertise:007",
     "tashas-cauldron:atom:38a389e4b25a6eeec6c7835f:bonus-proficiencies:002",
     "tashas-cauldron:atom:4041ef4e8e0a5b7375019c27:training-in-sword-and-song:001",
@@ -124,6 +135,7 @@
     "tashas-cauldron:atom:a13253dc90904c96eaa719ab:protective-field:002",
     "tashas-cauldron:atom:a13253dc90904c96eaa719ab:psi-powered-leap:006",
     "tashas-cauldron:atom:a13253dc90904c96eaa719ab:psionic-strike:003",
+    "tashas-cauldron:atom:a13253dc90904c96eaa719ab:psionic:001",
     "tashas-cauldron:atom:a13253dc90904c96eaa719ab:telekinetic-master:010",
     "tashas-cauldron:atom:a13253dc90904c96eaa719ab:telekinetic-movement:004",
     "tashas-cauldron:atom:b23e97de6529e42be59f8b0d:bestial-soul:005",
@@ -158,7 +170,7 @@
     "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:arcane-firearm:004",
     "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:explosive-cannon:005"
   ],
-  "registry_production_runtime_full_count": 71,
+  "registry_production_runtime_full_count": 77,
   "runtime_evidence": {
     "content.tashas-cauldron.feature.alchemist-chemical-mastery": {
       "confirm_status": 200,
@@ -523,6 +535,22 @@
       "transaction": true,
       "typed_consumer": "combat_engine.feature_action.v1"
     },
+    "content.tashas-cauldron.round2.feature.battle-master-brace": {
+      "confirm": true,
+      "content_id": "content.tashas-cauldron.round2.feature.battle-master-brace",
+      "content_kind": "feature",
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XI.json",
+      "preview": true,
+      "replay": true,
+      "resource_after": 2,
+      "resource_before": 3,
+      "resource_cas": true,
+      "resource_exchange": false,
+      "resource_exchange_amount": null,
+      "typed_consumer": "combat_engine.feature_event_window.v1",
+      "typed_event_contract": true,
+      "window_persisted": true
+    },
     "content.tashas-cauldron.round2.feature.battle-master-grappling-strike": {
       "activation_resolution": false,
       "confirm": true,
@@ -540,6 +568,22 @@
       "runtime_id_bound": true,
       "source": "round-II-reviewed-feature-contract-through-round-VIII-typed-combat-consumer",
       "typed_consumer": "combat_engine.feature_action.v1"
+    },
+    "content.tashas-cauldron.round2.feature.battle-master-quick-toss": {
+      "confirm": true,
+      "content_id": "content.tashas-cauldron.round2.feature.battle-master-quick-toss",
+      "content_kind": "feature",
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XI.json",
+      "preview": true,
+      "replay": true,
+      "resource_after": 2,
+      "resource_before": 3,
+      "resource_cas": true,
+      "resource_exchange": false,
+      "resource_exchange_amount": null,
+      "typed_consumer": "combat_engine.feature_event_window.v1",
+      "typed_event_contract": true,
+      "window_persisted": true
     },
     "content.tashas-cauldron.round2.feature.battle-master-tactical-assessment": {
       "activation_resolution": false,
@@ -910,6 +954,38 @@
       "turn_boundary_refresh": true,
       "typed_consumer": "combat_engine.feature_action.v1"
     },
+    "content.tashas-cauldron.round2.feature.paladin-harness-divine-power": {
+      "confirm": true,
+      "content_id": "content.tashas-cauldron.round2.feature.paladin-harness-divine-power",
+      "content_kind": "feature",
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XI.json",
+      "preview": true,
+      "replay": true,
+      "resource_after": null,
+      "resource_before": null,
+      "resource_cas": true,
+      "resource_exchange": true,
+      "resource_exchange_amount": 2,
+      "typed_consumer": "combat_engine.feature_event_window.v1",
+      "typed_event_contract": true,
+      "window_persisted": false
+    },
+    "content.tashas-cauldron.round2.feature.paladin-interception": {
+      "confirm": true,
+      "content_id": "content.tashas-cauldron.round2.feature.paladin-interception",
+      "content_kind": "feature",
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XI.json",
+      "preview": true,
+      "replay": true,
+      "resource_after": null,
+      "resource_before": null,
+      "resource_cas": true,
+      "resource_exchange": false,
+      "resource_exchange_amount": null,
+      "typed_consumer": "combat_engine.feature_event_window.v1",
+      "typed_event_contract": true,
+      "window_persisted": true
+    },
     "content.tashas-cauldron.round2.feature.peace-cleric-implement-of-peace": {
       "character_cas": true,
       "choice_lifecycle": false,
@@ -963,6 +1039,20 @@
       "runtime_id_bound": true,
       "source": "round-II-reviewed-feature-contract-through-round-VIII-typed-combat-consumer",
       "typed_consumer": "combat_engine.feature_action.v1"
+    },
+    "content.tashas-cauldron.round2.feature.psi-warrior-psionic-power": {
+      "character_cas": true,
+      "confirm": true,
+      "content_id": "content.tashas-cauldron.round2.feature.psi-warrior-psionic-power",
+      "content_kind": "advancement",
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XI.json",
+      "preview": true,
+      "replay": true,
+      "resource_cas": true,
+      "resource_grant_count": 1,
+      "resource_profile_persisted": true,
+      "transaction": true,
+      "typed_consumer": "advancement_service.character_growth.v1"
     },
     "content.tashas-cauldron.round2.feature.psi-warrior-telekinetic-master": {
       "advancement_block_ready": true,
@@ -1142,6 +1232,22 @@
       "source": "round-II-isolated-feature-contract",
       "transaction": true,
       "typed_consumer": "combat_engine.damage_heal.v1"
+    },
+    "content.tashas-cauldron.round2.feature.rune-knight-runic-shield": {
+      "confirm": true,
+      "content_id": "content.tashas-cauldron.round2.feature.rune-knight-runic-shield",
+      "content_kind": "feature",
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XI.json",
+      "preview": true,
+      "replay": true,
+      "resource_after": 0,
+      "resource_before": 1,
+      "resource_cas": true,
+      "resource_exchange": false,
+      "resource_exchange_amount": null,
+      "typed_consumer": "combat_engine.feature_event_window.v1",
+      "typed_event_contract": true,
+      "window_persisted": true
     },
     "content.tashas-cauldron.round2.feature.soulknife-homing-strikes": {
       "activation_resolution": false,

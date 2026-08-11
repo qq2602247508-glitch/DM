@@ -80,6 +80,7 @@ class ContentIRRuntimeService:
             "proficiencies": deepcopy(list(character.proficiencies or [])),
             "skills": deepcopy(dict(character.skills or {})),
             "spells": deepcopy(list(character.spells or [])),
+            "resources": deepcopy(dict(character.resources or {})),
         }
 
     @staticmethod
@@ -144,6 +145,13 @@ class ContentIRRuntimeService:
         proficiencies = runtime.get("proficiencies")
         if isinstance(proficiencies, list) and proficiencies:
             blocks["proficiencies"] = [dict(item) for item in proficiencies if isinstance(item, Mapping)]
+        resources = runtime.get("resources")
+        if isinstance(resources, Mapping) and resources:
+            blocks["resources"] = [
+                {"key": str(key), **dict(value)}
+                for key, value in resources.items()
+                if isinstance(value, Mapping)
+            ]
         for block in [item for values in blocks.values() for item in values]:
             block_feature_id = _text(block.get("feature_id"))
             if block_feature_id and block_feature_id != runtime_id:
@@ -255,6 +263,38 @@ class ContentIRRuntimeService:
                             sheet_spells.append(entry)
                         spell_grants.append(entry)
 
+            resource_grants: list[dict[str, Any]] = []
+            resources = dict(after["resources"])
+            proficiency_bonus = 2 + (max(1, int(character.level or 1)) - 1) // 4
+            for block in blocks.get("resources", []):
+                resource_key = _text(block.get("key") or block.get("resource_key"))
+                if not resource_key:
+                    raise ValueError("advancement resource block lacks a key")
+                maximum = block.get("maximum", block.get("max"))
+                if maximum is None and _text(block.get("max_formula")) == "2 * proficiency_bonus":
+                    maximum = 2 * proficiency_bonus
+                if not isinstance(maximum, int) or isinstance(maximum, bool) or maximum < 1:
+                    raise ValueError("advancement resource block lacks a resolvable maximum")
+                previous = resources.get(resource_key)
+                previous = dict(previous) if isinstance(previous, Mapping) else {}
+                entry = {
+                    **previous,
+                    "key": resource_key,
+                    "current": maximum,
+                    "maximum": maximum,
+                }
+                for field in (
+                    "resource_kind",
+                    "die_size",
+                    "max_formula",
+                    "recovery",
+                    "recovery_events",
+                ):
+                    if field in block:
+                        entry[field] = deepcopy(block[field])
+                resources[resource_key] = entry
+                resource_grants.append(deepcopy(entry))
+
             feature_entry = {
                 "feature_id": feature_id,
                 "name": feature_name,
@@ -276,6 +316,7 @@ class ContentIRRuntimeService:
                     "proficiencies": sheet_proficiencies,
                     "skills": skills,
                     "spells": sheet_spells,
+                    "resources": resources,
                 }
             )
             result = {
@@ -290,6 +331,7 @@ class ContentIRRuntimeService:
                 "feature_grant": feature_entry,
                 "proficiency_grants": proficiencies,
                 "spell_grants": spell_grants,
+                "resource_grants": resource_grants,
                 "production_contract": {
                     "content_kind": "advancement",
                     "consumers": [str(item["consumer_id"]) for item in consumers],
@@ -897,6 +939,13 @@ class ContentIRRuntimeService:
             elif _text(action.get("resolution_kind")) == "inspection":
                 feature_blocks = {"passive_registry": [action.get("passive_block") or action]}
                 combat_preview = None
+            elif _text(action.get("resolution_kind")) in {
+                "reaction_window",
+                "triggered_attack_window",
+                "resource_exchange",
+            }:
+                feature_blocks = {"feature_event_window": [action]}
+                combat_preview = None
             else:
                 feature_blocks = {"feature_action": [action]}
                 combat_preview = None
@@ -983,6 +1032,7 @@ class ContentIRRuntimeService:
                     proficiencies=list(after["proficiencies"]),
                     skills=dict(after["skills"]),
                     spells=list(after["spells"]),
+                    resources=dict(after["resources"]),
                     version=expected_version + 1,
                     updated_at=now,
                 )
@@ -1013,6 +1063,7 @@ class ContentIRRuntimeService:
                 "feature_grant": preview["feature_grant"],
                 "proficiency_grants": preview["proficiency_grants"],
                 "spell_grants": preview["spell_grants"],
+                "resource_grants": preview["resource_grants"],
             }
             operation.after_snapshot = output
             session.flush()
@@ -1120,6 +1171,11 @@ class ContentIRRuntimeService:
                 target_version=(int(data["target_version"]) if data.get("target_version") else None),
                 healing_total=(int(data["resolution_total"]) if data.get("resolution_total") is not None else None),
                 condition_to_remove=(str(data["condition_to_remove"]) if data.get("condition_to_remove") else None),
+                reset_spell_slot_level=(
+                    int(data["reset_spell_slot_level"])
+                    if data.get("reset_spell_slot_level") is not None
+                    else None
+                ),
                 dm_override=_text(data.get("permission")) == "dm",
                 override_reason="content runtime DM authorization" if _text(data.get("permission")) == "dm" else None,
             )
@@ -1135,7 +1191,11 @@ class ContentIRRuntimeService:
                 "runtime_id": data.get("runtime_id"),
                 "production_runtime_full": True,
                 "preview_token": token,
-                "consumer": "combat_engine.feature_action.v1",
+                "consumer": str(
+                    (preview.get("production_contract", {}).get("consumers") or [
+                        "combat_engine.feature_action.v1"
+                    ])[0]
+                ),
                 "result": result,
             }
             self._record_operation(campaign_id, key, output)

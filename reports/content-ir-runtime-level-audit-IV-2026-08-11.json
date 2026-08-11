@@ -1,12 +1,12 @@
 {
   "after": {
     "compile_only": 35,
-    "production_full": 128,
+    "production_full": 134,
     "tasha_atom_pack": {
       "authored_typed_ir": 94,
       "candidate_generated": 407,
       "compile_full": 93,
-      "compile_only": 23,
+      "compile_only": 17,
       "consumer_unlocks": {
         "existing_generic_consumer": {
           "content_ids": [
@@ -37,7 +37,9 @@
             "content.tashas-cauldron.round2.feature.astral-self-astral-sight",
             "content.tashas-cauldron.round2.feature.astral-self-word-of-the-spirit",
             "content.tashas-cauldron.round2.feature.battle-master-bait-and-switch",
+            "content.tashas-cauldron.round2.feature.battle-master-brace",
             "content.tashas-cauldron.round2.feature.battle-master-grappling-strike",
+            "content.tashas-cauldron.round2.feature.battle-master-quick-toss",
             "content.tashas-cauldron.round2.feature.battle-master-tactical-assessment",
             "content.tashas-cauldron.round2.feature.beast-barbarian-bestial-soul",
             "content.tashas-cauldron.round2.feature.bladesinger-training-in-sword-and-song",
@@ -55,9 +57,12 @@
             "content.tashas-cauldron.round2.feature.order-cleric-bonus-proficiencies",
             "content.tashas-cauldron.round2.feature.paladin-blessed-warrior",
             "content.tashas-cauldron.round2.feature.paladin-blind-fighting",
+            "content.tashas-cauldron.round2.feature.paladin-harness-divine-power",
+            "content.tashas-cauldron.round2.feature.paladin-interception",
             "content.tashas-cauldron.round2.feature.peace-cleric-implement-of-peace",
             "content.tashas-cauldron.round2.feature.psi-warrior-guarded-mind",
             "content.tashas-cauldron.round2.feature.psi-warrior-psi-powered-leap",
+            "content.tashas-cauldron.round2.feature.psi-warrior-psionic-power",
             "content.tashas-cauldron.round2.feature.psi-warrior-telekinetic-master",
             "content.tashas-cauldron.round2.feature.ranger-blind-fighting",
             "content.tashas-cauldron.round2.feature.ranger-canny",
@@ -66,6 +71,7 @@
             "content.tashas-cauldron.round2.feature.rune-knight-bonus-proficiencies",
             "content.tashas-cauldron.round2.feature.rune-knight-giants-might",
             "content.tashas-cauldron.round2.feature.rune-knight-great-stature",
+            "content.tashas-cauldron.round2.feature.rune-knight-runic-shield",
             "content.tashas-cauldron.round2.feature.soulknife-homing-strikes",
             "content.tashas-cauldron.round2.feature.soulknife-psi-bolstered-knack",
             "content.tashas-cauldron.round2.feature.soulknife-psychic-whispers",
@@ -88,16 +94,16 @@
       },
       "content_atom_total": 524,
       "content_id_funnel": {
-        "compile_only": 23,
+        "compile_only": 17,
         "dm_assisted": 2,
         "matched_typed_ir": 94,
-        "production_full": 69,
+        "production_full": 75,
         "relation_holds": true
       },
       "current_project_compile_only": 35,
       "current_project_compiled_unique": 111,
-      "current_project_production_full": 128,
-      "current_project_production_registry_fingerprint": "2d19d18a78d0ad1611b31c0adb39be9b847333f16f556befb132c4b5da986629",
+      "current_project_production_full": 134,
+      "current_project_production_registry_fingerprint": "79ba2b436a4b605e163330e90aaf7547fd0ecbafbb871dab92414270535054b2",
       "dm_assisted": 2,
       "dm_reference": 107,
       "draft_total": 407,
@@ -114,7 +120,7 @@
         },
         "total": 499
       },
-      "game_usable": 70,
+      "game_usable": 76,
       "invalid_source": 0,
       "item_ir": {
         "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
@@ -186,7 +192,7 @@
         "spell": 21,
         "subclass_feature": 232
       },
-      "production_full": 68,
+      "production_full": 74,
       "reviewed_total": 407,
       "runtime_preview_full": 93,
       "schema_version": "tashas-whole-pack-migration-1",
@@ -196,7 +202,7 @@
       "source_record_total": 144,
       "source_record_unclassified": 0,
       "status_counts": {
-        "compile_only": 23,
+        "compile_only": 17,
         "dm_assisted": 2,
         "dm_reference": 107,
         "duplicate_or_reprint": 0,
@@ -204,7 +210,7 @@
         "manual_authoring": 314,
         "non_instantiable": 10,
         "out_of_scope_with_reason": 0,
-        "production_full": 68
+        "production_full": 74
       },
       "template_matched": 93
     },
@@ -212,7 +218,7 @@
   },
   "baseline": {
     "compile_only": 35,
-    "production_full": 128,
+    "production_full": 134,
     "unique_compiled": 111
   },
   "existing_production_full_not_retracted": true,

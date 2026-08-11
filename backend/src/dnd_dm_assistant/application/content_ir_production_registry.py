@@ -69,6 +69,17 @@ _CONSUMERS: dict[str, dict[str, Any]] = {
         "idempotency_scope": "campaign_content_ir_and_combat_action",
         "snapshot_effects": ("feature_state", "resources", "timed_modifiers", "audit"),
     },
+    "combat_engine.feature_event_window.v1": {
+        "content_kind": "feature",
+        "runtime_schema_version": "feature-runtime-1",
+        "clause_types": ("feature_event_window", "resource_exchange"),
+        "required_fields": ("actor_combatant_id", "actor_version", "runtime_id"),
+        "required_services": ("combat_engine.feature_event_window",),
+        "transaction_boundary": "feature_event_window_and_operation_transaction",
+        "cas_entities": ("actor_combatant", "target_combatant", "character_resource"),
+        "idempotency_scope": "campaign_content_ir_and_feature_window",
+        "snapshot_effects": ("feature_window", "resources", "combat_action", "audit"),
+    },
     "advancement_service.character_growth.v1": {
         "content_kind": "advancement",
         "runtime_schema_version": "feature-runtime-1",
@@ -254,6 +265,13 @@ def resolve_production_consumers(
     if content_kind == "feature":
         if runtime_schema_version not in {"feature-runtime-1", ""}:
             raise ValueError("unsupported Content IR feature runtime schema")
+        if blocks.get("feature_event_window"):
+            return (
+                dict(
+                    _CONSUMERS["combat_engine.feature_event_window.v1"],
+                    consumer_id="combat_engine.feature_event_window.v1",
+                ),
+            )
         if blocks.get("attack_rider") or blocks.get("feature_action"):
             key = (
                 "combat_engine.damage_heal.v1"
@@ -315,7 +333,7 @@ def resolve_production_consumers(
     if content_kind == "advancement":
         if runtime_schema_version != "feature-runtime-1":
             raise ValueError("unsupported Content IR advancement runtime schema")
-        allowed = {"advancement", "proficiencies", "prepared_spell_list"}
+        allowed = {"advancement", "proficiencies", "prepared_spell_list", "resources"}
         unknown = set(blocks) - allowed
         if unknown:
             raise ValueError("unknown advancement runtime sections: " + ",".join(sorted(unknown)))

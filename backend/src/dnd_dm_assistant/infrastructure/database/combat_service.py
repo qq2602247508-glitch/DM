@@ -17082,6 +17082,106 @@ class CombatEngineService:
             effects = action.get("effects")
             effect_list = effects if isinstance(effects, list) else []
             timed_source_id = str(action.get("id") or command.feature_id).strip()
+            pending_feature_window: dict[str, Any] | None = None
+            if action.get("resolution_kind") == "resource_exchange":
+                exchange = action.get("resource_exchange")
+                if not isinstance(exchange, Mapping):
+                    raise ValueError("资源交换积木缺少 typed exchange spec")
+                if character is None:
+                    raise ValueError("资源交换积木只能由角色单位执行")
+                from_key = str(exchange.get("from_resource_key") or "").strip()
+                to_key = str(exchange.get("to_resource_key") or "").strip()
+                if not from_key or not to_key or exchange.get("operation") != "exchange":
+                    raise ValueError("资源交换积木缺少受支持的资源键和操作")
+                amount_source = str(exchange.get("amount_source") or "").strip()
+                if amount_source == "half_proficiency_bonus_rounded_up":
+                    level = max(1, self._state_int(character.level, 1))
+                    proficiency_bonus = 2 + (level - 1) // 4
+                    amount = (proficiency_bonus + 1) // 2
+                else:
+                    amount = self._state_int(exchange.get("amount"), 0)
+                if amount < 1:
+                    raise ValueError("资源交换积木缺少正数交换量")
+                if to_key == "spell_slot":
+                    level = command.reset_spell_slot_level
+                    if level is None:
+                        raise ValueError("资源交换需要选择法术位环阶")
+                    destination_key = f"spell_slots_{level}"
+                else:
+                    destination_key = to_key
+                resources = dict(character.resources or {})
+                raw_from = resources.get(from_key)
+                raw_to = resources.get(destination_key)
+                from_resource = dict(raw_from) if isinstance(raw_from, Mapping) else {}
+                to_resource = dict(raw_to) if isinstance(raw_to, Mapping) else {}
+                from_before = self._state_int(from_resource.get("current"), 0)
+                to_before = self._state_int(to_resource.get("current"), 0)
+                to_maximum = self._state_int(
+                    to_resource.get("maximum", to_resource.get("max")), 0
+                )
+                if from_before < amount or to_maximum < 1 or to_before + amount > to_maximum:
+                    raise ValueError("资源交换的来源不足或目标资源上限无效")
+                from_resource["current"] = from_before - amount
+                to_resource["current"] = to_before + amount
+                resources[from_key] = from_resource
+                resources[destination_key] = to_resource
+                character.resources = resources
+                character.version += 1
+                character.updated_at = datetime.now(UTC)
+                result["resource_exchange"] = {
+                    "from_resource_key": from_key,
+                    "from_before": from_before,
+                    "from_after": from_before - amount,
+                    "to_resource_key": destination_key,
+                    "to_before": to_before,
+                    "to_after": to_before + amount,
+                    "amount": amount,
+                }
+            window_spec = action.get("window_spec")
+            if isinstance(window_spec, Mapping):
+                window_type = str(window_spec.get("window_type") or "").strip()
+                if window_type == "triggered_attack_window":
+                    attack_profile = dict(window_spec.get("attack_profile") or {})
+                    profiles = self._triggered_attack_profiles(
+                        actor,
+                        {"attack_profile": attack_profile},
+                    )
+                    if not profiles:
+                        raise ValueError("追加攻击窗口缺少角色可用的武器攻击动作")
+                    pending_feature_window = {
+                        "window_type": window_type,
+                        "window_kind": str(window_spec.get("window_kind") or "typed_attack"),
+                        "reaction_event": str(window_spec.get("event") or "typed_feature_event"),
+                        "action_cost": str(window_spec.get("action_cost") or action.get("action_cost") or "reaction"),
+                        "feature_id": command.feature_id,
+                        "feature_name": action.get("name"),
+                        "resource_key": resource_key or None,
+                        "resource_cost": resource_cost,
+                        "owner_combatant_id": actor.id,
+                        "reactor_combatant_id": actor.id,
+                        "attack_actor_combatant_id": actor.id,
+                        "candidate_target_ids": [target.id],
+                        "eligible_attack_profiles": profiles,
+                        "target_policy": dict(window_spec.get("target_policy") or {}),
+                        "expires": window_spec.get("expires"),
+                        "status": "eligible",
+                    }
+                elif window_type == "reaction_window":
+                    pending_feature_window = {
+                        "window_type": window_type,
+                        "window_kind": str(window_spec.get("window_kind") or "typed_reaction"),
+                        "reaction_event": str(window_spec.get("event") or "typed_feature_event"),
+                        "action_cost": str(window_spec.get("action_cost") or "reaction"),
+                        "feature_id": command.feature_id,
+                        "feature_name": action.get("name"),
+                        "resource_key": resource_key or None,
+                        "resource_cost": resource_cost,
+                        "owner_combatant_id": actor.id,
+                        "target_policy": dict(window_spec.get("target_policy") or {}),
+                        "eligible_action_names": [str(action.get("name") or command.feature_id)],
+                        "status": "eligible",
+                        "expires": window_spec.get("expires"),
+                    }
             if any(
                 isinstance(effect, dict) and effect.get("kind") == "grant_timed_modifier"
                 for effect in effect_list
@@ -17839,6 +17939,53 @@ class CombatEngineService:
             )
             session.add(combat_action)
             session.flush()
+            if pending_feature_window is not None:
+                window_metadata = {
+                    **pending_feature_window,
+                    "parent_action_id": combat_action.id,
+                    "parent_action_version": combat_action.version,
+                    "window_key": f"feature:{combat_action.id}:{command.feature_id}",
+                }
+                window_action_type = (
+                    "triggered_attack_window"
+                    if pending_feature_window.get("window_type") == "triggered_attack_window"
+                    else "eligible_action_window"
+                )
+                window = CombatAction(
+                    campaign_id=campaign_id,
+                    combat_id=combat_id,
+                    actor_combatant_id=actor.id,
+                    transaction_id=transaction.id,
+                    action_type=window_action_type,
+                    target_combatant_ids=[target.id],
+                    request_json={
+                        "feature_id": command.feature_id,
+                        "parent_action_id": combat_action.id,
+                        "window_type": pending_feature_window.get("window_type"),
+                    },
+                    result_json={"action_window": window_metadata},
+                    explanation="typed Feature IR 事件窗口已持久化，等待后续战斗事件解析。",
+                    round_number=combat.round_number,
+                    turn_index=combat.current_turn_index,
+                    summary=(
+                        f"{actor.display_name}：{action.get('name') or command.feature_id} "
+                        "事件窗口已开放"
+                    ),
+                    idempotency_key=f"{idempotency_key}:window",
+                    status="confirmed",
+                )
+                session.add(window)
+                session.flush()
+                result["feature_window"] = {
+                    "id": window.id,
+                    "version": window.version,
+                    "action_type": window.action_type,
+                    "window_kind": window_metadata.get("window_kind"),
+                    "status": window_metadata.get("status"),
+                }
+                combat_action.result_json = result
+                transaction.after_snapshot = {"actor": serialize(target), "result": result}
+                session.flush()
             return {
                 "action": serialize(combat_action),
                 "actor": serialize(actor),

@@ -1,3 +1,12 @@
+# 2026-08-12 Round 9 检查点：Resource Profile / Exchange / Event Window Consumer 扩展
+
+- Round 9 作为 platform/core growth round，完成剩余 6 条 full Feature contract 的真实 production evidence：Psi Warrior Psionic Power resource profile、Battle Master Brace/Quick Toss triggered attack windows、Paladin Harness Divine Power resource exchange、Paladin Interception/ Rune Knight Runic Shield reaction windows。
+- 新增通用 typed consumer：`combat_engine.feature_event_window.v1`；`feature_compiler` 投影稳定 `window_spec` / `resource_exchange`，Character growth 写入资源 profile，CombatEngine durable `CombatAction` 持久化 eligible window，resource/CAS/idempotency 全部接入，无 feature-name/name-based branch。
+- 6/6 均通过真实 `ContentIRRuntimeService` preview→confirm→幂等 replay；4 个事件窗口、1 个 proficiency-derived 2 点 exchange、1 个 resource profile 均通过。formal apply/database/campaign/character 写入为 false，name branch=0。
+- Tasha status layers：`registered_production_full=74`（Round 8 的 68→74）、`dm_assisted=2`、`game_usable=76`；`manual_authoring=314`、`compile-only=17`（23→17）、`authored Typed IR=94`、`runtime_preview_full=93`。严格口径仍为 `game_usable = registered_production_full + dm_assisted`。
+- 新增/修改证据入口：`backend/src/dnd_dm_assistant/application/feature_compiler.py`、`application/content_ir_runtime.py`、`application/content_ir_production_registry.py`、`infrastructure/database/combat_service.py`、`api/schemas.py`，以及 Round IX validator/test/report/result/doc。whole-pack migration 两次关键报告/runtime/isolated manifest hash 一致。
+- Round IX 当前已完成 evidence 与 gates，待写入最终 ledger receipt、提交和推送；下一轮继续 unresolved ItemSpec consumer 与 vessel/entity、exhaustion、spectral object、teleport destination、psionic payment 的真实 event producer/consumer，不要把 isolated-only / DM-reference 伪装成 production。
+
 # 2026-08-12 Round 8 检查点：Trigger-bound Modifier / Activation Consumer 扩展
 
 - Round 8 在 Round-II authored Feature IR 上完成 8 条真实 combat production evidence：Battle Master Grappling Strike、Tactical Assessment、Psi Warrior Psi-Powered Leap、Soulknife Homing Strikes、Psi Bolstered Knack、Stars Druid Full of Stars、Weal、Woe。8/8 均通过真实 `ContentIRRuntimeService` preview→confirm→幂等 replay，consumer 为 `combat_engine.feature_action.v1`。
