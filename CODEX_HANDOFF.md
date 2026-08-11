@@ -2480,3 +2480,44 @@ git diff --check
 ```
 
 四项均通过；真实官方扫描报告连续两次 hash 一致。
+
+# 2026-08-11 真实 Typed IR 生产与批量 Full 收割 I
+
+- 本轮严格单线程执行，没有创建、调用、委托或等待子代理。保护路径
+  `backend/tests/integrations/`、`backend/tests/ollama.py` 保持未跟踪、未暂存、未提交，
+  逐文件哈希不变。
+- 职业/子职业正式 499 条审计没有变化：`full 328 / partial 110 / dm_only 61`，
+  `actual_new_full=0`。法术统计独立维护。
+- 真实 authored typed IR 共 30 条，compile `full=30`：
+  - 2024 PHB 法术 12/12；
+  - 官方扩展包法术 10/10：珊娜萨 5、塔莎 2、费资本 2、万象 1；
+  - 塔莎官方扩展职业/子职业特性 8/8。
+- 2024 PHB 法术实际基线仍为 411 records、391 detail candidates；2014 PHB 为
+  372 records、361 detail candidates。未把未选中的 manual 条目计入本批失败。
+- SpellSpec 已补齐 schema/version、pack version、source path/book/fingerprint、
+  review status、reviewed fields、source evidence、clause boundaries、manual decisions、
+  evidence 和 compiler fingerprint；闭集 clause validator 支持 target selection、
+  attack roll、saving throw、damage、healing、temporary HP、area、condition、duration、
+  concentration、movement 和 upcast。full 产生名称无关的 `spell-runtime-1` block。
+- Workbench `compile_artifact_directory` 现在可直接消费 authored typed-only pack，也能
+  编译混合 FeatureSpec + SpellSpec pack；塔莎根目录
+  `data/content-ir/authored/official-packs/tashas-cauldron/manifest.json` 可直接得到
+  10/10 full，子目录仍保持独立 pack。
+- Feature IR 继续使用现有 production-closed capability、compiler、materializer 和
+  validator；新增的通用补强只有熟练项 replacement choice 投影，没有新增底层 capability，
+  没有新增 feature-name/spell-name runtime branch。
+- 生成资产：
+  `data/content-ir/authored/`。报告：
+  `reports/content-ir-authored-batch-I-2026-08-11.json`、
+  `reports/spell-ir-core-2024-golden-2026-08-11.json`、
+  `reports/spell-ir-official-expansion-batch-2026-08-11.json`、
+  `reports/feature-ir-official-expansion-batch-2026-08-11.json`、
+  `reports/content-ir-completion-unlock-ranking-2026-08-11.json`、
+  `reports/content-ir-isolated-pack-dry-run-2026-08-11.json`。
+- 资产、编译结果、报告重复构建后 byte-identical；隔离 dry-run 首次成功、重复返回
+  `idempotent_replay`，正式 database、registry、campaign、character snapshot 未写入。
+- 门禁：后端全量 pytest 通过；`ruff check backend/src backend/tests`、受保护缓存避开的
+  compileall、`git diff --check` 通过。没有前端源码变化，因此未运行前端门禁。
+- 下一轮最高 completion-unlock 候选：继续从已覆盖的 saving throw + area + damage +
+  upcast 同构法术，或 Tasha 固定 proficiency/choice 特性中筛选；不为复杂召唤、自由
+  选择、多目标反应和强制移动系统硬建底层 capability。
