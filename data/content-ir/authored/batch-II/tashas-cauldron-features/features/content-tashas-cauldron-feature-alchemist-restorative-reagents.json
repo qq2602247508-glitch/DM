@@ -1,0 +1,100 @@
+{
+  "class_name": "奇械师",
+  "clause_boundaries": {
+    "alchemist-restorative-reagents": {
+      "boundary_rule": "the named feature heading and its complete paragraph(s)",
+      "source_excerpt": "作为法器施展任何法术时，你在法术的一次掷骰中获得等同于你的智力调整值（最低+1）的加值。该掷骰必须是恢复的生命值量，或是造成强酸、火焰、暗蚀、或毒素伤害。 **复原药剂 Restorative Reagents** *第9级炼金师特性* 你可以在你的一些作品中加入复原药剂： - 每当一个生物饮用一瓶你制造的实验性灵药时，生物都将获得 2d6+你智力调整值 的临时生命值（至少1点临时生命点）。只要你使用炼金工具作为你的法器，你就可以在不花费法术位、无需准备的情况下施展*次等复原术Lesser Restoration*。你能够这么做的次数等于你的智力调整值（最少1次），当你完成一次长休后，你恢复所有已被消耗的次数。 **化学专家 Chemical Mastery** *第15",
+      "source_heading": "复原药剂"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+        "source": "authored_ir",
+        "source_excerpt": "作为法器施展任何法术时，你在法术的一次掷骰中获得等同于你的智力调整值（最低+1）的加值。该掷骰必须是恢复的生命值量，或是造成强酸、火焰、暗蚀、或毒素伤害。 **复原药剂 Restorative Reagents** *第9级炼金师特性* 你可以在你的一些作品中加入复原药剂： - 每当一个生物饮用一瓶你制造的实验性灵药时，生物都将获得 2d6+你智力调整值 的临时生命值（至少1点临时生命点）。只要你使用炼金工具作为你的法器，你就可以在不花费法术位、无需准备的情况下施展*次等复原术Lesser Restoration*。你能够这么做的次数等于你的智力调整值（最少1次），当你完成一次长休后，你恢复所有已被消耗的次数。 **化学专家 Chemical Mastery** *第15"
+      },
+      "clause_id": "alchemist-restorative-reagents",
+      "conditions": [],
+      "duration": "current_turn",
+      "effects": [
+        {
+          "operator": "grant_temporary_hp",
+          "parameters": {
+            "formula": "2d6 + intelligence_modifier",
+            "source": "restorative_reagents"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "ally",
+        "parameters": {}
+      },
+      "trigger": "explicit_activation",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "f947584f708c3e4156d6666e4fceb81d909aee156c9071f5908aa1aafb6042b0"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "alchemist-restorative-reagents: 作为法器施展任何法术时，你在法术的一次掷骰中获得等同于你的智力调整值（最低+1）的加值。该掷骰必须是恢复的生命值量，或是造成强酸、火焰、暗蚀、或毒素伤害。 **复原药剂 Restorative Reagents** *第9级炼金师特性* 你可以在你的一些作品中加入复原药剂： - 每当一个生物饮用一瓶你制造的实验性灵药时，生物都将获得 2d6+你智力调整值 的临时生命值（至少1点临时生命点）。只要你使用炼金工具作为你的法器，你就可以在不花费法术位、无需准备的情况下施展*次等复原术Lesser Restoration*。你能够这么做的次数等于你的智力调整值（最少1次），当你完成一次长休后，你恢复所有已被消耗的次数。 **化学专家 Chemical Mastery** *第15"
+  ],
+  "feature_id": "content.tashas-cauldron.feature.alchemist-restorative-reagents",
+  "kind": "feature",
+  "level": 9,
+  "localized_names": {
+    "zh-CN": "复原药剂"
+  },
+  "manual_decisions": {
+    "review_gate": "single closed operator selected from the quoted feature paragraph",
+    "runtime": "resource and target remain data inputs; no name dispatch"
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "class_name",
+    "level",
+    "clauses"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "selected_feature_excerpts": {
+      "alchemist-restorative-reagents": "作为法器施展任何法术时，你在法术的一次掷骰中获得等同于你的智力调整值（最低+1）的加值。该掷骰必须是恢复的生命值量，或是造成强酸、火焰、暗蚀、或毒素伤害。 **复原药剂 Restorative Reagents** *第9级炼金师特性* 你可以在你的一些作品中加入复原药剂： - 每当一个生物饮用一瓶你制造的实验性灵药时，生物都将获得 2d6+你智力调整值 的临时生命值（至少1点临时生命点）。只要你使用炼金工具作为你的法器，你就可以在不花费法术位、无需准备的情况下施展*次等复原术Lesser Restoration*。你能够这么做的次数等于你的智力调整值（最少1次），当你完成一次长休后，你恢复所有已被消耗的次数。 **化学专家 Chemical Mastery** *第15"
+    },
+    "source_book": "塔莎的万事坩埚",
+    "source_checksum": "7354492d0943e9ebbc90e3039f61a9b4d4366b0005e7bf454708a0fe1e6e979d",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/炼金师.html",
+    "source_text": "**炼金师Alchemist**\n\n炼金师与女巫的魔法都是源自一个适用于整个多元宇宙的真理凡人无法抗拒带泡泡的东西。——塔莎\n\n炼金师是将奇异的原料混合在一起以产生种种新物质的专家，炼金师的创造物能用来延续生命，也能用来夺走生命。炼金术是最古老的奇械师技艺，它的多功能性在战争与和平时都长期受到重视。\n\n**工具精通 Tool\nProficiency**\n*第3级炼金师特性*\n你获得炼金工具的熟练。如果你已经拥有此熟练，作为代替，你能获得另一种工匠工具的熟练。\n\n**炼金师法术 Alchemist\nSpells**\n*第3级炼金师特性*\n只要你达到相应的职业等级，炼金师法术表格中的法术总是被视为已准备。这些法术对你来说是奇械师法术，且不会计入你可以准备法术的总数。\n\n**炼金师法术Alchemist Spells**\n\n| 奇械师等级 法术 3rd 治愈真言healing word，致病射线ray of\n sicknbess 5th 炽焰法球flaming sphere，马友夫强酸箭Melf's acid\n arrow 9th 气化形体gaseous form，群体治愈真言mass\n healing word 13th 枯萎术blight，防死结界deathword 17th 死云术cloudkill，死者复活raise\n dead |\n| --- |\n| 3rd 治愈真言healing word，致病射线ray of\n sicknbess 5th 炽焰法球flaming sphere，马友夫强酸箭Melf's acid\n arrow 9th 气化形体gaseous form，群体治愈真言mass\n healing word 13th 枯萎术blight，防死结界deathword 17th 死云术cloudkill，死者复活raise\n dead |\n| 5th 炽焰法球flaming sphere，马友夫强酸箭Melf's acid\n arrow 9th 气化形体gaseous form，群体治愈真言mass\n healing word 13th 枯萎术blight，防死结界deathword 17th 死云术cloudkill，死者复活raise\n dead |\n| 9th 气化形体gaseous form，群体治愈真言mass\n healing word 13th 枯萎术blight，防死结界deathword 17th 死云术cloudkill，死者复活raise\n dead |\n| 13th 枯萎术blight，防死结界deathword 17th 死云术cloudkill，死者复活raise\n dead |\n| 17th 死云术cloudkill，死者复活raise\n dead |\n\n**实验性灵药 Experimental\nElixir**\n*第3级炼金师特性*\n每当你完成一次长休，你能在一个你接触的空的 扁瓶flask\n中魔法性的制造出一瓶实验性灵药通过实验性灵药表来掷骰决定这瓶灵药在被某人饮用时的效果。\n生物能以一个动作饮用这瓶灵药、或是将灵药灌给一个失能生物饮用。\n\n你能通过消耗一枚1环或更高环的法术位来制造额外的实验性灵药。\n此时，你以一个动作接触一个空的\n扁瓶flask ，在其中充入灵药，然后从实验性灵药表中选择这瓶灵药的效果。\n\n你必须要拥有炼金工具才能制造实验性灵药，你通过此特性创造的任何灵药会一直存在，直到被饮用、或是你的下一次长休结束时。\n\n当你在本职业达到某些特定等级时，你将能够在长休结束时制造更多灵药：6级时2瓶，15级时3瓶。\n每一瓶灵药都需要掷骰决定效果，且都需要用独立的\n扁瓶flask 盛放。\n\n**实验性灵药**\n\n| d6 效果 1 治疗。 饮用者恢复等同于 2d4+你智力调整值 的生命值。 2 疾速。 饮用者的速度增加10尺，持续1小时。 3 韧性。 饮用者的AC获得+1加值，持续10分钟。 4 气魄。 饮用者在接下来的一分钟内，能够在每个攻击检定与豁免检定中投掷一枚d4并将结果加入到检定中。 5 飞行。 饮用者获得10尺飞行速度，持续10分钟。 6 变形。 饮用者的身体产生如同受到法术 变身术Alter Self 一样的变化。法术的变化具体怎样由饮用者决定，该效果会持续10分钟。 |\n| --- |\n| 1 治疗。 饮用者恢复等同于 2d4+你智力调整值 的生命值。 2 疾速。 饮用者的速度增加10尺，持续1小时。 3 韧性。 饮用者的AC获得+1加值，持续10分钟。 4 气魄。 饮用者在接下来的一分钟内，能够在每个攻击检定与豁免检定中投掷一枚d4并将结果加入到检定中。 5 飞行。 饮用者获得10尺飞行速度，持续10分钟。 6 变形。 饮用者的身体产生如同受到法术 变身术Alter Self 一样的变化。法术的变化具体怎样由饮用者决定，该效果会持续10分钟。 |\n| 2 疾速。 饮用者的速度增加10尺，持续1小时。 3 韧性。 饮用者的AC获得+1加值，持续10分钟。 4 气魄。 饮用者在接下来的一分钟内，能够在每个攻击检定与豁免检定中投掷一枚d4并将结果加入到检定中。 5 飞行。 饮用者获得10尺飞行速度，持续10分钟。 6 变形。 饮用者的身体产生如同受到法术 变身术Alter Self 一样的变化。法术的变化具体怎样由饮用者决定，该效果会持续10分钟。 |\n| 3 韧性。 饮用者的AC获得+1加值，持续10分钟。 4 气魄。 饮用者在接下来的一分钟内，能够在每个攻击检定与豁免检定中投掷一枚d4并将结果加入到检定中。 5 飞行。 饮用者获得10尺飞行速度，持续10分钟。 6 变形。 饮用者的身体产生如同受到法术 变身术Alter Self 一样的变化。法术的变化具体怎样由饮用者决定，该效果会持续10分钟。 |\n| 4 气魄。 饮用者在接下来的一分钟内，能够在每个攻击检定与豁免检定中投掷一枚d4并将结果加入到检定中。 5 飞行。 饮用者获得10尺飞行速度，持续10分钟。 6 变形。 饮用者的身体产生如同受到法术 变身术Alter Self 一样的变化。法术的变化具体怎样由饮用者决定，该效果会持续10分钟。 |\n| 5 飞行。 饮用者获得10尺飞行速度，持续10分钟。 6 变形。 饮用者的身体产生如同受到法术 变身术Alter Self 一样的变化。法术的变化具体怎样由饮用者决定，该效果会持续10分钟。 |\n| 6 变形。 饮用者的身体产生如同受到法术 变身术Alter Self 一样的变化。法术的变化具体怎样由饮用者决定，该效果会持续10分钟。 |\n\n**炼金术掌握 Alchemical\nSavant**\n*第5级炼金师特性*\n你对魔法化学物质的掌握变得非常熟练，这使得你通过炼金物质造成的治疗和伤害更加有效。\n当你使用炼金工具作为法器施展任何法术时，你在法术的一次掷骰中获得等同于你的智力调整值（最低+1）的加值。该掷骰必须是恢复的生命值量，或是造成强酸、火焰、暗蚀、或毒素伤害。\n\n**复原药剂 Restorative Reagents**\n*第9级炼金师特性*\n你可以在你的一些作品中加入复原药剂：\n\n- 每当一个生物饮用一瓶你制造的实验性灵药时，生物都将获得 2d6+你智力调整值\n 的临时生命值（至少1点临时生命点）。只要你使用炼金工具作为你的法器，你就可以在不花费法术位、无需准备的情况下施展*次等复原术Lesser Restoration*。你能够这么做的次数等于你的智力调整值（最少1次），当你完成一次长休后，你恢复所有已被消耗的次数。\n\n**化学专家 Chemical Mastery**\n*第15级炼金师特性*\n你已经接触了太多的化学物质，并解开了它们的秘密，它们对你的危害很小，你可以使用它们来迅速治愈某些疾病：\n\n- 你获得了对强酸伤害和毒素伤害的抗性，并且你免疫于中毒状态。只要你使用炼金工具作为你的法器，就能够在不消费法术位、不需要准备、不需要材料成分的情况下施展*高级复原术Greater Restoration*与*医疗术heal*。一旦你通过此特性施展这些法术中的一个，你就不能再以这种方式施展那个法术，直到你完成一次长休。"
+  },
+  "source_fingerprint": "f947584f708c3e4156d6666e4fceb81d909aee156c9071f5908aa1aafb6042b0",
+  "source_name": "复原药剂",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/炼金师.html",
+  "source_record_id": "dc4f2bf18baca6ec97d7d0bf",
+  "source_trust": "authored_ir",
+  "subclass_name": null
+}

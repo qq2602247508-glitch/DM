@@ -1,0 +1,109 @@
+{
+  "class_name": "奇械师",
+  "clause_boundaries": {
+    "battle-smith-arcane-jolt-damage": {
+      "boundary_rule": "the named feature heading and its complete paragraph(s)",
+      "source_excerpt": "休，消耗生命骰以恢复生命值。） **额外攻击 Extra Attack** *第5级战地匠师特性* 你在自己回合内执行攻击动作时可以发动两次攻击而非一次。 **奥能震荡 Arcane Jolt** *第9级战地匠师特性 *你学会了新的方法来引导奥术能量进行伤害或治疗。当你使用魔法武器攻击或钢铁守卫命中目标时，你可以将奥术能量引导至攻击中，以获得以下一种效应： - 目标受到额外的2d6点力场伤害。选择距离目标30尺以内的一个可见生物或物体。治愈能量涌进选择的对象，为其恢复2d6生命值。 你可以引导奥术能量的次数等同于你的智力调整值（至少1次），但每回合只能这么做一次。在你完成长休时，恢复所有已被消耗的次数。 **改良守卫 Improved Defender**** ***第",
+      "source_heading": "奥能震荡：伤害"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+        "source": "authored_ir",
+        "source_excerpt": "休，消耗生命骰以恢复生命值。） **额外攻击 Extra Attack** *第5级战地匠师特性* 你在自己回合内执行攻击动作时可以发动两次攻击而非一次。 **奥能震荡 Arcane Jolt** *第9级战地匠师特性 *你学会了新的方法来引导奥术能量进行伤害或治疗。当你使用魔法武器攻击或钢铁守卫命中目标时，你可以将奥术能量引导至攻击中，以获得以下一种效应： - 目标受到额外的2d6点力场伤害。选择距离目标30尺以内的一个可见生物或物体。治愈能量涌进选择的对象，为其恢复2d6生命值。 你可以引导奥术能量的次数等同于你的智力调整值（至少1次），但每回合只能这么做一次。在你完成长休时，恢复所有已被消耗的次数。 **改良守卫 Improved Defender**** ***第"
+      },
+      "clause_id": "battle-smith-arcane-jolt-damage",
+      "conditions": [],
+      "duration": "current_turn",
+      "effects": [
+        {
+          "operator": "consume_resource",
+          "parameters": {
+            "amount": 1,
+            "operation": "consume",
+            "resource_key": "arcane_jolt_uses"
+          }
+        },
+        {
+          "operator": "add_damage",
+          "parameters": {
+            "damage_type": "force",
+            "formula": "2d6",
+            "source": "arcane_jolt"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "enemy",
+        "parameters": {}
+      },
+      "trigger": "attack_hit",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "bd9ff66e2ba5029069c1c4f8ba8eda7de38e67b3db1ff94b809b900623ea2970"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "battle-smith-arcane-jolt-damage: 休，消耗生命骰以恢复生命值。） **额外攻击 Extra Attack** *第5级战地匠师特性* 你在自己回合内执行攻击动作时可以发动两次攻击而非一次。 **奥能震荡 Arcane Jolt** *第9级战地匠师特性 *你学会了新的方法来引导奥术能量进行伤害或治疗。当你使用魔法武器攻击或钢铁守卫命中目标时，你可以将奥术能量引导至攻击中，以获得以下一种效应： - 目标受到额外的2d6点力场伤害。选择距离目标30尺以内的一个可见生物或物体。治愈能量涌进选择的对象，为其恢复2d6生命值。 你可以引导奥术能量的次数等同于你的智力调整值（至少1次），但每回合只能这么做一次。在你完成长休时，恢复所有已被消耗的次数。 **改良守卫 Improved Defender**** ***第"
+  ],
+  "feature_id": "content.tashas-cauldron.feature.battle-smith-arcane-jolt-damage",
+  "kind": "feature",
+  "level": 9,
+  "localized_names": {
+    "zh-CN": "奥能震荡：伤害"
+  },
+  "manual_decisions": {
+    "review_gate": "single closed operator selected from the quoted feature paragraph",
+    "runtime": "resource and target remain data inputs; no name dispatch"
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "class_name",
+    "level",
+    "clauses"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "selected_feature_excerpts": {
+      "battle-smith-arcane-jolt-damage": "休，消耗生命骰以恢复生命值。） **额外攻击 Extra Attack** *第5级战地匠师特性* 你在自己回合内执行攻击动作时可以发动两次攻击而非一次。 **奥能震荡 Arcane Jolt** *第9级战地匠师特性 *你学会了新的方法来引导奥术能量进行伤害或治疗。当你使用魔法武器攻击或钢铁守卫命中目标时，你可以将奥术能量引导至攻击中，以获得以下一种效应： - 目标受到额外的2d6点力场伤害。选择距离目标30尺以内的一个可见生物或物体。治愈能量涌进选择的对象，为其恢复2d6生命值。 你可以引导奥术能量的次数等同于你的智力调整值（至少1次），但每回合只能这么做一次。在你完成长休时，恢复所有已被消耗的次数。 **改良守卫 Improved Defender**** ***第"
+    },
+    "source_book": "塔莎的万事坩埚",
+    "source_checksum": "7d72877219caded2a062e28f84de107547f30a3582c55a1a3a8c6406dde98963",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/战地匠师.html",
+    "source_text": "**战地匠师Battle Smith**\n\n战地匠师在卡尼斯家族制造战斗构装生物和最初的战俑时扮演了关键的角色。在终末战争过后，这些奇械师致力于救助在恐怖的战争中受伤的人。许多运用着近似于创造生命力量的战地匠师将他们的聪明才智用于摸索如何制造技术上无比卓越的小狗小猫。\n看来我小看了他们。\n——塔莎\n\n军队需要保护，但当防卫战失败时，需要有人来进行重整。身为守护者和医生的结合，战地匠师是进行防卫，以及重整工事与人员的专家。战地匠师大多都携带一个由自己制造的防卫性随从——钢铁守卫来辅助自己。无数士兵都曾讲述过关于濒临死亡的自己被一名战地匠师，以及他的钢铁守卫所拯救的故事。\n\n**工具精通****Tool Proficiency**\n*第3级战地匠师特性*\n你获得铁匠工具的熟练。如果你已经拥有此熟练，作为代替，你能获得另一种工匠工具的熟练。\n\n**战地匠师法术\nBattle Smith Spells**\n*第3级战地匠师特性\n*只要你达到相应的职业等级，战地匠师法术表格中的法术总是被视为已准备。这些法术对你来说是奇械师法术，且不会计入你可以准备法术的总数。\n\n**战地匠师法术Battle Smith\nSpells**\n\n| 奇械师等级 法术 3rd 英雄气概heroism，护盾术shield 5th 印记斩branding smite，守护之链warding bond 9th 活力灵光aura of vitality，箭如雨下conjure\n barrage 13th 净化灵光aura of purity，火焰护盾fire shield 17th 放逐斩banishing smite，群体疗伤术mass cure\n wounds |\n| --- |\n| 3rd 英雄气概heroism，护盾术shield 5th 印记斩branding smite，守护之链warding bond 9th 活力灵光aura of vitality，箭如雨下conjure\n barrage 13th 净化灵光aura of purity，火焰护盾fire shield 17th 放逐斩banishing smite，群体疗伤术mass cure\n wounds |\n| 5th 印记斩branding smite，守护之链warding bond 9th 活力灵光aura of vitality，箭如雨下conjure\n barrage 13th 净化灵光aura of purity，火焰护盾fire shield 17th 放逐斩banishing smite，群体疗伤术mass cure\n wounds |\n| 9th 活力灵光aura of vitality，箭如雨下conjure\n barrage 13th 净化灵光aura of purity，火焰护盾fire shield 17th 放逐斩banishing smite，群体疗伤术mass cure\n wounds |\n| 13th 净化灵光aura of purity，火焰护盾fire shield 17th 放逐斩banishing smite，群体疗伤术mass cure\n wounds |\n| 17th 放逐斩banishing smite，群体疗伤术mass cure\n wounds |\n\n**战斗准备 Battle Ready**\n*第3级战地匠师特性*\n你的战斗训练和魔法实验为你带来了两种好处：\n·你获得军用武器的熟练。\n·当你以魔法武器攻击时，你可以在攻击检定与伤害掷骰中使用智力调整值，以代替力量或敏捷。\n\n**钢铁守卫\nSteel Defender**\n*第3级战地匠师特性*\n你的工匠技艺为你诞生出了一名可靠的同伴，一个钢铁守卫。\n它对你和你的同伴友好，并且服从你的命令。钢铁守卫的游戏数据见下，它的数据中某几项会适用你的熟练加值。\n该生物的外观，两足步行还是四足步行皆由你决定；你的决定对它的游戏数据没有影响。\n\n在战斗中，钢铁守卫使用你的先攻，并且在你的回合后立即行动。它能自由移动和执行反应，但除非你以一个附赠动作命令它进行动作，否则它在回合中只能进行闪避动作。他可以执行下方写出的动作选项，或是其他的动作选项。\n如果你陷入了失能，钢铁守卫可以依靠它自己的选择进行任何动作，而不仅仅是闪避。\n\n如果一个 修复术Mending\n被施展到了钢铁守卫的身上，它将恢复2d6生命值。如果它在最近一小时内死亡，你能够以一个动作使用铁匠工具花费一个至少1环的法术位来在距离你5尺的空格内复活它。钢铁守卫会在1分钟后复活，在复活时会回满生命值。\n\n当你在手头有铁匠工具的情况下完成一次长休时，你可以创造一个新的钢铁守卫。如果你已经通过此特性拥有一个钢铁守卫，则上一个会立即消失。如果你死亡，钢铁守卫也会随之损毁。\n\n> **钢铁守卫Steel Defender**\n> 中型构装**AC：**15（天生护甲）\n> **HP：**2+你的智力调整值+你奇械师等级的五倍（钢铁守卫拥有与你奇械师等级相同数量的生命骰[D8]）\n> **速度：**40尺\n>\n>\n> | 力量 敏捷 体质 智力 感知 魅力 14（+2） 12（+1） 14（+2） 4（-3） 10（+0） 6（-2） |\n> | --- |\n> | 14（+2） 12（+1） 14（+2） 4（-3） 10（+0） 6（-2） |\n>\n> **豁免：**敏捷+1+PB，体质+2+PB\n> **技能：**运动+2+PB，察觉+0+PB*2\n> **伤害免疫：**毒素\n> **状态免疫：**魅惑、力竭、中毒\n> **感官：**黑暗视觉60尺，被动察觉10+PB*2\n> **语言：**理解你说的语言\n> **挑战等级：**——\n> **熟练加值（PB）：**等于你的熟练加值。**警惕Vigilant。**钢铁守卫不会被突袭。**动作Actions**\n> **力场动能撕扯Force-Empowered\n> Rend。**近战武器攻击：攻击加值等同于你的法术攻击加值，触及5尺，单个你可见的目标。命中：1d8+PB 点力场伤害。\n> **修理Repair（3次/天）。**安装于钢铁守卫内部的魔法机械能够为钢铁守卫本身或距离其5尺内的构装生物或物品恢复\n> 2d8+熟练加值 的生命值。**反应Reaction**\n> **偏转攻击Deflect\n> Attack。**当距离钢铁守卫5尺内的一个可见生物对钢铁守卫以外的生物进行攻击时，钢铁守卫能迫使此次攻击承受劣势。\n\n（译者注：此处并没有提及钢铁守卫是否需要呼吸、饮食、睡眠，也未提及钢铁守卫是否可以拥有护甲、武器、工具熟练，这类内容在《怪物图鉴》中也未明确写明，基本可以说是由DM说了算。\n此外，根据官方QA，钢铁守卫是可以说话的，不能说话的在其语言描述会有“但不会说”这行文本，因此钢铁守卫可以简单说出奇械师本身会说的那些语言（智力4我不确定能不能流畅说话）；钢铁守卫与魔宠一样，可以激活魔法物品或是使用奇械师本职特性的储法物品；且可以短休、长休，消耗生命骰以恢复生命值。）\n\n**额外攻击 Extra\nAttack**\n*第5级战地匠师特性*\n你在自己回合内执行攻击动作时可以发动两次攻击而非一次。\n\n**奥能震荡 Arcane\nJolt**\n*第9级战地匠师特性\n*你学会了新的方法来引导奥术能量进行伤害或治疗。当你使用魔法武器攻击或钢铁守卫命中目标时，你可以将奥术能量引导至攻击中，以获得以下一种效应：\n\n- 目标受到额外的2d6点力场伤害。选择距离目标30尺以内的一个可见生物或物体。治愈能量涌进选择的对象，为其恢复2d6生命值。\n\n你可以引导奥术能量的次数等同于你的智力调整值（至少1次），但每回合只能这么做一次。在你完成长休时，恢复所有已被消耗的次数。\n\n**改良守卫\nImproved Defender****\n***第15级战地匠师特性*\n到达15级后，你的奥能震荡和钢铁守卫变得更强了：\n\n- 奥能震荡特性的额外伤害和生命恢复变为4d6。你的钢铁守卫AC获得+2加值。当你的钢铁守卫使用偏转攻击时，攻击者受到1d4+你的智力调整值的力场伤害。"
+  },
+  "source_fingerprint": "bd9ff66e2ba5029069c1c4f8ba8eda7de38e67b3db1ff94b809b900623ea2970",
+  "source_name": "奥能震荡：伤害",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/战地匠师.html",
+  "source_record_id": "606d89f6e0ea3b2e0194f24c",
+  "source_trust": "authored_ir",
+  "subclass_name": null
+}

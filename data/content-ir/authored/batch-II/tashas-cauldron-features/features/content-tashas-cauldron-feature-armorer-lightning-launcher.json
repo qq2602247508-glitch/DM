@@ -1,0 +1,102 @@
+{
+  "class_name": "奇械师",
+  "clause_boundaries": {
+    "armorer-lightning-launcher": {
+      "boundary_rule": "the named feature heading and its complete paragraph(s)",
+      "source_excerpt": "长休后将恢复所有花费的使用次数。 > > > > **渗透者 Infiltrator > **你出于某些特殊需要对你的装甲进行了定制。它拥有下列特性： > **闪电发射器 Lightning Launcher。**你在胸部或覆盖装甲的拳头（根据你的选择）上安装了一个宝石状的节点。它被视为一件简易远程武器，它拥有90尺的常规射程和300尺的最大射程，在命中后会造成 1d6闪电伤害。每个你的回合一次，你在通过闪电发射器命中一个生物时，能够额外造成 1d6闪电伤害。 > **动力步伐 Powered Steps。**你的步行速度增加5尺。 > **减震场 Dampening Field。**你在敏捷（隐匿）检定中具有优势。如果你的盔甲原本会让你在此检定上具有劣势，优势和劣势将会",
+      "source_heading": "闪电发射器"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+        "source": "authored_ir",
+        "source_excerpt": "长休后将恢复所有花费的使用次数。 > > > > **渗透者 Infiltrator > **你出于某些特殊需要对你的装甲进行了定制。它拥有下列特性： > **闪电发射器 Lightning Launcher。**你在胸部或覆盖装甲的拳头（根据你的选择）上安装了一个宝石状的节点。它被视为一件简易远程武器，它拥有90尺的常规射程和300尺的最大射程，在命中后会造成 1d6闪电伤害。每个你的回合一次，你在通过闪电发射器命中一个生物时，能够额外造成 1d6闪电伤害。 > **动力步伐 Powered Steps。**你的步行速度增加5尺。 > **减震场 Dampening Field。**你在敏捷（隐匿）检定中具有优势。如果你的盔甲原本会让你在此检定上具有劣势，优势和劣势将会"
+      },
+      "clause_id": "armorer-lightning-launcher",
+      "conditions": [],
+      "duration": "current_turn",
+      "effects": [
+        {
+          "operator": "add_damage",
+          "parameters": {
+            "applies_when": "lightning_launcher_hit",
+            "damage_type": "lightning",
+            "formula": "1d6",
+            "source": "lightning_launcher"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "enemy",
+        "parameters": {}
+      },
+      "trigger": "attack_hit",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "ace115b60fbbef32b8fd7bf3d8eb576623a21c7a24ec6cf516266b5c69d6dda7"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "armorer-lightning-launcher: 长休后将恢复所有花费的使用次数。 > > > > **渗透者 Infiltrator > **你出于某些特殊需要对你的装甲进行了定制。它拥有下列特性： > **闪电发射器 Lightning Launcher。**你在胸部或覆盖装甲的拳头（根据你的选择）上安装了一个宝石状的节点。它被视为一件简易远程武器，它拥有90尺的常规射程和300尺的最大射程，在命中后会造成 1d6闪电伤害。每个你的回合一次，你在通过闪电发射器命中一个生物时，能够额外造成 1d6闪电伤害。 > **动力步伐 Powered Steps。**你的步行速度增加5尺。 > **减震场 Dampening Field。**你在敏捷（隐匿）检定中具有优势。如果你的盔甲原本会让你在此检定上具有劣势，优势和劣势将会"
+  ],
+  "feature_id": "content.tashas-cauldron.feature.armorer-lightning-launcher",
+  "kind": "feature",
+  "level": 3,
+  "localized_names": {
+    "zh-CN": "闪电发射器"
+  },
+  "manual_decisions": {
+    "review_gate": "single closed operator selected from the quoted feature paragraph",
+    "runtime": "resource and target remain data inputs; no name dispatch"
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "class_name",
+    "level",
+    "clauses"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "selected_feature_excerpts": {
+      "armorer-lightning-launcher": "长休后将恢复所有花费的使用次数。 > > > > **渗透者 Infiltrator > **你出于某些特殊需要对你的装甲进行了定制。它拥有下列特性： > **闪电发射器 Lightning Launcher。**你在胸部或覆盖装甲的拳头（根据你的选择）上安装了一个宝石状的节点。它被视为一件简易远程武器，它拥有90尺的常规射程和300尺的最大射程，在命中后会造成 1d6闪电伤害。每个你的回合一次，你在通过闪电发射器命中一个生物时，能够额外造成 1d6闪电伤害。 > **动力步伐 Powered Steps。**你的步行速度增加5尺。 > **减震场 Dampening Field。**你在敏捷（隐匿）检定中具有优势。如果你的盔甲原本会让你在此检定上具有劣势，优势和劣势将会"
+    },
+    "source_book": "塔莎的万事坩埚",
+    "source_checksum": "3c77c683ec9a1af5aa94575510a6af7c010225a5bd049327617540f9183a23d3",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/装甲师.html",
+    "source_text": "**装甲师Armorer**\n\n经典的奇械师逻辑困局：“如果，我们的发明出了那种会爆炸的问题时我们正在里面该怎么办？”\n——塔莎\n\n对于装甲师专业的奇械师来说，装甲就像是第二层皮肤。这一装甲能够增强奇械师的魔法，释放强力的攻击，产生绝佳的防护。这些奇械师与他们的装甲之间有着强力的纽带，在他们经过实验并改进装甲的魔法性能后，甚至能够合二为一。\n\n**本职工具 Tools of the Trade**\n*第3级装甲师特性*\n你获得重甲的熟练。你同时获得铁匠工具的熟练，如果你已经熟练于此工具，作为代替，你能获得另一种工匠工具的熟练。\n\n**装甲师法术 Armorer Spells**\n*第3级装甲师特性*\n只要你达到相应的职业等级，装甲师法术表格中的法术总是被视为已准备。这些法术对你来说是奇械师法术，且不会计入你可以准备法术的总数。\n\n**装甲师法术Armorer Spells**\n\n| 奇械师等级 | 法术 |\n| --- | --- |\n| 3rd | 魔法飞弹magic missle，雷鸣波thunderwave |\n| 5th | 镜影术mirror image，粉碎音波shatter |\n| 9th | 催眠图纹hypnotic pattern，闪电束lightning bolt |\n| 13th | 火焰护盾fire shield，高等隐形术greater invisibility |\n| 17th | 穿墙术passwall，力场墙wall of force |\n\n**奥能装甲 Arcane Armor**\n*第3级装甲师特性*\n你对冶金的钻研让你的盔甲成为了实现你奇械师魔法的渠道。只要你手持铁匠工具，就能以一个动作将你正穿着的一套护甲变成奥能装甲。\n\n穿着奥能装甲期间，你获得以下好处：\n\n- 如果你的盔甲通常对穿戴者的力量有要求，奥能装甲能让你无视它。你能够将奥能装甲作为你奇械师法术的法器。穿在你身上的奥能装甲除非你自愿，否则无法移除。\n同时，奥能装甲能够扩展到覆盖你的整个身体，并替换你所有缺失的肢体，替换肢体的部分拥有和正常肢体一样的功能。你可以以一个动作穿上或脱下这套盔甲。\n\n转化为奥能装甲的盔甲会一直保有其功能，直到你穿上另一套盔甲、或你死亡为止。\n\n**装甲型号 Armor Model**\n*第3级装甲师特性*\n你能够定制你的奥能装甲。\n你可以从以下两种型号中选择其一：守护者、与渗透者。\n\n你选择的型号会在你穿着时提供特殊的好处。每种型号都包括一种特殊武器。当你使用该武器攻击时，你可以使用你的智力调整值，而不是力量或敏捷，来进行攻击和伤害掷骰。\n\n只要你手上有铁匠工具，就可以在完成一次短休或长休后更换你的装甲型号。\n\n> **守护者 Guardian\n> **你将装甲设计为适合冲锋陷阵。它拥有下列特性：\n> **雷霆战拳 Thunder Gauntlets。**每一只装甲附带的手套在没有持握任何物品时皆可被视为一件简易近战武器，命中后会造成1d8雷鸣伤害。被战拳击中的生物，会被装甲释放的魔法性干扰脉冲影响，使其对除你之外的目标攻击时有劣势，直到你的下个回合到来。\n> **防护场 Defensive Field。**在每个你的回合，你能以一个附赠动作获得等于你奇械师职业等级的临时生命值，这会取代你现有的任何临时生命值。如果你脱下装甲，你会失去这些临时生命值。你能执行此附赠动作熟练加值次，在完成一次长休后将恢复所有花费的使用次数。\n>\n>\n>\n> **渗透者 Infiltrator\n> **你出于某些特殊需要对你的装甲进行了定制。它拥有下列特性：\n> **闪电发射器 Lightning Launcher。**你在胸部或覆盖装甲的拳头（根据你的选择）上安装了一个宝石状的节点。它被视为一件简易远程武器，它拥有90尺的常规射程和300尺的最大射程，在命中后会造成 1d6闪电伤害。每个你的回合一次，你在通过闪电发射器命中一个生物时，能够额外造成 1d6闪电伤害。\n> **动力步伐 Powered Steps。**你的步行速度增加5尺。\n> **减震场 Dampening Field。**你在敏捷（隐匿）检定中具有优势。如果你的盔甲原本会让你在此检定上具有劣势，优势和劣势将会正常抵消。\n\n**额外攻击 Extra Attack**\n*第5级装甲师特性*\n你在自己回合内执行攻击动作时可以发动两次攻击而非一次。\n\n**装甲改造 Armor Modifications**\n*第9级装甲师特性*\n你习得了如何通过奇械师注法对你的奥能装甲进行特殊改造。\n奥能装甲现在你进行注法时，能够被视为下列独立物品：\n盔甲（胸甲部分）、靴子、头盔、以及装甲的特殊武器。\n每件物品都能进行一次注法。\n此外，你的注法物品的数量上限增加2，但增加的部分只能用于为奥能装甲的一部分注法。\n\n**完美装甲 Perfected Armor**\n*第15级装甲师特性*\n你的奥能装甲根据其型号获得下列额外好处。\n\n> **守护者Guardian**\n> 当你可见的一个体型为巨型或更小的生物在距离你 30尺内的地方结束其回合时，你能以一个反应迫使该生物进行一次对抗你的法术豁免 DC的力量豁免，豁免失败时将被拉向你最多 30尺。如果你将目标拉到距离你 5尺的地方，作为此反应的一部分，你能对该生物进行一次近战武器攻击。\n>\n>\n>\n> 你能够执行此反应的次数等同于你的熟练加值次。在完成一次长休后你将恢复所有已被使用的次数。\n>\n>\n>\n> **渗透者Infiltrator**\n> 任何被你闪电发射器造成闪电伤害的生物将在你的下个回合到来前发出魔法性的光亮。发光的生物会放出 5尺半径的微光光照。当它试图攻击你时会因为灯光的震颤而导致在攻击检定中具有劣势。\n> 此外，下次以该生物为目标发动的攻击检定具有优势，且如果那次攻击成功命中，该生物还将额外受到 1d6闪电伤害。"
+  },
+  "source_fingerprint": "ace115b60fbbef32b8fd7bf3d8eb576623a21c7a24ec6cf516266b5c69d6dda7",
+  "source_name": "闪电发射器",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/装甲师.html",
+  "source_record_id": "cf864e58ba0d62c93110f5c6",
+  "source_trust": "authored_ir",
+  "subclass_name": null
+}
