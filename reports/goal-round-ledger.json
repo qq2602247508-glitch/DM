@@ -1,7 +1,112 @@
 {
-  "current_round": "round-7",
+  "current_round": "round-8",
   "goal": "Local AI D&D DM Assistant complete official-content rules platform",
   "rounds": [
+    {
+      "authored_count": 0,
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 120,
+            "unique_compiled": 111
+          },
+          "formal_499": {
+            "dm_only": 61,
+            "full": 328,
+            "partial": 110,
+            "total": 499
+          },
+          "protected_fingerprints": {
+            "database": "f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad",
+            "formal_registry": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+            "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+            "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+          },
+          "tashas": {
+            "authored_typed_ir": 94,
+            "compile_only": 31,
+            "content_atoms_after_qa": 524,
+            "executable": 407,
+            "game_usable": 62,
+            "manual_authoring": 314,
+            "production_full": 60,
+            "runtime_preview_full": 93,
+            "source_records": 144
+          }
+        },
+        "difference": "Round 8 starts from the accepted Round 7 state and selects only full contracts whose typed combat snapshot already has a generic passive/feature-action consumer; unresolved reaction-window and resource-exchange contracts remain ranked but unpromoted.",
+        "prompt_baseline": {"round_target_production_or_dm": 8}
+      },
+      "commits": [],
+      "compile_full_delta": 0,
+      "dm_assisted_delta": 0,
+      "files_changed": [
+        "scripts/validate-tashas-feature-production-consumer-round-VIII.py",
+        "backend/tests/test_tashas_feature_production_consumer_round_VIII.py",
+        "backend/tests/test_tashas_feature_production_consumer_round_III.py",
+        "backend/tests/test_tashas_whole_pack_migration.py",
+        "data/content-ir/compiled/production-runtime-results-X.json",
+        "reports/tashas-feature-production-consumer-round-VIII-2026-08-12.json",
+        "docs/tashas-feature-production-consumer-round-VIII-2026-08-12.md",
+        "docs/tashas-whole-pack-coverage-recovery-I-2026-08-11.md",
+        "docs/tashas-whole-pack-migration-closeout-2026-08-11.md",
+        "reports/tashas-status-layer-audit-2026-08-11.json",
+        "reports/tashas-whole-pack-report-2026-08-11.json",
+        "data/content-ir/isolated-packs/tashas-cauldron-2026-08-11/atom-index.json",
+        "data/content-ir/isolated-packs/tashas-cauldron-2026-08-11/runtime-registry.json"
+      ],
+      "manual_delta": 0,
+      "next_round_reason": "Finish generic reaction-window, resource exchange/profile, vessel/entity, exhaustion, spectral object, teleport destination, psionic payment and unresolved item lifecycle consumers.",
+      "objective": "Harvest eight remaining full trigger-bound/passive Feature contracts through existing typed combat consumers without counting unresolved event windows.",
+      "pack_coverage_delta": {
+        "feature_dm_assisted": 0,
+        "feature_production_evidence_selected": 8,
+        "feature_registered_production_full": 8,
+        "tasha_dm_assisted": 2,
+        "tasha_game_usable": 70,
+        "tasha_registered_production_full": 68
+      },
+      "phase": "H",
+      "push_receipt": {
+        "branch": "main",
+        "commit_hash": null,
+        "pushed_at": null,
+        "remote": "origin",
+        "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
+        "result": "pending"
+      },
+      "reports": [
+        "reports/tashas-feature-production-consumer-round-VIII-2026-08-12.json",
+        "data/content-ir/compiled/production-runtime-results-X.json",
+        "reports/tashas-status-layer-audit-2026-08-11.json",
+        "reports/tashas-whole-pack-report-2026-08-11.json",
+        "docs/tashas-feature-production-consumer-round-VIII-2026-08-12.md"
+      ],
+      "reviewed_count": 0,
+      "selected_clusters": [
+        "feature.trigger_bound_modifier",
+        "feature.passive_registry",
+        "feature.explicit_activation",
+        "feature.resource_binding"
+      ],
+      "selected_platforms": [
+        "content_ir_runtime_service",
+        "combat_engine.feature_action",
+        "typed_passive_registry",
+        "combat_context_resolvers"
+      ],
+      "status": "evidence_gated",
+      "tests": [
+        "backend/.venv/bin/python -m pytest -q backend/tests",
+        "backend/.venv/bin/python -m pytest -q Round III/V/VI/VII/VIII and whole-pack tests",
+        "backend/.venv/bin/ruff check changed validator/tests --ignore E402,E501",
+        "backend/.venv/bin/python -m compileall -q backend/src backend/tests scripts/validate-tashas-feature-production-consumer-round-VIII.py",
+        "git diff --check",
+        "Round VIII validator: 8/8 preview-confirm-replay with passive binding and activation/resource assertions",
+        "whole-pack migration twice: stdout and key report/runtime hashes byte-identical"
+      ]
+    },
     {
       "authored_count": 0,
       "baseline": {

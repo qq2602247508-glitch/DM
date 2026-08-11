@@ -6,6 +6,17 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 8：Trigger-bound Modifier / Activation Consumer Expansion
+
+当前状态：`evidence_gated`；本轮完成 8 条真实 API evidence，待提交/推送收据，整包 game usable 达到 70。
+
+- 8/8 条 Round-II Feature contracts 通过真实 `ContentIRRuntimeService` combat preview→confirm→幂等 replay；7 条通过 typed passive/inspection registry，`psi-powered-leap` 通过已有 feature-action activation，临时迁移 SQLite。formal apply/database/campaign/character 写入均为 false。
+- Tasha status layers：`registered_production_full=68`（60→68）、`dm_assisted=2`、`game_usable=70`；`manual_authoring=314`、`compile-only=23`（31→23）、`authored Typed IR=94`、`runtime_preview_full=93`。
+- 真实断言覆盖 grappling/tactical/attack correction/psionic check 的 passive binding、Starry Form resistance/saving inspection，以及灵力跃动实际 `psionic_dice` 3→2 和飞行 activation；runtime ID、typed consumer、resource/CAS、preview-confirm-replay 均 8/8，name branch=0。
+- 完整 backend pytest、Round III/V/VI/VII/VIII 与 whole-pack 定向回归、whole-pack migration 两次 deterministic hash、compileall、变更源 Ruff、`git diff --check` 通过。保护指纹保持：database `f3abdcf5…a6ad`、`backend/tests/ollama.py` `8027a6d8…e6ab`、integrations manifest `ae4ef9f5…cd91`；499 formal audit 仍为 328/110/61。
+- 证据：`docs/tashas-feature-production-consumer-round-VIII-2026-08-12.md`、Round VIII report/result、`reports/tashas-status-layer-audit-2026-08-11.json` 和 whole-pack report。
+- 下一步：建设通用 reaction-window、resource exchange/profile 与真正 event producer/consumer 链，再处理 vessel/entity、exhaustion、spectral object、teleport destination、psionic payment 与 unresolved ItemSpec lifecycle；未经过完整事件语义的合同继续不计 production。
+
 ## Round 7：Typed Advancement / Character Growth Consumer Expansion
 
 当前状态：`accepted`；本轮完成 8 条真实 API evidence，已提交并推送，整包 game usable 达到 62。

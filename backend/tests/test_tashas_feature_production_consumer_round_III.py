@@ -28,6 +28,6 @@ def test_round_III_evidence_is_consumed_by_whole_pack_status_layers() -> None:
     )
     results = json.loads(RESULTS.read_text(encoding="utf-8"))
     assert len(results["production_runtime_full_ids"]) == 12
-    assert migration["runtime"]["atom_production_full_count"] == 60
+    assert migration["runtime"]["atom_production_full_count"] == 68
     assert migration["runtime"]["atom_dm_assisted_count"] == 2
-    assert migration["status_layers"]["game_usable"] == 62
+    assert migration["status_layers"]["game_usable"] == 70

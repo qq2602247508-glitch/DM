@@ -1,3 +1,12 @@
+# 2026-08-12 Round 8 检查点：Trigger-bound Modifier / Activation Consumer 扩展
+
+- Round 8 在 Round-II authored Feature IR 上完成 8 条真实 combat production evidence：Battle Master Grappling Strike、Tactical Assessment、Psi Warrior Psi-Powered Leap、Soulknife Homing Strikes、Psi Bolstered Knack、Stars Druid Full of Stars、Weal、Woe。8/8 均通过真实 `ContentIRRuntimeService` preview→confirm→幂等 replay，consumer 为 `combat_engine.feature_action.v1`。
+- 7 条通过 typed passive/inspection registry 且 passive block 与 runtime ID 绑定；`psi-powered-leap` 通过已有 feature-action activation，实际消耗 `psionic_dice` 3→2 并持久化飞行模式。runtime ID binding、resource/CAS、formal false、name branch=0 均通过。
+- Tasha status layers：`registered_production_full=68`（Round 7 的 60→68）、`dm_assisted=2`、`game_usable=70`；`manual_authoring=314`、`compile-only=23`（31→23）、`authored Typed IR=94`、`runtime_preview_full=93`。严格口径仍为 `game_usable = registered_production_full + dm_assisted`。
+- 新增证据入口：`scripts/validate-tashas-feature-production-consumer-round-VIII.py`、`backend/tests/test_tashas_feature_production_consumer_round_VIII.py`、`reports/tashas-feature-production-consumer-round-VIII-2026-08-12.json`、`data/content-ir/compiled/production-runtime-results-X.json`、`docs/tashas-feature-production-consumer-round-VIII-2026-08-12.md`。whole-pack migration 两次关键报告/runtime/isolated manifest hash 一致。
+- 完整 backend pytest、Round III/V/VI/VII/VIII 与 whole-pack 定向回归、变更源 Ruff、compileall、`git diff --check` 通过。保护目录 `backend/tests/integrations/` 和 `backend/tests/ollama.py` 未暂存/提交；database fingerprint 仍为 `f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad`，integrations manifest 仍为 `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`。
+- Round 8 当前已完成 evidence 与 gates，待写入最终 ledger receipt、提交和推送；下一轮建设 generic reaction-window、resource exchange/profile 与 event producer/consumer，再处理 vessel/entity、exhaustion、spectral object、teleport destination、psionic payment 与 ItemSpec lifecycle。不要把 isolated-only / DM-reference 伪装成 production。
+
 # 2026-08-12 Round 7 检查点：Typed Advancement / Character Growth Consumer 扩展
 
 - Round 7 在 Round-II authored Feature IR 上完成 8 条真实角色成长 production evidence：炼金师法术、时械魔法、妖精触碰、影界触碰、受祝福的勇士、念力宗师、德鲁伊教战士、集群牧者魔法。8/8 均通过真实 `ContentIRRuntimeService` preview→confirm→幂等 replay，consumer 为 `advancement_service.character_growth.v1`，并实际写入 character feature/spell snapshot。

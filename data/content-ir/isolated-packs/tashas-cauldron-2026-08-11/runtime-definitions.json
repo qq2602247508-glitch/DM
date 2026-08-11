@@ -124,7 +124,7 @@
       "atom_id": "tashas-cauldron:atom:12139219bf7e575f9cde019c:grappling-strike:005",
       "content_id": "content.tashas-cauldron.round2.feature.battle-master-grappling-strike",
       "content_kind": "maneuver",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "6471c3b585d7f07ed7f01bafd6e847bee56bc38c376bcba9fa7079c4111d308d",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.battle-master-grappling-strike"
@@ -144,7 +144,7 @@
       "atom_id": "tashas-cauldron:atom:12139219bf7e575f9cde019c:tactical-assessment:007",
       "content_id": "content.tashas-cauldron.round2.feature.battle-master-tactical-assessment",
       "content_kind": "maneuver",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "269cb432a4324415c04a77c8977926c262cbef478f93c2f6f73deb3d5ea249ae",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.battle-master-tactical-assessment"
@@ -485,7 +485,7 @@
       "atom_id": "tashas-cauldron:atom:a13253dc90904c96eaa719ab:psi-powered-leap:006",
       "content_id": "content.tashas-cauldron.round2.feature.psi-warrior-psi-powered-leap",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "77c72c1586a767410a2310c68833f137a2ddf36d456e33f393b1475ebe443499",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.psi-warrior-psi-powered-leap"
@@ -555,7 +555,7 @@
       "atom_id": "tashas-cauldron:atom:b63c217774b977cdb0c1a23e:homing-strikes:006",
       "content_id": "content.tashas-cauldron.round2.feature.soulknife-homing-strikes",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "183231e9b0318ffebefa8d10d3e58bad5e898c7d95343a9e7bde5cf129e9b3c3",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.soulknife-homing-strikes"
@@ -565,7 +565,7 @@
       "atom_id": "tashas-cauldron:atom:b63c217774b977cdb0c1a23e:psi-bolstered-knack:002",
       "content_id": "content.tashas-cauldron.round2.feature.soulknife-psi-bolstered-knack",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "183231e9b0318ffebefa8d10d3e58bad5e898c7d95343a9e7bde5cf129e9b3c3",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.soulknife-psi-bolstered-knack"
@@ -625,7 +625,7 @@
       "atom_id": "tashas-cauldron:atom:b79182b9e28e7cac95e7c7a5:full-of-stars:010",
       "content_id": "content.tashas-cauldron.round2.feature.stars-druid-full-of-stars",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "0f3c3676902ae51a3a69a833a4eefdd34f7b368372029b88d96fd27c02b85471",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.stars-druid-full-of-stars"
@@ -635,7 +635,7 @@
       "atom_id": "tashas-cauldron:atom:b79182b9e28e7cac95e7c7a5:weal:007",
       "content_id": "content.tashas-cauldron.round2.feature.stars-druid-weal",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "618bf518f69b075c8335565cf8fbc6ae01f6ad85d0e16c84e51c17479d1d73dd",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.stars-druid-weal"
@@ -645,7 +645,7 @@
       "atom_id": "tashas-cauldron:atom:b79182b9e28e7cac95e7c7a5:woe:008",
       "content_id": "content.tashas-cauldron.round2.feature.stars-druid-woe",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "011c5ed7256bcbb995e75bbe1402c0e50f1b44aa28d684fd6217de3db2387019",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.stars-druid-woe"
