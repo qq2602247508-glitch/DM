@@ -171,6 +171,10 @@ class CharacterCatalog:
                     or not candidate_name
                     or "选项" in candidate_name
                     or "职业" not in candidate_path
+                    or any(
+                        marker in candidate_name or marker in candidate_path
+                        for marker in ("构筑", "战技选项", "奇械师注法", "魔能祈唤")
+                    )
                 ):
                     continue
                 parent = self._subclass_parent_class(candidate, class_names)
@@ -396,6 +400,10 @@ class CharacterCatalog:
                 if (
                     pack is None
                     or not name
+                    or any(
+                        marker in name or marker in source_path
+                        for marker in ("构筑", "战技选项", "奇械师注法", "魔能祈唤")
+                    )
                     or not record_is_enabled_for_content_packs(
                         record,
                         enabled_pack_keys,

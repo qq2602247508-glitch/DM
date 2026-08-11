@@ -209,6 +209,9 @@ class Character(Timestamped, Base):
         JSON, nullable=False, default=dict, server_default="{}"
     )
     notes: Mapped[str | None] = mapped_column(Text)
+    content_pack_pins: Mapped[list[object]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
     __table_args__ = (
         CheckConstraint("length(trim(name)) > 0", name="ck_character_name_nonempty"),
         CheckConstraint("level >= 1 AND level <= 20", name="ck_character_level"),

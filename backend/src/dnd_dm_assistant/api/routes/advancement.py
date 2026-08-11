@@ -181,6 +181,42 @@ def confirm_batch_advancement(
     )
 
 
+@router.post(
+    "/campaigns/{campaign_id}/characters/{character_id}/advancement/downgrade/preview"
+)
+def preview_downgrade(
+    campaign_id: str,
+    character_id: str,
+    body: dict[str, Any],
+    service: Annotated[AdvancementService, Depends(get_advancement_service)],
+) -> dict[str, Any]:
+    return _safe_call(lambda: service.preview_downgrade(campaign_id, character_id, body))
+
+
+@router.post(
+    "/campaigns/{campaign_id}/characters/{character_id}/advancement/downgrade/confirm"
+)
+def confirm_downgrade(
+    campaign_id: str,
+    character_id: str,
+    body: dict[str, Any],
+    service: Annotated[AdvancementService, Depends(get_advancement_service)],
+) -> dict[str, Any]:
+    return _safe_call(lambda: service.confirm_downgrade(campaign_id, character_id, body))
+
+
+@router.post(
+    "/campaigns/{campaign_id}/characters/{character_id}/content-pack-pin"
+)
+def pin_character_content_packs(
+    campaign_id: str,
+    character_id: str,
+    body: dict[str, Any],
+    service: Annotated[AdvancementService, Depends(get_advancement_service)],
+) -> dict[str, Any]:
+    return _safe_call(lambda: service.pin_content_packs(campaign_id, character_id, body))
+
+
 @router.get("/campaigns/{campaign_id}/characters/{character_id}/advancement")
 def advancement_history(
     campaign_id: str,

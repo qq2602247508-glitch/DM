@@ -38,6 +38,7 @@ from dnd_dm_assistant.domain.advancement_choices import (
 )
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.domain.character_creation import CORE_LANGUAGES
+from dnd_dm_assistant.domain.content_packs import validate_content_pack_compatibility
 from dnd_dm_assistant.domain.feature_runtime import compile_feature_runtime_registry
 from dnd_dm_assistant.domain.growth_asset_catalog import metamagic_asset
 from dnd_dm_assistant.domain.noncombat_actions import SKILL_RULES
@@ -541,6 +542,44 @@ class AdvancementService:
     def __init__(self, engine: Engine, catalog: CharacterCatalog) -> None:
         self.engine = engine
         self.catalog = catalog
+
+    def pin_content_packs(
+        self,
+        campaign_id: str,
+        character_id: str,
+        data: dict[str, Any],
+    ) -> dict[str, Any]:
+        expected_version = int(data.get("character_version") or 0)
+        requested = tuple(
+            validate_content_pack_compatibility(
+                data.get("content_pack_pins") or (),
+                allow_legacy=bool(data.get("allow_legacy", False)),
+            )
+        )
+        with Session(self.engine) as session, session.begin():
+            character = self._character(session, campaign_id, character_id)
+            if character.version != expected_version:
+                raise VersionConflict(
+                    "character", character.id, expected_version, character.version
+                )
+            campaign = session.get(Campaign, campaign_id)
+            if campaign is None:
+                raise StateNotFoundError("campaign not found")
+            enabled = set(str(item) for item in campaign.enabled_content_packs or [])
+            if not set(requested).issubset(enabled):
+                raise ValueError("character pack pins must be enabled by the campaign")
+            existing = tuple(str(item) for item in character.content_pack_pins or [])
+            if existing and existing != requested:
+                raise ValueError("character content-pack pins are immutable")
+            if not existing:
+                character.content_pack_pins = list(requested)
+                character.version += 1
+            return {
+                "character_id": character.id,
+                "content_pack_pins": list(character.content_pack_pins or []),
+                "character_version": character.version,
+                "immutable": True,
+            }
 
     @staticmethod
     def _character(session: Session, campaign_id: str, character_id: str) -> Character:
@@ -1667,6 +1706,15 @@ class AdvancementService:
             str(value) for value in (campaign.enabled_content_packs or [])
         )
         allow_legacy = bool(campaign.allow_legacy)
+        pinned_packs = frozenset(
+            str(value) for value in getattr(character, "content_pack_pins", ()) or []
+        )
+        if pinned_packs and not pinned_packs.issubset(set(enabled_content_packs)):
+            raise ValueError("character content-pack pin is not enabled by this campaign")
+        if pinned_packs and not allow_legacy and any(
+            str(value) not in {"core-2024"} for value in pinned_packs
+        ):
+            raise ValueError("legacy content-pack pin requires the campaign legacy opt-in")
         requested_class_name = str(data["class_name"])
         rule = self._class_rule(
             requested_class_name,
@@ -2795,6 +2843,151 @@ class AdvancementService:
     ) -> dict[str, Any]:
         with Session(self.engine) as session:
             return self._preview_in_session(session, campaign_id, character_id, data)
+
+    def preview_downgrade(
+        self,
+        campaign_id: str,
+        character_id: str,
+        data: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Preview a downgrade from a previously confirmed progression snapshot.
+
+        Downgrade is deliberately history-backed.  If the requested level has
+        no confirmed advancement snapshot, the service refuses to reconstruct
+        a character from prose or by mutating an arbitrary JSON field.
+        """
+
+        target_level = int(data.get("target_level") or 0)
+        expected_version = int(data.get("character_version") or 0)
+        with Session(self.engine) as session:
+            character = self._character(session, campaign_id, character_id)
+            if character.version != expected_version:
+                raise VersionConflict(
+                    "character", character.id, expected_version, character.version
+                )
+            if target_level < 1 or target_level >= character.level:
+                raise ValueError("downgrade target_level must be below the current level")
+            history = session.scalar(
+                select(AdvancementRecord)
+                .where(
+                    AdvancementRecord.campaign_id == campaign_id,
+                    AdvancementRecord.character_id == character.id,
+                    AdvancementRecord.to_level == target_level,
+                    AdvancementRecord.status == "confirmed",
+                )
+                .order_by(AdvancementRecord.created_at.desc(), AdvancementRecord.id.desc())
+            )
+            if history is None or not isinstance(history.result_json, dict):
+                raise ValueError("downgrade requires a confirmed history snapshot at target_level")
+            target_result = dict(history.result_json)
+            after = target_result.get("after")
+            if not isinstance(after, dict):
+                raise ValueError("confirmed advancement snapshot is incomplete")
+            required = {
+                "hp", "max_hp", "ability_scores", "class_levels",
+                "subclass_choices", "spells", "resources",
+            }
+            if not required.issubset(after):
+                raise ValueError("confirmed advancement snapshot lacks a rebuild field")
+            before = {
+                "character_id": character.id,
+                "version": character.version,
+                "level": character.level,
+                "hp": character.hp,
+                "max_hp": character.max_hp,
+                "ability_scores": dict(character.ability_scores or {}),
+                "class_levels": dict(character.class_levels or {}),
+                "subclass_choices": dict(character.subclass_choices or {}),
+                "spells": list(character.spells or []),
+                "resources": dict(character.resources or {}),
+                "features": list(character.features or []),
+                "actions": list(character.actions or []),
+                "proficiencies": list(character.proficiencies or []),
+                "skills": dict(character.skills or {}),
+            }
+            result = {
+                "kind": "downgrade",
+                "character_id": character.id,
+                "character_name": character.name,
+                "from_level": character.level,
+                "to_level": target_level,
+                "class_name": history.class_name,
+                "subclass_name": history.subclass_name,
+                "source_advancement_record_id": history.id,
+                "before": before,
+                "after": {
+                    **dict(after),
+                    "features": list(after.get("features", [])),
+                    "actions": list(after.get("actions", [])),
+                    "proficiencies": list(after.get("proficiencies", [])),
+                    "skills": dict(after.get("skills", {})),
+                },
+                "rebuild_policy": "confirmed_history_snapshot_only",
+            }
+            result["preview_token"] = hashlib.sha256(
+                json.dumps(
+                    {"request": data, "character_version": character.version, "result": result},
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    default=str,
+                ).encode()
+            ).hexdigest()
+            return result
+
+    def confirm_downgrade(
+        self,
+        campaign_id: str,
+        character_id: str,
+        data: dict[str, Any],
+    ) -> dict[str, Any]:
+        payload = dict(data)
+        preview_token = str(payload.pop("preview_token") or "")
+        idempotency_key = str(payload.pop("idempotency_key") or "")
+        if len(idempotency_key) < 8:
+            raise ValueError("downgrade idempotency_key is required")
+        preview = self.preview_downgrade(campaign_id, character_id, payload)
+        if preview["preview_token"] != preview_token:
+            raise VersionConflict("downgrade preview", character_id, 1, 2)
+        operation_key = f"downgrade:{idempotency_key}"
+        with Session(self.engine) as session, session.begin():
+            existing = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == campaign_id,
+                    OperationTransaction.idempotency_key == operation_key,
+                )
+            )
+            if existing is not None:
+                return {**dict(existing.after_snapshot or {}), "idempotent_replay": True}
+            character = self._character(session, campaign_id, character_id)
+            now = datetime.now(UTC)
+            operation = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="character_downgrade",
+                idempotency_key=operation_key,
+                before_snapshot=preview["before"],
+                after_snapshot=preview["after"],
+                reason="DM confirmed history-backed character downgrade",
+                source="dm",
+                confirmed_at=now,
+            )
+            session.add(operation)
+            session.flush()
+            self._apply_preview_with_cas(
+                session,
+                campaign_id=campaign_id,
+                character=character,
+                preview=preview,
+                expected_version=int(payload["character_version"]),
+                updated_at=now,
+            )
+            result = {
+                **preview,
+                "confirmed": True,
+                "idempotent_replay": False,
+                "operation_transaction_id": operation.id,
+            }
+            operation.after_snapshot = result
+            return result
 
     def _preview_batch_in_session(
         self,
