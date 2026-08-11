@@ -1,7 +1,109 @@
 {
-  "current_round": "round-18",
+  "current_round": "round-19",
   "goal": "Local AI D&D DM Assistant complete official-content rules platform",
   "rounds": [
+    {
+      "round_id": "round-19",
+      "status": "accepted",
+      "started_at": "2026-08-12",
+      "accepted_at": "2026-08-12",
+      "objective": "Run the complete Implements of Mercy proficiency Feature through the existing character-growth consumer with typed grants, CAS, transaction, snapshot persistence, and replay.",
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 181,
+            "unique_compiled": 111
+          },
+          "formal_499": {
+            "dm_only": 61,
+            "full": 328,
+            "partial": 110,
+            "total": 499
+          },
+          "protected_fingerprints": {
+            "database": "f3abdcf57b0d71888f085ca081511df4f4f23f100066b402d49d769089fa6aad",
+            "formal_registry": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+            "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+            "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+          },
+          "tashas": {
+            "authored_typed_ir": 95,
+            "compile_only": 11,
+            "content_atoms_after_qa": 525,
+            "executable": 408,
+            "game_usable": 83,
+            "item_spec_compile_full": 40,
+            "item_spec_isolated_runtime_validated": 40,
+            "item_spec_registered_production_full": 40,
+            "item_spec_game_usable": 40,
+            "manual_authoring": 314,
+            "production_full": 81,
+            "runtime_preview_full": 94,
+            "source_records": 144
+          }
+        },
+        "difference": "Round XIX starts from accepted Round XVIII and selects the only remaining compile-only Feature with three complete proficiency clauses that the existing character-growth consumer can execute without a new semantic branch.",
+        "prompt_baseline": {
+          "round_target_feature_production": 1,
+          "character_growth_core_exception_batch_size": 1,
+          "proficiency_clause_count": 3
+        }
+      },
+      "commits": ["e09e804eef50552fd9a6af24ab8146168c4f0d03"],
+      "compile_full_delta": 0,
+      "dm_assisted_delta": 0,
+      "item_compile_full_delta": 0,
+      "manual_delta": 0,
+      "pack_coverage_delta": {
+        "content_ir_production_full_before": 181,
+        "content_ir_production_full_after": 182,
+        "tasha_feature_compile_only_before": 11,
+        "tasha_feature_compile_only_after": 10,
+        "tasha_feature_registered_production_before": 81,
+        "tasha_feature_registered_production_after": 82,
+        "tasha_feature_game_usable_before": 83,
+        "tasha_feature_game_usable_after": 84,
+        "item_registered_production_full_unchanged": 40,
+        "item_game_usable_unchanged": 40
+      },
+      "reports": [
+        "reports/tashas-feature-production-consumer-round-XIX-2026-08-12.json",
+        "data/content-ir/compiled/production-runtime-results-XXI.json",
+        "docs/tashas-feature-production-consumer-round-XIX-2026-08-12.md"
+      ],
+      "selected_clusters": [
+        "advancement.proficiency",
+        "advancement.character_growth",
+        "character.feature_snapshot",
+        "character.version_cas"
+      ],
+      "selected_platforms": [
+        "advancement_service.character_growth.v1",
+        "content_ir_runtime.preview_confirm_replay",
+        "character_version_cas",
+        "operation_transaction",
+        "character_assets_snapshot"
+      ],
+      "next_round_reason": "After this bounded character-growth closure, reassess the remaining Oceanic Soul, Ambush, Bottled Respite, Psychic Teleportation, Psionic Sorcery, Manifest Mind and compile-only spells by real generic consumer availability.",
+      "protected_paths_untouched": true,
+      "formal_registry_written": false,
+      "formal_database_written": false,
+      "push_receipt": {
+        "branch": "main",
+        "commit_hash": "e09e804eef50552fd9a6af24ab8146168c4f0d03",
+        "pushed_at": "2026-08-12",
+        "remote": "origin",
+        "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
+        "result": "success"
+      },
+      "tests": [
+        "Round XIX validator: 1/1 typed character-growth Feature",
+        "Three proficiency grants, preview/confirm/replay, character CAS, transaction and feature persistence passed",
+        "backend full pytest: 896 passed; Ruff, compileall, git diff --check passed",
+        "whole-pack migration repeated with byte-identical key report/runtime hashes"
+      ]
+    },
     {
       "round_id": "round-18",
       "status": "accepted",

@@ -6,6 +6,16 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 19：Character Growth / Implements of Mercy Closure
+
+当前状态：`accepted`；实现、隔离 evidence、全量回归、提交与 push 已完成。
+
+- `content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy` 的洞悉、医药、草药工具三条 typed proficiency clause 通过既有 `advancement_service.character_growth.v1`，真实 preview→confirm→幂等 replay、character CAS、OperationTransaction、feature snapshot 全通过，`name_branch=0`。
+- 本轮只有 1 条，是 character-growth core exception：一个完整 Feature 同时关闭三条角色授予；没有新增特性名分支。Oceanic Soul、Ambush、Bottled Respite、Psychic Teleportation、Psionic Sorcery、Manifest Mind 继续按未建模语义保持边界。
+- Tasha status layers：`production_full=82`（81→82）、`dm_assisted=2`、`game_usable=84`、`compile_only=10`（11→10）、`authored Typed IR=95`、`compile_full=94`、`runtime_preview_full=94`、`manual_authoring=314`。当前项目 production full `182`；ItemSpec 独立保持 `47/40/40/40`。
+- 证据：`docs/tashas-feature-production-consumer-round-XIX-2026-08-12.md`、Round XIX report/result、whole-pack report 与 isolated runtime registry。Round XIX validator、Ruff、compileall、diff-check、全量 backend pytest `896 passed` 已通过；migration 两次关键 hash 一致。
+- 实现提交 `e09e804eef50552fd9a6af24ab8146168c4f0d03` 已推送到 `origin/main`；receipt 已写入 ledger/handoff/memory。下一步继续下一个有真实 generic consumer 的 typed semantic cluster。
+
 ## Round 18：Generic Roll Intervention / Battle Master Closure
 
 当前状态：`accepted`；实现、隔离 evidence、提交与 push 已完成。

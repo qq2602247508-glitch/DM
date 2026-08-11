@@ -1,3 +1,11 @@
+# 2026-08-12 Round 19 检查点：Character Growth / Implements of Mercy Closure
+
+- Round XIX 完成 `content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy` 的三条 typed proficiency clause：洞悉、医药、草药工具；全部通过既有 `advancement_service.character_growth.v1` 的隔离 SQLite preview→confirm→幂等 replay、character CAS、OperationTransaction、feature snapshot，`name_branch=0`。
+- 本轮 1 条是 character-growth core exception，因为一个完整 Feature 关闭三条角色成长授予；没有新增语义/特性名 dispatch。Tasha actual status：`production_full=82`、`dm_assisted=2`、`game_usable=84`、`compile_only=10`、`authored Typed IR=95`、`compile+preview=94`、`manual=314`、`DM reference=107`；当前项目 production full `182`；ItemSpec `47/40/40/40`。
+- 新增：`scripts/validate-tashas-feature-production-consumer-round-XIX.py`、`backend/tests/test_tashas_feature_production_consumer_round_XIX.py`、Round XIX report/result/doc；whole-pack reports/isolated pack 已重建。正式 registry/database/campaign/character、source corpus、3D、永久保护路径未写入。
+- Round XIX validator、Ruff、compileall、`git diff --check` 通过；backend full pytest `896 passed, 1 warning`；whole-pack migration 两次关键 report/runtime hashes 一致。
+- 实现提交 `e09e804eef50552fd9a6af24ab8146168c4f0d03` 已推送到 `origin/main`；本交接 receipt 已单独写入 ledger/handoff/memory。Round XIX 现为 accepted，正式 registry/database 与保护路径仍未写入。
+
 # 2026-08-12 Round 18 检查点：Generic Roll Intervention / Battle Master Closure
 
 - Round XVIII 已完成平台核心实现：typed `roll_intervention` materializer/consumer 接入玩家掷骰窗口，扫描 actor 与 target 的 Feature Runtime；`attack_type` 进入 Player Roll schema/resolver，精准攻击只接受 `weapon_attack`，非 AC prompt fail closed。
