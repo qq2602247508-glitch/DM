@@ -42,7 +42,7 @@
         "difference": "Round 11 starts from Round 10's 8 registered ItemSpecs, corrects false granted-spell extraction fail-closed, and adds eight further complete ItemSpecs through the shared equipment consumer.",
         "prompt_baseline": {"round_target_item_production": 8}
       },
-      "commits": [],
+      "commits": ["0f3eccf"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [
@@ -75,7 +75,14 @@
         "tasha_feature_registered_production_unchanged": 74
       },
       "phase": "I",
-      "push_receipt": null,
+      "push_receipt": {
+        "branch": "main",
+        "commit_hash": "0f3eccf0bcef428ff70932412d891708efc2c176",
+        "pushed_at": "2026-08-12T05:08:31+0800",
+        "remote": "origin",
+        "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
+        "result": "success"
+      },
       "reports": [
         "reports/tashas-item-production-consumer-round-XI-2026-08-12.json",
         "data/content-ir/compiled/production-runtime-results-XIII.json",
@@ -98,7 +105,7 @@
         "operation_transaction",
         "character_version_cas"
       ],
-      "status": "in_progress",
+      "status": "accepted",
       "tests": [
         "Round XI validator: 8/8 ItemSpec create/preview/confirm/replay",
         "Round X/XI item consumer and Tasha recovery/whole-pack targeted tests",

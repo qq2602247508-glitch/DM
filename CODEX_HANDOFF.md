@@ -14,6 +14,7 @@
 - 新增 8 条 ItemSpec 真实 evidence：假肢、星卜编集、寰宇图纂、钟铃圣枝、奉献香炉、织心入门、灵肉圣契、异界行访录；8/8 preview/confirm/replay、16 transactions、charge/CAS/state persistence 全通过。
 - 当前 ItemSpec status：`47 / 37 / 37 / 16 / 16`（total / compile / isolated / registered / game usable）；Feature Tasha 仍 `74 production / 2 dm-assisted / 76 game-usable`。
 - Round XI 产物：`scripts/validate-tashas-item-production-consumer-round-XI.py`、Round XI report/result、`docs/tashas-item-production-consumer-round-XI-2026-08-12.md`；仍 formal_apply=false、formal registry/database 未写入、name branch=0。
+- Round XI 实现提交 `0f3eccf0bcef428ff70932412d891708efc2c176` 已于 2026-08-12 05:08:31 +0800 推送到 `origin/main`；receipt 更新随后单独提交。
 
 # 2026-08-12 Round 9 检查点：Resource Profile / Exchange / Event Window Consumer 扩展
 
