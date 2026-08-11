@@ -13,10 +13,11 @@ import hashlib
 import json
 import re
 from collections.abc import Mapping
+from copy import deepcopy
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
@@ -65,6 +66,242 @@ class ContentIRRuntimeService:
         self.engine = engine
         self.spells = SpellEconomyService(engine)
         self.combat = CombatEngineService(engine)
+
+    @staticmethod
+    def _character_snapshot(character: Character) -> dict[str, Any]:
+        """Return the character fields owned by the typed growth consumer."""
+
+        return {
+            "character_id": character.id,
+            "version": character.version,
+            "level": character.level,
+            "features": deepcopy(list(character.features or [])),
+            "actions": deepcopy(list(character.actions or [])),
+            "proficiencies": deepcopy(list(character.proficiencies or [])),
+            "skills": deepcopy(dict(character.skills or {})),
+            "spells": deepcopy(list(character.spells or [])),
+        }
+
+    @staticmethod
+    def _choice_value(
+        block: Mapping[str, Any],
+        choices: Mapping[str, list[str]],
+        *,
+        required: bool,
+    ) -> str | None:
+        keys = (
+            _text(block.get("id")),
+            _text(block.get("asset_id")),
+            _text(block.get("language_id")),
+            _text(block.get("kind")),
+        )
+        values: list[str] = []
+        for key in keys:
+            if key and key in choices:
+                values.extend(_text(item) for item in choices[key] if _text(item))
+        values = list(dict.fromkeys(values))
+        if len(values) > 1:
+            raise ValueError("advancement choice accepts exactly one typed value")
+        if required and not values:
+            raise ValueError(
+                "advancement runtime requires a choice for "
+                + (_text(block.get("asset_id")) or _text(block.get("kind")))
+            )
+        return values[0] if values else None
+
+    @staticmethod
+    def _requires_choice(value: object) -> bool:
+        text = _text(value).lower()
+        return text.startswith("chosen_") or text.endswith("_choice") or "_or_" in text
+
+    def _advancement_runtime(
+        self,
+        session: Session,
+        campaign_id: str,
+        data: Mapping[str, Any],
+    ) -> tuple[Character, dict[str, Any], dict[str, list[dict[str, Any]]], tuple[dict[str, Any], ...]]:
+        character_id = _text(data.get("character_id"))
+        character = session.get(Character, character_id)
+        if character is None or character.campaign_id != campaign_id:
+            raise StateNotFoundError("content runtime advancement character not found")
+        expected_version = int(data.get("character_version") or 0)
+        if character.version != expected_version:
+            raise VersionConflict("character", character.id, expected_version, character.version)
+        runtime = data.get("runtime_contract")
+        if not isinstance(runtime, Mapping):
+            raise ValueError("advancement runtime contract must be an object")
+        runtime = deepcopy(dict(runtime))
+        runtime_id = _text(data.get("runtime_id"))
+        if _text(runtime.get("automation_status")) != "full":
+            raise ValueError("advancement runtime is not full")
+        if runtime.get("requires_dm_adjudication") is True:
+            raise ValueError("advancement runtime requires DM adjudication")
+        blocks: dict[str, list[dict[str, Any]]] = {}
+        for section in ("advancement", "prepared_spell_list"):
+            value = runtime.get(section)
+            if isinstance(value, Mapping):
+                blocks[section] = [dict(value)]
+        proficiencies = runtime.get("proficiencies")
+        if isinstance(proficiencies, list) and proficiencies:
+            blocks["proficiencies"] = [dict(item) for item in proficiencies if isinstance(item, Mapping)]
+        for block in [item for values in blocks.values() for item in values]:
+            block_feature_id = _text(block.get("feature_id"))
+            if block_feature_id and block_feature_id != runtime_id:
+                raise ValueError("advancement runtime id does not match the typed feature contract")
+            execution = block.get("runtime_execution")
+            if not isinstance(execution, Mapping) or _text(execution.get("status")) != "ready":
+                raise ValueError("advancement runtime block is not execution-ready")
+        consumers = resolve_production_consumers(
+            content_kind="advancement",
+            runtime_schema_version="feature-runtime-1",
+            blocks=blocks,
+        )
+        return character, runtime, blocks, consumers
+
+    def _preview_advancement(self, campaign_id: str, data: dict[str, Any]) -> dict[str, Any]:
+        with Session(self.engine) as session:
+            character, runtime, blocks, consumers = self._advancement_runtime(
+                session, campaign_id, data
+            )
+            before = self._character_snapshot(character)
+            after = deepcopy(before)
+            choices = data.get("advancement_choices") or {}
+            if not isinstance(choices, Mapping):
+                raise ValueError("advancement_choices must be an object")
+            typed_choices = {
+                _text(key): [_text(item) for item in value if _text(item)]
+                for key, value in choices.items()
+                if _text(key) and isinstance(value, list)
+            }
+            feature_id = _text(data.get("runtime_id"))
+            feature_name = _text(runtime.get("feature_name")) or feature_id
+            proficiencies: list[dict[str, Any]] = []
+            skills = dict(after["skills"])
+            sheet_proficiencies = list(after["proficiencies"])
+            for block in blocks.get("proficiencies", []):
+                if _text(block.get("operation")) != "grant":
+                    raise ValueError("advancement growth currently accepts grant operations only")
+                kind = _text(block.get("kind")) or "proficiency"
+                asset = _text(block.get("asset_id")) or _text(block.get("name"))
+                selected = self._choice_value(
+                    block,
+                    typed_choices,
+                    required=self._requires_choice(asset) or self._requires_choice(block.get("language_id")),
+                )
+                value = selected or _text(block.get("language_id")) or asset
+                if not value:
+                    raise ValueError("advancement proficiency block lacks a typed asset")
+                if kind == "language":
+                    persisted = "语言：" + value
+                elif kind == "skill":
+                    persisted = value
+                    existing = dict(skills.get(value) or {})
+                    skills[value] = {
+                        **existing,
+                        "proficient": True,
+                        "source_feature_id": feature_id,
+                    }
+                else:
+                    persisted = value
+                if kind != "skill" and persisted not in sheet_proficiencies:
+                    sheet_proficiencies.append(persisted)
+                proficiencies.append(
+                    {
+                        "kind": kind,
+                        "value": persisted,
+                        "source_feature_id": feature_id,
+                    }
+                )
+
+            spell_grants: list[dict[str, Any]] = []
+            sheet_spells = list(after["spells"])
+            advancement_blocks = [*blocks.get("advancement", []), *blocks.get("prepared_spell_list", [])]
+            for block in advancement_blocks:
+                raw_grants = block.get("spell_grants")
+                grants = raw_grants if isinstance(raw_grants, list) else [block]
+                for grant in grants:
+                    if not isinstance(grant, Mapping):
+                        continue
+                    for raw_spell_id in grant.get("spells") or []:
+                        spell_id = _text(raw_spell_id)
+                        if not spell_id:
+                            continue
+                        selected = self._choice_value(
+                            {"id": spell_id, "asset_id": spell_id},
+                            typed_choices,
+                            required=self._requires_choice(spell_id),
+                        )
+                        resolved_spell_id = selected or spell_id
+                        source_id = f"{feature_id}:{resolved_spell_id}"
+                        entry = {
+                            "name": resolved_spell_id,
+                            "spell_id": resolved_spell_id,
+                            "spell_level": 0,
+                            "class_name": _text(grant.get("grant_class")),
+                            "spellcasting_ability": _text(grant.get("casting_ability")),
+                            "grant_mode": _text(grant.get("grant_mode")),
+                            "prepared": _text(grant.get("grant_mode")) == "always_prepared",
+                            "always_prepared": _text(grant.get("grant_mode")) == "always_prepared",
+                            "source_record_id": source_id,
+                            "source_feature_id": feature_id,
+                            "granted_spell_access": True,
+                            "does_not_count_toward_level_learning": True,
+                        }
+                        if not any(
+                            isinstance(item, Mapping)
+                            and _text(item.get("source_record_id")) == source_id
+                            for item in sheet_spells
+                        ):
+                            sheet_spells.append(entry)
+                        spell_grants.append(entry)
+
+            feature_entry = {
+                "feature_id": feature_id,
+                "name": feature_name,
+                "kind": "content_ir_feature",
+                "class_name": _text(runtime.get("class_name")),
+                "class_level": int(runtime.get("class_level") or 0),
+                "source_record_id": _text(runtime.get("source_record_id")),
+                "runtime": {"registry": runtime, "source": "content_ir"},
+            }
+            features = [
+                item
+                for item in after["features"]
+                if not (isinstance(item, Mapping) and _text(item.get("feature_id")) == feature_id)
+            ]
+            features.append(feature_entry)
+            after.update(
+                {
+                    "features": features,
+                    "proficiencies": sheet_proficiencies,
+                    "skills": skills,
+                    "spells": sheet_spells,
+                }
+            )
+            result = {
+                "schema_version": RUNTIME_PREVIEW_SCHEMA,
+                "content_kind": "advancement",
+                "runtime_id": feature_id,
+                "runtime_preview_full": True,
+                "character_id": character.id,
+                "character_version": character.version,
+                "before": before,
+                "after": after,
+                "feature_grant": feature_entry,
+                "proficiency_grants": proficiencies,
+                "spell_grants": spell_grants,
+                "production_contract": {
+                    "content_kind": "advancement",
+                    "consumers": [str(item["consumer_id"]) for item in consumers],
+                    "requires_character_cas": True,
+                    "requires_idempotency": True,
+                    "typed_sections": sorted(blocks),
+                },
+            }
+            result["preview_token"] = _fingerprint(
+                {"data": _stable_request_data(data), "result": result}
+            )
+            return result
 
     @staticmethod
     def _runtime_blocks(runtime: Mapping[str, Any]) -> dict[str, list[dict[str, Any]]]:
@@ -690,6 +927,97 @@ class ContentIRRuntimeService:
             )
             return result
 
+    def _confirm_advancement(self, campaign_id: str, data: dict[str, Any]) -> dict[str, Any]:
+        key = _text(data.get("idempotency_key"))
+        if len(key) < 8:
+            raise ValueError("content runtime idempotency_key is required")
+        operation_key = f"content-ir:{key}"
+        with Session(self.engine) as session:
+            existing = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == campaign_id,
+                    OperationTransaction.idempotency_key == operation_key,
+                )
+            )
+            if existing is not None:
+                return {**dict(existing.after_snapshot or {}), "already_applied": True}
+        preview = self._preview_advancement(campaign_id, data)
+        token = _text(data.get("preview_token"))
+        if token != _text(preview.get("preview_token")):
+            raise VersionConflict("content runtime advancement preview", key, 1, 2)
+        expected_version = int(data["character_version"])
+        after = dict(preview["after"])
+        now = datetime.now(UTC)
+        with Session(self.engine) as session, session.begin():
+            existing = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == campaign_id,
+                    OperationTransaction.idempotency_key == operation_key,
+                )
+            )
+            if existing is not None:
+                return {**dict(existing.after_snapshot or {}), "already_applied": True}
+            operation = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="content_ir_advancement",
+                idempotency_key=operation_key,
+                status="applied",
+                before_snapshot=preview["before"],
+                after_snapshot=after,
+                reason="typed Content IR advancement confirmed",
+                source="dm",
+                confirmed_at=now,
+            )
+            session.add(operation)
+            session.flush()
+            outcome = session.execute(
+                update(Character)
+                .where(
+                    Character.id == _text(data["character_id"]),
+                    Character.campaign_id == campaign_id,
+                    Character.version == expected_version,
+                )
+                .values(
+                    features=list(after["features"]),
+                    actions=list(after["actions"]),
+                    proficiencies=list(after["proficiencies"]),
+                    skills=dict(after["skills"]),
+                    spells=list(after["spells"]),
+                    version=expected_version + 1,
+                    updated_at=now,
+                )
+            )
+            if outcome.rowcount != 1:
+                actual = session.scalar(
+                    select(Character.version).where(
+                        Character.id == _text(data["character_id"]),
+                        Character.campaign_id == campaign_id,
+                    )
+                )
+                raise VersionConflict(
+                    "character",
+                    _text(data["character_id"]),
+                    expected_version,
+                    int(actual or 0),
+                )
+            output = {
+                "schema_version": PRODUCTION_SCHEMA,
+                "content_kind": "advancement",
+                "runtime_id": data.get("runtime_id"),
+                "production_runtime_full": True,
+                "preview_token": token,
+                "consumer": "advancement_service.character_growth.v1",
+                "operation_transaction_id": operation.id,
+                "character_id": data.get("character_id"),
+                "character_version_after": expected_version + 1,
+                "feature_grant": preview["feature_grant"],
+                "proficiency_grants": preview["proficiency_grants"],
+                "spell_grants": preview["spell_grants"],
+            }
+            operation.after_snapshot = output
+            session.flush()
+            return output
+
     @classmethod
     def _validate_feature_roll(cls, data: Mapping[str, Any], action: Mapping[str, Any]) -> int:
         total = data.get("resolution_total")
@@ -706,7 +1034,9 @@ class ContentIRRuntimeService:
             return self._preview_spell(campaign_id, data)
         if _text(data.get("content_kind")) == "feature":
             return self._preview_feature(campaign_id, data)
-        raise ValueError("content_kind must be spell or feature")
+        if _text(data.get("content_kind")) == "advancement":
+            return self._preview_advancement(campaign_id, data)
+        raise ValueError("content_kind must be spell, feature, or advancement")
 
     def _record_operation(self, campaign_id: str, key: str, result: dict[str, Any]) -> None:
         with Session(self.engine) as session, session.begin():
@@ -723,6 +1053,8 @@ class ContentIRRuntimeService:
             )
 
     def confirm(self, campaign_id: str, data: dict[str, Any]) -> dict[str, Any]:
+        if _text(data.get("content_kind")) == "advancement":
+            return self._confirm_advancement(campaign_id, data)
         key = _text(data.get("idempotency_key"))
         if len(key) < 8:
             raise ValueError("content runtime idempotency_key is required")

@@ -69,6 +69,17 @@ _CONSUMERS: dict[str, dict[str, Any]] = {
         "idempotency_scope": "campaign_content_ir_and_combat_action",
         "snapshot_effects": ("feature_state", "resources", "timed_modifiers", "audit"),
     },
+    "advancement_service.character_growth.v1": {
+        "content_kind": "advancement",
+        "runtime_schema_version": "feature-runtime-1",
+        "clause_types": ("advancement", "proficiencies", "prepared_spell_list"),
+        "required_fields": ("character_id", "character_version", "runtime_id"),
+        "required_services": ("advancement_service",),
+        "transaction_boundary": "character_snapshot_and_operation_transaction",
+        "cas_entities": ("character",),
+        "idempotency_scope": "campaign_content_ir_and_character_growth",
+        "snapshot_effects": ("features", "proficiencies", "skills", "spells", "audit"),
+    },
     "item.equipment_modifier.v1": {
         "content_kind": "item",
         "runtime_schema_version": "item-ir-1",
@@ -301,4 +312,16 @@ def resolve_production_consumers(
             raise ValueError("item runtime has no registered executable consumer")
         return tuple(dict(_CONSUMERS[item], consumer_id=item) for item in sorted(set(resolved)))
 
-    raise ValueError("content_kind must be spell, feature, or item")
+    if content_kind == "advancement":
+        if runtime_schema_version != "feature-runtime-1":
+            raise ValueError("unsupported Content IR advancement runtime schema")
+        allowed = {"advancement", "proficiencies", "prepared_spell_list"}
+        unknown = set(blocks) - allowed
+        if unknown:
+            raise ValueError("unknown advancement runtime sections: " + ",".join(sorted(unknown)))
+        if not any(blocks.get(section) for section in allowed):
+            raise ValueError("advancement runtime has no registered executable consumer")
+        consumer = "advancement_service.character_growth.v1"
+        return (dict(_CONSUMERS[consumer], consumer_id=consumer),)
+
+    raise ValueError("content_kind must be spell, feature, item, or advancement")

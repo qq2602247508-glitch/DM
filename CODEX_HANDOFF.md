@@ -1,3 +1,13 @@
+# 2026-08-12 Round 5 检查点：Typed Advancement / Character Growth Consumer 扩展
+
+- Round 5 在 Round-II authored Feature IR 上完成 8 条真实角色成长 production evidence：Bladesinger、Peace Cleric、Rune Knight、Twilight Cleric、Order Cleric、Skill Expert、Ranger Canny、Aberrant Mind Psionic Spell List。8/8 均通过真实 `ContentIRRuntimeService` preview→confirm→幂等 replay、character CAS、operation transaction 和 feature snapshot 持久化。
+- Tasha status layers：`registered_production_full=44`（Round 4 的 36→44）、`dm_assisted=2`、`game_usable=46`；`manual_authoring=314`、`compile-only=47`、`authored Typed IR=94`、`runtime_preview_full=93`。严格口径仍为 `game_usable = registered_production_full + dm_assisted`。
+- 通用实现：`content_kind=advancement`、`advancement_service.character_growth.v1`、typed `advancement/proficiencies/prepared_spell_list` sections、固定与 choice grants、grant_spell、character CAS/idempotency/operation snapshot；没有 feature-name/name-based runtime branch。
+- 新增证据入口：`scripts/validate-tashas-feature-production-consumer-round-V.py`、`reports/tashas-feature-production-consumer-round-V-2026-08-12.json`、`data/content-ir/compiled/production-runtime-results-VII.json`、`docs/tashas-feature-production-consumer-round-V-2026-08-12.md`。Round V validator 两次关键输出 hash 一致；whole-pack migration 两次关键报告/runtime hash 一致。
+- 完整 backend pytest、Round V 与历史 Tasha 定向回归、变更 source Ruff、compileall、`git diff --check` 通过。仓库已有测试 import-order I001 噪音没有做无关格式化。
+- formal apply/database/campaign/character 仍为 false；3D、source corpus、formal 499 audit 未改。受保护的 `backend/tests/integrations/` 和 `backend/tests/ollama.py` 未暂存/提交，database fingerprint 仍为 `f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad`。
+- 下一轮：继续 vessel/entity、exhaustion、spectral object、teleport destination、psionic payment 与 ItemSpec lifecycle；不要把 isolated-only / DM-reference 伪装成 production，也不要迁移下一本扩展包。
+
 # 2026-08-12 Round 4 检查点：Movement / Sight / Choice / Lifecycle consumer 扩展
 
 - Round 4 在 Round-II authored Feature IR 上完成 8 条真实生产 evidence：`fathomless-gift-of-the-sea`、`ranger-roving`、`beast-barbarian-bestial-soul`、两条 `blind-fighting`、`genie-elemental-gift`、`swarmkeeper-writhing-tide`、`twilight-cleric-steps-of-night`。8/8 均通过真实 `ContentIRRuntimeService` preview→confirm→幂等 replay、CAS、transaction，并经回合边界刷新移动 / 视觉快照。

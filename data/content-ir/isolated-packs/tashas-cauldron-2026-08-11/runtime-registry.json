@@ -34,7 +34,7 @@
       "atom_id": "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:bonus-proficiencies:001",
       "content_id": "content.tashas-cauldron.round2.feature.rune-knight-bonus-proficiencies",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "d2487b5cf34bb9da95bf52d8a4dde0c5a60e884cef6a87074242cf97d4a902e6",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.rune-knight-bonus-proficiencies"
@@ -184,7 +184,7 @@
       "atom_id": "tashas-cauldron:atom:1924837fba5aec4d15a290b8:skill-expert:012",
       "content_id": "content.tashas-cauldron.round2.feature.feat-skill-expert",
       "content_kind": "feat",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "8819ac1debf7f8a661dc0cbc426a60c63aa191b16b9837698c4a35ce6e030e59",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.feat-skill-expert"
@@ -254,7 +254,7 @@
       "atom_id": "tashas-cauldron:atom:38a389e4b25a6eeec6c7835f:bonus-proficiencies:002",
       "content_id": "content.tashas-cauldron.round2.feature.order-cleric-bonus-proficiencies",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "18f02efc476e93883b7e6cbb8052a27f2827dee7b21a849cd60b374279ee9b4a",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.order-cleric-bonus-proficiencies"
@@ -264,7 +264,7 @@
       "atom_id": "tashas-cauldron:atom:4041ef4e8e0a5b7375019c27:training-in-sword-and-song:001",
       "content_id": "content.tashas-cauldron.round2.feature.bladesinger-training-in-sword-and-song",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "f819eec7176ec837481935e4097fc313ba6d41dbacef772baa1bfa58a6d6bfdd",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.bladesinger-training-in-sword-and-song"
@@ -315,7 +315,7 @@
       "atom_id": "tashas-cauldron:atom:63d0abe27f6ad161f0820593:bonus-proficiencies:002",
       "content_id": "content.tashas-cauldron.round2.feature.twilight-cleric-bonus-proficiencies",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "4d42b7a9f01641ddfceddd9af35ddc869f2beee919f10c3c4e240a670165ee86",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.twilight-cleric-bonus-proficiencies"
@@ -365,7 +365,7 @@
       "atom_id": "tashas-cauldron:atom:752d57e35706db428895da0a:canny-1:002",
       "content_id": "content.tashas-cauldron.round2.feature.ranger-canny",
       "content_kind": "class_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "0daafdbd8cee1a602938173f853a0c62fddacd03b89ddca6e836017ff3b5cfac",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.ranger-canny"
@@ -405,7 +405,7 @@
       "atom_id": "tashas-cauldron:atom:790ce45021cc1901403353e1:implement-of-peace:002",
       "content_id": "content.tashas-cauldron.round2.feature.peace-cleric-implement-of-peace",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "15684662cfef5ade8a2a4936ccfdb89cf0a05de2b56f45d03841da7762a1c055",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.peace-cleric-implement-of-peace"
@@ -825,7 +825,7 @@
       "atom_id": "tashas-cauldron:atom:e94f0c903dd025796d7a2d22:psionic-spells:001",
       "content_id": "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "db31fec9d3bc16dcb820716e3757b8abfd701c57d52a03652da1442c284e4911",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list"

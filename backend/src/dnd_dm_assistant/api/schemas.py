@@ -2474,7 +2474,7 @@ class SpellCastRequest(BaseModel):
 class ContentIRRuntimeRequest(BaseModel):
     """A production confirmation bound to a reviewed runtime registry entry."""
 
-    content_kind: Literal["spell", "feature"]
+    content_kind: Literal["spell", "feature", "advancement"]
     runtime_id: str = Field(min_length=1, max_length=200)
     permission: Literal["player", "dm"] = "player"
     character_id: str | None = None
@@ -2486,9 +2486,9 @@ class ContentIRRuntimeRequest(BaseModel):
     material_available: bool = True
     concentration: bool = False
     free_cast: bool = False
-    combat_id: str = Field(min_length=1, max_length=36)
-    actor_combatant_id: str = Field(min_length=1, max_length=36)
-    actor_version: int = Field(ge=1)
+    combat_id: str | None = Field(default=None, min_length=1, max_length=36)
+    actor_combatant_id: str | None = Field(default=None, min_length=1, max_length=36)
+    actor_version: int | None = Field(default=None, ge=1)
     target_combatant_id: str | None = None
     target_version: int | None = Field(default=None, ge=1)
     target_combatant_ids: list[str] = Field(default_factory=list, max_length=20)
@@ -2508,6 +2508,8 @@ class ContentIRRuntimeRequest(BaseModel):
     attack_hit: bool | None = None
     reaction_triggered: bool = False
     condition_to_remove: Literal["charmed", "frightened", "poisoned"] | None = None
+    advancement_choices: dict[str, list[str]] = Field(default_factory=dict, max_length=50)
+    runtime_contract: dict[str, Any] | None = None
     preview_token: str | None = None
     idempotency_key: str | None = Field(default=None, min_length=8, max_length=120)
 
@@ -2518,8 +2520,19 @@ class ContentIRRuntimeRequest(BaseModel):
                 raise ValueError("spell content runtime requires character and known_spell binding")
             if self.slot_level is None:
                 raise ValueError("spell content runtime requires slot_level")
+        if self.content_kind in {"spell", "feature"} and (
+            not self.combat_id or not self.actor_combatant_id or self.actor_version is None
+        ):
+            raise ValueError("combat content runtime requires combat actor binding")
         if self.content_kind == "feature" and self.known_spell_id is not None:
             raise ValueError("feature content runtime cannot bind known_spell_id")
+        if self.content_kind == "advancement":
+            if not self.character_id or self.character_version is None:
+                raise ValueError("advancement content runtime requires character binding")
+            if self.runtime_contract is None:
+                raise ValueError("advancement content runtime requires a typed runtime contract")
+            if self.known_spell_id is not None or self.combat_id is not None:
+                raise ValueError("advancement content runtime cannot bind combat or known spell")
         target_ids = [
             item for item in [self.target_combatant_id, *self.target_combatant_ids] if item
         ]

@@ -6,6 +6,18 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 5：Typed Advancement / Character Growth Consumer Expansion
+
+当前状态：`accepted`；本轮完成 8 条真实 API evidence，8 条 registered production，整包 game usable 达到 46。
+
+- 8/8 条 Round-II Feature contracts 通过真实 `ContentIRRuntimeService` advancement preview→confirm→幂等 replay；临时迁移 SQLite，并实际写入 character features/proficiencies/skills/spells snapshot。formal apply/database/campaign/character 写入均为 false。
+- Tasha status layers：`registered_production_full=44`（36→44）、`dm_assisted=2`、`game_usable=46`；`manual_authoring=314`、`compile-only=47`、`authored Typed IR=94`、`runtime_preview_full=93`。
+- 通用实现：`content_kind=advancement`、`advancement_service.character_growth.v1`，按 typed `advancement` / `proficiencies` / `prepared_spell_list` block 分发；固定 grant、choice grant、grant_spell 共用 character CAS、operation transaction、idempotency 和 feature snapshot。
+- 真实断言覆盖固定熟练/语言、Order Cleric/Skill Expert/Ranger Canny 选择生命周期，以及 Aberrant Mind 10 个 spell grants；name branch=0，typed consumer=8/8。
+- 完整 backend pytest、Round V/历史 Tasha 定向回归、whole-pack migration 两次 deterministic hash、compileall、变更源 Ruff、`git diff --check` 通过。保护指纹保持：database `f3abdcf5…a6ad`、`backend/tests/ollama.py` `8027a6d8…e6ab`、integrations manifest `ae4ef9f5…cd91`；499 formal audit 仍为 328/110/61。
+- 证据：`docs/tashas-feature-production-consumer-round-V-2026-08-12.md`、Round V report/result、`reports/tashas-status-layer-audit-2026-08-11.json` 和 whole-pack report。
+- 下一步：继续推进 vessel/entity、exhaustion、spectral object、teleport destination、psionic payment 和 unresolved ItemSpec lifecycle；isolated-only 和 DM-reference 继续不计 production。
+
 ## Round 4：Movement / Sight / Choice / Lifecycle Consumer Expansion
 
 当前状态：`accepted`；本轮完成 8 条真实 API evidence，8 条 registered production，整包 game usable 达到 38。
