@@ -23,9 +23,30 @@
         "transaction": true,
         "typed_ir_fingerprint": "cd627078d37aac669591647d8be1382379baebe7cb7ce923d608590d7ad196b2"
       }
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:867896faa26eb295d846a574:glorious-defense:010",
+      "content_id": "content.tashas-cauldron.round2.feature.glory-paladin-glorious-defense",
+      "name": "辉煌防御 Glorious Defense",
+      "reason": "existing production path requires typed DM continuation",
+      "runtime_evidence": {
+        "actor_target_cas": true,
+        "confirm": true,
+        "content_id": "content.tashas-cauldron.round2.feature.glory-paladin-glorious-defense",
+        "content_kind": "feature",
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-V.json",
+        "execution_mode": "dm_approved_typed",
+        "pack_id": "tashas-cauldron",
+        "preview": true,
+        "production_runtime_full": true,
+        "replay": true,
+        "source": "round-II-isolated-feature-contract",
+        "transaction": true,
+        "typed_consumer": "combat_engine.feature_action.v1"
+      }
     }
   ],
-  "dm_assisted_count": 1,
+  "dm_assisted_count": 2,
   "formal_window_requirements": {
     "decision_schema_and_permission": true,
     "frozen_action_and_resource": true,

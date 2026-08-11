@@ -6,6 +6,16 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 3：Formal Production Consumer Evidence Harvest
+
+当前状态：`accepted`；本轮完成 12 条真实 API evidence，11 条 registered production、1 条 DM-assisted，整包 game usable 达到 30。
+
+- 12/12 条 Round 2 Feature contracts 通过真实 `ContentIRRuntimeService` preview→confirm→幂等 replay；临时迁移 SQLite，formal apply/database/campaign/character 写入均为 false。
+- Tasha status layers：`registered_production_full=28`（17→28）、`dm_assisted=2`（1→2）、`game_usable=30`；`manual_authoring=314`、`compile-only=63`、`authored Typed IR=94`、`runtime preview full=93`。
+- 通用修复：attack-hit typed intent 选择 rider、superiority die/ability modifier timed value materialization、AC timed modifier、`_or_` condition removal、DM-confirmed reaction trigger + reaction CAS。name branch 仍为 0。
+- 正式 499 audit 保持 328/110/61；3D、source corpus、正式 campaign/character 数据未修改。证据见 `docs/tashas-feature-production-consumer-round-III-2026-08-12.md` 和 Round III report/result。
+- 下一步：继续收割 movement/sight/passive/choice 等需要独立事件入口的 Feature consumers；未经过真实 producer/consumer/persistence/CAS/replay 的合同继续停在 isolated 或 partial。
+
 ## Round 2：Feature/Option Semantic Contract Batch I
 
 当前状态：`completed_with_formal_boundary_open`；本批已完成隔离合同与角色成长闭环，正式 production 收割转入下一 Round。

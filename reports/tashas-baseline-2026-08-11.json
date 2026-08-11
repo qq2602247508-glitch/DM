@@ -46,8 +46,8 @@
     "Tasha total": 19,
     "Xanathar": 9
   },
-  "production_full": 76,
-  "production_registry_fingerprint": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+  "production_full": 88,
+  "production_registry_fingerprint": "f91dfe573844ca4fd36891117f06a87dff9d0164b3595caf9e1df19cf3dbc41d",
   "protected_path_fingerprints": {
     "backend/tests/integrations/": {
       "exists": true,
@@ -150,7 +150,7 @@
   },
   "relation_check": {
     "dm_assisted_not_in_legacy_baseline": true,
-    "production_full_plus_compile_only": 111,
+    "production_full_plus_compile_only": 123,
     "unique_compiled": 111
   },
   "runtime_preview_full": 111,

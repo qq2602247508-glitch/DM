@@ -1,5 +1,12 @@
 # 特性自动化迁移预审报告
 
+## 持续 Goal Round 3：Feature Production Consumer Evidence（2026-08-12）
+
+- 12 条 Round 2 full Feature contracts 经过真实 API preview→confirm→幂等 replay；11 条进入 production evidence，1 条以 DM-confirmed typed reaction 记为 DM-assisted。
+- Tasha status layers 达到 `registered_production_full=28`、`dm_assisted=2`、`game_usable=30`；formal 499 audit 未变，formal campaign/character/database 未写入。
+- 通用入口支持 attack-hit rider intent、timed AC/die/ability modifier、typed `_or_` condition removal 和 DM reaction trigger/CAS；没有按名称 dispatch。
+- 详见 `docs/tashas-feature-production-consumer-round-III-2026-08-12.md` 及 Round III evidence report/result。下一阶段优先 movement/sight/passive/choice 的 producer/consumer 事件链。
+
 ## 持续 Goal Round 2：Feature/Option Semantic Contract Batch I（2026-08-12）
 
 - 64 条真实 Tasha Feature/Option atom 完成显式 reviewed/authored Typed IR；58 条 compile full，6 条 partial 保留真实 consumer/lifecycle/payment 边界。

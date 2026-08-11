@@ -1,10 +1,19 @@
+# 2026-08-12 Round 3 检查点：Feature production consumer evidence 收割
+
+- Round 3 从 Round 2 的 isolated full contracts 中选择 12 条，全部通过真实 `ContentIRRuntimeService` preview→confirm→幂等 replay；11 条为 typed production，1 条辉煌防御为 DM-confirmed typed reaction，并实际消费 reaction resource。
+- Tasha status layers 已到 `registered_production_full=28`（17→28）、`dm_assisted=2`（1→2）、`game_usable=30`；manual authoring 314、compile-only 63、authored Typed IR 94、runtime preview full 93。
+- 新增通用逻辑：`attack_hit` intent 优先选择 attack rider；timed modifier 解析 die/ability modifier、支持 AC；条件移除支持 typed `_or_` 选项；DM reaction 需要显式 trigger、DM permission 和 reaction CAS。禁止按特性名分支。
+- evidence 使用临时迁移 SQLite，`formal_apply=false`、`formal_registry_written=false`、`formal_database_written=false`；没有修改正式 campaign/character、source corpus、3D 或 499 formal audit。
+- 证据入口：`scripts/validate-tashas-feature-production-consumer-round-III.py`、`reports/tashas-feature-production-consumer-round-III-2026-08-12.json`、`data/content-ir/compiled/production-runtime-results-V.json`、`docs/tashas-feature-production-consumer-round-III-2026-08-12.md`。
+- 下一 Round：movement/sight/passive/choice 的独立生产 consumer；vessel/entity lifecycle、exhaustion、spectral object、teleport destination、psionic payment 仍保持边界。
+
 # 2026-08-12 Round 2 检查点：Feature/Option 合同扩产与角色成长隔离闭环
 
 - 本轮严格保持 isolated/formal 边界：64 条真实 Tasha Feature/Option atom 完成 reviewed + authored Typed IR，58 条 compile full；6 条保持 partial，不以名称分支或 fallback 冒充 full。
 - 58 条 full 合同经过 `FeaturePackImporter` 隔离 apply、reload、幂等重放和 registry lookup；角色成长回路实际接收 58 grants，编译为 58 runtime contracts，`closed_loop=true`。formal apply=false，正式 registry/database/campaign/character 未写入。
-- 整包迁移重跑后的真实分母为 144 source records、524 QA atoms、407 executable；94 authored Typed IR、93 runtime preview full、314 manual authoring、75 compile-only。正式 Tasha production 17、DM-assisted 1、game usable 18；本轮没有把隔离能力计入生产。
+- 整包迁移重跑后的 Round 2 分母为 144 source records、524 QA atoms、407 executable；94 authored Typed IR、93 runtime preview full、314 manual authoring、75 compile-only。Round 3 已将正式 Tasha status 提升至 production 28、DM-assisted 2、game usable 30。
 - 通用实现：多 advancement/prepared-spell block 合并并保留逐 grant 元数据；显式 stable feature ID 防止同 class/level 授予碰撞；typed authorized-information materializer/consumer；未添加 feature-name/name-based runtime branch。
-- 6 个 partial blocker 已记录：水下互通、vessel/entity lifecycle、exhaustion timing、spectral object lifecycle、teleport destination、psionic component/payment。下一 Round 负责已有 generic consumer 的正式 production evidence 收割。
+- 6 个 Round 2 partial blocker 已记录：水下互通、vessel/entity lifecycle、exhaustion timing、spectral object lifecycle、teleport destination、psionic component/payment；下一 Round 负责 movement/sight/passive/choice 及这些 lifecycle consumer 的独立事件链。
 - 证据入口：`scripts/author-tashas-feature-contract-batch-I.py`、`scripts/validate-tashas-feature-contract-batch-I.py`、`reports/tashas-feature-contract-batch-I-2026-08-12.json`、`reports/tashas-feature-contract-runtime-batch-I-2026-08-12.json`、`docs/tashas-feature-option-contract-batch-I-2026-08-12.md`。
 
 # 2026-08-11 Round 1 检查点：状态口径与塔莎 Item Registry 收口
