@@ -4,7 +4,7 @@
 - 新增统一 Content IR status layers：`compile_full`、`runtime_preview_full`、`isolated_runtime_validated`、`registered_production_full`、`dm_assisted`、`game_usable`；其中 `game_usable = registered_production_full + dm_assisted`。
 - 新增 `ContentPackRuntimeRegistry`，对塔莎隔离 pack 的 47 条 ItemSpec 全部 reload/re-parse；41 条通过通用消费者投影并记为 `isolated_runtime_validated`，6 条仍为 blocker。`formal_apply=false`，`registered_production_full=0`，未触碰正式 registry/database。
 - 新增 `data/content-ir/isolated-packs/tashas-cauldron-2026-08-11/runtime-registry.json`、`reports/tashas-status-layer-audit-2026-08-11.json` 和 `reports/goal-round-ledger.json`。稳定生成 stdout 与关键 registry/report hash 已验证 byte-identical。
-- 定向 Tasha recovery/migration 测试、Ruff、compileall、diff-check 已通过；全量后端门禁与 push 仍待本 Round 最终验收。
+- 定向 Tasha recovery/migration 测试、Ruff、compileall、diff-check 已通过；合并后端全量 pytest 与前端 41 文件/206 tests、typecheck、lint、build 均通过。普通 merge `c8fe28c` 已 push 到 `origin/main`：`c8fe28c1c3c4c215f4eaeda1e6acc590afd93add`。
 - 下一 Round：从 318 个 Feature/Option manual atoms 中按真实 fan-out 收割 Contract Harvest，保持单线程、无名称分支、隔离 DB/pack。
 
 # 2026-08-11 长执行检查点：《塔莎的万事坩埚》整包覆盖恢复 I

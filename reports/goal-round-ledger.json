@@ -43,7 +43,9 @@
       },
       "commits": [
         "776c7fe",
-        "ecd6606"
+        "ecd6606",
+        "9c581e7",
+        "c8fe28c"
       ],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
@@ -67,7 +69,14 @@
         "item_game_usable": 0
       },
       "phase": "A",
-      "push_receipt": null,
+      "push_receipt": {
+        "branch": "main",
+        "commit_hash": "c8fe28c1c3c4c215f4eaeda1e6acc590afd93add",
+        "pushed_at": "2026-08-12T00:23:50+0800",
+        "remote": "origin",
+        "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
+        "result": "success"
+      },
       "reports": [
         "reports/tashas-status-layer-audit-2026-08-11.json",
         "reports/tashas-item-spec-catalog-2026-08-11.json",
@@ -82,7 +91,7 @@
         "isolated_content_pack_runtime_registry",
         "item_spec_generic_consumers"
       ],
-      "status": "in_progress",
+      "status": "accepted",
       "tests": [
         "PYTHONPATH=backend/src backend/.venv/bin/pytest -q backend/tests/test_tashas_recovery.py backend/tests/test_tashas_whole_pack_migration.py",
         "backend/.venv/bin/ruff check backend/src backend/tests scripts/migrate-tashas-whole-pack.py",
