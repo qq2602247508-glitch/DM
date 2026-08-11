@@ -8,7 +8,7 @@
 
 ## Round 9：Resource Profile / Exchange / Event Window Consumer Expansion
 
-当前状态：`evidence_gated`；本轮完成 6 条真实 API evidence，属于 platform/core growth round，待提交/推送收据，整包 game usable 达到 76。
+当前状态：`accepted`；本轮完成 6 条真实 API evidence，属于 platform/core growth round，已提交并推送，整包 game usable 达到 76。
 
 - 6/6 条剩余 full Feature contracts 通过真实 `ContentIRRuntimeService` preview→confirm→幂等 replay；psi-warrior psionic dice 完成 advancement resource profile，Battle Master 两条完成 triggered attack window，Harness Divine Power 完成 typed resource exchange，Interception/Runic Shield 完成 reaction window。formal apply/database/campaign/character 写入均为 false。
 - 新增通用能力：`combat_engine.feature_event_window.v1`、typed `window_spec`、CombatAction durable eligible window、resource exchange、resource profile advancement、resource/CAS/idempotency 绑定；没有 feature-name/name-based runtime branch。

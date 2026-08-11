@@ -5,7 +5,7 @@
 - 6/6 均通过真实 `ContentIRRuntimeService` preview→confirm→幂等 replay；4 个事件窗口、1 个 proficiency-derived 2 点 exchange、1 个 resource profile 均通过。formal apply/database/campaign/character 写入为 false，name branch=0。
 - Tasha status layers：`registered_production_full=74`（Round 8 的 68→74）、`dm_assisted=2`、`game_usable=76`；`manual_authoring=314`、`compile-only=17`（23→17）、`authored Typed IR=94`、`runtime_preview_full=93`。严格口径仍为 `game_usable = registered_production_full + dm_assisted`。
 - 新增/修改证据入口：`backend/src/dnd_dm_assistant/application/feature_compiler.py`、`application/content_ir_runtime.py`、`application/content_ir_production_registry.py`、`infrastructure/database/combat_service.py`、`api/schemas.py`，以及 Round IX validator/test/report/result/doc。whole-pack migration 两次关键报告/runtime/isolated manifest hash 一致。
-- Round IX 当前已完成 evidence 与 gates，待写入最终 ledger receipt、提交和推送；下一轮继续 unresolved ItemSpec consumer 与 vessel/entity、exhaustion、spectral object、teleport destination、psionic payment 的真实 event producer/consumer，不要把 isolated-only / DM-reference 伪装成 production。
+- Round IX evidence/gates 已完成并已推送：implementation/evidence commit `b2c64213638eb2a2965ad3bae9ccfd3114352fab`，`origin/main` push success，2026-08-12 04:28:30 +0800；ledger receipt 随后单独提交。下一轮继续 unresolved ItemSpec consumer 与 vessel/entity、exhaustion、spectral object、teleport destination、psionic payment 的真实 event producer/consumer，不要把 isolated-only / DM-reference 伪装成 production。
 
 # 2026-08-12 Round 8 检查点：Trigger-bound Modifier / Activation Consumer 扩展
 

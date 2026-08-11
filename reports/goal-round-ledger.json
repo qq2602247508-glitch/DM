@@ -38,7 +38,7 @@
         "difference": "Round 9 is a platform/core growth round: it closes the remaining six full Tasha Feature contracts by adding generic typed resource profile, exchange and event-window consumers; formal rows remain outside the evidence boundary.",
         "prompt_baseline": {"round_target_production_or_dm": 8}
       },
-      "commits": [],
+      "commits": ["b2c6421"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [],
@@ -56,11 +56,11 @@
       "phase": "I",
       "push_receipt": {
         "branch": "main",
-        "commit_hash": null,
-        "pushed_at": null,
+        "commit_hash": "b2c64213638eb2a2965ad3bae9ccfd3114352fab",
+        "pushed_at": "2026-08-12T04:28:30+0800",
         "remote": "origin",
         "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
-        "result": "pending"
+        "result": "success"
       },
       "reports": [
         "reports/tashas-feature-production-consumer-round-IX-2026-08-12.json",
@@ -84,7 +84,7 @@
         "combat_action_window",
         "operation_transaction"
       ],
-      "status": "evidence_gated",
+      "status": "accepted",
       "tests": [
         "backend/.venv/bin/python -m pytest -q backend/tests",
         "backend/.venv/bin/python -m pytest -q Round III/V/VI/VII/VIII/IX and whole-pack tests",
