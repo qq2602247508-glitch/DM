@@ -16803,7 +16803,10 @@ class CombatEngineService:
             if action_cost not in {"action", "bonus_action", "reaction", "none"}:
                 raise ValueError("职业特性的动作经济类型无效")
             if action_cost == "reaction":
-                raise ValueError("该职业特性需要 DM 明确实现反应触发条件")
+                if not action.get("reaction_triggered") or not command.dm_override:
+                    raise ValueError("该职业特性需要 DM 明确实现反应触发条件")
+                if not actor.reaction_available:
+                    raise ValueError("该职业特性的反应资源当前不可用")
             target = actor
             if command.target_combatant_id is not None:
                 target = session.get(Combatant, command.target_combatant_id)
@@ -16895,6 +16898,11 @@ class CombatEngineService:
                     actor_version=command.actor_version,
                     action_cost=action_cost,
                     consume=True,
+                    reaction_trigger=(
+                        "dm_confirmed_typed_event"
+                        if action.get("reaction_triggered")
+                        else None
+                    ),
                 )
 
             character = (
@@ -17191,7 +17199,12 @@ class CombatEngineService:
                         raise ValueError("目标攻击修正的 operation 不受支持")
                     if stat == "light_radius_ft" and operation != "set":
                         raise ValueError("光照范围修正必须使用 set")
-                    if stat not in {"attack_roll", "light_radius_ft", "movement_budget"}:
+                    if stat not in {
+                        "attack_roll",
+                        "armor_class",
+                        "light_radius_ft",
+                        "movement_budget",
+                    }:
                         raise ValueError("目标限时修正的 stat 不受支持")
                     duration_unit = str(effect.get("duration_unit") or "minutes").strip()
                     duration_value = self._state_int(effect.get("duration_value"), 0)
@@ -17201,6 +17214,8 @@ class CombatEngineService:
                         raise ValueError("当前回合限时修正只支持 1 回合")
                     if stat == "movement_budget" and operation != "add":
                         raise ValueError("移动预算限时修正必须使用 add")
+                    if stat == "armor_class" and operation != "add":
+                        raise ValueError("目标 AC 限时修正必须使用 add")
                     snapshot = dict(actor.snapshot_json or {})
                     raw_timed = snapshot.get("timed_feature_modifiers")
                     timed = (

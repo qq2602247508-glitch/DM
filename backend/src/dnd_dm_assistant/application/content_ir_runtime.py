@@ -152,28 +152,33 @@ class ContentIRRuntimeService:
         registry = dict(runtime) if isinstance(runtime, Mapping) else {}
         feature_id = _text(data.get("runtime_id"))
         actions = registry.get("actions")
-        raw_action = actions.get(feature_id) if isinstance(actions, Mapping) else None
+        prefer_attack_rider = data.get("attack_hit") is True
+        raw_action = None
+        if not prefer_attack_rider:
+            raw_action = actions.get(feature_id) if isinstance(actions, Mapping) else None
         if not isinstance(raw_action, Mapping) and isinstance(actions, Mapping):
-            raw_action = next(
-                (
-                    item
-                    for item in actions.values()
-                    if isinstance(item, Mapping) and _text(item.get("feature_id")) == feature_id
-                ),
-                None,
-            )
+            if not prefer_attack_rider:
+                raw_action = next(
+                    (
+                        item
+                        for item in actions.values()
+                        if isinstance(item, Mapping)
+                        and _text(item.get("feature_id")) == feature_id
+                    ),
+                    None,
+                )
         if not isinstance(raw_action, Mapping):
             canonical = registry.get("canonical_actions")
-            if isinstance(canonical, list):
+            if isinstance(canonical, list) and not prefer_attack_rider:
                 raw_action = next(
                     (
                         item
                         for item in canonical
                         if isinstance(item, Mapping)
                         and _text(item.get("feature_id")) == feature_id
-                    ),
-                    None,
-                )
+                ),
+                None,
+            )
         if not isinstance(raw_action, Mapping):
             riders = registry.get("attack_riders")
             raw_action = next(
@@ -198,6 +203,18 @@ class ContentIRRuntimeService:
                 ),
                 None,
             )
+        if not isinstance(raw_action, Mapping) and prefer_attack_rider:
+            raw_action = actions.get(feature_id) if isinstance(actions, Mapping) else None
+            if not isinstance(raw_action, Mapping) and isinstance(actions, Mapping):
+                raw_action = next(
+                    (
+                        item
+                        for item in actions.values()
+                        if isinstance(item, Mapping)
+                        and _text(item.get("feature_id")) == feature_id
+                    ),
+                    None,
+                )
         if not isinstance(raw_action, Mapping):
             triggers = registry.get("triggers")
             raw_action = next(
@@ -211,7 +228,11 @@ class ContentIRRuntimeService:
                         "target": "ally_or_self",
                         "target_policy": {"mode": "ally_or_self"},
                         "resolution_kind": "condition_removal",
-                        "condition_removal_options": [_text(item.get("condition"))],
+                        "condition_removal_options": [
+                            part.strip()
+                            for part in _text(item.get("condition")).split("_or_")
+                            if part.strip()
+                        ],
                         "condition_trigger": dict(item),
                         "effects": [],
                     }
@@ -258,6 +279,16 @@ class ContentIRRuntimeService:
             raise ValueError("combatant feature registry lacks the requested runtime consumer")
         action = dict(raw_action)
         if action.get("kind") == "create_timed_modifier":
+            modifier_value = action.get("value")
+            value_source = str(action.get("value_source") or "")
+            if modifier_value is None and value_source.endswith("_die"):
+                modifier_value = data.get("resolution_total")
+            if modifier_value is None and value_source.endswith("_modifier"):
+                ability = value_source.removesuffix("_modifier")
+                scores = actor.snapshot_json.get("ability_scores")
+                raw_score = scores.get(ability) if isinstance(scores, Mapping) else None
+                if isinstance(raw_score, int):
+                    modifier_value = (raw_score - 10) // 2
             action = {
                 **action,
                 "kind": "feature_action",
@@ -270,7 +301,7 @@ class ContentIRRuntimeService:
                         "modifier": {
                             "stat": action.get("stat"),
                             "operation": action.get("operation"),
-                            "value": action.get("value"),
+                            "value": modifier_value,
                         },
                         "duration_unit": "turns",
                         "duration_value": 1,
@@ -709,6 +740,8 @@ class ContentIRRuntimeService:
             raise VersionConflict("content runtime preview", key, 1, 2)
         if _text(data.get("content_kind")) == "feature":
             runtime_action = dict(preview["feature_action"])
+            if data.get("reaction_triggered") is True:
+                runtime_action["reaction_triggered"] = True
             if runtime_action.get("kind") == "attack_rider":
                 target_id = _text(data.get("target_combatant_id"))
                 with Session(self.engine) as session:

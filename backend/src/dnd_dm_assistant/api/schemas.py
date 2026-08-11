@@ -2506,6 +2506,7 @@ class ContentIRRuntimeRequest(BaseModel):
     save_succeeded: bool | None = None
     save_succeeded_by_target: dict[str, bool] = Field(default_factory=dict, max_length=20)
     attack_hit: bool | None = None
+    reaction_triggered: bool = False
     condition_to_remove: Literal["charmed", "frightened", "poisoned"] | None = None
     preview_token: str | None = None
     idempotency_key: str | None = Field(default=None, min_length=8, max_length=120)
