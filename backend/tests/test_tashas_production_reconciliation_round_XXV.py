@@ -75,10 +75,10 @@ def test_current_content_and_item_layers_reconcile_without_double_counting() -> 
         "authored_typed_ir": 95,
         "compile_full": 94,
         "runtime_preview_full": 94,
-        "production_full": 89,
+        "production_full": 90,
         "dm_assisted": 2,
-        "game_usable": 91,
-        "compile_only": 3,
+        "game_usable": 92,
+        "compile_only": 2,
         "manual_authoring": 314,
         "dm_reference": 107,
     }

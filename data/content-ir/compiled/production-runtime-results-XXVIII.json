@@ -1,0 +1,55 @@
+{
+  "all_required_checks_passed": true,
+  "checks": {
+    "actor_cas": true,
+    "feature_compile_full": true,
+    "formal_database_unchanged": true,
+    "formal_registry_unchanged": true,
+    "generic_communication_consumer": true,
+    "name_branch_free": true,
+    "operation_transaction": true,
+    "preview_confirm_replay": true,
+    "production_runtime_full": true,
+    "protected_fingerprints_unchanged": true,
+    "replay_idempotent": true,
+    "source_provenance": true,
+    "submerged_condition_gate": true,
+    "typed_clause_count": true,
+    "typed_communication_clause": true,
+    "unmodeled_terms_closed": true
+  },
+  "content_kind": "feature",
+  "evidence_by_id": {
+    "content.tashas-cauldron.round2.feature.fathomless-oceanic-soul": {
+      "communication": {
+        "actor_satisfies": true,
+        "channel": "speech",
+        "direction": "mutual",
+        "mutual_comprehension": true,
+        "required_condition": "submerged",
+        "target_satisfies": true
+      },
+      "source": {
+        "source_fingerprint": "475e8e508d9a9f46c5df17d310287b38645f6be7adb5650f1251b2ad27b1dbe2",
+        "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/深海意志.html",
+        "source_record_id": "008f917eace997a6a54939d5"
+      },
+      "typed_clause_ids": [
+        "cold-resistance",
+        "underwater-communication"
+      ],
+      "typed_consumer": "communication.mutual_comprehension.v1"
+    }
+  },
+  "formal_database_fingerprint": "f3abdcf57b0d71888f085ca081511df4f4e23f100066b402d49d769089fa6aad",
+  "formal_registry_fingerprint": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+  "production_runtime_full_ids": [
+    "content.tashas-cauldron.round2.feature.fathomless-oceanic-soul"
+  ],
+  "protected_fingerprints": {
+    "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+    "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+  },
+  "round_id": "round-XXVII",
+  "schema_version": "content-ir-production-runtime-results-XXVIII-1"
+}

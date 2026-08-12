@@ -1,0 +1,93 @@
+{
+  "after": {
+    "selected_production_runtime_full": 1
+  },
+  "all_required_checks_passed": true,
+  "baseline": {
+    "project_production_full": 189,
+    "tashas_compile_only": 3,
+    "tashas_game_usable": 91,
+    "tashas_production_full": 89
+  },
+  "checks": {
+    "actor_cas": true,
+    "feature_compile_full": true,
+    "formal_database_unchanged": true,
+    "formal_registry_unchanged": true,
+    "generic_communication_consumer": true,
+    "name_branch_free": true,
+    "operation_transaction": true,
+    "preview_confirm_replay": true,
+    "production_runtime_full": true,
+    "protected_fingerprints_unchanged": true,
+    "replay_idempotent": true,
+    "source_provenance": true,
+    "submerged_condition_gate": true,
+    "typed_clause_count": true,
+    "typed_communication_clause": true,
+    "unmodeled_terms_closed": true
+  },
+  "evidence_by_id": {
+    "content.tashas-cauldron.round2.feature.fathomless-oceanic-soul": {
+      "communication": {
+        "actor_satisfies": true,
+        "channel": "speech",
+        "direction": "mutual",
+        "mutual_comprehension": true,
+        "required_condition": "submerged",
+        "target_satisfies": true
+      },
+      "source": {
+        "source_fingerprint": "475e8e508d9a9f46c5df17d310287b38645f6be7adb5650f1251b2ad27b1dbe2",
+        "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/深海意志.html",
+        "source_record_id": "008f917eace997a6a54939d5"
+      },
+      "typed_clause_ids": [
+        "cold-resistance",
+        "underwater-communication"
+      ],
+      "typed_consumer": "communication.mutual_comprehension.v1"
+    }
+  },
+  "formal_database_written": false,
+  "formal_registry_written": false,
+  "name_branch_count": 0,
+  "round_id": "round-XXVII",
+  "runtime_evidence": {
+    "actor_cas": true,
+    "communication": {
+      "actor_satisfies": true,
+      "channel": "speech",
+      "direction": "mutual",
+      "mutual_comprehension": true,
+      "required_condition": "submerged",
+      "target_satisfies": true
+    },
+    "confirm_status": 200,
+    "consumer": "communication.mutual_comprehension.v1",
+    "dry_fail_closed": true,
+    "dry_preview_status": 400,
+    "operation_transaction_status": "applied",
+    "preview_status": 200,
+    "production_runtime_full": true,
+    "replay_already_applied": true,
+    "replay_status": 200,
+    "stale_actor_status": 409
+  },
+  "schema_version": "tashas-feature-production-consumer-round-XXVII-1",
+  "selected_clusters": [
+    "communication.mutual_speech_comprehension",
+    "feature.condition_gate.submerged",
+    "feature.runtime_binding",
+    "content_ir_runtime.feature_action_preview_confirm_replay"
+  ],
+  "selected_feature_ids": [
+    "content.tashas-cauldron.round2.feature.fathomless-oceanic-soul"
+  ],
+  "selected_platforms": [
+    "communication.mutual_comprehension.v1",
+    "combatant_condition_gate",
+    "operation_transaction",
+    "content_ir_runtime.feature_action_preview_confirm_replay"
+  ]
+}
