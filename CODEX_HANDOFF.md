@@ -5,7 +5,7 @@
 - 当前实际 Tasha：`144 source records / 525 atoms / 408 executable / 98 authored Typed IR / 97 compile / 97 preview / 93 production / 2 DM-assisted / 95 game usable / 2 compile-only / 311 manual / 107 DM reference`；content-ID funnel `98 = 94 + 2 + 2`。
 - 当前 project：`193 production / 35 compile-only / 111 unique compiled`；Tasha evidence union `136`，project union `193`；ItemSpec 保持 `47/40/40/40`。
 - Round XXVIII validator 3/3 production_runtime_full；focused receipt suite 3 passed；backend 全量 pytest 932 passed（仅既有 Starlette/httpx deprecation warning）；Ruff、compileall、diff-check 通过；whole-pack migration 双跑 projection SHA-256 `8da4ddacecdca1d14bd97b48929e6581922ce5077b4268dedbeef041094ea2d4`。
-- 分离提交 `a0e8d73`（authored Domain Spells IR + author 工具）、`12f4b8d`（validator + test + evidence + 计数调和）、`4d8890b`（docs closeout）已推送到 `origin/main`（2026-08-13）。push receipt 已写入 ledger。
+- 分离提交 `a0e8d73`（authored Domain Spells IR + author 工具）、`12f4b8d`（validator + test + evidence + 计数调和）、`4d8890b`（docs closeout）、`f0860fa`（ledger/handoff checkpoint）已推送到 `origin/main`（`1cb7a27..f0860fa`，2026-08-13）。push receipt 已写入 ledger。
 - 证据入口：`docs/tashas-feature-production-consumer-round-XXVIII-2026-08-13.md`、`scripts/author-round-XXVIII-cleric-domain-spells.py`、`scripts/validate-tashas-feature-production-consumer-round-XXVIII.py`、`backend/tests/test_tashas_feature_production_consumer_round_XXVIII.py`、`reports/tashas-feature-production-consumer-round-XXVIII-2026-08-13.json`、`data/content-ir/compiled/production-runtime-results-XXIX.json`。
 - 下一轮继续 vessel（genie-bottled-respite 异次元空间）、spectral-object entity lifecycle + remote spell origin（scribe-manifest-mind）与其余领域/圣誓/结社法术表；不迁移下一本扩展包、不触碰 3D。
 
