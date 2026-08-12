@@ -256,13 +256,21 @@ def _materialize_exchange(context: MaterializerContext) -> MaterializedBlock:
 
 
 def _materialize_roll_intervention(context: MaterializerContext) -> MaterializedBlock:
-    """Project a typed superiority-die modifier into the shared d20 window."""
+    """Project a typed die modifier into the shared d20 window.
+
+    The source trigger describes the rule event (for example
+    ``initiative_rolled``), while the materialized ``trigger`` describes the
+    point at which the reported d20 may still be amended.  Keeping those two
+    fields separate lets initiative and ordinary ability checks share the same
+    persistence/resource consumer.
+    """
 
     params = context.parameters
-    if context.clause.trigger not in {"ability_check", "attack_declared"}:
+    if context.clause.trigger not in {"ability_check", "attack_declared", "initiative_rolled"}:
         raise MaterializerError("superiority-die intervention trigger is unsupported")
-    if str(params.get("value_source") or "") != "superiority_die":
-        raise MaterializerError("roll intervention requires a typed superiority die")
+    value_source = str(params.get("value_source") or "").strip()
+    if not value_source.endswith("_die"):
+        raise MaterializerError("roll intervention requires a typed die source")
     resource_effects = [
         effect
         for effect in context.clause.effects
@@ -284,28 +292,40 @@ def _materialize_roll_intervention(context: MaterializerContext) -> Materialized
         "resource": {
             "key": resource_key,
             "minimum": resource_cost,
-            "value_bind_as": "superiority_die_sides",
+            "value_bind_as": f"{value_source}_sides",
         },
         "forbidden_conditions": ["incapacitated"],
     }
     if context.clause.trigger == "ability_check":
-        eligibility["test_kinds"] = ["ability_check"]
+        eligibility["test_kinds"] = ["ability_check", "skill_check"]
         stat = str(params.get("stat") or "")
         if stat.endswith("_social_check"):
             eligibility["abilities"] = [stat.removesuffix("_social_check")]
-        elif stat != "ability_check":
+        elif stat.endswith("_stealth_check"):
+            eligibility["abilities"] = [stat.removesuffix("_stealth_check")]
+        else:
             raise MaterializerError(
-                "ability-check intervention stat is not a typed ability check"
+                "ability-check intervention stat is not a typed ability-specific check"
             )
-        skills = [item for item in applies_when.split("_or_") if item]
+        skills = [
+            item.removesuffix("_check")
+            for item in applies_when.split("_or_")
+            if item
+        ]
         if not skills:
             raise MaterializerError("ability-check intervention lacks typed skills")
         eligibility["skills"] = skills
-    else:
+    elif context.clause.trigger == "attack_declared":
         if applies_when != "weapon_attack":
             raise MaterializerError("attack intervention lacks weapon_attack binding")
         eligibility["test_kinds"] = ["armor_class"]
         eligibility["attack_types"] = ["weapon_attack"]
+    else:
+        if str(params.get("stat") or "") != "initiative":
+            raise MaterializerError("initiative intervention lacks typed initiative stat")
+        if applies_when != "initiative_roll":
+            raise MaterializerError("initiative intervention lacks initiative binding")
+        eligibility["test_kinds"] = ["initiative"]
 
     entry = context.base(kind="roll_intervention")
     entry.update(
@@ -315,12 +335,12 @@ def _materialize_roll_intervention(context: MaterializerContext) -> Materialized
             "source_trigger": context.clause.trigger,
             "operation": {
                 "kind": "add_die",
-                "input_key": "superiority_die_roll",
-                "die_sides_expression": "superiority_die_sides",
+                "input_key": f"{value_source}_roll",
+                "die_sides_expression": f"{value_source}_sides",
             },
             "eligibility": eligibility,
             "input_requirements": [
-                {"key": "superiority_die_roll", "kind": "integer"}
+                {"key": f"{value_source}_roll", "kind": "integer"}
             ],
             "window": {"phase": "after_d20_test", "expires": "operation"},
             "action_cost": "none",
@@ -345,18 +365,24 @@ def _materialize_modifier(context: MaterializerContext) -> MaterializedBlock:
     params = context.parameters
     if (
         context.operator == "add_modifier"
-        and params.get("value_source") == "superiority_die"
+        and str(params.get("value_source") or "").endswith("_die")
         and (
             (
                 context.clause.trigger == "ability_check"
-                and params.get("stat") == "charisma_social_check"
-                and str(params.get("applies_when") or "").strip()
-                in {"intimidation_or_performance_or_persuasion"}
+                and (
+                    str(params.get("stat") or "").endswith("_social_check")
+                    or str(params.get("stat") or "").endswith("_stealth_check")
+                )
             )
             or (
                 context.clause.trigger == "attack_declared"
                 and params.get("stat") == "attack_roll"
                 and params.get("applies_when") == "weapon_attack"
+            )
+            or (
+                context.clause.trigger == "initiative_rolled"
+                and params.get("stat") == "initiative"
+                and params.get("applies_when") == "initiative_roll"
             )
         )
     ):

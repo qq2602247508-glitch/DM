@@ -2413,6 +2413,23 @@ class SceneCombatStartRequest(BaseModel):
     name: str | None = None
 
 
+class InitiativeRollConfirmationCommand(BaseModel):
+    action_version: int = Field(ge=1)
+    use_intervention: bool = False
+    intervention_id: str | None = Field(default=None, min_length=1, max_length=120)
+    intervention_inputs: dict[str, int] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def validate_intervention(self) -> InitiativeRollConfirmationCommand:
+        if self.use_intervention and self.intervention_id is None:
+            raise ValueError("使用先攻干预时必须提交 intervention_id")
+        if not self.use_intervention and (
+            self.intervention_id is not None or self.intervention_inputs
+        ):
+            raise ValueError("放弃先攻干预时不能携带 intervention_id 或骰值")
+        return self
+
+
 class KnownSpellCreate(BaseModel):
     character_id: str = Field(min_length=1, max_length=36)
     character_version: int = Field(ge=1)

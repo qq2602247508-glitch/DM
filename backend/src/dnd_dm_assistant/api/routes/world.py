@@ -23,6 +23,7 @@ from dnd_dm_assistant.api.schemas import (
     EnvironmentHazardPreviewRequest,
     ExplorationConfirmRequest,
     ExplorationPreviewRequest,
+    InitiativeRollConfirmationCommand,
     ItemPickupRequest,
     LocationGenerationConfirmRequest,
     LocationGenerationRequest,
@@ -691,5 +692,25 @@ def start_scene_combat(
             scene_id,
             name=body.name,
             request_id=_request_id(request),
+        )
+    )
+
+
+@router.post("/combats/{combat_id}/initiative-rolls/{action_id}/confirm")
+def confirm_initiative_roll(
+    campaign_id: str,
+    combat_id: str,
+    action_id: str,
+    body: InitiativeRollConfirmationCommand,
+    request: Request,
+    service: Annotated[WorldService, Depends(get_world_service)],
+) -> dict[str, Any]:
+    return _safe_call(
+        lambda: service.confirm_initiative_roll(
+            campaign_id,
+            combat_id,
+            action_id,
+            body,
+            idempotency_key=_request_id(request),
         )
     )

@@ -19,6 +19,10 @@ from dnd_dm_assistant.domain.feature_runtime import (
     resolve_unarmored_defense_ac,
 )
 from dnd_dm_assistant.domain.item_spec import materialize_item_effects
+from dnd_dm_assistant.domain.roll_intervention import (
+    apply_roll_intervention,
+    resolve_roll_interventions,
+)
 from dnd_dm_assistant.domain.world import GeneratedLocationNode
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.encounter_service import (
@@ -31,10 +35,12 @@ from dnd_dm_assistant.infrastructure.database.models import (
     Campaign,
     Character,
     Combat,
+    CombatAction,
     Combatant,
     EquipmentInstance,
     Location,
     MonsterInstance,
+    OperationTransaction,
     Scene,
     SceneGrid,
     SceneObject,
@@ -790,6 +796,54 @@ class WorldService:
                     is_active=True,
                 )
                 session.add(combatant)
+                session.flush()
+
+                initiative_interventions = self._initiative_intervention_options(
+                    snapshot,
+                    entity_type=participant.entity_type,
+                )
+                initiative_action: CombatAction | None = None
+                if initiative_interventions:
+                    initiative_action = CombatAction(
+                        campaign_id=campaign_id,
+                        combat_id=combat.id,
+                        actor_combatant_id=combatant.id,
+                        target_combatant_ids=[combatant.id],
+                        action_type="initiative_roll_prompt",
+                        request_json={
+                            "combatant_version": combatant.version,
+                            "character_version": (
+                                int(entity.version) if isinstance(entity, Character) else None
+                            ),
+                            "initiative_roll": {
+                                **dict(snapshot["initiative_roll"]),
+                                "base_total": total,
+                            },
+                            "interventions": initiative_interventions,
+                        },
+                        result_json={
+                            "phase": "awaiting_initiative_intervention",
+                            "roll_owner": "player",
+                            "base_total": total,
+                            "roll_total": die,
+                            "modifier": modifier,
+                            "roll_intervention_window": [
+                                self._initiative_intervention_presentation(item)
+                                for item in initiative_interventions
+                            ],
+                        },
+                        explanation="先攻已掷出，等待玩家选择是否使用通用先攻干预",
+                        round_number=combat.round_number,
+                        turn_index=combat.current_turn_index,
+                        summary=f"{combatant.display_name} 的先攻等待玩家干预选择",
+                        idempotency_key=(
+                            f"initiative-roll:{combat.id}:"
+                            f"{participant.entity_type}:{participant.entity_id or combatant.id}"
+                        ),
+                        status="previewed",
+                    )
+                    session.add(initiative_action)
+                    session.flush()
                 rolls.append(
                     {
                         "entity_type": participant.entity_type,
@@ -802,6 +856,18 @@ class WorldService:
                         "disadvantage_sources": initiative_disadvantage_sources,
                         "dexterity_modifier": modifier,
                         "total": total,
+                        "pending_intervention": initiative_action is not None,
+                        "initiative_action_id": (
+                            initiative_action.id if initiative_action is not None else None
+                        ),
+                        "initiative_intervention_window": (
+                            [
+                                self._initiative_intervention_presentation(item)
+                                for item in initiative_interventions
+                            ]
+                            if initiative_interventions
+                            else []
+                        ),
                     }
                 )
             session.flush()
@@ -823,6 +889,257 @@ class WorldService:
                 request_id,
             )
             return {"combat": serialize(combat), "initiative_rolls": rolls}
+
+    @staticmethod
+    def _initiative_intervention_options(
+        snapshot: dict[str, Any],
+        *,
+        entity_type: str,
+    ) -> list[dict[str, Any]]:
+        runtime = snapshot.get("feature_runtime")
+        if not isinstance(runtime, dict):
+            return []
+        raw_actions = runtime.get("actions")
+        actions = (
+            list(raw_actions.values())
+            if isinstance(raw_actions, dict)
+            else raw_actions
+            if isinstance(raw_actions, list)
+            else []
+        )
+        specs = [dict(item) for item in actions if isinstance(item, dict)]
+        progression = runtime.get("progression")
+        class_levels = (
+            dict(progression.get("class_levels") or {})
+            if isinstance(progression, dict)
+            else {}
+        )
+        resources = dict(snapshot.get("resources") or {})
+        feature_states = dict(snapshot.get("feature_states") or {})
+        return resolve_roll_interventions(
+            specs,
+            trigger="after_d20_test",
+            context={
+                "entity_type": entity_type,
+                "test_kind": "initiative",
+                "conditions": list(snapshot.get("conditions") or []),
+                "class_levels": class_levels,
+                "resources": resources,
+                "feature_states": feature_states,
+            },
+        )
+
+    @staticmethod
+    def _initiative_intervention_presentation(
+        intervention: dict[str, Any],
+    ) -> dict[str, Any]:
+        return {
+            "id": intervention.get("id"),
+            "name": intervention.get("name") or intervention.get("feature_name"),
+            "operation": intervention.get("operation"),
+            "input_requirements": intervention.get("input_requirements", []),
+            "resource": intervention.get("resource"),
+            "action_cost": intervention.get("action_cost"),
+        }
+
+    def confirm_initiative_roll(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        action_id: str,
+        command: Any,
+        *,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        if not idempotency_key.strip():
+            raise ValueError("idempotency key is required")
+        with Session(self.engine) as session, session.begin():
+            combat = session.get(Combat, combat_id)
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("combat not found")
+            action = session.get(CombatAction, action_id)
+            if (
+                action is None
+                or action.combat_id != combat_id
+                or action.campaign_id != campaign_id
+                or action.action_type != "initiative_roll_prompt"
+            ):
+                raise StateNotFoundError("initiative roll prompt not found")
+            actor = session.get(Combatant, action.actor_combatant_id)
+            if actor is None or actor.combat_id != combat_id:
+                raise StateNotFoundError("initiative roll actor not found")
+            if action.status == "confirmed":
+                return {
+                    "action": serialize(action),
+                    "actor": serialize(actor),
+                    "resolution": action.result_json,
+                }
+            if action.status != "previewed":
+                raise ValueError("initiative roll prompt has already been resolved")
+            if action.version != command.action_version:
+                raise VersionConflict(
+                    "combat_action",
+                    action.id,
+                    command.action_version,
+                    action.version,
+                )
+
+            request = dict(action.request_json or {})
+            expected_actor_version = request.get("combatant_version")
+            if isinstance(expected_actor_version, int) and actor.version != expected_actor_version:
+                raise VersionConflict(
+                    "combatant",
+                    actor.id,
+                    expected_actor_version,
+                    actor.version,
+                )
+            raw_roll = request.get("initiative_roll")
+            if not isinstance(raw_roll, dict):
+                raise ValueError("initiative roll prompt is missing its frozen roll")
+            base_total = raw_roll.get("base_total")
+            if not isinstance(base_total, int):
+                raise ValueError("initiative roll prompt is missing its frozen total")
+
+            effective_total = base_total
+            intervention_result: dict[str, Any] | None = None
+            resource_consumed: dict[str, Any] | None = None
+            if command.use_intervention:
+                interventions = [
+                    dict(item)
+                    for item in request.get("interventions", [])
+                    if isinstance(item, dict)
+                ]
+                selected = next(
+                    (
+                        item
+                        for item in interventions
+                        if item.get("id") == command.intervention_id
+                    ),
+                    None,
+                )
+                if selected is None:
+                    raise ValueError("所选先攻干预当前不可用")
+                intervention_result = apply_roll_intervention(
+                    selected,
+                    roll_total=base_total,
+                    inputs=command.intervention_inputs,
+                    operation_id=action.id,
+                )
+                if intervention_result.get("resource_should_consume") is True:
+                    resource = intervention_result.get("resource")
+                    if not isinstance(resource, dict):
+                        raise ValueError("先攻干预缺少资源提交计划")
+                    resource_key = str(resource.get("key") or "").strip()
+                    cost = int(resource.get("cost") or 0)
+                    if actor.entity_type != "character" or not actor.entity_id:
+                        raise ValueError("先攻干预需要权威角色资源上下文")
+                    character = session.get(Character, actor.entity_id)
+                    if character is None:
+                        raise StateNotFoundError("initiative roll character not found")
+                    expected_character_version = request.get("character_version")
+                    if (
+                        isinstance(expected_character_version, int)
+                        and character.version != expected_character_version
+                    ):
+                        raise VersionConflict(
+                            "character",
+                            character.id,
+                            expected_character_version,
+                            character.version,
+                        )
+                    resources = dict(character.resources or {})
+                    entry = dict(resources.get(resource_key) or {})
+                    before = entry.get("current")
+                    if not isinstance(before, int) or cost < 1 or before < cost:
+                        raise ValueError(f"先攻干预资源不足：{resource_key}")
+                    entry["current"] = before - cost
+                    resources[resource_key] = entry
+                    character.resources = resources
+                    character.version += 1
+                    character.updated_at = datetime.now(UTC)
+                    snapshot = dict(actor.snapshot_json or {})
+                    snapshot["resources"] = resources
+                    runtime = snapshot.get("feature_runtime")
+                    if isinstance(runtime, dict):
+                        runtime = dict(runtime)
+                        runtime_resources = runtime.get("resources")
+                        if isinstance(runtime_resources, dict):
+                            runtime_resources = dict(runtime_resources)
+                            runtime_entry = runtime_resources.get(resource_key)
+                            if isinstance(runtime_entry, dict):
+                                runtime_resources[resource_key] = {
+                                    **runtime_entry,
+                                    "current": before - cost,
+                                }
+                                runtime["resources"] = runtime_resources
+                        snapshot["feature_runtime"] = runtime
+                    actor.snapshot_json = snapshot
+                    resource_consumed = {
+                        "key": resource_key,
+                        "cost": cost,
+                        "before": before,
+                        "after": before - cost,
+                    }
+                effective_total = int(intervention_result["effective_total"])
+
+            now = datetime.now(UTC)
+            actor.initiative = effective_total
+            snapshot = dict(actor.snapshot_json or {})
+            snapshot_roll = {
+                key: value for key, value in raw_roll.items() if key != "base_total"
+            }
+            snapshot["initiative_roll"] = {
+                **snapshot_roll,
+                "effective_total": effective_total,
+                "intervention": intervention_result,
+            }
+            actor.snapshot_json = snapshot
+            actor.version += 1
+            actor.updated_at = now
+            resolution = {
+                "phase": "resolved",
+                "base_total": base_total,
+                "effective_total": effective_total,
+                "roll_total": raw_roll.get("selected_die"),
+                "modifier": base_total - int(raw_roll.get("selected_die") or 0),
+                "intervention": intervention_result,
+                "generic_resource_consumed": resource_consumed,
+                "idempotency_key": idempotency_key,
+            }
+            transaction = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="combat_initiative_roll_confirmation",
+                idempotency_key=f"initiative-roll-confirm:{action.id}",
+                status="applied",
+                before_snapshot={
+                    "initiative": base_total,
+                    "combatant_version": request.get("combatant_version"),
+                },
+                after_snapshot={
+                    "resolution": resolution,
+                    "combatant_id": actor.id,
+                    "effective_total": effective_total,
+                },
+                reason="typed initiative roll intervention confirmation",
+                source="combat",
+                confirmed_at=now,
+            )
+            session.add(transaction)
+            session.flush()
+            action.transaction_id = transaction.id
+            action.result_json = resolution
+            action.status = "confirmed"
+            action.version += 1
+            action.updated_at = now
+            action.summary = (
+                f"{actor.display_name} 确认先攻 {effective_total}"
+                + ("；已消费一枚结构化资源" if resource_consumed else "")
+            )
+            return {
+                "action": serialize(action),
+                "actor": serialize(actor),
+                "resolution": resolution,
+            }
 
     def confirm_location_tree(
         self,
