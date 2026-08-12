@@ -1,5 +1,11 @@
 # 特性自动化迁移预审报告
 
+## 持续 Goal Round 22：Soulknife Psychic Teleportation Typed Feature Consumer（2026-08-12）
+
+- Round XXII 已验收并推送：source-complete Psychic Teleportation 通过通用 `teleport` operator、`movement.teleport` capability 和既有 `combat_engine.feature_action.v1` 接入 authoritative grid；typed resource `psionic_dice` 单次消耗，距离为明确掷骰结果×10尺，目的地为可见未占据空间。
+- 隔离 SQLite 已证明失败回滚、合法传送、资源/bonus action CAS、snapshot、OperationTransaction、preview→confirm→replay 与幂等；Tasha after 为 `85 production / 2 dm-assisted / 87 game usable / 7 compile-only`，项目 production full `185`，ItemSpec `47/40/40/40`。最终迁移产物在 evidence 对齐后连续两次 byte-identical。
+- `ContentIRRuntimeRequest` 已保留目的地/掷骰字段；没有 feature-name branch。实现提交 `da93a60`、证据修正 `816a9dc` 已推送，receipt 单独记录。剩余 summon/entity、defense、communication、maneuver eligibility、vessel、spectral-object seam 继续 fail-closed。
+
 ## 持续 Goal Round 21：Psionic Sorcery Typed Spell-Context Consumer（2026-08-12）
 
 - Round XXI 已验收并推送：source-complete Psionic Sorcery 的两个 typed clauses 已接入名称无关 `spell.context.v1`；非费用组件忽略、法术位→灵能点支付、actor snapshot、资源 CAS、preview/confirm/replay 与 rollback 均在真实隔离 SQLite 通过。

@@ -1,3 +1,13 @@
+# 2026-08-12 Round 22 检查点：Soulknife Psychic Teleportation Typed Feature Consumer
+
+- Round XXII 已验收 source-complete `content.tashas-cauldron.round2.feature.soulknife-psychic-teleportation`：新增 typed `teleport` operator，表达 bonus action、可见未占据空间、`movement_roll_total × 10 ft` 距离上限，并与 `consume_resource(psionic_dice, 1)` 组合；`unmodeled_source_terms=[]`，没有 feature-name branch。
+- 通用链路已落地：Feature operator contract、`movement.teleport` production-closed capability、materializer、`ContentIRRuntimeRequest` 的目的地/掷骰输入、ContentIR preview/confirm 绑定，复用既有 `combat_engine.feature_action.v1` 与 authoritative grid teleport consumer。
+- 真实隔离 SQLite evidence：占据目的地 confirm 失败后资源、角色/战斗版本、snapshot、bonus action 全部回滚；合法 `(2,2)→(2,6)`，roll=2、最大距离=20ft、距离=20ft，`psionic_dice 3→2`，bonus action 消耗；preview→confirm→replay、CAS、transactions 全通过。
+- Round XXII after：Tasha `525 atoms / 408 player-facing / 408 executable / 95 authored Typed IR / 94 compile / 94 preview / 85 production / 2 DM-assisted / 87 game usable / 7 compile-only / 314 manual / 107 DM reference`；项目 production full `185`、compile-only `35`、unique compiled `111`；ItemSpec `47/40/40/40`。formal 499 仍 `328/110/61`。
+- 门禁：Round XXII validator 1/1，focused receipt tests，backend full pytest `903 passed, 1 warning`，`backend/src`+`backend/tests` Ruff，compileall，diff-check；whole-pack migration 共 6 次成功运行，最终两次关键 report SHA-256 byte-identical。正式 database `f3abdc...a6ad`、formal registry `f4b5...ca6b`、integrations `ae4e...cd91`、ollama `8027...e6ab` 未变。
+- 实现提交 `da93a60` 与证据可追溯性修正 `816a9dc` 已推送至 `origin/main`；本 receipt 会继续单独提交。外部 Obsidian memory write-back 仍受本轮 Codex usage limit 阻挡，未绕过限制；本仓库 handoff/ledger/plan/Round XXII doc 是本轮本地交接 authority。
+- 下一轮继续剩余 summon/entity、defense、communication、maneuver eligibility、vessel、spectral-object seams；继续 fail-closed，不迁移下一本扩展包，不触碰 3D。
+
 # 2026-08-12 Round 21 检查点：Psionic Sorcery Typed Spell-Context Consumer
 
 - Round XXI 已验收 source-complete `content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery`（灵能术法）：两个 typed clauses `component-override` 与 `payment-override`，分别表达 `psionic_spell` 下忽略非费用成分、以等同法术环阶的 `sorcery_points` 替代 `spell_slot`。source fingerprint、reviewed fields、source record/path、manual decisions 和空 `unmodeled_source_terms` 已保留。

@@ -6,6 +6,17 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 22：Soulknife Psychic Teleportation Typed Feature Consumer
+
+当前状态：`accepted`；实现、隔离 evidence、全量回归、提交与 push 已完成。
+
+- 本轮关闭 source-complete `content.tashas-cauldron.round2.feature.soulknife-psychic-teleportation`：新增通用 `teleport` operator 与 `movement.teleport` capability，Typed IR 组合 `psionic_dice` 单次消耗、bonus action、可见未占据空间和 `movement_roll_total × 10 ft` 距离上限。
+- 复用既有 `combat_engine.feature_action.v1` 与 authoritative grid teleport consumer；Content IR request/preview/confirm 正式保留目的地行列和掷骰输入，没有 feature-name dispatch。
+- 隔离 SQLite 证明占据目的地失败回滚、合法 `(2,2)→(2,6)` 20 尺传送、资源 `3→2`、bonus action、CAS、OperationTransaction、preview→confirm→replay 和幂等；`name_branch=0`。
+- Round XXII after：Tasha `525/408/408/95/94/94/85/2/87/7/314/107`（atoms/player-facing/executable/authored/compile/preview/production/dm-assisted/game usable/compile-only/manual/DM reference）；项目 production full `185`、compile-only `35`、unique compiled `111`；ItemSpec `47/40/40/40`。formal 499 保持 `328/110/61`。
+- 证据：`docs/tashas-feature-production-consumer-round-XXII-2026-08-12.md`、Round XXII validator/test/report/result、whole-pack reports 与 isolated runtime registry。validator、backend full pytest `903 passed, 1 warning`、`backend/src`+`backend/tests` Ruff、compileall、diff-check、whole-pack migration 共 6 次成功运行，最终两次关键 hash 一致。
+- 本轮为 movement/feature-action platform-core exception（1 条，正常批次门槛 8）。正式 registry/database、source corpus、3D 和永久保护路径未写入；实现提交 `da93a60`、证据修正 `816a9dc` 已推送，receipt 单独记录。
+
 ## Round 21：Psionic Sorcery Typed Spell-Context Consumer
 
 当前状态：`accepted`；实现、隔离 evidence、全量回归、提交与 push 已完成。
@@ -19,7 +30,7 @@
 
 ## Round 20：Sword Burst Generic Spell Consumer
 
-当前状态：`in_progress`；实现与隔离 evidence 已完成，等待全量门禁、稳定性取证、提交与 push。
+当前状态：`accepted`；实现、隔离 evidence、全量回归、提交与 push 已完成。
 
 - 选中唯一仍具完整通用消费者覆盖的 compile-only spell：`tashas-cauldron:spell:eec6bd94eb83a351fb987de2`（剑刃爆发 / Sword Burst）。source text 逐字段复核了 5 尺球形范围、敏捷豁免、失败 1d6 力场伤害和 5/11/17 级戏法强化；source fingerprint、reviewed fields、manual decisions 和 source evidence 均保留。
 - 新增名称无关的 `spell.cantrip_scaling.v1` registry descriptor。`ContentIRRuntimeService` 从角色当前等级消费 typed `upcast.progression`，再交给既有 `combat_engine.area_damage.v1` 与 `combat_engine.damage_heal.v1`；没有 spell-name dispatch。

@@ -1,7 +1,109 @@
 {
-  "current_round": "round-21",
+  "current_round": "round-22",
   "goal": "Local AI D&D DM Assistant complete official-content rules platform",
   "rounds": [
+    {
+      "round_id": "round-22",
+      "status": "accepted",
+      "started_at": "2026-08-12",
+      "accepted_at": "2026-08-12",
+      "objective": "Close the source-complete Psychic Teleportation Feature through the existing authoritative grid teleport and typed resource consumer: consume one psionic die, use its reported result multiplied by ten feet as the distance bound, and persist preview/confirm/replay, CAS, snapshot and rollback evidence.",
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 184,
+            "unique_compiled": 111
+          },
+          "formal_499": {
+            "dm_only": 61,
+            "full": 328,
+            "partial": 110,
+            "total": 499
+          },
+          "protected_fingerprints": {
+            "database": "f3abdcf57b0d71888f085ca081511df4f4f23f100066b402d49d769089fa6aad",
+            "formal_registry": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+            "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+            "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+          },
+          "tashas": {
+            "authored_typed_ir": 95,
+            "compile_only": 8,
+            "content_atoms_after_qa": 525,
+            "executable": 408,
+            "game_usable": 86,
+            "item_spec_compile_full": 40,
+            "item_spec_isolated_runtime_validated": 40,
+            "item_spec_registered_production_full": 40,
+            "item_spec_game_usable": 40,
+            "manual_authoring": 314,
+            "production_full": 84,
+            "runtime_preview_full": 94,
+            "source_records": 144
+          }
+        },
+        "difference": "Round XXII selects source-complete Psychic Teleportation because the authored contract has one typed resource effect and the existing generic feature-action consumer already provides bonus-action economy, actor resource CAS, destination inputs, authoritative grid occupancy/path checks, idempotency and operation transactions. Summon/entity, defense and spectral-object contracts remain fail-closed.",
+        "prompt_baseline": {
+          "selected_feature_production": 1,
+          "core_rule_exception": true,
+          "minimum_normal_batch": 8,
+          "typed_clause_count": 1,
+          "selected_content_ids": [
+            "content.tashas-cauldron.round2.feature.soulknife-psychic-teleportation"
+          ]
+        }
+      },
+      "commits": [
+        "da93a60",
+        "816a9dc"
+      ],
+      "compile_full_delta": 0,
+      "production_full_delta": 1,
+      "dm_assisted_delta": 0,
+      "item_compile_full_delta": 0,
+      "manual_delta": 0,
+      "pack_coverage_delta": {
+        "content_ir_production_full_before": 184,
+        "content_ir_production_full_after": 185,
+        "tasha_production_full_before": 84,
+        "tasha_production_full_after": 85,
+        "tasha_game_usable_before": 86,
+        "tasha_game_usable_after": 87,
+        "tasha_compile_only_before": 8,
+        "tasha_compile_only_after": 7
+      },
+      "reports": [
+        "docs/tashas-feature-production-consumer-round-XXII-2026-08-12.md",
+        "reports/tashas-feature-production-consumer-round-XXII-2026-08-12.json",
+        "data/content-ir/compiled/production-runtime-results-XXIV.json"
+      ],
+      "selected_clusters": [
+        "movement.teleport.destination",
+        "feature.resource.psionic_dice",
+        "feature.runtime_binding",
+        "content_ir_runtime.feature_action_preview_confirm_replay"
+      ],
+      "selected_platforms": [
+        "combat_engine.authoritative_grid_teleport",
+        "combat_engine.feature_action.v1",
+        "character_resource_and_operation_transaction",
+        "content_ir_runtime.feature_action"
+      ],
+      "next_round_reason": "After Round XXII, reassess the remaining summon/entity, defense, communication, maneuver eligibility, vessel and spectral-object seams; keep every unresolved source contract fail-closed.",
+      "protected_paths_untouched": true,
+      "formal_registry_written": false,
+      "formal_database_written": false,
+      "push_receipt": "da93a60, 816a9dc -> origin/main",
+      "tests": [
+        "scripts/validate-tashas-feature-production-consumer-round-XXII.py",
+        "backend/tests/test_tashas_feature_production_consumer_round_XXII.py",
+        "backend/.venv/bin/pytest -q backend/tests: 903 passed, 1 warning",
+        "backend/.venv/bin/ruff check backend/src backend/tests: passed",
+        "backend/.venv/bin/python -m compileall -q backend/src backend/tests: passed",
+        "whole-pack migration: 6 successful runs total; final 2 after evidence alignment were deterministic and key report SHA-256 byte-identical"
+      ]
+    },
     {
       "round_id": "round-21",
       "status": "accepted",

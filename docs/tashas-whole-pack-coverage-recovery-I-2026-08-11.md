@@ -16,7 +16,7 @@
 
 ## Feature/Option 与角色成长
 
-- Feature/Option reviewed：340；typed 86；compile 86；production 80；DM-assisted 1。该批次仍未达到 120/100/80/50/10 硬阈值，保持 partial，不虚报覆盖。
+- Feature/Option reviewed：340；typed 86；compile 86；production 81；DM-assisted 1。该批次仍未达到 120/100/80/50/10 硬阈值，保持 partial，不虚报覆盖。
 - 新增 28 个 name-independent semantic/template interfaces，其中 item 相关 5 个达到保守 unlock gate；feature/option cluster 的未知合同字段仍阻断 unlock。
 - 角色成长增加历史快照支撑的降级、不可变 pack pin、选择/资源/动作/休息重建和 CAS/幂等验证；整包 feature/option 资产不足以宣称 whole-pack production closed。
 
