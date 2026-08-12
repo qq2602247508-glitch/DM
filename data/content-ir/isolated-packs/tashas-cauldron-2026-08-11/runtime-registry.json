@@ -84,7 +84,7 @@
       "atom_id": "tashas-cauldron:atom:12139219bf7e575f9cde019c:ambush:001",
       "content_id": "content.tashas-cauldron.feature.battle-master.ambush",
       "content_kind": "maneuver",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "51242f7521d5c1fa6f688e02fd8838c7c61a5304a9ab6b4df49e5d97f6433fee",
       "typed_content_ids": [
         "content.tashas-cauldron.feature.battle-master.ambush"

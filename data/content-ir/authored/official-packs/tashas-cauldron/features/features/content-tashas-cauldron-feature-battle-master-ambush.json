@@ -1,9 +1,14 @@
 {
   "class_name": "战士",
   "clause_boundaries": {
-    "ambush": {
-      "boundary_rule": "the named feature heading and its complete paragraph(s)",
-      "source_excerpt": "当你进行一次敏捷（隐匿）检定或先攻检定时，你可以消耗一枚卓越骰，并将消耗的卓越骰加入本次检定中，前提是你并未失能",
+    "ambush:initiative": {
+      "boundary_rule": "the initiative branch of the named feature paragraph",
+      "source_excerpt": "当你进行一次先攻检定时，你可以消耗一枚卓越骰，并将消耗的卓越骰加入本次检定中，前提是你并未失能",
+      "source_heading": "战技选项：伏击"
+    },
+    "ambush:stealth": {
+      "boundary_rule": "the Dexterity (Stealth) branch of the named feature paragraph",
+      "source_excerpt": "当你进行一次敏捷（隐匿）检定时，你可以消耗一枚卓越骰，并将消耗的卓越骰加入本次检定中，前提是你并未失能",
       "source_heading": "战技选项：伏击"
     }
   },
@@ -14,9 +19,9 @@
       "audit": {
         "reviewed_by": "codex-manual-review-2026-08-11",
         "source": "authored_ir",
-        "source_excerpt": "进行敏捷隐匿检定或先攻检定时，消耗卓越骰并加入本次检定"
+        "source_excerpt": "进行先攻检定时，消耗卓越骰并加入本次检定"
       },
-      "clause_id": "ambush",
+      "clause_id": "ambush:initiative",
       "conditions": [
         {
           "kind": "actor_lacks_state",
@@ -60,6 +65,59 @@
       },
       "trigger": "initiative_rolled",
       "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-XXVI",
+        "source": "authored_ir",
+        "source_excerpt": "进行敏捷（隐匿）检定时，消耗卓越骰并加入本次检定"
+      },
+      "clause_id": "ambush:stealth",
+      "conditions": [
+        {
+          "kind": "actor_lacks_state",
+          "parameters": {
+            "state": "incapacitated"
+          }
+        }
+      ],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "consume_resource",
+          "parameters": {
+            "amount": 1,
+            "operation": "consume",
+            "resource_key": "superiority_dice"
+          }
+        },
+        {
+          "operator": "add_modifier",
+          "parameters": {
+            "applies_when": "stealth_check",
+            "id": "ambush:stealth",
+            "operation": "add",
+            "scope": "self",
+            "stat": "dexterity_stealth_check",
+            "value_source": "superiority_die"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "ability_check",
+      "visibility": "owner"
     }
   ],
   "compatibility": {
@@ -78,7 +136,7 @@
     "zh-CN": "战技选项：伏击"
   },
   "manual_decisions": {
-    "selected_contract": "本 authored record 选择先攻检定分支；未把隐匿检定另造第二条名称分支"
+    "selected_contract": "同一 source paragraph 拆成两个结构化触发分支：敏捷（隐匿）检定与先攻检定；两者共享通用 roll intervention consumer"
   },
   "namespace": "content.tashas-cauldron",
   "pack_id": "tashas-cauldron",
