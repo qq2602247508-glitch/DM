@@ -1,7 +1,126 @@
 {
-  "current_round": "round-26",
+  "current_round": "round-27",
   "goal": "Local AI D&D DM Assistant complete official-content rules platform",
   "rounds": [
+    {
+      "round_id": "round-27",
+      "status": "accepted",
+      "started_at": "2026-08-13",
+      "accepted_at": "2026-08-13",
+      "objective": "Close Fathomless Oceanic Soul (海渊魂灵) as a source-complete, name-agnostic generic communication consumer: author the underwater mutual speech comprehension clause and materialize it into a condition-gated read-only communication action with isolated production evidence.",
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 189,
+            "unique_compiled": 111
+          },
+          "formal_499": {
+            "dm_only": 61,
+            "full": 328,
+            "partial": 110,
+            "total": 499
+          },
+          "protected_fingerprints": {
+            "database": "f3abdcf57b0d71888f085ca081511df4f4e23f100066b402d49d769089fa6aad",
+            "formal_registry": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+            "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+            "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+          },
+          "tashas": {
+            "source_records": 144,
+            "content_atoms": 525,
+            "executable": 408,
+            "authored_typed_ir": 95,
+            "compile_full": 94,
+            "runtime_preview_full": 94,
+            "production_full": 89,
+            "dm_assisted": 2,
+            "game_usable": 91,
+            "compile_only": 3,
+            "manual_authoring": 314,
+            "dm_reference": 107,
+            "item_spec_total": 47,
+            "item_spec_compile_full": 40,
+            "item_spec_isolated_runtime_validated": 40,
+            "item_spec_registered_production_full": 40,
+            "item_spec_dm_assisted": 0,
+            "item_spec_game_usable": 40
+          }
+        }
+      },
+      "selected_content_ids": [
+        "content.tashas-cauldron.round2.feature.fathomless-oceanic-soul"
+      ],
+      "selected_clusters": [
+        "feature.communication.mutual_comprehension",
+        "feature.condition_gate.submerged",
+        "content_ir.source_complete_provenance"
+      ],
+      "selected_platforms": [
+        "feature_materializers",
+        "communication.mutual_comprehension.v1",
+        "ContentIRRuntimeService",
+        "OperationTransaction"
+      ],
+      "after": {
+        "tashas": {
+          "production_full": 90,
+          "dm_assisted": 2,
+          "game_usable": 92,
+          "compile_only": 2
+        },
+        "project": {
+          "production_full": 190,
+          "compile_only": 35,
+          "unique_compiled": 111
+        },
+        "evidence": {
+          "tasha_receipt_ids": 133,
+          "project_receipt_ids": 190
+        }
+      },
+      "delta": {
+        "tasha_production_full": 1,
+        "tasha_game_usable": 1,
+        "tasha_compile_only": -1,
+        "project_production_full": 1,
+        "project_receipt_ids": 1
+      },
+      "reports": [
+        "docs/tashas-feature-production-consumer-round-XXVII-2026-08-13.md",
+        "reports/tashas-feature-production-consumer-round-XXVII-2026-08-13.json",
+        "data/content-ir/compiled/production-runtime-results-XXVIII.json",
+        "reports/tashas-whole-pack-report-2026-08-11.json"
+      ],
+      "checks": [
+        "Round XXVII validator: all required checks passed",
+        "focused Round XXVII receipt suite: 3 passed",
+        "whole-pack migration twice: projection SHA-256 355b53211546f3110823566b909d1f34c85dea35d42b5205cead3c863fa5d7e7",
+        "formal database and registry unchanged",
+        "protected paths unchanged",
+        "name branch count 0"
+      ],
+      "tests": [
+        "backend/.venv/bin/pytest -q backend/tests: 929 passed, 1 warning (existing Starlette/httpx deprecation)",
+        "focused Round XXVII receipt suite: 3 passed",
+        "backend/src and backend/tests Ruff: passed",
+        "backend/src and backend/tests compileall: passed",
+        "git diff --check: passed",
+        "Round XXVII validator: 16/16 checks passed",
+        "whole-pack migration twice: projection SHA-256 355b53211546f3110823566b909d1f34c85dea35d42b5205cead3c863fa5d7e7"
+      ],
+      "protected_paths_untouched": true,
+      "formal_registry_written": false,
+      "formal_database_written": false,
+      "name_branch_count": 0,
+      "next_round_reason": "Continue the next source-complete generic consumer; vessel, spectral-object, entity lifecycle and broad character-growth seams remain fail-closed.",
+      "commits": [
+        "f1e8d0d",
+        "6d084e2",
+        "2fdd27d"
+      ]
+    },
     {
       "round_id": "round-26",
       "status": "accepted",

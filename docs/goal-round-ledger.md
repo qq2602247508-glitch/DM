@@ -6,6 +6,18 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 27：Fathomless Oceanic Soul Generic Communication Consumer
+
+当前状态：`accepted`；实现、receipt、报告、文档、全量门禁、分离提交和 push 均已完成。
+
+- 海渊魂灵（深海意志邪术师 6 级）补齐 source-complete 两个 typed clauses：`cold-resistance`（寒冷抗性）与 `underwater-communication`（水下互相语言理解）。后者由名称无关的 `grant_communication` operator（`channel=speech`、`direction=mutual`、`required_condition=submerged`）materializer 生成，并使用 `communication.mutual_comprehension.v1` consumer。
+- `ContentIRRuntimeService` 增加 `resolution_kind=communication` 分支：真实检查 actor 与 target 均满足 `required_condition`（submerged），任一不满足即 fail closed（400）；preview→confirm→replay、actor stale 409 CAS、OperationTransaction applied 全通过。顺带修复 `_preview_feature` 非 teleport 分支未初始化 `teleport_preview` 的潜在 `UnboundLocalError`。
+- Round XXVII validator 16/16 checks 为 true；focused Round XXVII receipt suite 3 passed；backend 全量 pytest 929 passed（仅既有 Starlette/httpx deprecation warning）；Ruff、compileall、diff-check 通过；whole-pack migration 双跑 projection SHA-256 均为 `355b53211546f3110823566b909d1f34c85dea35d42b5205cead3c863fa5d7e7`。
+- Actual after：Tasha `525/408/408/95/94/94/90/2/92/2/314/107`；ItemSpec `47/40/40/40`；项目 `190 production / 35 compile-only / 111 unique compiled`；Tasha evidence union `133`，project evidence union `190`。content-ID funnel 为 `95 = 91 + 2 + 2`。
+- 证据入口：`docs/tashas-feature-production-consumer-round-XXVII-2026-08-13.md`、`scripts/validate-tashas-feature-production-consumer-round-XXVII.py`、`backend/tests/test_tashas_feature_production_consumer_round_XXVII.py`、`reports/tashas-feature-production-consumer-round-XXVII-2026-08-13.json`、`data/content-ir/compiled/production-runtime-results-XXVIII.json`。
+- 保护路径、正式 database、formal registry、source corpus、campaign/character 与 3D 未写入；`name_branch_count=0`。下一轮继续 vessel、spectral-object、entity lifecycle 与 character-growth seams，不迁移下一本扩展包。
+- 保护指纹保持 database `f3abdcf57b0d71888f085ca081511df4f4e23f100066b402d49d769089fa6aad`、formal registry `f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b`、integrations manifest `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`、ollama `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`。
+
 ## Round 26：Ambush Generic Initiative / Roll Intervention Consumer
 
 当前状态：`accepted`；实现、receipt、报告、文档、全量门禁、分离提交和 push 均已完成。

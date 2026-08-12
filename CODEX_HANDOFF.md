@@ -1,3 +1,14 @@
+# 2026-08-13 Round 27 检查点：Fathomless Oceanic Soul Generic Communication Consumer
+
+- 本轮完成海渊魂灵 source-complete typed IR：`cold-resistance`（寒冷抗性）+ 新增 `underwater-communication`（水下互相语言理解）；后者通过名称无关 `grant_communication` operator（`channel=speech`、`direction=mutual`、`required_condition=submerged`）与 `communication.mutual_comprehension.v1` consumer。
+- `ContentIRRuntimeService` 新增 `resolution_kind=communication` 只读分支：真实检查 actor 与 target 均 `submerged`，任一不满足 fail closed（400）；preview→confirm→replay、stale actor 409 CAS、OperationTransaction applied 全通过；顺带修复非 teleport 分支未初始化 `teleport_preview` 的 `UnboundLocalError`。
+- 当前实际 Tasha：`144 source records / 525 atoms / 408 executable / 95 authored Typed IR / 94 compile / 94 preview / 90 production / 2 DM-assisted / 92 game usable / 2 compile-only / 314 manual / 107 DM reference`；content-ID funnel `95 = 91 + 2 + 2`。
+- 当前 project：`190 production / 35 compile-only / 111 unique compiled`；Tasha evidence union `133`，project union `190`；ItemSpec 保持 `47/40/40/40`。
+- Round XXVII validator 16/16 checks true；focused receipt suite 3 passed；backend 全量 pytest 929 passed（仅既有 Starlette/httpx deprecation warning）；Ruff、compileall、diff-check 通过；whole-pack migration 双跑 projection SHA-256 `355b53211546f3110823566b909d1f34c85dea35d42b5205cead3c863fa5d7e7`。
+- 分离提交：`f1e8d0d`（generic communication consumer）、`6d084e2`（Fathomless underwater communication authored IR）、`2fdd27d`（test + validator + evidence），docs/ledger closeout 提交随后。
+- 证据入口：`docs/tashas-feature-production-consumer-round-XXVII-2026-08-13.md`、`scripts/validate-tashas-feature-production-consumer-round-XXVII.py`、`backend/tests/test_tashas_feature_production_consumer_round_XXVII.py`、`reports/tashas-feature-production-consumer-round-XXVII-2026-08-13.json`、`data/content-ir/compiled/production-runtime-results-XXVIII.json`。
+- 下一轮继续 vessel（genie-bottled-respite 异次元空间）、spectral-object entity lifecycle + remote spell origin（scribe-manifest-mind）与 character-growth seams；不迁移下一本扩展包、不触碰 3D。
+
 # 2026-08-12 Round 26 检查点：Ambush Generic Initiative / Roll Intervention Consumer
 
 - 本轮已完成 Battle Master Ambush 的 source-complete typed IR：`ambush:initiative` 覆盖先攻，`ambush:stealth` 覆盖敏捷（隐匿）；两者均通过名称无关 `roll_intervention` materializer 与 `combat_engine.roll_intervention.v1`。
