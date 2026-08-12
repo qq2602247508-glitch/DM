@@ -4,7 +4,7 @@
   "rounds": [
     {
       "round_id": "round-23",
-      "status": "in_progress",
+      "status": "accepted",
       "started_at": "2026-08-12",
       "objective": "Close source-complete Intellect Fortress through a generic typed spell defense consumer with compound resistance/save-advantage effects, concentration group lifecycle, authoritative target geometry, CAS, idempotency, rollback and character concentration cleanup.",
       "baseline": {
@@ -117,7 +117,8 @@
       "protected_paths_untouched": true,
       "formal_registry_written": false,
       "formal_database_written": false,
-      "push_receipt": "f1d3ae8 -> origin/main; docs/evidence receipt pending",
+      "accepted_at": "2026-08-12",
+      "push_receipt": "f1d3ae8, 6ed1a30 -> origin/main",
       "tests": [
         "scripts/validate-tashas-spell-production-consumer-round-XXIII.py: 23/23 checks passed",
         "backend/tests/test_tashas_spell_production_consumer_round_XXIII.py: 5 passed",
