@@ -6,7 +6,7 @@
 - Round XXIV after：Tasha `525 atoms / 408 player-facing executable / 95 authored Typed IR / 94 compile / 94 preview / 88 production / 2 DM-assisted / 90 game usable / 4 compile-only / 314 manual / 107 DM reference`；项目 production full `188`、compile-only `35`、unique compiled `111`；ItemSpec `47/40/40/40`；formal 499 `328/110/61`。
 - Validator 全部 checks 通过；focused receipt suite `38 passed`；backend 全量 pytest、Ruff、`backend/src` compileall、diff-check 通过，仅保留既有 Starlette/httpx deprecation warning。证据入口：`scripts/validate-tashas-spell-production-consumer-round-XXIV.py`、`backend/tests/test_tashas_spell_production_consumer_round_XXIV.py`、`reports/tashas-spell-production-consumer-round-XXIV-2026-08-12.json`、`data/content-ir/compiled/production-runtime-results-XXVI.json`、`docs/tashas-spell-production-consumer-round-XXIV-2026-08-12.md`。
 - 正式 database、formal registry、source corpus、campaign/character、3D 和两个永久保护路径未写入；保护指纹保持 database `f3abdcf57b0d71888f085ca081511df4f4f23f100066b402d49d769089fa6aad`、formal registry `f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b`、integrations `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`、ollama `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`；`name_branch_count=0`。
-- 提交与推送：实现 `22f78e7`、证据/交接 `0932a0f` 均已推送到 `origin/main`。
+- 提交与推送：实现 `22f78e7`、证据 `0932a0f`、最终交接 `e52d31c` 均已推送到 `origin/main`。
 - 下一轮继续 source-complete typed contract 的 generic consumer；communication、maneuver eligibility、vessel、spectral-object 和未闭合 character-growth seams 保持 fail-closed，不迁移下一本扩展包、不触碰 3D。
 
 # 2026-08-12 Round 23 检查点：Intellect Fortress Typed Spell Defense Consumer
