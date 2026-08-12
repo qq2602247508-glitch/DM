@@ -1,0 +1,51 @@
+{
+  "all_required_checks_passed": true,
+  "checks": {
+    "combat_action_transaction": true,
+    "compile_full": true,
+    "formal_database_unchanged": true,
+    "formal_registry_unchanged": true,
+    "initiative_branch": true,
+    "name_branch_free": true,
+    "preview_confirm_replay": true,
+    "production_consumer": true,
+    "protected_fingerprints_unchanged": true,
+    "resource_cas": true,
+    "source_provenance": true,
+    "stealth_branch": true,
+    "typed_clause_count": true
+  },
+  "evidence": {
+    "base_total": 12,
+    "character_resource_after": 3,
+    "combat_action_status": "confirmed",
+    "confirm_status": 200,
+    "effective_total": 19,
+    "operation_transaction_status": "applied",
+    "preview_status": 201,
+    "replay_already_applied": true,
+    "replay_status": 200,
+    "resource_consumed": {
+      "after": 3,
+      "before": 4,
+      "cost": 1,
+      "key": "superiority_dice"
+    }
+  },
+  "formal_database_written": false,
+  "formal_registry_written": false,
+  "name_branch_count": 0,
+  "new_production_full": 1,
+  "pack_id": "tashas-cauldron",
+  "production_consumer": "combat_engine.roll_intervention.v1",
+  "round_id": "round-XXVI",
+  "schema_version": "tashas-feature-production-consumer-round-XXVI-1",
+  "selected_feature_ids": [
+    "content.tashas-cauldron.feature.battle-master.ambush"
+  ],
+  "source_record_id": "12139219bf7e575f9cde019c",
+  "typed_clause_ids": [
+    "ambush:initiative",
+    "ambush:stealth"
+  ]
+}

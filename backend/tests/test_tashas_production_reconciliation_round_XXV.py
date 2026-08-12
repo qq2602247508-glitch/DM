@@ -23,11 +23,19 @@ def test_shared_evidence_loader_scopes_and_deduplicates_round_receipts() -> None
     tasha = load_production_runtime_evidence(ROOT, pack_id=PACK_ID)
     all_evidence = load_production_runtime_evidence(ROOT, pack_id=None)
 
-    assert len(tasha) == 131
-    assert len(existing_project_production_ids(ROOT)) == 188
+    # Round XXV's historical 131/188 snapshot is superseded by the current
+    # Round XXVI Ambush receipt. Keep this test focused on reconciliation
+    # invariants; the current exact projection is asserted by the Round XXVI
+    # receipt test.
+    project_ids = existing_project_production_ids(ROOT)
+    assert len(tasha) == len(set(tasha))
+    assert len(project_ids) == len(set(project_ids))
+    assert len(tasha) >= 131
+    assert len(project_ids) >= 188
     assert set(tasha).issubset(all_evidence)
     assert "tashas-cauldron:spell:54c8c29188db1442473d9dc1" in tasha
     assert "tashas-cauldron:spell:083419d9de551806a5ca9748" in tasha
+    assert "content.tashas-cauldron.feature.battle-master.ambush" in tasha
     assert all(
         content_id.startswith(("content.tashas-cauldron.", "tashas-cauldron:"))
         for content_id in tasha
@@ -42,7 +50,7 @@ def test_item_evidence_is_closed_to_valid_item_consumer_receipts() -> None:
     assert len(item_ids) == len(set(item_ids))
 
 
-def test_round_xxiv_content_and_item_layers_reconcile_without_double_counting() -> None:
+def test_current_content_and_item_layers_reconcile_without_double_counting() -> None:
     migration = build_migration(ROOT)
     atoms = migration["atoms"]
 
@@ -67,10 +75,10 @@ def test_round_xxiv_content_and_item_layers_reconcile_without_double_counting() 
         "authored_typed_ir": 95,
         "compile_full": 94,
         "runtime_preview_full": 94,
-        "production_full": 88,
+        "production_full": 89,
         "dm_assisted": 2,
-        "game_usable": 90,
-        "compile_only": 4,
+        "game_usable": 91,
+        "compile_only": 3,
         "manual_authoring": 314,
         "dm_reference": 107,
     }

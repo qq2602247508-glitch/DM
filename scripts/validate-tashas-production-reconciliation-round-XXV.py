@@ -91,8 +91,14 @@ def main() -> int:
 
     checks = {
         "source_records_144": len(source_records) == 144,
-        "tasha_receipts_deduplicated_131": len(tasha_evidence) == 131,
-        "project_receipts_deduplicated_188": len(project_ids) == 188,
+        "tasha_receipts_deduplicated_current_132": (
+            len(tasha_evidence) == 132
+            and len(tasha_evidence) == len(set(tasha_evidence))
+        ),
+        "project_receipts_deduplicated_current_189": (
+            len(project_ids) == 189
+            and len(project_ids) == len(set(project_ids))
+        ),
         "tasha_receipts_subset_project": set(tasha_evidence).issubset(project_ids),
         "summon_beast_receipt_present": (
             "tashas-cauldron:spell:54c8c29188db1442473d9dc1" in tasha_evidence
@@ -115,10 +121,10 @@ def main() -> int:
             == layers["game_usable"]
         ),
         "whole_pack_report_current": (
-            whole_pack["conversion"]["production_full"] == 88
+            whole_pack["conversion"]["production_full"] == 89
             and whole_pack["conversion"]["dm_assisted"] == 2
-            and whole_pack["conversion"]["game_usable"] == 90
-            and whole_pack["conversion"]["compile_only"] == 4
+            and whole_pack["conversion"]["game_usable"] == 91
+            and whole_pack["conversion"]["compile_only"] == 3
         ),
         "item_report_current": (
             item_report["item_spec_total"] == 47
