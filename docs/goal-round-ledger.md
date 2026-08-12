@@ -6,6 +6,19 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 29：野火/守望/荣耀三张恒备法术表 Character-Growth Consumer
+
+当前状态：`accepted`；实现、receipt、报告、文档、全量门禁、分离提交和 push 均已完成。
+
+- 本轮关闭三个 source-complete 恒备法术表：野火结社（德鲁伊 2 级）、守望之誓（圣武士 3 级）、荣耀之誓（圣武士 3 级）。每个特性是单条 `always-prepared` 子句，效果为 10 个 `grant_spell`（德鲁伊 `wisdom`/`druid`，圣武士 `charisma`/`paladin`），复用既有 `advancement_service.character_growth.v1` + `advancement_service.spell_registry` 消费者，未新增 dispatch 分支。
+- 法术 slug 逐一对照 `玩家手册 2014` spell corpus 英文别名（`burning_hands`、`mass_cure_wounds`、`counterspell`、`nondetection`、`guiding_bolt`、`freedom_of_movement` 等），三张法术表互不重叠。
+- Round XXIX validator 3/3 production_runtime_full；focused Round XXIX receipt suite 3 passed；backend 全量 pytest 935 passed（仅既有 Starlette/httpx deprecation warning）；Ruff、compileall、diff-check 通过；whole-pack migration 双跑 projection SHA-256 均为 `78b667e2fa838b7e77393bf4c05b230591ed2097c2c9ece5798fe927babce4a8`。
+- Actual after：Tasha `525/408/408/101/100/100/96/2/98/2/308/107`；ItemSpec `47/40/40/40`；项目 `196 production / 35 compile-only / 111 unique compiled`；Tasha evidence union `139`，project evidence union `196`。content-ID funnel 为 `101 = 97 + 2 + 2`。
+- 证据入口：`docs/tashas-feature-production-consumer-round-XXIX-2026-08-13.md`、`scripts/author-round-XXIX-spell-lists.py`、`scripts/validate-tashas-feature-production-consumer-round-XXIX.py`、`backend/tests/test_tashas_feature_production_consumer_round_XXIX.py`、`reports/tashas-feature-production-consumer-round-XXIX-2026-08-13.json`、`data/content-ir/compiled/production-runtime-results-XXX.json`。
+- 保护路径、正式 database、formal registry、source corpus、campaign/character 与 3D 未写入；`name_branch_count=0`。下一轮继续剩余恒备法术表或单一抗性/移动/视觉类特性，不迁移下一本扩展包。
+- 保护指纹保持 database `f3abdcf57b0d71888f085ca081511df4f4e23f100066b402d49d769089fa6aad`、formal registry `f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b`、integrations manifest `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`、ollama `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`。
+- Push receipt：`c8ae7cd`、`4f2f6be`、`2146a4c` 已推送到 `origin/main`（2026-08-13）。
+
 ## Round 28：三张牧师领域法术表 Character-Growth Consumer
 
 当前状态：`accepted`；实现、receipt、报告、文档、全量门禁、分离提交和 push 均已完成。
