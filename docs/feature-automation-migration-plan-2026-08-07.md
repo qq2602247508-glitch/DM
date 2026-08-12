@@ -1,5 +1,14 @@
 # 特性自动化迁移预审报告
 
+## 持续 Goal Round 24：Summon Beast / Summon Undead Typed Summon Consumer（2026-08-12）
+
+- Round XXIV 已完成两条 source-complete summon SpellSpec：`Summon Beast` 与 `Summon Undead`。每条保留 `target_selection`、`summon_or_creation`、`concentration`、`upcast` 四条 typed clauses；source provenance、source fingerprint、source checksum 和 clause boundaries 均保留。
+- 新增并接入名称无关 `spell.summon.v1`：choice/stat block、HP/AC scaling、movement modes、actions/defenses、90 尺 visible/unoccupied geometry、shared initiative、action economy、duration/concentration、source/summon lifecycle、spell-slot rollback 和 preview/confirm/replay 均通过真实临时 SQLite。
+- `default_behavior` 已由 generic Combat lifecycle 实际执行：player-controlled ally summon 无口头命令时消费 action Dodge，并按权威 hostile grid position 与现有障碍/边界/占用规则远离危险；没有权威位置时 fail closed 为 DM review，不把持久化字段伪称自动执行。
+- Round XXIV after：Tasha `525 atoms / 408 executable / 95 authored Typed IR / 94 compile / 94 preview / 88 production / 2 dm-assisted / 90 game usable / 4 compile-only / 314 manual / 107 DM reference`；项目 production full `188`；ItemSpec `47/40/40/40`；formal 499 `328/110/61`。
+- Validator、focused `38 passed`、backend full pytest、Ruff、`backend/src` compileall 与 diff-check 已通过。证据入口：`scripts/validate-tashas-spell-production-consumer-round-XXIV.py`、Round XXIV report/result/doc。
+- 正式 database/registry、source corpus、campaign/character、3D 与永久保护路径均未写入；`name_branch_count=0`。下一轮继续 source-complete typed contract 的 generic consumer；communication、maneuver eligibility、vessel、spectral-object 和未闭合 character-growth seams 保持 fail-closed。
+
 ## 持续 Goal Round 23：Intellect Fortress Typed Spell Defense Consumer（2026-08-12）
 
 - Round XXIII 已验收并推送前完成 source-complete Intellect Fortress 的五条 typed spell clauses：psychic resistance、Intelligence/Wisdom/Charisma save advantage、30 ft visible target、concentration、四环 target increment 与 30 ft group distance。

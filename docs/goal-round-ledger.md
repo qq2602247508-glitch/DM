@@ -6,9 +6,20 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 24：Summon Beast / Summon Undead Typed Summon Consumer
+
+当前状态：`accepted`；实现、evidence、全量门禁、交接和 push 已完成。
+
+- 本轮关闭两条 source-complete summon SpellSpec：`tashas-cauldron:spell:54c8c29188db1442473d9dc1` 与 `tashas-cauldron:spell:083419d9de551806a5ca9748`。每条保留四条 typed clauses：`target_selection`、`summon_or_creation`、`concentration`、`upcast`；source provenance/checksum/clause boundaries 未改动。
+- 新增/接入名称无关 `spell.summon.v1`，真实消费 choice/stat block、HP/AC scaling、movement modes、structured actions/defenses、90 尺 visible/unoccupied geometry、action economy、shared initiative、duration/concentration、source/summon lifecycle、spell-slot rollback、CAS 与 preview/confirm/replay。
+- `default_behavior` 已由 generic Combat lifecycle 自动执行：player-controlled ally summon 无口头命令时消费 action Dodge，并按最近 hostile grid position 与现有障碍/边界/占用规则远离危险；无权威位置时 fail closed 为 DM review。执行结果写入回合审计与 transaction snapshot。
+- Actual before→after：Tasha `525/408/408/95/94/94/86/2/88/6/314/107` → `525/408/408/95/94/94/88/2/90/4/314/107`（atoms/player-facing/executable/authored/compile/preview/production/dm-assisted/game usable/compile-only/manual/DM reference）；项目 production `186→188`，compile-only `35`，unique compiled `111`；ItemSpec `47/40/40/40`；formal 499 `328/110/61`。
+- Validator 全部 checks 通过；focused `38 passed`；backend full pytest、Ruff、`backend/src` compileall、diff-check 通过，仅有既有 Starlette/httpx deprecation warning。证据入口：Round XXIV validator/test/report/result/doc。
+- 正式 database/registry、source corpus、campaign/character、3D 与两个永久保护路径未写入；`name_branch_count=0`。下一轮继续 communication、maneuver eligibility、vessel、spectral-object 和未闭合 character-growth 的 generic consumer，不迁移下一本扩展包。
+
 ## Round 23：Intellect Fortress Typed Spell Defense Consumer
 
-当前状态：`in_progress`；实现、evidence、全量门禁和 deterministic migration 已完成，待分离提交与 push。
+当前状态：`accepted`；实现、evidence、全量门禁、交接和 push 已完成。
 
 - 本轮选择 source-complete `tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3`，保留五条真实 typed clauses：target selection、concentration、psychic resistance、三种 save advantage、upcast target increment。
 - 新增名称无关 `spell.defense.v1`，通过 `defense_bundle`、grouped `CombatEffect`、共享 concentration group、authoritative grid range/visibility/group distance、target cap、CAS、replacement、group end、rollback 和 replay 形成真实 spell production consumer。

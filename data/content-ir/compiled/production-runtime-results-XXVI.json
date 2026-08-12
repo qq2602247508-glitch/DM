@@ -1,0 +1,182 @@
+{
+  "all_required_checks_passed": true,
+  "checks": {
+    "action_economy_and_initiative": true,
+    "choice_and_stat_block": true,
+    "compile_full": true,
+    "default_behavior_executed": true,
+    "duration_and_concentration": true,
+    "formal_database_unchanged": true,
+    "formal_registry_unchanged": true,
+    "name_branch_free": true,
+    "occupied_position_rejected_before_payment": true,
+    "preview_confirm_replay": true,
+    "production_consumers": true,
+    "production_runtime_full": true,
+    "protected_fingerprints_unchanged": true,
+    "source_concentration_lifecycle": true,
+    "source_provenance": true,
+    "spell_slot_rollback": true,
+    "typed_clause_count": true
+  },
+  "evidence_by_id": {
+    "tashas-cauldron:spell:083419d9de551806a5ca9748": {
+      "action_cost": "action",
+      "armor_class": 14,
+      "choice": "ghostly",
+      "clauses": 4,
+      "concentration_effect_count": 1,
+      "condition_immunities": [
+        "exhaustion",
+        "frightened",
+        "paralyzed",
+        "poisoned"
+      ],
+      "confirm_status": 200,
+      "consumer": "spell.summon.v1",
+      "consumer_ids": [
+        "spell.summon.v1",
+        "spell_economy.concentration.v1"
+      ],
+      "damage_immunities": [
+        "necrotic",
+        "poison"
+      ],
+      "default_behavior": {
+        "action_available_after": false,
+        "dodge_applied": true,
+        "moved_ft": 40,
+        "movement_policy": "move_away_from_danger",
+        "movement_status": "applied",
+        "on_no_command": "dodge",
+        "position_changed": true,
+        "status": "applied"
+      },
+      "duration": {
+        "unit": "minutes",
+        "value": 60
+      },
+      "expected_armor_class": 14,
+      "expected_condition_immunities": [
+        "exhaustion",
+        "frightened",
+        "paralyzed",
+        "poisoned"
+      ],
+      "expected_damage_immunities": [
+        "necrotic",
+        "poison"
+      ],
+      "expected_hp": 30,
+      "expected_movement_modes": [
+        {
+          "mode": "walk",
+          "speed_ft": 40
+        },
+        {
+          "hover": true,
+          "mode": "fly",
+          "speed_ft": 40
+        }
+      ],
+      "hp": 30,
+      "movement_modes": [
+        {
+          "mode": "walk",
+          "speed_ft": 40
+        },
+        {
+          "hover": true,
+          "mode": "fly",
+          "speed_ft": 40
+        }
+      ],
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "shared_initiative": true,
+      "source": {
+        "source_fingerprint": "f051639e10dfdc7e9d340120f61a8c2bb3cd942f767a6d07da361717f178a5d8",
+        "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+        "source_record_id": "083419d9de551806a5ca9748"
+      }
+    },
+    "tashas-cauldron:spell:54c8c29188db1442473d9dc1": {
+      "action_cost": "action",
+      "armor_class": 13,
+      "choice": "land",
+      "clauses": 4,
+      "concentration_effect_count": 1,
+      "condition_immunities": [],
+      "confirm_status": 200,
+      "consumer": "spell.summon.v1",
+      "consumer_ids": [
+        "spell.summon.v1",
+        "spell_economy.concentration.v1"
+      ],
+      "damage_immunities": [],
+      "default_behavior": {
+        "action_available_after": false,
+        "dodge_applied": true,
+        "moved_ft": 30,
+        "movement_policy": "move_away_from_danger",
+        "movement_status": "applied",
+        "on_no_command": "dodge",
+        "position_changed": true,
+        "status": "applied"
+      },
+      "duration": {
+        "unit": "minutes",
+        "value": 60
+      },
+      "expected_armor_class": 13,
+      "expected_condition_immunities": [],
+      "expected_damage_immunities": [],
+      "expected_hp": 30,
+      "expected_movement_modes": [
+        {
+          "mode": "walk",
+          "speed_ft": 30
+        },
+        {
+          "mode": "climb",
+          "speed_ft": 60
+        }
+      ],
+      "hp": 30,
+      "movement_modes": [
+        {
+          "mode": "walk",
+          "speed_ft": 30
+        },
+        {
+          "mode": "climb",
+          "speed_ft": 60
+        }
+      ],
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "shared_initiative": true,
+      "source": {
+        "source_fingerprint": "f57b0e2559fd8a0edbef3ef77cf0ead4daa815a664e1c412bd7e26a337961d50",
+        "source_path": "塔莎的万事坩埚/法术/法术详述/2环.html",
+        "source_record_id": "54c8c29188db1442473d9dc1"
+      }
+    }
+  },
+  "formal_database_fingerprint": "f3abdcf57b0d71888f085ca081511df4f4f23f100066b402d49d769089fa6aad",
+  "formal_registry_fingerprint": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+  "production_runtime_full_ids": [
+    "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
+    "tashas-cauldron:spell:083419d9de551806a5ca9748"
+  ],
+  "protected_fingerprints": {
+    "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+    "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+  },
+  "round_id": "round-24",
+  "schema_version": "content-ir-production-runtime-results-XXVI-1"
+}

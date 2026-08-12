@@ -1,7 +1,137 @@
 {
-  "current_round": "round-23",
+  "current_round": "round-24",
   "goal": "Local AI D&D DM Assistant complete official-content rules platform",
   "rounds": [
+    {
+      "round_id": "round-24",
+      "status": "accepted",
+      "started_at": "2026-08-12",
+      "accepted_at": "2026-08-12",
+      "objective": "Close Summon Beast and Summon Undead through a generic typed summon consumer with stat-block choice/scaling, authoritative placement, shared initiative, action economy, concentration/source lifecycle, rollback/replay, and automated no-command default behavior.",
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 186,
+            "unique_compiled": 111
+          },
+          "formal_499": {
+            "dm_only": 61,
+            "full": 328,
+            "partial": 110,
+            "total": 499
+          },
+          "protected_fingerprints": {
+            "database": "f3abdcf57b0d71888f085ca081511df4f4f23f100066b402d49d769089fa6aad",
+            "formal_registry": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+            "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+            "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+          },
+          "tashas": {
+            "source_records": 144,
+            "content_atoms_after_qa": 525,
+            "executable": 408,
+            "authored_typed_ir": 95,
+            "compile_full": 94,
+            "runtime_preview_full": 94,
+            "production_full": 86,
+            "dm_assisted": 2,
+            "game_usable": 88,
+            "compile_only": 6,
+            "manual_authoring": 314,
+            "dm_reference": 107,
+            "item_spec_compile_full": 40,
+            "item_spec_isolated_runtime_validated": 40,
+            "item_spec_registered_production_full": 40,
+            "item_spec_game_usable": 40
+          }
+        },
+        "prompt_baseline": {
+          "source_records": 144,
+          "content_atoms_qa_before": 625,
+          "player_facing_executable": 407,
+          "template_catalog": 28,
+          "template_matched": 29,
+          "authored_typed_ir": 30,
+          "compile_full": 29,
+          "runtime_preview_full": 29,
+          "production_full": 17,
+          "dm_assisted": 1,
+          "game_usable": 18,
+          "compile_only": 11,
+          "manual_authoring": 378,
+          "dm_reference": 107
+        },
+        "difference": "The prompt baseline is historical and uses a different funnel denominator. Current source and reports are authoritative: 525 QA atoms, 408 executable atoms, 95 authored Typed IR, 94 compile/runtime preview, 86 Tasha production and 186 project production before this round.",
+        "evidence": [
+          "reports/tashas-content-atom-catalog-II-2026-08-11.json",
+          "reports/tashas-whole-pack-report-2026-08-11.json",
+          "reports/tashas-baseline-2026-08-11.json"
+        ]
+      },
+      "commits": [
+        "22f78e7"
+      ],
+      "compile_full_delta": 0,
+      "production_full_delta": 2,
+      "dm_assisted_delta": 0,
+      "item_compile_full_delta": 0,
+      "manual_delta": 0,
+      "pack_coverage_delta": {
+        "content_ir_production_full_before": 186,
+        "content_ir_production_full_after": 188,
+        "tasha_production_full_before": 86,
+        "tasha_production_full_after": 88,
+        "tasha_game_usable_before": 88,
+        "tasha_game_usable_after": 90,
+        "tasha_compile_only_before": 6,
+        "tasha_compile_only_after": 4,
+        "tasha_authored_typed_ir_unchanged": 95,
+        "tasha_compile_full_unchanged": 94,
+        "tasha_runtime_preview_full_unchanged": 94,
+        "tasha_content_atoms_unchanged": 525,
+        "item_registered_production_full_unchanged": 40,
+        "item_game_usable_unchanged": 40
+      },
+      "reports": [
+        "docs/tashas-spell-production-consumer-round-XXIV-2026-08-12.md",
+        "reports/tashas-spell-production-consumer-round-XXIV-2026-08-12.json",
+        "data/content-ir/compiled/production-runtime-results-XXVI.json"
+      ],
+      "selected_content_ids": [
+        "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
+        "tashas-cauldron:spell:083419d9de551806a5ca9748"
+      ],
+      "selected_clusters": [
+        "spell.summon.stat_block.choice_scaling",
+        "spell.summon.authoritative_placement",
+        "spell.summon.shared_initiative_action_economy",
+        "spell.summon.concentration_source_lifecycle",
+        "spell.summon.default_behavior"
+      ],
+      "selected_platforms": [
+        "spell.summon.v1",
+        "combat_engine.summon_lifecycle",
+        "combat_engine.authoritative_summon_geometry",
+        "combat_engine.summon_default_behavior",
+        "spell_economy.concentration"
+      ],
+      "next_round_reason": "Continue source-complete typed contracts with generic consumers; communication, maneuver eligibility, vessel, spectral-object, and unresolved character-growth seams remain fail-closed.",
+      "protected_paths_untouched": true,
+      "formal_registry_written": false,
+      "formal_database_written": false,
+      "name_branch_count": 0,
+      "push_receipt": "22f78e7 -> origin/main",
+      "tests": [
+        "scripts/validate-tashas-spell-production-consumer-round-XXIV.py: all checks passed",
+        "backend/tests/test_tashas_spell_production_consumer_round_XXIV.py: focused receipt passed",
+        "focused Content IR/combat regression suite: 38 passed",
+        "PYTHONPATH=backend/src backend/.venv/bin/pytest -q backend/tests: passed, 1 warning",
+        "backend/.venv/bin/ruff check validator backend/src backend/tests: passed",
+        "backend/.venv/bin/python -m compileall -q backend/src: passed",
+        "git diff --check: passed"
+      ]
+    },
     {
       "round_id": "round-23",
       "status": "accepted",

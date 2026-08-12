@@ -1,3 +1,13 @@
+# 2026-08-12 Round 24 检查点：Summon Beast / Summon Undead Typed Summon Consumer
+
+- Round XXIV 已验收 source-complete `tashas-cauldron:spell:54c8c29188db1442473d9dc1`（野兽召唤术）与 `tashas-cauldron:spell:083419d9de551806a5ca9748`（亡灵召唤术）。两条均保留 `target_selection`、`summon_or_creation`、`concentration`、`upcast` 四条 typed clauses，以及 source fingerprint、source checksum、source path 和 clause boundaries。
+- 新增/接入名称无关 `spell.summon.v1`：choice/stat block、HP/AC scaling、movement modes、structured actions/defenses、90 尺 visible/unoccupied geometry、action economy、shared initiative、duration/concentration、source/summon lifecycle、spell-slot rollback、CAS、preview/confirm/replay 均在真实临时 SQLite 通过。
+- `default_behavior` 已真正闭环：player-controlled ally summon 在无口头命令的回合开始自动消费 action 执行 Dodge，并按最近权威 hostile grid position 与现有障碍/边界/占用规则远离危险；无权威危险位置时 fail closed 为 DM review。行为写入 `advance_turn`、`CombatAction` 和 transaction snapshot，不把持久化字段伪称自动执行。
+- Round XXIV after：Tasha `525 atoms / 408 player-facing executable / 95 authored Typed IR / 94 compile / 94 preview / 88 production / 2 DM-assisted / 90 game usable / 4 compile-only / 314 manual / 107 DM reference`；项目 production full `188`、compile-only `35`、unique compiled `111`；ItemSpec `47/40/40/40`；formal 499 `328/110/61`。
+- Validator 全部 checks 通过；focused receipt suite `38 passed`；backend 全量 pytest、Ruff、`backend/src` compileall、diff-check 通过，仅保留既有 Starlette/httpx deprecation warning。证据入口：`scripts/validate-tashas-spell-production-consumer-round-XXIV.py`、`backend/tests/test_tashas_spell_production_consumer_round_XXIV.py`、`reports/tashas-spell-production-consumer-round-XXIV-2026-08-12.json`、`data/content-ir/compiled/production-runtime-results-XXVI.json`、`docs/tashas-spell-production-consumer-round-XXIV-2026-08-12.md`。
+- 正式 database、formal registry、source corpus、campaign/character、3D 和两个永久保护路径未写入；保护指纹保持 database `f3abdcf57b0d71888f085ca081511df4f4f23f100066b402d49d769089fa6aad`、formal registry `f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b`、integrations `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`、ollama `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`；`name_branch_count=0`。
+- 下一轮继续 source-complete typed contract 的 generic consumer；communication、maneuver eligibility、vessel、spectral-object 和未闭合 character-growth seams 保持 fail-closed，不迁移下一本扩展包、不触碰 3D。
+
 # 2026-08-12 Round 23 检查点：Intellect Fortress Typed Spell Defense Consumer
 
 - Round XXIII 已验收 source-complete `tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3`（智能壁垒）：五条 typed clauses 覆盖 30 尺可见目标、psychic resistance、Intelligence/Wisdom/Charisma save advantage、concentration 和四环目标增长/30 尺组距。
