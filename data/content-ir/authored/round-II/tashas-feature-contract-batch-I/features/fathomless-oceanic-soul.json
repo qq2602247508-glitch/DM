@@ -4,6 +4,10 @@
     "cold-resistance": {
       "source_excerpt": "*第6级深海意志**宗主**特性*\n深海对你来说如家一般熟悉。你获得寒冷伤害的抗性。此外，当你完全浸没在水中时，任何同样完全被浸没的生物都能理解你说出的话，你也能听懂他们说的话。",
       "source_fragment": "43"
+    },
+    "underwater-communication": {
+      "source_excerpt": "*第6级深海意志**宗主**特性*\n深海对你来说如家一般熟悉。你获得寒冷伤害的抗性。此外，当你完全浸没在水中时，任何同样完全被浸没的生物都能理解你说出的话，你也能听懂他们说的话。",
+      "source_fragment": "43"
     }
   },
   "clauses": [
@@ -41,6 +45,42 @@
       },
       "trigger": "advancement_confirmed",
       "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-13-round-XXVII",
+        "source": "authored_ir",
+        "source_boundary": "underwater-communication",
+        "source_excerpt": "*第6级深海意志**宗主**特性*\n深海对你来说如家一般熟悉。你获得寒冷伤害的抗性。此外，当你完全浸没在水中时，任何同样完全被浸没的生物都能理解你说出的话，你也能听懂他们说的话。"
+      },
+      "clause_id": "underwater-communication",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_communication",
+          "parameters": {
+            "channel": "speech",
+            "direction": "mutual",
+            "required_condition": "submerged"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "one_creature",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
     }
   ],
   "compatibility": {
@@ -61,9 +101,7 @@
   "manual_decisions": {
     "isolated_runtime_only": true,
     "operator_mapping": "explicit_atom_mapping",
-    "unmodeled_source_terms": [
-      "underwater mutual language comprehension requires a communication consumer"
-    ]
+    "unmodeled_source_terms": []
   },
   "namespace": "content.tashas-cauldron",
   "pack_id": "tashas-cauldron",
@@ -89,7 +127,7 @@
   "ruleset_version": "2014",
   "schema_version": "feature-ir-1",
   "source_book": "塔莎的万事坩埚",
-  "source_completeness": "incomplete",
+  "source_completeness": "complete",
   "source_evidence": {
     "source_excerpt": "*第6级深海意志**宗主**特性*\n深海对你来说如家一般熟悉。你获得寒冷伤害的抗性。此外，当你完全浸没在水中时，任何同样完全被浸没的生物都能理解你说出的话，你也能听懂他们说的话。",
     "source_fragment": "43",
