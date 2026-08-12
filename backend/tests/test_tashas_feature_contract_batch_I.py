@@ -49,11 +49,11 @@ def test_round_II_feature_contract_batch_hits_explicit_gate() -> None:
 
 def test_round_II_assets_keep_real_provenance_and_closed_compiler_status() -> None:
     specs = _specs()
-    assert len(specs) == 70
+    assert len(specs) == 73
     results = [FeatureCompiler(status_authority="compiler").compile(spec) for spec in specs]
     assert sum(item.compile_status == "full" for item in results) >= 58
     assert sum(item.compile_status == "partial" for item in results) <= 6
-    assert sum(item.compile_status in {"full", "partial"} for item in results) == 70
+    assert sum(item.compile_status in {"full", "partial"} for item in results) == 73
     assert all(spec.source_book == "塔莎的万事坩埚" for spec in specs)
     assert all(spec.source_trust == "authored_ir" for spec in specs)
     assert all(spec.review_status == "reviewed" for spec in specs)

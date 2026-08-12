@@ -61,13 +61,13 @@ def test_round_xxvi_receipt_matches_current_pack_projection() -> None:
     assert report["name_branch_count"] == 0
     assert all(value is True for value in report["checks"].values())
     assert all(value is True for value in results["checks"].values())
-    assert migration["production_full"] == 96
+    assert migration["production_full"] == 99
     assert migration["dm_assisted"] == 2
-    assert migration["game_usable"] == 98
+    assert migration["game_usable"] == 101
     assert migration["compile_only"] == 2
     assert migration["content_id_funnel"]["relation_holds"] is True
-    assert len(load_production_runtime_evidence(ROOT, pack_id=PACK_ID)) == 139
-    assert len(existing_project_production_ids(ROOT)) == 196
+    assert len(load_production_runtime_evidence(ROOT, pack_id=PACK_ID)) == 142
+    assert len(existing_project_production_ids(ROOT)) == 199
 
 
 def test_ambush_is_typed_as_two_generic_roll_intervention_clauses() -> None:
