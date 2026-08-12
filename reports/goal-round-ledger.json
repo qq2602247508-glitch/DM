@@ -129,7 +129,14 @@
       "formal_registry_written": false,
       "formal_database_written": false,
       "name_branch_count": 0,
-      "push_receipt": null,
+      "push_receipt": {
+        "branch": "main",
+        "commit_hash": "10bf95b",
+        "pushed_at": "2026-08-12",
+        "remote": "origin",
+        "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
+        "result": "success"
+      },
       "tests": [
         "backend/.venv/bin/pytest -q backend/tests: passed, 1 warning",
         "focused reconciliation suite: 18 passed",
