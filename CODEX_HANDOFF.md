@@ -1,3 +1,14 @@
+# 2026-08-13 Round 30 检查点：战地匠师/装甲师/魔炮师三张奇械师法术表 Character-Growth Consumer
+
+- 本轮关闭三个 source-complete 奇械师恒备法术表：`battle-smith-spell-list`（战地匠师）、`armorer-spell-list`（装甲师）、`artillerist-spell-list`（魔炮师），各 3 级。每个特性是单条 `always-prepared` 子句，效果为 10 个 `grant_spell`（`source_class=artificer`、`casting_ability=intelligence`、`grant_mode=always_prepared`），复用既有名称无关 `advancement_service.character_growth.v1` + `advancement_service.spell_registry` 消费者，未新增任何 dispatch 分支或底层 capability。
+- 法术 slug 逐一对照 `玩家手册 2014` spell corpus 英文别名（`heroism`、`shield`、`branding_smite`、`warding_bond`、`aura_of_vitality`、`conjure_barrage`、`aura_of_purity`、`fire_shield`、`banishing_smite`、`mass_cure_wounds` / `magic_missile`、`thunderwave`、`mirror_image`、`shatter`、`hypnotic_pattern`、`lightning_bolt`、`fire_shield`、`greater_invisibility`、`passwall`、`wall_of_force` / `shield`、`thunderwave`、`scorching_ray`、`shatter`、`fireball`、`wind_wall`、`ice_storm`、`wall_of_fire`、`cone_of_cold`、`wall_of_force`），三张法术表互不重叠。
+- 当前实际 Tasha：`144 source records / 525 atoms / 408 executable / 104 authored Typed IR / 103 compile / 103 preview / 99 production / 2 DM-assisted / 101 game usable / 2 compile-only / 305 manual / 107 DM reference`；content-ID funnel `104 = 100 + 2 + 2`。
+- 当前 project：`199 production / 35 compile-only / 111 unique compiled`；Tasha evidence union `142`，project union `199`；ItemSpec 保持 `47/40/40/40`。
+- Round XXX validator 3/3 production_runtime_full；focused receipt suite 3 passed；backend 全量 pytest 938 passed（仅既有 Starlette/httpx deprecation warning）；Ruff、compileall、diff-check 通过；whole-pack migration 双跑 projection SHA-256 `89be2f5ea62eeefe27f1cf26ea95d77cfc25e7e05569e9eb9138f280daa63756`。
+- 分离提交 `8f9a136`（authored spell-list IR + author 工具）、`5bdce80`（validator + test + evidence + 计数调和）、`31ad202`（docs closeout）已推送到 `origin/main`（2026-08-13）。push receipt 已写入 ledger。
+- 证据入口：`docs/tashas-feature-production-consumer-round-XXX-2026-08-13.md`、`scripts/author-round-XXX-spell-lists.py`、`scripts/validate-tashas-feature-production-consumer-round-XXX.py`、`backend/tests/test_tashas_feature_production_consumer_round_XXX.py`、`reports/tashas-feature-production-consumer-round-XXX-2026-08-13.json`、`data/content-ir/compiled/production-runtime-results-XXXI.json`。
+- 下一轮继续孢子结社（含戏法颤栗之触的混合列表）、巨灵宗主扩展法术（warlock 列表扩展语义），或转向单一抗性/移动/视觉类特性；仍剩 vessel（genie-bottled-respite）与 spectral-object（scribe-manifest-mind）两个 compile-only；不迁移下一本扩展包、不触碰 3D。
+
 # 2026-08-13 Round 29 检查点：野火/守望/荣耀三张恒备法术表 Character-Growth Consumer
 
 - 本轮关闭三个 source-complete 恒备法术表：`wildfire-druid-circle-spells`（野火结社，德鲁伊 2 级）、`watchers-paladin-oath-spells`（守望之誓，圣武士 3 级）、`glory-paladin-oath-spells`（荣耀之誓，圣武士 3 级）。每个特性是单条 `always-prepared` 子句，效果为 10 个 `grant_spell`（德鲁伊 `wisdom`/`druid`，圣武士 `charisma`/`paladin`），复用既有名称无关 `advancement_service.character_growth.v1` + `advancement_service.spell_registry` 消费者，未新增任何 dispatch 分支或底层 capability。
