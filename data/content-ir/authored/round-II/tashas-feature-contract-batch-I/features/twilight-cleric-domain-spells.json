@@ -1,0 +1,186 @@
+{
+  "class_name": "牧师",
+  "clause_boundaries": {
+    "always-prepared": {
+      "source_excerpt": "*第1级暮光领域特性*\n当你获得暮光领域法术表中所对应的牧师等级时，你将同时习得这些法术。查看玩家手册中的神圣领域职业特性来了解什么是领域法术。",
+      "source_fragment": "21"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-13-round-XXVIII",
+        "source": "authored_ir",
+        "source_boundary": "always-prepared",
+        "source_excerpt": "*第1级暮光领域特性*\n当你获得暮光领域法术表中所对应的牧师等级时，你将同时习得这些法术。查看玩家手册中的神圣领域职业特性来了解什么是领域法术。"
+      },
+      "clause_id": "always-prepared",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "always_prepared",
+            "source_class": "cleric",
+            "spell_id": "faerie_fire"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "always_prepared",
+            "source_class": "cleric",
+            "spell_id": "sleep"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "always_prepared",
+            "source_class": "cleric",
+            "spell_id": "moonbeam"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "always_prepared",
+            "source_class": "cleric",
+            "spell_id": "see_invisibility"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "always_prepared",
+            "source_class": "cleric",
+            "spell_id": "aura_of_vitality"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "always_prepared",
+            "source_class": "cleric",
+            "spell_id": "leomunds_tiny_hut"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "always_prepared",
+            "source_class": "cleric",
+            "spell_id": "aura_of_life"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "always_prepared",
+            "source_class": "cleric",
+            "spell_id": "greater_invisibility"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "always_prepared",
+            "source_class": "cleric",
+            "spell_id": "circle_of_power"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "always_prepared",
+            "source_class": "cleric",
+            "spell_id": "mislead"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "89e760ab21dea53000f38c1ee48f1d8bebc4cfe943b3cde3ab3f0e2f22757b64"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "领域法术: *第1级暮光领域特性*\n当你获得暮光领域法术表中所对应的牧师等级时，你将同时习得这些法术。查看玩家手册中的神圣领域职业特性来了解什么是领域法术。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.twilight-cleric-domain-spells",
+  "kind": "feature",
+  "level": 1,
+  "localized_names": {
+    "zh-CN": "领域法术"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-13-round-XXVIII",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第1级暮光领域特性*\n当你获得暮光领域法术表中所对应的牧师等级时，你将同时习得这些法术。查看玩家手册中的神圣领域职业特性来了解什么是领域法术。",
+    "source_fragment": "21",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/暮光领域.html",
+    "source_record_id": "63d0abe27f6ad161f0820593"
+  },
+  "source_fingerprint": "89e760ab21dea53000f38c1ee48f1d8bebc4cfe943b3cde3ab3f0e2f22757b64",
+  "source_name": "领域法术",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/暮光领域.html",
+  "source_record_id": "63d0abe27f6ad161f0820593",
+  "source_trust": "authored_ir",
+  "subclass_name": "暮光领域"
+}
