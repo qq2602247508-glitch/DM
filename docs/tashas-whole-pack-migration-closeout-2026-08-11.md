@@ -13,7 +13,7 @@
 - Draft/Candidate/Review：408 / 408 / 408。
 - Template match：94（23.04%）；game usable 另按 executable atom 分母报告。
 - Authored/verified Typed IR：95；compile full 94；runtime preview full 94。
-- Atom status：production_full 88，dm_assisted 2，game usable 90，compile-only 4，manual authoring 314，DM reference 107，non-instantiable 10。
+- Atom status：production_full 89，dm_assisted 2，game usable 91，compile-only 3，manual authoring 314，DM reference 107，non-instantiable 10。
 - 现有 authored IR：95 条；匹配 95，别名协调 2，明确退役 0，孤儿 0。
 
 ## 真实阻塞

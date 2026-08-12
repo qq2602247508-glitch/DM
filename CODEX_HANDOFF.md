@@ -1,3 +1,12 @@
+# 2026-08-12 Round 26 检查点：Ambush Generic Initiative / Roll Intervention Consumer
+
+- 本轮已完成 Battle Master Ambush 的 source-complete typed IR：`ambush:initiative` 覆盖先攻，`ambush:stealth` 覆盖敏捷（隐匿）；两者均通过名称无关 `roll_intervention` materializer 与 `combat_engine.roll_intervention.v1`。
+- 真实隔离 HTTP/SQLite 先攻闭环已通过：start-combat 冻结先攻并持久化 `initiative_roll_prompt`；确认 superiority die=7 后基线 `13` 变为 `20`，`superiority_dice 4→3`；CombatAction/OperationTransaction 持久化；拒绝不扣资源；相同 request replay 不重复扣资源；隐匿分支打开同一 generic window。
+- 当前实际 Tasha：`144 source records / 525 atoms / 408 executable / 95 authored Typed IR（conversion projection）/ 94 compile / 94 preview / 89 production / 2 DM-assisted / 91 game usable / 3 compile-only / 314 manual / 107 DM reference`。`build_migration()` status-layer authored projection 保持 `94`，不要合并两个口径。
+- 当前 project：`189 production / 35 compile-only / 111 unique compiled`；Tasha evidence union `132`，project union `189`。ItemSpec 保持 `47 total / 40 compile / 40 isolated / 40 registered / 40 game usable`。角色成长总体仍为 `bounded_partial`。
+- Round XXVI validator 全部 checks true；focused Round XXV/XXVI receipt suite 8 passed；whole-pack migration 连续两次 stdout SHA-256 `e87a73fac5289a265cf7a5b780daa5546d20ce739ab52e9bf7d313f1eb5c8fbe`。完整 backend/Ruff/compileall/diff-check 和分离 commit/push 仍是本轮最后门禁。
+- 证据入口：`docs/tashas-feature-production-consumer-round-XXVI-2026-08-12.md`、`scripts/validate-tashas-feature-production-consumer-round-XXVI.py`、`backend/tests/test_tashas_feature_production_consumer_round_XXVI.py`、`reports/tashas-feature-production-consumer-round-XXVI-2026-08-12.json`、`data/content-ir/compiled/production-runtime-results-XXVII.json`。下轮继续 communication、maneuver eligibility、vessel、spectral-object、entity lifecycle 与 character-growth seams；不迁移下一本扩展包，不触碰 3D。
+
 # 2026-08-12 Round 25 检查点：Production Evidence / Status Reconciliation
 
 - Round XXV 已完成 persisted production-runtime evidence、whole-pack status layer 与 ItemSpec production/game-usable 口径统一；没有新增名称分支、source corpus、正式 database、formal registry、campaign/character 或 3D 改动。

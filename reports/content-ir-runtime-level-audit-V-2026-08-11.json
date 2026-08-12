@@ -1,12 +1,12 @@
 {
   "after": {
     "compile_only": 35,
-    "production_full": 188,
+    "production_full": 189,
     "tasha_atom_pack": {
       "authored_typed_ir": 95,
       "candidate_generated": 408,
       "compile_full": 94,
-      "compile_only": 4,
+      "compile_only": 3,
       "consumer_unlocks": {
         "existing_generic_consumer": {
           "content_ids": [
@@ -19,6 +19,7 @@
             "content.tashas-cauldron.feature.armorer-lightning-launcher",
             "content.tashas-cauldron.feature.armorer.tools-of-the-trade",
             "content.tashas-cauldron.feature.artillerist.tool-proficiency",
+            "content.tashas-cauldron.feature.battle-master.ambush",
             "content.tashas-cauldron.feature.battle-master.commanding-presence",
             "content.tashas-cauldron.feature.battle-master.precision-attack",
             "content.tashas-cauldron.feature.battle-smith-arcane-jolt-damage",
@@ -148,16 +149,16 @@
       },
       "content_atom_total": 525,
       "content_id_funnel": {
-        "compile_only": 4,
+        "compile_only": 3,
         "dm_assisted": 2,
         "matched_typed_ir": 95,
-        "production_full": 89,
+        "production_full": 90,
         "relation_holds": true
       },
       "current_project_compile_only": 35,
       "current_project_compiled_unique": 111,
-      "current_project_production_full": 188,
-      "current_project_production_registry_fingerprint": "59ed5afdc74555158b9951988dae0c8c379fe9c9e0198eda40bc81fe3b66f391",
+      "current_project_production_full": 189,
+      "current_project_production_registry_fingerprint": "bb1b72be0813f2d85bedea301d73a0d3a1a97624fb400b17b35f7450831c45e5",
       "dm_assisted": 2,
       "dm_reference": 107,
       "draft_total": 408,
@@ -174,7 +175,7 @@
         },
         "total": 499
       },
-      "game_usable": 90,
+      "game_usable": 91,
       "invalid_source": 0,
       "item_ir": {
         "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
@@ -246,7 +247,7 @@
         "spell": 21,
         "subclass_feature": 232
       },
-      "production_full": 88,
+      "production_full": 89,
       "reviewed_total": 408,
       "runtime_preview_full": 94,
       "schema_version": "tashas-whole-pack-migration-1",
@@ -256,7 +257,7 @@
       "source_record_total": 144,
       "source_record_unclassified": 0,
       "status_counts": {
-        "compile_only": 4,
+        "compile_only": 3,
         "dm_assisted": 2,
         "dm_reference": 107,
         "duplicate_or_reprint": 0,
@@ -264,7 +265,7 @@
         "manual_authoring": 314,
         "non_instantiable": 10,
         "out_of_scope_with_reason": 0,
-        "production_full": 88
+        "production_full": 89
       },
       "template_matched": 94
     },
@@ -272,7 +273,7 @@
   },
   "baseline": {
     "compile_only": 35,
-    "production_full": 188,
+    "production_full": 189,
     "unique_compiled": 111
   },
   "database_unchanged": true,

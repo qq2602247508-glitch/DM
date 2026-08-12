@@ -3,7 +3,7 @@
     "authored_typed_ir": 95,
     "candidate_generated": 408,
     "compile_full": 94,
-    "compile_only": 4,
+    "compile_only": 3,
     "consumer_unlocks": {
       "existing_generic_consumer": {
         "content_ids": [
@@ -16,6 +16,7 @@
           "content.tashas-cauldron.feature.armorer-lightning-launcher",
           "content.tashas-cauldron.feature.armorer.tools-of-the-trade",
           "content.tashas-cauldron.feature.artillerist.tool-proficiency",
+          "content.tashas-cauldron.feature.battle-master.ambush",
           "content.tashas-cauldron.feature.battle-master.commanding-presence",
           "content.tashas-cauldron.feature.battle-master.precision-attack",
           "content.tashas-cauldron.feature.battle-smith-arcane-jolt-damage",
@@ -145,16 +146,16 @@
     },
     "content_atom_total": 525,
     "content_id_funnel": {
-      "compile_only": 4,
+      "compile_only": 3,
       "dm_assisted": 2,
       "matched_typed_ir": 95,
-      "production_full": 89,
+      "production_full": 90,
       "relation_holds": true
     },
     "current_project_compile_only": 35,
     "current_project_compiled_unique": 111,
-    "current_project_production_full": 188,
-    "current_project_production_registry_fingerprint": "59ed5afdc74555158b9951988dae0c8c379fe9c9e0198eda40bc81fe3b66f391",
+    "current_project_production_full": 189,
+    "current_project_production_registry_fingerprint": "bb1b72be0813f2d85bedea301d73a0d3a1a97624fb400b17b35f7450831c45e5",
     "dm_assisted": 2,
     "dm_reference": 107,
     "draft_total": 408,
@@ -171,7 +172,7 @@
       },
       "total": 499
     },
-    "game_usable": 90,
+    "game_usable": 91,
     "invalid_source": 0,
     "item_ir": {
       "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
@@ -243,7 +244,7 @@
       "spell": 21,
       "subclass_feature": 232
     },
-    "production_full": 88,
+    "production_full": 89,
     "reviewed_total": 408,
     "runtime_preview_full": 94,
     "schema_version": "tashas-whole-pack-migration-1",
@@ -253,7 +254,7 @@
     "source_record_total": 144,
     "source_record_unclassified": 0,
     "status_counts": {
-      "compile_only": 4,
+      "compile_only": 3,
       "dm_assisted": 2,
       "dm_reference": 107,
       "duplicate_or_reprint": 0,
@@ -261,7 +262,7 @@
       "manual_authoring": 314,
       "non_instantiable": 10,
       "out_of_scope_with_reason": 0,
-      "production_full": 88
+      "production_full": 89
     },
     "template_matched": 94
   },
@@ -289,7 +290,7 @@
     "authored_typed_ir": 95,
     "candidate_generated": 408,
     "compile_full": 94,
-    "compile_only": 4,
+    "compile_only": 3,
     "consumer_unlocks": {
       "existing_generic_consumer": {
         "content_ids": [
@@ -302,6 +303,7 @@
           "content.tashas-cauldron.feature.armorer-lightning-launcher",
           "content.tashas-cauldron.feature.armorer.tools-of-the-trade",
           "content.tashas-cauldron.feature.artillerist.tool-proficiency",
+          "content.tashas-cauldron.feature.battle-master.ambush",
           "content.tashas-cauldron.feature.battle-master.commanding-presence",
           "content.tashas-cauldron.feature.battle-master.precision-attack",
           "content.tashas-cauldron.feature.battle-smith-arcane-jolt-damage",
@@ -431,16 +433,16 @@
     },
     "content_atom_total": 525,
     "content_id_funnel": {
-      "compile_only": 4,
+      "compile_only": 3,
       "dm_assisted": 2,
       "matched_typed_ir": 95,
-      "production_full": 89,
+      "production_full": 90,
       "relation_holds": true
     },
     "current_project_compile_only": 35,
     "current_project_compiled_unique": 111,
-    "current_project_production_full": 188,
-    "current_project_production_registry_fingerprint": "59ed5afdc74555158b9951988dae0c8c379fe9c9e0198eda40bc81fe3b66f391",
+    "current_project_production_full": 189,
+    "current_project_production_registry_fingerprint": "bb1b72be0813f2d85bedea301d73a0d3a1a97624fb400b17b35f7450831c45e5",
     "dm_assisted": 2,
     "dm_reference": 107,
     "draft_total": 408,
@@ -457,7 +459,7 @@
       },
       "total": 499
     },
-    "game_usable": 90,
+    "game_usable": 91,
     "invalid_source": 0,
     "item_ir": {
       "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
@@ -529,7 +531,7 @@
       "spell": 21,
       "subclass_feature": 232
     },
-    "production_full": 88,
+    "production_full": 89,
     "reviewed_total": 408,
     "runtime_preview_full": 94,
     "schema_version": "tashas-whole-pack-migration-1",
@@ -539,7 +541,7 @@
     "source_record_total": 144,
     "source_record_unclassified": 0,
     "status_counts": {
-      "compile_only": 4,
+      "compile_only": 3,
       "dm_assisted": 2,
       "dm_reference": 107,
       "duplicate_or_reprint": 0,
@@ -547,7 +549,7 @@
       "manual_authoring": 314,
       "non_instantiable": 10,
       "out_of_scope_with_reason": 0,
-      "production_full": 88
+      "production_full": 89
     },
     "template_matched": 94
   },
@@ -19601,7 +19603,7 @@
     "gate_status": "partial",
     "manual_total": 254,
     "pack_id": "tashas-cauldron",
-    "production_full_total": 81,
+    "production_full_total": 82,
     "review_blocker_counts": {
       "reviewed_typed_mapping": 86,
       "unmatched_requires_review": 254
@@ -22913,7 +22915,7 @@
         "instantiable": true,
         "level": null,
         "localized_name": "伏击",
-        "migration_status": "compile_only",
+        "migration_status": "production_full",
         "name": "伏击Ambush",
         "officiality": "unknown",
         "parent_atom_id": null,
@@ -22942,10 +22944,10 @@
           "compile_full": true,
           "dm_assisted": false,
           "draft": true,
-          "game_usable": false,
-          "highest_status": "runtime_preview_full",
-          "isolated_runtime_validated": false,
-          "registered_production_full": false,
+          "game_usable": true,
+          "highest_status": "game_usable",
+          "isolated_runtime_validated": true,
+          "registered_production_full": true,
           "reviewed": true,
           "runtime_preview_full": true,
           "source_identified": true
@@ -26529,16 +26531,15 @@
     "pack_id": "tashas-cauldron",
     "schema_version": "tashas-player-options-ir-report-1",
     "status_counts": {
-      "compile_only": 1,
       "dm_reference": 19,
       "manual_authoring": 32,
-      "production_full": 12
+      "production_full": 13
     },
     "typed_atom_total": 13
   },
   "runtime": {
     "atom_dm_assisted_count": 2,
-    "atom_production_full_count": 88,
+    "atom_production_full_count": 89,
     "dm_assisted_atoms": [
       "tashas-cauldron:atom:0036d7dc058c496ef08fe340:a27f6b57964b:000",
       "tashas-cauldron:atom:867896faa26eb295d846a574:glorious-defense:010"
@@ -26555,6 +26556,7 @@
           "content.tashas-cauldron.feature.armorer-lightning-launcher",
           "content.tashas-cauldron.feature.armorer.tools-of-the-trade",
           "content.tashas-cauldron.feature.artillerist.tool-proficiency",
+          "content.tashas-cauldron.feature.battle-master.ambush",
           "content.tashas-cauldron.feature.battle-master.commanding-presence",
           "content.tashas-cauldron.feature.battle-master.precision-attack",
           "content.tashas-cauldron.feature.battle-smith-arcane-jolt-damage",
@@ -26682,7 +26684,7 @@
         "new_consumer_count": 0
       }
     },
-    "matched_atom_production_runtime_full_count": 91,
+    "matched_atom_production_runtime_full_count": 92,
     "name_branch_count": 0,
     "new_consumer_count": 0,
     "pack_id": "tashas-cauldron",
@@ -26693,6 +26695,7 @@
       "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:great-stature:011",
       "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:runic-shield:010",
       "tashas-cauldron:atom:083419d9de551806a5ca9748:ade91e9a9b97:000",
+      "tashas-cauldron:atom:12139219bf7e575f9cde019c:ambush:001",
       "tashas-cauldron:atom:12139219bf7e575f9cde019c:bait-and-switch:002",
       "tashas-cauldron:atom:12139219bf7e575f9cde019c:brace:003",
       "tashas-cauldron:atom:12139219bf7e575f9cde019c:commanding-presence:004",
@@ -26776,7 +26779,7 @@
       "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:tool-proficiency:001",
       "tashas-cauldron:authored-subclause:12139219bf7e575f9cde019c:0d3fc31f44e0"
     ],
-    "registry_production_runtime_full_count": 131,
+    "registry_production_runtime_full_count": 132,
     "runtime_evidence": {
       "content.tashas-cauldron.feature.alchemist-chemical-mastery": {
         "checks": {
@@ -27032,6 +27035,55 @@
         "typed_consumer": "advancement_service.character_growth.v1",
         "typed_contract": true,
         "typed_growth_section": "proficiencies"
+      },
+      "content.tashas-cauldron.feature.battle-master.ambush": {
+        "checks": {
+          "combat_action_transaction": true,
+          "compile_full": true,
+          "formal_database_unchanged": true,
+          "formal_registry_unchanged": true,
+          "initiative_branch": true,
+          "name_branch_free": true,
+          "preview_confirm_replay": true,
+          "production_consumer": true,
+          "protected_fingerprints_unchanged": true,
+          "resource_cas": true,
+          "source_provenance": true,
+          "stealth_branch": true,
+          "typed_clause_count": true
+        },
+        "content_id": "content.tashas-cauldron.feature.battle-master.ambush",
+        "content_kind": "feature",
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-XXVII.json",
+        "initiative": {
+          "base_total": 12,
+          "character_resource_after": 3,
+          "combat_action_status": "confirmed",
+          "confirm_status": 200,
+          "effective_total": 19,
+          "operation_transaction_status": "applied",
+          "preview_status": 201,
+          "replay_already_applied": true,
+          "replay_status": 200,
+          "resource_consumed": {
+            "after": 3,
+            "before": 4,
+            "cost": 1,
+            "key": "superiority_dice"
+          }
+        },
+        "production_runtime_full": true,
+        "schema_version": "content-ir-production-runtime-results-XXVII-1",
+        "source": {
+          "source_fingerprint": "13418d41bbe36e695c131a0a0972e749979d8174421fc9bcc2bf767a92f19eef",
+          "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/战技选项.htm",
+          "source_record_id": "12139219bf7e575f9cde019c"
+        },
+        "typed_clause_ids": [
+          "ambush:initiative",
+          "ambush:stealth"
+        ],
+        "typed_consumer": "combat_engine.roll_intervention.v1"
       },
       "content.tashas-cauldron.feature.battle-master.commanding-presence": {
         "action_id": "commanding_presence:check",
@@ -36870,9 +36922,9 @@
     "compile_full": 94,
     "dm_assisted": 2,
     "draft": 408,
-    "game_usable": 90,
-    "isolated_runtime_validated": 90,
-    "registered_production_full": 88,
+    "game_usable": 91,
+    "isolated_runtime_validated": 91,
+    "registered_production_full": 89,
     "reviewed": 408,
     "runtime_preview_full": 94,
     "source_identified": 525

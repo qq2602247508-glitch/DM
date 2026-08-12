@@ -66,7 +66,7 @@
       "instantiable": true,
       "level": null,
       "localized_name": "伏击",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "name": "伏击Ambush",
       "officiality": "unknown",
       "parent_atom_id": null,
@@ -95,10 +95,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "runtime_preview_full",
-        "isolated_runtime_validated": false,
-        "registered_production_full": false,
+        "game_usable": true,
+        "highest_status": "game_usable",
+        "isolated_runtime_validated": true,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -3682,10 +3682,9 @@
   "pack_id": "tashas-cauldron",
   "schema_version": "tashas-player-options-ir-report-1",
   "status_counts": {
-    "compile_only": 1,
     "dm_reference": 19,
     "manual_authoring": 32,
-    "production_full": 12
+    "production_full": 13
   },
   "typed_atom_total": 13
 }
