@@ -481,7 +481,7 @@ def default_capability_catalog() -> CapabilityCatalog:
             durations=frozenset({"current_turn"}),
             actions=frozenset({"bonus_action", "action", "reaction", "explicit_player_choice"}),
             resources=_ALL_RESOURCES,
-            evidence=("test_feature_teleport_runtime_consumer",),
+            evidence=("test_psychic_teleport_materializes_typed_action_and_resource",),
         ),
         _descriptor(
             "sight.mode",
