@@ -12,12 +12,12 @@
     "authored_typed_ir": 95,
     "candidate_generated": 408,
     "compile_full": 94,
-    "compile_only": 6,
+    "compile_only": 4,
     "dm_assisted": 2,
     "draft_total": 408,
     "invalid": 0,
     "manual_authoring": 314,
-    "production_full": 86,
+    "production_full": 88,
     "reviewed_total": 408,
     "runtime_preview_full": 94,
     "template_matched": 94
@@ -59,7 +59,7 @@
     "source_record_unclassified": 0
   },
   "status_counts": {
-    "compile_only": 6,
+    "compile_only": 4,
     "dm_assisted": 2,
     "dm_reference": 107,
     "duplicate_or_reprint": 0,
@@ -67,7 +67,7 @@
     "manual_authoring": 314,
     "non_instantiable": 10,
     "out_of_scope_with_reason": 0,
-    "production_full": 86
+    "production_full": 88
   },
   "status_layers": {
     "authored_typed_ir": 94,
@@ -75,17 +75,17 @@
     "compile_full": 94,
     "dm_assisted": 2,
     "draft": 408,
-    "game_usable": 88,
-    "isolated_runtime_validated": 88,
-    "registered_production_full": 86,
+    "game_usable": 90,
+    "isolated_runtime_validated": 90,
+    "registered_production_full": 88,
     "reviewed": 408,
     "runtime_preview_full": 94,
     "source_identified": 525
   },
   "usable_coverage": {
     "dm_assisted_rate": 0.004902,
-    "game_usable_rate": 0.215686,
+    "game_usable_rate": 0.220588,
     "manual_rate": 0.769608,
-    "production_full_rate": 0.210784
+    "production_full_rate": 0.215686
   }
 }

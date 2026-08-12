@@ -8433,6 +8433,15 @@
       "reprint_of": null,
       "runtime_evidence": {
         "actor_target_cas": true,
+        "checks": {
+          "all_preview_confirm_replay": true,
+          "all_typed_consumers": true,
+          "formal_database_written": false,
+          "formal_registry_written": false,
+          "name_branch_count": 0,
+          "production_runtime_full_count": 12,
+          "selected_count": 12
+        },
         "confirm": true,
         "content_id": "content.tashas-cauldron.round2.feature.glory-paladin-glorious-defense",
         "content_kind": "feature",
@@ -8442,6 +8451,7 @@
         "preview": true,
         "production_runtime_full": true,
         "replay": true,
+        "schema_version": "content-ir-production-runtime-results-V-1",
         "source": "round-II-isolated-feature-contract",
         "transaction": true,
         "typed_consumer": "combat_engine.feature_action.v1"

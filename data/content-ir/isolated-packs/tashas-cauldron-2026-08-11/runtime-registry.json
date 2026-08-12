@@ -74,7 +74,7 @@
       "atom_id": "tashas-cauldron:atom:083419d9de551806a5ca9748:ade91e9a9b97:000",
       "content_id": "tashas-cauldron:spell:083419d9de551806a5ca9748",
       "content_kind": "spell",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "af449971758a4150c22e14243a11ffb271106769498056251c38fe3683eb8c86",
       "typed_content_ids": [
         "tashas-cauldron:spell:083419d9de551806a5ca9748"
@@ -274,7 +274,7 @@
       "atom_id": "tashas-cauldron:atom:54c8c29188db1442473d9dc1:12b6933c1bf3:000",
       "content_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
       "content_kind": "spell",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "96e554107670b558467a1fd2d7154eca72b0fc2d0b9e27a2d6e6bf3c56c98526",
       "typed_content_ids": [
         "tashas-cauldron:spell:54c8c29188db1442473d9dc1"

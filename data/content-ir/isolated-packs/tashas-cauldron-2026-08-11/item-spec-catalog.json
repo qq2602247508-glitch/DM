@@ -4,6 +4,7 @@
     "full": 40,
     "partial": 7
   },
+  "dm_assisted": 0,
   "game_usable": 40,
   "isolated_runtime_validated": 40,
   "item_spec_compile_full": 40,
@@ -13218,6 +13219,19 @@
     "game_usable": "registered_production_full + dm_assisted",
     "isolated_runtime_validated": "reloaded isolated pack with generic consumers",
     "production_full": "registered_production_full; formal registry only"
+  },
+  "status_layers": {
+    "authored_typed_ir": 47,
+    "candidate": 47,
+    "compile_full": 40,
+    "dm_assisted": 0,
+    "draft": 47,
+    "game_usable": 40,
+    "isolated_runtime_validated": 40,
+    "registered_production_full": 40,
+    "reviewed": 47,
+    "runtime_preview_full": 40,
+    "source_identified": 47
   },
   "threshold_gate": false,
   "thresholds": {

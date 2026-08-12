@@ -1,6 +1,6 @@
 {
   "atom_dm_assisted_count": 2,
-  "atom_production_full_count": 86,
+  "atom_production_full_count": 88,
   "dm_assisted_atoms": [
     "tashas-cauldron:atom:0036d7dc058c496ef08fe340:a27f6b57964b:000",
     "tashas-cauldron:atom:867896faa26eb295d846a574:glorious-defense:010"
@@ -132,6 +132,8 @@
         "content.tashas-cauldron.round2.feature.twilight-cleric-eyes-of-night",
         "content.tashas-cauldron.round2.feature.twilight-cleric-steps-of-night",
         "tashas-cauldron:spell:0036d7dc058c496ef08fe340",
+        "tashas-cauldron:spell:083419d9de551806a5ca9748",
+        "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
         "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac",
         "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
         "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
@@ -142,7 +144,7 @@
       "new_consumer_count": 0
     }
   },
-  "matched_atom_production_runtime_full_count": 89,
+  "matched_atom_production_runtime_full_count": 91,
   "name_branch_count": 0,
   "new_consumer_count": 0,
   "pack_id": "tashas-cauldron",
@@ -152,6 +154,7 @@
     "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:giant-s-might:009",
     "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:great-stature:011",
     "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:runic-shield:010",
+    "tashas-cauldron:atom:083419d9de551806a5ca9748:ade91e9a9b97:000",
     "tashas-cauldron:atom:12139219bf7e575f9cde019c:bait-and-switch:002",
     "tashas-cauldron:atom:12139219bf7e575f9cde019c:brace:003",
     "tashas-cauldron:atom:12139219bf7e575f9cde019c:commanding-presence:004",
@@ -170,6 +173,7 @@
     "tashas-cauldron:atom:2ceef8846dfb30c175abe0dd:tool-expertise:007",
     "tashas-cauldron:atom:38a389e4b25a6eeec6c7835f:bonus-proficiencies:002",
     "tashas-cauldron:atom:4041ef4e8e0a5b7375019c27:training-in-sword-and-song:001",
+    "tashas-cauldron:atom:54c8c29188db1442473d9dc1:12b6933c1bf3:000",
     "tashas-cauldron:atom:606d89f6e0ea3b2e0194f24c:arcane-jolt:010",
     "tashas-cauldron:atom:606d89f6e0ea3b2e0194f24c:repair-3:007",
     "tashas-cauldron:atom:606d89f6e0ea3b2e0194f24c:tool-proficiency:001",
@@ -234,27 +238,69 @@
     "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:tool-proficiency:001",
     "tashas-cauldron:authored-subclause:12139219bf7e575f9cde019c:0d3fc31f44e0"
   ],
-  "registry_production_runtime_full_count": 129,
+  "registry_production_runtime_full_count": 131,
   "runtime_evidence": {
     "content.tashas-cauldron.feature.alchemist-chemical-mastery": {
+      "checks": {
+        "area_multi_target": true,
+        "idempotency_replay": true,
+        "rollback_restored_slot": true,
+        "snapshot_version_changed": true,
+        "target_cas_rejected": true,
+        "wrong_slot_rejected": true
+      },
       "confirm_status": 200,
+      "content_id": "content.tashas-cauldron.feature.alchemist-chemical-mastery",
+      "content_kind": null,
       "evidence_path": "data/content-ir/compiled/production-runtime-results-III.json",
       "pack_id": "tashas-cauldron-features",
       "preview_status": 200,
       "production_runtime_full": true,
-      "runtime_id": "content.tashas-cauldron.feature.alchemist-chemical-mastery"
+      "runtime_id": "content.tashas-cauldron.feature.alchemist-chemical-mastery",
+      "schema_version": "content-ir-production-runtime-results-III-1"
     },
     "content.tashas-cauldron.feature.alchemist-restorative-reagents": {
+      "checks": {
+        "actor_cas_rejected": true,
+        "concentration_state_persisted": true,
+        "duration_effect_persisted": true,
+        "idempotency_replay": true,
+        "illegal_target_rejected": true,
+        "illegal_target_status": 409,
+        "resource_lack_rejected": true,
+        "rest_preview_confirmed": true,
+        "rollback_restored_spell_slot": true,
+        "target_cas_rejected": true,
+        "turn_advance_rebuilt_snapshot": true,
+        "upcast_production_loop": true,
+        "wrong_slot_rejected": true
+      },
       "confirm_status": 200,
+      "content_id": "content.tashas-cauldron.feature.alchemist-restorative-reagents",
+      "content_kind": null,
       "evidence_path": "data/content-ir/compiled/batch-II/production-runtime-results.json",
       "pack_id": "tashas-cauldron-features",
       "preview_status": 200,
       "production_runtime_full": true,
-      "runtime_id": "content.tashas-cauldron.feature.alchemist-restorative-reagents"
+      "runtime_id": "content.tashas-cauldron.feature.alchemist-restorative-reagents",
+      "schema_version": "content-ir-production-runtime-results-1"
     },
     "content.tashas-cauldron.feature.alchemist.tool-proficiency": {
       "advancement_block_ready": true,
       "character_cas": true,
+      "checks": {
+        "advancement_blocks_ready": true,
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "character_cas_and_transaction": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 4,
+        "proficiency_grant_count": 5,
+        "selected_count": 4
+      },
       "choice_lifecycle": false,
       "confirm": true,
       "content_id": "content.tashas-cauldron.feature.alchemist.tool-proficiency",
@@ -267,6 +313,7 @@
       "production_runtime_full": true,
       "proficiency_grant_count": 1,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-XVIII-1",
       "selected_choices": {},
       "source": "round-II-reviewed-feature-runtime-through-round-VII-character-consumer",
       "spell_grant_count": 0,
@@ -277,6 +324,21 @@
     },
     "content.tashas-cauldron.feature.armorer-dampening-field": {
       "cas": true,
+      "checks": {
+        "all_required_checks_passed": true,
+        "choice_window": true,
+        "command_schema": true,
+        "confirmation_schema": true,
+        "dm_adjudication": true,
+        "entity_lifecycle": true,
+        "movement": true,
+        "preview_schema": true,
+        "production_batch": true,
+        "result_schema": true,
+        "scene_delta": true,
+        "spatial_authority_scene_adapter": true,
+        "spatial_authority_test_adapter": true
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.feature.armorer-dampening-field",
       "content_kind": "feature",
@@ -284,42 +346,97 @@
       "execution_mode": "typed",
       "pack_id": "tashas-cauldron",
       "preview": true,
+      "production_runtime_full": true,
       "replay": true,
       "result_id": "production-batch-II-001:result",
       "rollback_probe": true,
       "scene_delta": true,
+      "schema_version": "content-ir-production-runtime-results-IV-1",
       "snapshot_rebuild": true,
       "source_book": null,
       "transaction": true,
       "typed_ir_fingerprint": "614f8f7bf4198f5e3bd08aaedd4f562d7e4d611b9c233a82a9c7a2e6500ba250"
     },
     "content.tashas-cauldron.feature.armorer-defensive-field": {
+      "checks": {
+        "actor_cas_rejected": true,
+        "concentration_state_persisted": true,
+        "duration_effect_persisted": true,
+        "idempotency_replay": true,
+        "illegal_target_rejected": true,
+        "illegal_target_status": 409,
+        "resource_lack_rejected": true,
+        "rest_preview_confirmed": true,
+        "rollback_restored_spell_slot": true,
+        "target_cas_rejected": true,
+        "turn_advance_rebuilt_snapshot": true,
+        "upcast_production_loop": true,
+        "wrong_slot_rejected": true
+      },
       "confirm_status": 200,
+      "content_id": "content.tashas-cauldron.feature.armorer-defensive-field",
+      "content_kind": null,
       "evidence_path": "data/content-ir/compiled/batch-II/production-runtime-results.json",
       "pack_id": "tashas-cauldron-features",
       "preview_status": 200,
       "production_runtime_full": true,
-      "runtime_id": "content.tashas-cauldron.feature.armorer-defensive-field"
+      "runtime_id": "content.tashas-cauldron.feature.armorer-defensive-field",
+      "schema_version": "content-ir-production-runtime-results-1"
     },
     "content.tashas-cauldron.feature.armorer-extra-attack": {
+      "checks": {
+        "area_multi_target": true,
+        "idempotency_replay": true,
+        "rollback_restored_slot": true,
+        "snapshot_version_changed": true,
+        "target_cas_rejected": true,
+        "wrong_slot_rejected": true
+      },
       "confirm_status": 200,
+      "content_id": "content.tashas-cauldron.feature.armorer-extra-attack",
+      "content_kind": null,
       "evidence_path": "data/content-ir/compiled/production-runtime-results-III.json",
       "pack_id": "tashas-cauldron-features",
       "preview_status": 200,
       "production_runtime_full": true,
-      "runtime_id": "content.tashas-cauldron.feature.armorer-extra-attack"
+      "runtime_id": "content.tashas-cauldron.feature.armorer-extra-attack",
+      "schema_version": "content-ir-production-runtime-results-III-1"
     },
     "content.tashas-cauldron.feature.armorer-lightning-launcher": {
+      "checks": {
+        "area_multi_target": true,
+        "idempotency_replay": true,
+        "rollback_restored_slot": true,
+        "snapshot_version_changed": true,
+        "target_cas_rejected": true,
+        "wrong_slot_rejected": true
+      },
       "confirm_status": 200,
+      "content_id": "content.tashas-cauldron.feature.armorer-lightning-launcher",
+      "content_kind": null,
       "evidence_path": "data/content-ir/compiled/production-runtime-results-III.json",
       "pack_id": "tashas-cauldron-features",
       "preview_status": 200,
       "production_runtime_full": true,
-      "runtime_id": "content.tashas-cauldron.feature.armorer-lightning-launcher"
+      "runtime_id": "content.tashas-cauldron.feature.armorer-lightning-launcher",
+      "schema_version": "content-ir-production-runtime-results-III-1"
     },
     "content.tashas-cauldron.feature.armorer.tools-of-the-trade": {
       "advancement_block_ready": true,
       "character_cas": true,
+      "checks": {
+        "advancement_blocks_ready": true,
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "character_cas_and_transaction": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 4,
+        "proficiency_grant_count": 5,
+        "selected_count": 4
+      },
       "choice_lifecycle": false,
       "confirm": true,
       "content_id": "content.tashas-cauldron.feature.armorer.tools-of-the-trade",
@@ -332,6 +449,7 @@
       "production_runtime_full": true,
       "proficiency_grant_count": 2,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-XVIII-1",
       "selected_choices": {},
       "source": "round-II-reviewed-feature-runtime-through-round-VII-character-consumer",
       "spell_grant_count": 0,
@@ -343,6 +461,19 @@
     "content.tashas-cauldron.feature.artillerist.tool-proficiency": {
       "advancement_block_ready": true,
       "character_cas": true,
+      "checks": {
+        "advancement_blocks_ready": true,
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "character_cas_and_transaction": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 4,
+        "proficiency_grant_count": 5,
+        "selected_count": 4
+      },
       "choice_lifecycle": false,
       "confirm": true,
       "content_id": "content.tashas-cauldron.feature.artillerist.tool-proficiency",
@@ -355,6 +486,7 @@
       "production_runtime_full": true,
       "proficiency_grant_count": 1,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-XVIII-1",
       "selected_choices": {},
       "source": "round-II-reviewed-feature-runtime-through-round-VII-character-consumer",
       "spell_grant_count": 0,
@@ -369,6 +501,19 @@
       "character_cas": true,
       "character_version_after": 2,
       "character_version_before": 1,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "character_cas_and_transaction": true,
+        "final_resource_current": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 2,
+        "selected_count": 2,
+        "typed_roll_consumer": true,
+        "weapon_attack_only_boundary": true
+      },
       "compile_status": "full",
       "confirm": true,
       "content_id": "content.tashas-cauldron.feature.battle-master.commanding-presence",
@@ -377,9 +522,11 @@
       "execution_mode": "typed",
       "pack_id": "tashas-cauldron",
       "preview": true,
+      "production_runtime_full": true,
       "replay": true,
       "resource_after": 3,
       "resource_before": 4,
+      "schema_version": "content-ir-production-runtime-results-XX-1",
       "source_book": "塔莎的万事坩埚",
       "transaction": true,
       "trigger": "ability_check",
@@ -394,6 +541,19 @@
       "character_cas": true,
       "character_version_after": 3,
       "character_version_before": 2,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "character_cas_and_transaction": true,
+        "final_resource_current": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 2,
+        "selected_count": 2,
+        "typed_roll_consumer": true,
+        "weapon_attack_only_boundary": true
+      },
       "compile_status": "full",
       "confirm": true,
       "content_id": "content.tashas-cauldron.feature.battle-master.precision-attack",
@@ -402,9 +562,11 @@
       "execution_mode": "typed",
       "pack_id": "tashas-cauldron",
       "preview": true,
+      "production_runtime_full": true,
       "replay": true,
       "resource_after": 2,
       "resource_before": 3,
+      "schema_version": "content-ir-production-runtime-results-XX-1",
       "source_book": "塔莎的万事坩埚",
       "transaction": true,
       "trigger": "attack_declared",
@@ -415,6 +577,21 @@
     },
     "content.tashas-cauldron.feature.battle-smith-arcane-jolt-damage": {
       "cas": true,
+      "checks": {
+        "all_required_checks_passed": true,
+        "choice_window": true,
+        "command_schema": true,
+        "confirmation_schema": true,
+        "dm_adjudication": true,
+        "entity_lifecycle": true,
+        "movement": true,
+        "preview_schema": true,
+        "production_batch": true,
+        "result_schema": true,
+        "scene_delta": true,
+        "spatial_authority_scene_adapter": true,
+        "spatial_authority_test_adapter": true
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.feature.battle-smith-arcane-jolt-damage",
       "content_kind": "feature",
@@ -422,34 +599,85 @@
       "execution_mode": "typed",
       "pack_id": "tashas-cauldron",
       "preview": true,
+      "production_runtime_full": true,
       "replay": true,
       "result_id": "production-batch-II-002:result",
       "rollback_probe": true,
       "scene_delta": true,
+      "schema_version": "content-ir-production-runtime-results-IV-1",
       "snapshot_rebuild": true,
       "source_book": null,
       "transaction": true,
       "typed_ir_fingerprint": "0ce01fdd8901fb69281ed95b35f1447d9864418f862d064b87ff709249e9aedb"
     },
     "content.tashas-cauldron.feature.battle-smith-arcane-jolt-healing": {
+      "checks": {
+        "actor_cas_rejected": true,
+        "concentration_state_persisted": true,
+        "duration_effect_persisted": true,
+        "idempotency_replay": true,
+        "illegal_target_rejected": true,
+        "illegal_target_status": 409,
+        "resource_lack_rejected": true,
+        "rest_preview_confirmed": true,
+        "rollback_restored_spell_slot": true,
+        "target_cas_rejected": true,
+        "turn_advance_rebuilt_snapshot": true,
+        "upcast_production_loop": true,
+        "wrong_slot_rejected": true
+      },
       "confirm_status": 200,
+      "content_id": "content.tashas-cauldron.feature.battle-smith-arcane-jolt-healing",
+      "content_kind": null,
       "evidence_path": "data/content-ir/compiled/batch-II/production-runtime-results.json",
       "pack_id": "tashas-cauldron-features",
       "preview_status": 200,
       "production_runtime_full": true,
-      "runtime_id": "content.tashas-cauldron.feature.battle-smith-arcane-jolt-healing"
+      "runtime_id": "content.tashas-cauldron.feature.battle-smith-arcane-jolt-healing",
+      "schema_version": "content-ir-production-runtime-results-1"
     },
     "content.tashas-cauldron.feature.battle-smith-repair": {
+      "checks": {
+        "actor_cas_rejected": true,
+        "concentration_state_persisted": true,
+        "duration_effect_persisted": true,
+        "idempotency_replay": true,
+        "illegal_target_rejected": true,
+        "illegal_target_status": 409,
+        "resource_lack_rejected": true,
+        "rest_preview_confirmed": true,
+        "rollback_restored_spell_slot": true,
+        "target_cas_rejected": true,
+        "turn_advance_rebuilt_snapshot": true,
+        "upcast_production_loop": true,
+        "wrong_slot_rejected": true
+      },
       "confirm_status": 200,
+      "content_id": "content.tashas-cauldron.feature.battle-smith-repair",
+      "content_kind": null,
       "evidence_path": "data/content-ir/compiled/batch-II/production-runtime-results.json",
       "pack_id": "tashas-cauldron-features",
       "preview_status": 200,
       "production_runtime_full": true,
-      "runtime_id": "content.tashas-cauldron.feature.battle-smith-repair"
+      "runtime_id": "content.tashas-cauldron.feature.battle-smith-repair",
+      "schema_version": "content-ir-production-runtime-results-1"
     },
     "content.tashas-cauldron.feature.battle-smith.tool-proficiency": {
       "advancement_block_ready": true,
       "character_cas": true,
+      "checks": {
+        "advancement_blocks_ready": true,
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "character_cas_and_transaction": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 4,
+        "proficiency_grant_count": 5,
+        "selected_count": 4
+      },
       "choice_lifecycle": false,
       "confirm": true,
       "content_id": "content.tashas-cauldron.feature.battle-smith.tool-proficiency",
@@ -462,6 +690,7 @@
       "production_runtime_full": true,
       "proficiency_grant_count": 1,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-XVIII-1",
       "selected_choices": {},
       "source": "round-II-reviewed-feature-runtime-through-round-VII-character-consumer",
       "spell_grant_count": 0,
@@ -472,6 +701,21 @@
     },
     "content.tashas-cauldron.feature.psi-warrior-protective-field": {
       "cas": true,
+      "checks": {
+        "all_required_checks_passed": true,
+        "choice_window": true,
+        "command_schema": true,
+        "confirmation_schema": true,
+        "dm_adjudication": true,
+        "entity_lifecycle": true,
+        "movement": true,
+        "preview_schema": true,
+        "production_batch": true,
+        "result_schema": true,
+        "scene_delta": true,
+        "spatial_authority_scene_adapter": true,
+        "spatial_authority_test_adapter": true
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.feature.psi-warrior-protective-field",
       "content_kind": "feature",
@@ -479,10 +723,12 @@
       "execution_mode": "typed",
       "pack_id": "tashas-cauldron",
       "preview": true,
+      "production_runtime_full": true,
       "replay": true,
       "result_id": "production-batch-II-003:result",
       "rollback_probe": true,
       "scene_delta": true,
+      "schema_version": "content-ir-production-runtime-results-IV-1",
       "snapshot_rebuild": true,
       "source_book": null,
       "transaction": true,
@@ -490,6 +736,21 @@
     },
     "content.tashas-cauldron.feature.psi-warrior-psionic-strike": {
       "cas": true,
+      "checks": {
+        "all_required_checks_passed": true,
+        "choice_window": true,
+        "command_schema": true,
+        "confirmation_schema": true,
+        "dm_adjudication": true,
+        "entity_lifecycle": true,
+        "movement": true,
+        "preview_schema": true,
+        "production_batch": true,
+        "result_schema": true,
+        "scene_delta": true,
+        "spatial_authority_scene_adapter": true,
+        "spatial_authority_test_adapter": true
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.feature.psi-warrior-psionic-strike",
       "content_kind": "feature",
@@ -497,25 +758,53 @@
       "execution_mode": "typed",
       "pack_id": "tashas-cauldron",
       "preview": true,
+      "production_runtime_full": true,
       "replay": true,
       "result_id": "production-batch-II-004:result",
       "rollback_probe": true,
       "scene_delta": true,
+      "schema_version": "content-ir-production-runtime-results-IV-1",
       "snapshot_rebuild": true,
       "source_book": null,
       "transaction": true,
       "typed_ir_fingerprint": "2d76dbb0b3c5dd9e6e18ea31c828f16185983edfa8aea438ec8d5ad7e19d8f08"
     },
     "content.tashas-cauldron.feature.psi-warrior-telekinetic-movement": {
+      "checks": {
+        "area_multi_target": true,
+        "idempotency_replay": true,
+        "rollback_restored_slot": true,
+        "snapshot_version_changed": true,
+        "target_cas_rejected": true,
+        "wrong_slot_rejected": true
+      },
       "confirm_status": 200,
+      "content_id": "content.tashas-cauldron.feature.psi-warrior-telekinetic-movement",
+      "content_kind": null,
       "evidence_path": "data/content-ir/compiled/production-runtime-results-III.json",
       "pack_id": "tashas-cauldron-features",
       "preview_status": 200,
       "production_runtime_full": true,
-      "runtime_id": "content.tashas-cauldron.feature.psi-warrior-telekinetic-movement"
+      "runtime_id": "content.tashas-cauldron.feature.psi-warrior-telekinetic-movement",
+      "schema_version": "content-ir-production-runtime-results-III-1"
     },
     "content.tashas-cauldron.feature.way-of-mercy-hand-harm": {
       "cas": true,
+      "checks": {
+        "all_required_checks_passed": true,
+        "choice_window": true,
+        "command_schema": true,
+        "confirmation_schema": true,
+        "dm_adjudication": true,
+        "entity_lifecycle": true,
+        "movement": true,
+        "preview_schema": true,
+        "production_batch": true,
+        "result_schema": true,
+        "scene_delta": true,
+        "spatial_authority_scene_adapter": true,
+        "spatial_authority_test_adapter": true
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.feature.way-of-mercy-hand-harm",
       "content_kind": "feature",
@@ -523,34 +812,78 @@
       "execution_mode": "typed",
       "pack_id": "tashas-cauldron",
       "preview": true,
+      "production_runtime_full": true,
       "replay": true,
       "result_id": "production-batch-II-005:result",
       "rollback_probe": true,
       "scene_delta": true,
+      "schema_version": "content-ir-production-runtime-results-IV-1",
       "snapshot_rebuild": true,
       "source_book": null,
       "transaction": true,
       "typed_ir_fingerprint": "39a59d33acf35f0da13d621a94f77be07636dc47e7e7c71db4bf699bbb2f1499"
     },
     "content.tashas-cauldron.feature.way-of-mercy-hand-healing": {
+      "checks": {
+        "actor_cas_rejected": true,
+        "concentration_state_persisted": true,
+        "duration_effect_persisted": true,
+        "idempotency_replay": true,
+        "illegal_target_rejected": true,
+        "illegal_target_status": 409,
+        "resource_lack_rejected": true,
+        "rest_preview_confirmed": true,
+        "rollback_restored_spell_slot": true,
+        "target_cas_rejected": true,
+        "turn_advance_rebuilt_snapshot": true,
+        "upcast_production_loop": true,
+        "wrong_slot_rejected": true
+      },
       "confirm_status": 200,
+      "content_id": "content.tashas-cauldron.feature.way-of-mercy-hand-healing",
+      "content_kind": null,
       "evidence_path": "data/content-ir/compiled/batch-II/production-runtime-results.json",
       "pack_id": "tashas-cauldron-features",
       "preview_status": 200,
       "production_runtime_full": true,
-      "runtime_id": "content.tashas-cauldron.feature.way-of-mercy-hand-healing"
+      "runtime_id": "content.tashas-cauldron.feature.way-of-mercy-hand-healing",
+      "schema_version": "content-ir-production-runtime-results-1"
     },
     "content.tashas-cauldron.feature.way-of-mercy-physicians-touch": {
+      "checks": {
+        "area_multi_target": true,
+        "idempotency_replay": true,
+        "rollback_restored_slot": true,
+        "snapshot_version_changed": true,
+        "target_cas_rejected": true,
+        "wrong_slot_rejected": true
+      },
       "confirm_status": 200,
+      "content_id": "content.tashas-cauldron.feature.way-of-mercy-physicians-touch",
+      "content_kind": null,
       "evidence_path": "data/content-ir/compiled/production-runtime-results-III.json",
       "pack_id": "tashas-cauldron-features",
       "preview_status": 200,
       "production_runtime_full": true,
-      "runtime_id": "content.tashas-cauldron.feature.way-of-mercy-physicians-touch"
+      "runtime_id": "content.tashas-cauldron.feature.way-of-mercy-physicians-touch",
+      "schema_version": "content-ir-production-runtime-results-III-1"
     },
     "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy": {
       "advancement_block_ready": true,
       "character_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "character_cas_and_transaction": true,
+        "feature_persisted": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 1,
+        "selected_count": 1,
+        "three_typed_proficiency_grants": true,
+        "typed_character_growth_consumer": true
+      },
       "choice_lifecycle": false,
       "confirm": true,
       "content_id": "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy",
@@ -568,6 +901,7 @@
       "production_runtime_full": true,
       "proficiency_grant_count": 3,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-XXI-1",
       "selected_choices": {},
       "source": "round-II-reviewed-feature-runtime-through-round-VII-character-consumer",
       "source_clause_count": 3,
@@ -579,6 +913,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-amulet-of-the-devout-001": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 2,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 14,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -626,6 +974,8 @@
         "version": 2
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XII-1",
       "typed_consumer": true,
       "typed_projection_consumers": [
         "item.attunement.v1",
@@ -635,6 +985,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-arcane-grimoire-002": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 2,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 14,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -682,6 +1046,8 @@
         "version": 2
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XII-1",
       "typed_consumer": true,
       "typed_projection_consumers": [
         "item.attunement.v1",
@@ -691,6 +1057,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-bloodwell-vial-003": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 2,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 14,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -738,6 +1118,8 @@
         "version": 2
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XII-1",
       "typed_consumer": true,
       "typed_projection_consumers": [
         "item.attunement.v1",
@@ -747,6 +1129,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-guardian-emblem-005": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 2,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 14,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -821,6 +1217,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XII-1",
       "typed_consumer": true,
       "typed_projection_consumers": [
         "item.attunement.v1",
@@ -832,6 +1230,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-moon-sickle-006": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 17,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -881,6 +1293,8 @@
         "version": 2
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XV-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -891,6 +1305,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 17,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -967,6 +1395,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XV-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -978,6 +1408,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 2,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 14,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -1051,6 +1495,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XII-1",
       "typed_consumer": true,
       "typed_projection_consumers": [
         "item.attunement.v1",
@@ -1061,6 +1507,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-62c7a0c6a042e571b17d35e3-dfaab0b0f93c-000": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 6,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 16,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.equipment_modifier.v1",
@@ -1134,6 +1594,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XIII-1",
       "typed_consumer": true,
       "typed_projection_consumers": [
         "item.equipment_modifier.v1",
@@ -1143,6 +1605,22 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_spell_consumers": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 2,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 6,
+        "production_runtime_full_count": 3,
+        "selected_count": 3,
+        "spell_identity_count": 16
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -1256,6 +1734,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XVII-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -1268,6 +1748,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 17,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -1369,6 +1863,8 @@
         "version": 4
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XV-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -1381,6 +1877,22 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_spell_consumers": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 2,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 6,
+        "production_runtime_full_count": 3,
+        "selected_count": 3,
+        "spell_identity_count": 16
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -1485,6 +1997,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XVII-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -1498,6 +2012,22 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_spell_consumers": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 2,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 6,
+        "production_runtime_full_count": 3,
+        "selected_count": 3,
+        "spell_identity_count": 16
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -1612,6 +2142,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XVII-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -1625,6 +2157,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 2,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 14,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.charge_resource.v1",
@@ -1722,6 +2268,8 @@
         "version": 4
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XII-1",
       "typed_consumer": true,
       "typed_projection_consumers": [
         "item.charge_resource.v1",
@@ -1732,6 +2280,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 17,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -1808,6 +2370,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XV-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -1819,6 +2383,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astromancy-archive-002": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 6,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 16,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -1890,6 +2468,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XIII-1",
       "typed_consumer": true,
       "typed_projection_consumers": [
         "item.attunement.v1",
@@ -1900,6 +2480,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-atlas-of-endless-horizons-003": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 6,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 16,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -1971,6 +2565,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XIII-1",
       "typed_consumer": true,
       "typed_projection_consumers": [
         "item.attunement.v1",
@@ -1981,6 +2577,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-bell-branch-004": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 6,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 16,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -2055,6 +2665,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XIII-1",
       "typed_consumer": true,
       "typed_projection_consumers": [
         "item.attunement.v1",
@@ -2066,6 +2678,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-devotee-s-censer-005": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 6,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 16,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -2139,6 +2765,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XIII-1",
       "typed_consumer": true,
       "typed_projection_consumers": [
         "item.attunement.v1",
@@ -2149,6 +2777,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-duplicitous-manuscript-006": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 17,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -2226,6 +2868,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XV-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -2238,6 +2882,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-far-realm-shard-008": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 2,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 14,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -2311,6 +2969,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XII-1",
       "typed_consumer": true,
       "typed_projection_consumers": [
         "item.attunement.v1",
@@ -2321,6 +2981,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-fulminating-treatise-009": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 17,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -2398,6 +3072,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XV-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -2410,6 +3086,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-heart-weaver-s-primer-010": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 6,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 16,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -2481,6 +3171,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XIII-1",
       "typed_consumer": true,
       "typed_projection_consumers": [
         "item.attunement.v1",
@@ -2491,6 +3183,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-libram-of-souls-and-flesh-011": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 6,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 16,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -2565,6 +3271,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XIII-1",
       "typed_consumer": true,
       "typed_projection_consumers": [
         "item.attunement.v1",
@@ -2576,6 +3284,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-lyre-of-building-012": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 2,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 14,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -2649,6 +3371,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XII-1",
       "typed_consumer": true,
       "typed_projection_consumers": [
         "item.attunement.v1",
@@ -2659,6 +3383,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-planecaller-s-codex-014": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 6,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 16,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -2730,6 +3468,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XIII-1",
       "typed_consumer": true,
       "typed_projection_consumers": [
         "item.attunement.v1",
@@ -2740,6 +3480,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-protective-verses-015": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 17,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -2841,6 +3595,8 @@
         "version": 4
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XV-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -2853,6 +3609,20 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-reveler-s-concertina-016": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 17,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -2929,6 +3699,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XV-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -2940,6 +3712,23 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-shadowfell-shard-017": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_tattoo_lifecycle_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 1,
+        "chronicle_dawn_recovery_typed": true,
+        "dawn_not_rest_recovered": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 12,
+        "production_runtime_full_count": 5,
+        "selected_count": 5
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -3016,6 +3805,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XVI-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -3027,6 +3818,22 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-8d7814d75b94-003": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_tattoo_lifecycle_persisted": true,
+        "all_tattoo_transitions": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 2,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 21,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -3146,6 +3953,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XIV-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -3156,6 +3965,23 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-a92dd000492e-001": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_tattoo_lifecycle_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 1,
+        "chronicle_dawn_recovery_typed": true,
+        "dawn_not_rest_recovered": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 12,
+        "production_runtime_full_count": 5,
+        "selected_count": 5
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -3303,6 +4129,8 @@
         "version": 4
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XVI-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -3315,6 +4143,22 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-b9cb8e43543d-007": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_tattoo_lifecycle_persisted": true,
+        "all_tattoo_transitions": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 2,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 21,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -3434,6 +4278,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XIV-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -3444,6 +4290,22 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-c27398cf29fe-010": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_tattoo_lifecycle_persisted": true,
+        "all_tattoo_transitions": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 2,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 21,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -3588,6 +4450,8 @@
         "version": 4
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XIV-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -3599,6 +4463,22 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-coiling-004": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_tattoo_lifecycle_persisted": true,
+        "all_tattoo_transitions": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 2,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 21,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -3745,6 +4625,8 @@
         "version": 4
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XIV-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -3756,6 +4638,22 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-eldritch-005": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_tattoo_lifecycle_persisted": true,
+        "all_tattoo_transitions": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 2,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 21,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -3902,6 +4800,8 @@
         "version": 4
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XIV-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -3913,6 +4813,22 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-ghost-step-tattoo-008": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_tattoo_lifecycle_persisted": true,
+        "all_tattoo_transitions": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 2,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 21,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -4060,6 +4976,8 @@
         "version": 4
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XIV-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -4072,6 +4990,22 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-illuminator-s-tattoo-000": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_tattoo_lifecycle_persisted": true,
+        "all_tattoo_transitions": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 2,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 21,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -4218,6 +5152,8 @@
         "version": 4
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XIV-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -4229,6 +5165,22 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-lifewell-tattoo-009": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_tattoo_lifecycle_persisted": true,
+        "all_tattoo_transitions": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 2,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 21,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -4348,6 +5300,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XIV-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -4358,6 +5312,23 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-shadowfellbrand-tattoo-006": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_tattoo_lifecycle_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 1,
+        "chronicle_dawn_recovery_typed": true,
+        "dawn_not_rest_recovered": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 12,
+        "production_runtime_full_count": 5,
+        "selected_count": 5
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -4504,6 +5475,8 @@
         "version": 4
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XVI-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -4515,6 +5488,23 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-953875067ac4d9a793c844f0-6ad29778c06b-000": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_tattoo_lifecycle_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 1,
+        "chronicle_dawn_recovery_typed": true,
+        "dawn_not_rest_recovered": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 12,
+        "production_runtime_full_count": 5,
+        "selected_count": 5
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -4591,6 +5581,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XVI-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -4602,6 +5594,23 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-953875067ac4d9a793c844f0-771dcd20c4dc-001": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
+      "checks": {
+        "all_attunement_cas": true,
+        "all_create_preview_confirm_replay": true,
+        "all_item_state_persisted": true,
+        "all_tattoo_lifecycle_persisted": true,
+        "all_typed_consumers": true,
+        "charge_lifecycle_count": 1,
+        "chronicle_dawn_recovery_typed": true,
+        "dawn_not_rest_recovered": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "operation_transaction_count": 12,
+        "production_runtime_full_count": 5,
+        "selected_count": 5
+      },
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
@@ -4676,6 +5685,8 @@
         "version": 3
       },
       "preview_confirm_replay": true,
+      "production_runtime_full": true,
+      "schema_version": "content-ir-production-runtime-results-XVI-1",
       "tattoo_lifecycle_persisted": true,
       "typed_consumer": true,
       "typed_projection_consumers": [
@@ -4685,6 +5696,25 @@
       ]
     },
     "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery": {
+      "checks": {
+        "component_override_consumed": true,
+        "downstream_rollback": true,
+        "feature_compile_full": true,
+        "formal_database_unchanged": true,
+        "formal_registry_unchanged": true,
+        "generic_feature_context_consumer": true,
+        "name_branch_free": true,
+        "real_spell_preview_confirm_replay": true,
+        "replay_idempotent": true,
+        "selected_count": true,
+        "slot_replaced_not_spent": true,
+        "sorcery_payment_consumed": true,
+        "sorcery_points_cas_snapshot": true,
+        "spell_and_runtime_transactions": true,
+        "two_typed_context_clauses": true
+      },
+      "content_id": "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery",
+      "content_kind": null,
       "evidence_path": "data/content-ir/compiled/production-runtime-results-XXIII.json",
       "feature_consumer_ids": [
         "spell.context.v1"
@@ -4740,8 +5770,10 @@
         "spell_transaction": true,
         "target_hp_after": 95
       },
+      "production_runtime_full": true,
       "rollback_evidence": true,
       "runtime_id": "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery",
+      "schema_version": "content-ir-production-runtime-results-XXIII-1",
       "source_spell_runtime_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
       "typed_clause_ids": [
         "component-override",
@@ -4750,6 +5782,18 @@
     },
     "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list": {
       "character_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "character_cas_and_transaction": true,
+        "choice_lifecycle_consumers": 3,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "grant_spell_consumer": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "choice_lifecycle": false,
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list",
@@ -4762,6 +5806,7 @@
       "production_runtime_full": true,
       "proficiency_grant_count": 0,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-VII-1",
       "selected_choices": {},
       "source": "round-II-reviewed-feature-runtime-registry-through-round-V-character-consumer",
       "spell_grant_count": 10,
@@ -4771,6 +5816,15 @@
     },
     "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech": {
       "actor_target_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 12,
+        "selected_count": 12
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech",
       "content_kind": "feature",
@@ -4780,11 +5834,23 @@
       "preview": true,
       "production_runtime_full": true,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-V-1",
       "source": "round-II-isolated-feature-contract",
       "transaction": true,
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant": {
+      "checks": {
+        "all_inspection_resolution": true,
+        "all_passive_registry_bound": true,
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant",
       "content_kind": "feature",
@@ -4796,12 +5862,26 @@
       "preview": true,
       "production_runtime_full": true,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-VIII-1",
       "source": "round-II-reviewed-feature-contract-through-round-VI-passive-consumer",
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.alchemist-spell-list": {
       "advancement_block_ready": true,
       "character_cas": true,
+      "checks": {
+        "advancement_blocks_ready": true,
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "character_cas_and_transaction": true,
+        "choice_lifecycle_consumers": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "grant_spell_consumer": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "choice_lifecycle": false,
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.alchemist-spell-list",
@@ -4814,6 +5894,7 @@
       "production_runtime_full": true,
       "proficiency_grant_count": 0,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-IX-1",
       "selected_choices": {},
       "source": "round-II-reviewed-feature-runtime-through-round-VII-character-consumer",
       "spell_grant_count": 10,
@@ -4822,6 +5903,17 @@
       "typed_contract": true
     },
     "content.tashas-cauldron.round2.feature.armorer-powered-steps": {
+      "checks": {
+        "all_inspection_resolution": true,
+        "all_passive_registry_bound": true,
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.armorer-powered-steps",
       "content_kind": "feature",
@@ -4833,10 +5925,22 @@
       "preview": true,
       "production_runtime_full": true,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-VIII-1",
       "source": "round-II-reviewed-feature-contract-through-round-VI-passive-consumer",
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.artificer-tool-expertise": {
+      "checks": {
+        "all_inspection_resolution": true,
+        "all_passive_registry_bound": true,
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.artificer-tool-expertise",
       "content_kind": "feature",
@@ -4848,10 +5952,22 @@
       "preview": true,
       "production_runtime_full": true,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-VIII-1",
       "source": "round-II-reviewed-feature-contract-through-round-VI-passive-consumer",
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.artillerist-arcane-firearm": {
+      "checks": {
+        "all_inspection_resolution": true,
+        "all_passive_registry_bound": true,
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.artillerist-arcane-firearm",
       "content_kind": "feature",
@@ -4863,11 +5979,21 @@
       "preview": true,
       "production_runtime_full": true,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-VIII-1",
       "source": "round-II-reviewed-feature-contract-through-round-VI-passive-consumer",
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.artillerist-explosive-cannon": {
       "actor_target_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 12,
+        "selected_count": 12
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.artillerist-explosive-cannon",
       "content_kind": "feature",
@@ -4877,11 +6003,23 @@
       "preview": true,
       "production_runtime_full": true,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-V-1",
       "source": "round-II-isolated-feature-contract",
       "transaction": true,
       "typed_consumer": "combat_engine.damage_heal.v1"
     },
     "content.tashas-cauldron.round2.feature.astral-self-armor-of-the-spirit": {
+      "checks": {
+        "all_inspection_resolution": true,
+        "all_passive_registry_bound": true,
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.astral-self-armor-of-the-spirit",
       "content_kind": "feature",
@@ -4893,10 +6031,22 @@
       "preview": true,
       "production_runtime_full": true,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-VIII-1",
       "source": "round-II-reviewed-feature-contract-through-round-VI-passive-consumer",
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.astral-self-astral-sight": {
+      "checks": {
+        "all_inspection_resolution": true,
+        "all_passive_registry_bound": true,
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.astral-self-astral-sight",
       "content_kind": "feature",
@@ -4908,11 +6058,21 @@
       "preview": true,
       "production_runtime_full": true,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-VIII-1",
       "source": "round-II-reviewed-feature-contract-through-round-VI-passive-consumer",
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.astral-self-word-of-the-spirit": {
       "actor_target_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 12,
+        "selected_count": 12
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.astral-self-word-of-the-spirit",
       "content_kind": "feature",
@@ -4922,12 +6082,22 @@
       "preview": true,
       "production_runtime_full": true,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-V-1",
       "source": "round-II-isolated-feature-contract",
       "transaction": true,
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.battle-master-bait-and-switch": {
       "actor_target_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 12,
+        "selected_count": 12
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.battle-master-bait-and-switch",
       "content_kind": "feature",
@@ -4937,28 +6107,58 @@
       "preview": true,
       "production_runtime_full": true,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-V-1",
       "source": "round-II-isolated-feature-contract",
       "transaction": true,
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.battle-master-brace": {
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_resource_cas": true,
+        "all_typed_consumers": true,
+        "event_windows_persisted": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 6,
+        "resource_exchange_passed": true,
+        "resource_profile_persisted": true,
+        "selected_count": 6
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.battle-master-brace",
       "content_kind": "feature",
       "evidence_path": "data/content-ir/compiled/production-runtime-results-XI.json",
       "preview": true,
+      "production_runtime_full": true,
       "replay": true,
       "resource_after": 2,
       "resource_before": 3,
       "resource_cas": true,
       "resource_exchange": false,
       "resource_exchange_amount": null,
+      "schema_version": "content-ir-production-runtime-results-XI-1",
       "typed_consumer": "combat_engine.feature_event_window.v1",
       "typed_event_contract": true,
       "window_persisted": true
     },
     "content.tashas-cauldron.round2.feature.battle-master-grappling-strike": {
       "activation_resolution": false,
+      "checks": {
+        "activation_resolution_count": 1,
+        "all_inspection_or_activation": true,
+        "all_preview_confirm_replay": true,
+        "all_resource_cas": true,
+        "all_runtime_id_bound": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "passive_registry_bound_count": 7,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.battle-master-grappling-strike",
       "content_kind": "feature",
@@ -4972,27 +6172,57 @@
       "replay": true,
       "resource_cas": true,
       "runtime_id_bound": true,
+      "schema_version": "content-ir-production-runtime-results-X-1",
       "source": "round-II-reviewed-feature-contract-through-round-VIII-typed-combat-consumer",
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.battle-master-quick-toss": {
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_resource_cas": true,
+        "all_typed_consumers": true,
+        "event_windows_persisted": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 6,
+        "resource_exchange_passed": true,
+        "resource_profile_persisted": true,
+        "selected_count": 6
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.battle-master-quick-toss",
       "content_kind": "feature",
       "evidence_path": "data/content-ir/compiled/production-runtime-results-XI.json",
       "preview": true,
+      "production_runtime_full": true,
       "replay": true,
       "resource_after": 2,
       "resource_before": 3,
       "resource_cas": true,
       "resource_exchange": false,
       "resource_exchange_amount": null,
+      "schema_version": "content-ir-production-runtime-results-XI-1",
       "typed_consumer": "combat_engine.feature_event_window.v1",
       "typed_event_contract": true,
       "window_persisted": true
     },
     "content.tashas-cauldron.round2.feature.battle-master-tactical-assessment": {
       "activation_resolution": false,
+      "checks": {
+        "activation_resolution_count": 1,
+        "all_inspection_or_activation": true,
+        "all_preview_confirm_replay": true,
+        "all_resource_cas": true,
+        "all_runtime_id_bound": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "passive_registry_bound_count": 7,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.battle-master-tactical-assessment",
       "content_kind": "feature",
@@ -5006,6 +6236,7 @@
       "replay": true,
       "resource_cas": true,
       "runtime_id_bound": true,
+      "schema_version": "content-ir-production-runtime-results-X-1",
       "source": "round-II-reviewed-feature-contract-through-round-VIII-typed-combat-consumer",
       "typed_consumer": "combat_engine.feature_action.v1"
     },
@@ -5015,6 +6246,16 @@
       },
       "active_sight_modes": {},
       "actor_target_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "movement_choice_lifecycle_consumers": 8,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.beast-barbarian-bestial-soul",
       "content_kind": "feature",
@@ -5027,6 +6268,7 @@
       "replay": true,
       "resource_cas": true,
       "runtime_registry": true,
+      "schema_version": "content-ir-production-runtime-results-VI-1",
       "sight_activation": true,
       "source": "round-II-authored-feature-contract-through-round-IV-consumer",
       "transaction": true,
@@ -5035,6 +6277,18 @@
     },
     "content.tashas-cauldron.round2.feature.bladesinger-training-in-sword-and-song": {
       "character_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "character_cas_and_transaction": true,
+        "choice_lifecycle_consumers": 3,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "grant_spell_consumer": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "choice_lifecycle": false,
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.bladesinger-training-in-sword-and-song",
@@ -5047,6 +6301,7 @@
       "production_runtime_full": true,
       "proficiency_grant_count": 1,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-VII-1",
       "selected_choices": {},
       "source": "round-II-reviewed-feature-runtime-registry-through-round-V-character-consumer",
       "spell_grant_count": 0,
@@ -5057,6 +6312,19 @@
     "content.tashas-cauldron.round2.feature.clockwork-soul-clockwork-magic": {
       "advancement_block_ready": true,
       "character_cas": true,
+      "checks": {
+        "advancement_blocks_ready": true,
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "character_cas_and_transaction": true,
+        "choice_lifecycle_consumers": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "grant_spell_consumer": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "choice_lifecycle": false,
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.clockwork-soul-clockwork-magic",
@@ -5069,6 +6337,7 @@
       "production_runtime_full": true,
       "proficiency_grant_count": 0,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-IX-1",
       "selected_choices": {},
       "source": "round-II-reviewed-feature-runtime-through-round-VII-character-consumer",
       "spell_grant_count": 10,
@@ -5082,6 +6351,16 @@
       },
       "active_sight_modes": {},
       "actor_target_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "movement_choice_lifecycle_consumers": 8,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.fathomless-gift-of-the-sea",
       "content_kind": "feature",
@@ -5094,6 +6373,7 @@
       "replay": true,
       "resource_cas": true,
       "runtime_registry": true,
+      "schema_version": "content-ir-production-runtime-results-VI-1",
       "sight_activation": true,
       "source": "round-II-authored-feature-contract-through-round-IV-consumer",
       "transaction": true,
@@ -5101,6 +6381,17 @@
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.feat-crusher": {
+      "checks": {
+        "all_inspection_resolution": true,
+        "all_passive_registry_bound": true,
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.feat-crusher",
       "content_kind": "feature",
@@ -5112,12 +6403,26 @@
       "preview": true,
       "production_runtime_full": true,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-VIII-1",
       "source": "round-II-reviewed-feature-contract-through-round-VI-passive-consumer",
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.feat-fey-touched": {
       "advancement_block_ready": true,
       "character_cas": true,
+      "checks": {
+        "advancement_blocks_ready": true,
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "character_cas_and_transaction": true,
+        "choice_lifecycle_consumers": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "grant_spell_consumer": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "choice_lifecycle": true,
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.feat-fey-touched",
@@ -5130,6 +6435,7 @@
       "production_runtime_full": true,
       "proficiency_grant_count": 0,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-IX-1",
       "selected_choices": {
         "chosen_ability": [
           "wisdom"
@@ -5147,6 +6453,19 @@
     "content.tashas-cauldron.round2.feature.feat-shadow-touched": {
       "advancement_block_ready": true,
       "character_cas": true,
+      "checks": {
+        "advancement_blocks_ready": true,
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "character_cas_and_transaction": true,
+        "choice_lifecycle_consumers": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "grant_spell_consumer": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "choice_lifecycle": true,
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.feat-shadow-touched",
@@ -5159,6 +6478,7 @@
       "production_runtime_full": true,
       "proficiency_grant_count": 0,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-IX-1",
       "selected_choices": {
         "chosen_ability": [
           "charisma"
@@ -5175,6 +6495,18 @@
     },
     "content.tashas-cauldron.round2.feature.feat-skill-expert": {
       "character_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "character_cas_and_transaction": true,
+        "choice_lifecycle_consumers": 3,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "grant_spell_consumer": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "choice_lifecycle": true,
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.feat-skill-expert",
@@ -5187,6 +6519,7 @@
       "production_runtime_full": true,
       "proficiency_grant_count": 1,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-VII-1",
       "selected_choices": {
         "chosen_skill": [
           "stealth"
@@ -5200,6 +6533,15 @@
     },
     "content.tashas-cauldron.round2.feature.feat-telepathic": {
       "actor_target_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 12,
+        "selected_count": 12
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.feat-telepathic",
       "content_kind": "feature",
@@ -5209,11 +6551,23 @@
       "preview": true,
       "production_runtime_full": true,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-V-1",
       "source": "round-II-isolated-feature-contract",
       "transaction": true,
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.fey-wanderer-otherworldly-glamour": {
+      "checks": {
+        "all_inspection_resolution": true,
+        "all_passive_registry_bound": true,
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.fey-wanderer-otherworldly-glamour",
       "content_kind": "feature",
@@ -5225,6 +6579,7 @@
       "preview": true,
       "production_runtime_full": true,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-VIII-1",
       "source": "round-II-reviewed-feature-contract-through-round-VI-passive-consumer",
       "typed_consumer": "combat_engine.feature_action.v1"
     },
@@ -5234,6 +6589,16 @@
       },
       "active_sight_modes": {},
       "actor_target_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "movement_choice_lifecycle_consumers": 8,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.genie-elemental-gift",
       "content_kind": "feature",
@@ -5246,6 +6611,7 @@
       "replay": true,
       "resource_cas": true,
       "runtime_registry": true,
+      "schema_version": "content-ir-production-runtime-results-VI-1",
       "sight_activation": true,
       "source": "round-II-authored-feature-contract-through-round-IV-consumer",
       "transaction": true,
@@ -5254,6 +6620,15 @@
     },
     "content.tashas-cauldron.round2.feature.genie-genies-wrath": {
       "actor_target_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 12,
+        "selected_count": 12
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.genie-genies-wrath",
       "content_kind": "feature",
@@ -5263,12 +6638,22 @@
       "preview": true,
       "production_runtime_full": true,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-V-1",
       "source": "round-II-isolated-feature-contract",
       "transaction": true,
       "typed_consumer": "combat_engine.damage_heal.v1"
     },
     "content.tashas-cauldron.round2.feature.glory-paladin-glorious-defense": {
       "actor_target_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 12,
+        "selected_count": 12
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.glory-paladin-glorious-defense",
       "content_kind": "feature",
@@ -5278,12 +6663,25 @@
       "preview": true,
       "production_runtime_full": true,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-V-1",
       "source": "round-II-isolated-feature-contract",
       "transaction": true,
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.order-cleric-bonus-proficiencies": {
       "character_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "character_cas_and_transaction": true,
+        "choice_lifecycle_consumers": 3,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "grant_spell_consumer": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "choice_lifecycle": true,
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.order-cleric-bonus-proficiencies",
@@ -5296,6 +6694,7 @@
       "production_runtime_full": true,
       "proficiency_grant_count": 2,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-VII-1",
       "selected_choices": {
         "intimidation_or_persuasion": [
           "persuasion"
@@ -5310,6 +6709,19 @@
     "content.tashas-cauldron.round2.feature.paladin-blessed-warrior": {
       "advancement_block_ready": true,
       "character_cas": true,
+      "checks": {
+        "advancement_blocks_ready": true,
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "character_cas_and_transaction": true,
+        "choice_lifecycle_consumers": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "grant_spell_consumer": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "choice_lifecycle": true,
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.paladin-blessed-warrior",
@@ -5322,6 +6734,7 @@
       "production_runtime_full": true,
       "proficiency_grant_count": 0,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-IX-1",
       "selected_choices": {
         "chosen_cleric_cantrip_1": [
           "guidance"
@@ -5342,6 +6755,16 @@
         "blindsight": 10
       },
       "actor_target_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "movement_choice_lifecycle_consumers": 8,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.paladin-blind-fighting",
       "content_kind": "feature",
@@ -5354,6 +6777,7 @@
       "replay": true,
       "resource_cas": true,
       "runtime_registry": true,
+      "schema_version": "content-ir-production-runtime-results-VI-1",
       "sight_activation": true,
       "source": "round-II-authored-feature-contract-through-round-IV-consumer",
       "transaction": true,
@@ -5361,39 +6785,81 @@
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.paladin-harness-divine-power": {
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_resource_cas": true,
+        "all_typed_consumers": true,
+        "event_windows_persisted": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 6,
+        "resource_exchange_passed": true,
+        "resource_profile_persisted": true,
+        "selected_count": 6
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.paladin-harness-divine-power",
       "content_kind": "feature",
       "evidence_path": "data/content-ir/compiled/production-runtime-results-XI.json",
       "preview": true,
+      "production_runtime_full": true,
       "replay": true,
       "resource_after": null,
       "resource_before": null,
       "resource_cas": true,
       "resource_exchange": true,
       "resource_exchange_amount": 2,
+      "schema_version": "content-ir-production-runtime-results-XI-1",
       "typed_consumer": "combat_engine.feature_event_window.v1",
       "typed_event_contract": true,
       "window_persisted": false
     },
     "content.tashas-cauldron.round2.feature.paladin-interception": {
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_resource_cas": true,
+        "all_typed_consumers": true,
+        "event_windows_persisted": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 6,
+        "resource_exchange_passed": true,
+        "resource_profile_persisted": true,
+        "selected_count": 6
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.paladin-interception",
       "content_kind": "feature",
       "evidence_path": "data/content-ir/compiled/production-runtime-results-XI.json",
       "preview": true,
+      "production_runtime_full": true,
       "replay": true,
       "resource_after": null,
       "resource_before": null,
       "resource_cas": true,
       "resource_exchange": false,
       "resource_exchange_amount": null,
+      "schema_version": "content-ir-production-runtime-results-XI-1",
       "typed_consumer": "combat_engine.feature_event_window.v1",
       "typed_event_contract": true,
       "window_persisted": true
     },
     "content.tashas-cauldron.round2.feature.peace-cleric-implement-of-peace": {
       "character_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "character_cas_and_transaction": true,
+        "choice_lifecycle_consumers": 3,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "grant_spell_consumer": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "choice_lifecycle": false,
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.peace-cleric-implement-of-peace",
@@ -5406,6 +6872,7 @@
       "production_runtime_full": true,
       "proficiency_grant_count": 3,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-VII-1",
       "selected_choices": {},
       "source": "round-II-reviewed-feature-runtime-registry-through-round-V-character-consumer",
       "spell_grant_count": 0,
@@ -5415,6 +6882,15 @@
     },
     "content.tashas-cauldron.round2.feature.psi-warrior-guarded-mind": {
       "actor_target_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 12,
+        "selected_count": 12
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.psi-warrior-guarded-mind",
       "content_kind": "feature",
@@ -5424,12 +6900,27 @@
       "preview": true,
       "production_runtime_full": true,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-V-1",
       "source": "round-II-isolated-feature-contract",
       "transaction": true,
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.psi-warrior-psi-powered-leap": {
       "activation_resolution": true,
+      "checks": {
+        "activation_resolution_count": 1,
+        "all_inspection_or_activation": true,
+        "all_preview_confirm_replay": true,
+        "all_resource_cas": true,
+        "all_runtime_id_bound": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "passive_registry_bound_count": 7,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.psi-warrior-psi-powered-leap",
       "content_kind": "feature",
@@ -5443,26 +6934,55 @@
       "replay": true,
       "resource_cas": true,
       "runtime_id_bound": true,
+      "schema_version": "content-ir-production-runtime-results-X-1",
       "source": "round-II-reviewed-feature-contract-through-round-VIII-typed-combat-consumer",
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.psi-warrior-psionic-power": {
       "character_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_resource_cas": true,
+        "all_typed_consumers": true,
+        "event_windows_persisted": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 6,
+        "resource_exchange_passed": true,
+        "resource_profile_persisted": true,
+        "selected_count": 6
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.psi-warrior-psionic-power",
       "content_kind": "advancement",
       "evidence_path": "data/content-ir/compiled/production-runtime-results-XI.json",
       "preview": true,
+      "production_runtime_full": true,
       "replay": true,
       "resource_cas": true,
       "resource_grant_count": 1,
       "resource_profile_persisted": true,
+      "schema_version": "content-ir-production-runtime-results-XI-1",
       "transaction": true,
       "typed_consumer": "advancement_service.character_growth.v1"
     },
     "content.tashas-cauldron.round2.feature.psi-warrior-telekinetic-master": {
       "advancement_block_ready": true,
       "character_cas": true,
+      "checks": {
+        "advancement_blocks_ready": true,
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "character_cas_and_transaction": true,
+        "choice_lifecycle_consumers": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "grant_spell_consumer": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "choice_lifecycle": false,
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.psi-warrior-telekinetic-master",
@@ -5475,6 +6995,7 @@
       "production_runtime_full": true,
       "proficiency_grant_count": 0,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-IX-1",
       "selected_choices": {},
       "source": "round-II-reviewed-feature-runtime-through-round-VII-character-consumer",
       "spell_grant_count": 1,
@@ -5488,6 +7009,16 @@
         "blindsight": 10
       },
       "actor_target_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "movement_choice_lifecycle_consumers": 8,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.ranger-blind-fighting",
       "content_kind": "feature",
@@ -5500,6 +7031,7 @@
       "replay": true,
       "resource_cas": true,
       "runtime_registry": true,
+      "schema_version": "content-ir-production-runtime-results-VI-1",
       "sight_activation": true,
       "source": "round-II-authored-feature-contract-through-round-IV-consumer",
       "transaction": true,
@@ -5508,6 +7040,18 @@
     },
     "content.tashas-cauldron.round2.feature.ranger-canny": {
       "character_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "character_cas_and_transaction": true,
+        "choice_lifecycle_consumers": 3,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "grant_spell_consumer": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "choice_lifecycle": true,
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.ranger-canny",
@@ -5520,6 +7064,7 @@
       "production_runtime_full": true,
       "proficiency_grant_count": 2,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-VII-1",
       "selected_choices": {
         "chosen_language": [
           "Elvish"
@@ -5537,6 +7082,19 @@
     "content.tashas-cauldron.round2.feature.ranger-druidic-warrior": {
       "advancement_block_ready": true,
       "character_cas": true,
+      "checks": {
+        "advancement_blocks_ready": true,
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "character_cas_and_transaction": true,
+        "choice_lifecycle_consumers": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "grant_spell_consumer": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "choice_lifecycle": true,
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.ranger-druidic-warrior",
@@ -5549,6 +7107,7 @@
       "production_runtime_full": true,
       "proficiency_grant_count": 0,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-IX-1",
       "selected_choices": {
         "chosen_druid_cantrip_1": [
           "druidcraft"
@@ -5570,6 +7129,16 @@
       },
       "active_sight_modes": {},
       "actor_target_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "movement_choice_lifecycle_consumers": 8,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.ranger-roving",
       "content_kind": "feature",
@@ -5582,6 +7151,7 @@
       "replay": true,
       "resource_cas": true,
       "runtime_registry": true,
+      "schema_version": "content-ir-production-runtime-results-VI-1",
       "sight_activation": true,
       "source": "round-II-authored-feature-contract-through-round-IV-consumer",
       "transaction": true,
@@ -5590,6 +7160,17 @@
     },
     "content.tashas-cauldron.round2.feature.ranger-tireless": {
       "character_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "character_cas_and_transaction": true,
+        "condition_lifecycle_persisted": true,
+        "formal_apply": false,
+        "isolated_database": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 1,
+        "selected_count": 1,
+        "typed_rest_consumer": "rest_service.typed_rest_condition_effect.v1"
+      },
       "compile_blockers": [],
       "compile_status": "full",
       "condition_persisted": true,
@@ -5639,6 +7220,7 @@
         },
         "trigger": "short_rest_completed"
       },
+      "schema_version": "content-ir-production-runtime-results-XIX-1",
       "source_book": "塔莎的万事坩埚",
       "transaction": true,
       "typed_consumer": "rest_service.typed_rest_condition_effect.v1",
@@ -5649,6 +7231,18 @@
     },
     "content.tashas-cauldron.round2.feature.rune-knight-bonus-proficiencies": {
       "character_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "character_cas_and_transaction": true,
+        "choice_lifecycle_consumers": 3,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "grant_spell_consumer": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "choice_lifecycle": false,
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.rune-knight-bonus-proficiencies",
@@ -5661,6 +7255,7 @@
       "production_runtime_full": true,
       "proficiency_grant_count": 2,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-VII-1",
       "selected_choices": {},
       "source": "round-II-reviewed-feature-runtime-registry-through-round-V-character-consumer",
       "spell_grant_count": 0,
@@ -5670,6 +7265,15 @@
     },
     "content.tashas-cauldron.round2.feature.rune-knight-giants-might": {
       "actor_target_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 12,
+        "selected_count": 12
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.rune-knight-giants-might",
       "content_kind": "feature",
@@ -5679,12 +7283,22 @@
       "preview": true,
       "production_runtime_full": true,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-V-1",
       "source": "round-II-isolated-feature-contract",
       "transaction": true,
       "typed_consumer": "combat_engine.damage_heal.v1"
     },
     "content.tashas-cauldron.round2.feature.rune-knight-great-stature": {
       "actor_target_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 12,
+        "selected_count": 12
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.rune-knight-great-stature",
       "content_kind": "feature",
@@ -5694,28 +7308,58 @@
       "preview": true,
       "production_runtime_full": true,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-V-1",
       "source": "round-II-isolated-feature-contract",
       "transaction": true,
       "typed_consumer": "combat_engine.damage_heal.v1"
     },
     "content.tashas-cauldron.round2.feature.rune-knight-runic-shield": {
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_resource_cas": true,
+        "all_typed_consumers": true,
+        "event_windows_persisted": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 6,
+        "resource_exchange_passed": true,
+        "resource_profile_persisted": true,
+        "selected_count": 6
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.rune-knight-runic-shield",
       "content_kind": "feature",
       "evidence_path": "data/content-ir/compiled/production-runtime-results-XI.json",
       "preview": true,
+      "production_runtime_full": true,
       "replay": true,
       "resource_after": 0,
       "resource_before": 1,
       "resource_cas": true,
       "resource_exchange": false,
       "resource_exchange_amount": null,
+      "schema_version": "content-ir-production-runtime-results-XI-1",
       "typed_consumer": "combat_engine.feature_event_window.v1",
       "typed_event_contract": true,
       "window_persisted": true
     },
     "content.tashas-cauldron.round2.feature.soulknife-homing-strikes": {
       "activation_resolution": false,
+      "checks": {
+        "activation_resolution_count": 1,
+        "all_inspection_or_activation": true,
+        "all_preview_confirm_replay": true,
+        "all_resource_cas": true,
+        "all_runtime_id_bound": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "passive_registry_bound_count": 7,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.soulknife-homing-strikes",
       "content_kind": "feature",
@@ -5729,11 +7373,26 @@
       "replay": true,
       "resource_cas": true,
       "runtime_id_bound": true,
+      "schema_version": "content-ir-production-runtime-results-X-1",
       "source": "round-II-reviewed-feature-contract-through-round-VIII-typed-combat-consumer",
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.soulknife-psi-bolstered-knack": {
       "activation_resolution": false,
+      "checks": {
+        "activation_resolution_count": 1,
+        "all_inspection_or_activation": true,
+        "all_preview_confirm_replay": true,
+        "all_resource_cas": true,
+        "all_runtime_id_bound": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "passive_registry_bound_count": 7,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.soulknife-psi-bolstered-knack",
       "content_kind": "feature",
@@ -5747,10 +7406,33 @@
       "replay": true,
       "resource_cas": true,
       "runtime_id_bound": true,
+      "schema_version": "content-ir-production-runtime-results-X-1",
       "source": "round-II-reviewed-feature-contract-through-round-VIII-typed-combat-consumer",
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.soulknife-psychic-teleportation": {
+      "checks": {
+        "authoritative_failure_rollback": true,
+        "authoritative_grid_teleport": true,
+        "bonus_action_consumed": true,
+        "feature_and_runtime_transactions": true,
+        "feature_compile_full": true,
+        "formal_database_unchanged": true,
+        "formal_registry_unchanged": true,
+        "generic_feature_action_consumer": true,
+        "name_branch_free": true,
+        "preview_confirm_replay": true,
+        "preview_confirms_roll_distance": true,
+        "replay_idempotent": true,
+        "resource_cas_snapshot": true,
+        "selected_count": true,
+        "source_complete_after_review": true,
+        "typed_resource_consume_clause": true,
+        "typed_teleport_clause": true,
+        "unmodeled_terms_closed": true
+      },
+      "content_id": "content.tashas-cauldron.round2.feature.soulknife-psychic-teleportation",
+      "content_kind": null,
       "evidence_path": "data/content-ir/compiled/production-runtime-results-XXIV.json",
       "feature_consumer_ids": [
         "combat_engine.feature_action.v1"
@@ -5780,6 +7462,7 @@
       "feature_source_fingerprint": "6806e8e7559a74d901c4eb97994d4e89f4a3bbdce9a489439d344041940d9044",
       "feature_source_path": "塔莎的万事坩埚/玩家选项/职业/游荡者（TCE）/魂刃.html",
       "feature_source_record_id": "b63c217774b977cdb0c1a23e",
+      "production_runtime_full": true,
       "runtime_evidence": {
         "action_cost": "bonus_action",
         "actor_position_after": {
@@ -5832,6 +7515,7 @@
           "runtime_operation": "applied"
         }
       },
+      "schema_version": "content-ir-production-runtime-results-XXIV-1",
       "typed_action": {
         "action_cost": "bonus_action",
         "activation": "automatic",
@@ -5893,6 +7577,15 @@
     },
     "content.tashas-cauldron.round2.feature.soulknife-psychic-whispers": {
       "actor_target_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 12,
+        "selected_count": 12
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.soulknife-psychic-whispers",
       "content_kind": "feature",
@@ -5902,12 +7595,27 @@
       "preview": true,
       "production_runtime_full": true,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-V-1",
       "source": "round-II-isolated-feature-contract",
       "transaction": true,
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.stars-druid-full-of-stars": {
       "activation_resolution": false,
+      "checks": {
+        "activation_resolution_count": 1,
+        "all_inspection_or_activation": true,
+        "all_preview_confirm_replay": true,
+        "all_resource_cas": true,
+        "all_runtime_id_bound": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "passive_registry_bound_count": 7,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.stars-druid-full-of-stars",
       "content_kind": "feature",
@@ -5921,11 +7629,26 @@
       "replay": true,
       "resource_cas": true,
       "runtime_id_bound": true,
+      "schema_version": "content-ir-production-runtime-results-X-1",
       "source": "round-II-reviewed-feature-contract-through-round-VIII-typed-combat-consumer",
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.stars-druid-weal": {
       "activation_resolution": false,
+      "checks": {
+        "activation_resolution_count": 1,
+        "all_inspection_or_activation": true,
+        "all_preview_confirm_replay": true,
+        "all_resource_cas": true,
+        "all_runtime_id_bound": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "passive_registry_bound_count": 7,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.stars-druid-weal",
       "content_kind": "feature",
@@ -5939,11 +7662,26 @@
       "replay": true,
       "resource_cas": true,
       "runtime_id_bound": true,
+      "schema_version": "content-ir-production-runtime-results-X-1",
       "source": "round-II-reviewed-feature-contract-through-round-VIII-typed-combat-consumer",
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.stars-druid-woe": {
       "activation_resolution": false,
+      "checks": {
+        "activation_resolution_count": 1,
+        "all_inspection_or_activation": true,
+        "all_preview_confirm_replay": true,
+        "all_resource_cas": true,
+        "all_runtime_id_bound": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "passive_registry_bound_count": 7,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.stars-druid-woe",
       "content_kind": "feature",
@@ -5957,12 +7695,26 @@
       "replay": true,
       "resource_cas": true,
       "runtime_id_bound": true,
+      "schema_version": "content-ir-production-runtime-results-X-1",
       "source": "round-II-reviewed-feature-contract-through-round-VIII-typed-combat-consumer",
       "typed_consumer": "combat_engine.feature_action.v1"
     },
     "content.tashas-cauldron.round2.feature.swarmkeeper-spell-list": {
       "advancement_block_ready": true,
       "character_cas": true,
+      "checks": {
+        "advancement_blocks_ready": true,
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "character_cas_and_transaction": true,
+        "choice_lifecycle_consumers": 4,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "grant_spell_consumer": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "choice_lifecycle": false,
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.swarmkeeper-spell-list",
@@ -5975,6 +7727,7 @@
       "production_runtime_full": true,
       "proficiency_grant_count": 0,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-IX-1",
       "selected_choices": {},
       "source": "round-II-reviewed-feature-runtime-through-round-VII-character-consumer",
       "spell_grant_count": 6,
@@ -5988,6 +7741,16 @@
       },
       "active_sight_modes": {},
       "actor_target_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "movement_choice_lifecycle_consumers": 8,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.swarmkeeper-writhing-tide",
       "content_kind": "feature",
@@ -6000,6 +7763,7 @@
       "replay": true,
       "resource_cas": true,
       "runtime_registry": true,
+      "schema_version": "content-ir-production-runtime-results-VI-1",
       "sight_activation": true,
       "source": "round-II-authored-feature-contract-through-round-IV-consumer",
       "transaction": true,
@@ -6008,6 +7772,18 @@
     },
     "content.tashas-cauldron.round2.feature.twilight-cleric-bonus-proficiencies": {
       "character_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "character_cas_and_transaction": true,
+        "choice_lifecycle_consumers": 3,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "grant_spell_consumer": true,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "choice_lifecycle": false,
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.twilight-cleric-bonus-proficiencies",
@@ -6020,6 +7796,7 @@
       "production_runtime_full": true,
       "proficiency_grant_count": 2,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-VII-1",
       "selected_choices": {},
       "source": "round-II-reviewed-feature-runtime-registry-through-round-V-character-consumer",
       "spell_grant_count": 0,
@@ -6029,6 +7806,15 @@
     },
     "content.tashas-cauldron.round2.feature.twilight-cleric-eyes-of-night": {
       "actor_target_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 12,
+        "selected_count": 12
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.twilight-cleric-eyes-of-night",
       "content_kind": "feature",
@@ -6038,6 +7824,7 @@
       "preview": true,
       "production_runtime_full": true,
       "replay": true,
+      "schema_version": "content-ir-production-runtime-results-V-1",
       "source": "round-II-isolated-feature-contract",
       "transaction": true,
       "typed_consumer": "combat_engine.feature_action.v1"
@@ -6048,6 +7835,16 @@
       },
       "active_sight_modes": {},
       "actor_target_cas": true,
+      "checks": {
+        "all_preview_confirm_replay": true,
+        "all_typed_consumers": true,
+        "formal_database_written": false,
+        "formal_registry_written": false,
+        "movement_choice_lifecycle_consumers": 8,
+        "name_branch_count": 0,
+        "production_runtime_full_count": 8,
+        "selected_count": 8
+      },
       "confirm": true,
       "content_id": "content.tashas-cauldron.round2.feature.twilight-cleric-steps-of-night",
       "content_kind": "feature",
@@ -6060,6 +7857,7 @@
       "replay": true,
       "resource_cas": true,
       "runtime_registry": true,
+      "schema_version": "content-ir-production-runtime-results-VI-1",
       "sight_activation": true,
       "source": "round-II-authored-feature-contract-through-round-IV-consumer",
       "transaction": true,
@@ -6068,6 +7866,21 @@
     },
     "tashas-cauldron:spell:0036d7dc058c496ef08fe340": {
       "cas": true,
+      "checks": {
+        "all_required_checks_passed": true,
+        "choice_window": true,
+        "command_schema": true,
+        "confirmation_schema": true,
+        "dm_adjudication": true,
+        "entity_lifecycle": true,
+        "movement": true,
+        "preview_schema": true,
+        "production_batch": true,
+        "result_schema": true,
+        "scene_delta": true,
+        "spatial_authority_scene_adapter": true,
+        "spatial_authority_test_adapter": true
+      },
       "confirm": true,
       "content_id": "tashas-cauldron:spell:0036d7dc058c496ef08fe340",
       "content_kind": "spell",
@@ -6075,30 +7888,268 @@
       "execution_mode": "dm_approved_typed",
       "pack_id": "tashas-cauldron",
       "preview": true,
+      "production_runtime_full": true,
       "replay": true,
       "result_id": "production-batch-II-008:result",
       "rollback_probe": true,
       "scene_delta": true,
+      "schema_version": "content-ir-production-runtime-results-IV-1",
       "snapshot_rebuild": true,
       "source_book": "塔莎的万事坩埚",
       "transaction": true,
       "typed_ir_fingerprint": "cd627078d37aac669591647d8be1382379baebe7cb7ce923d608590d7ad196b2"
     },
-    "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac": {
+    "tashas-cauldron:spell:083419d9de551806a5ca9748": {
+      "action_cost": "action",
+      "armor_class": 14,
+      "checks": {
+        "action_economy_and_initiative": true,
+        "choice_and_stat_block": true,
+        "compile_full": true,
+        "default_behavior_executed": true,
+        "duration_and_concentration": true,
+        "formal_database_unchanged": true,
+        "formal_registry_unchanged": true,
+        "name_branch_free": true,
+        "occupied_position_rejected_before_payment": true,
+        "preview_confirm_replay": true,
+        "production_consumers": true,
+        "production_runtime_full": true,
+        "protected_fingerprints_unchanged": true,
+        "source_concentration_lifecycle": true,
+        "source_provenance": true,
+        "spell_slot_rollback": true,
+        "typed_clause_count": true
+      },
+      "choice": "ghostly",
+      "clauses": 4,
+      "concentration_effect_count": 1,
+      "condition_immunities": [
+        "exhaustion",
+        "frightened",
+        "paralyzed",
+        "poisoned"
+      ],
       "confirm_status": 200,
+      "consumer": "spell.summon.v1",
+      "consumer_ids": [
+        "spell.summon.v1",
+        "spell_economy.concentration.v1"
+      ],
+      "content_id": "tashas-cauldron:spell:083419d9de551806a5ca9748",
+      "content_kind": null,
+      "damage_immunities": [
+        "necrotic",
+        "poison"
+      ],
+      "default_behavior": {
+        "action_available_after": false,
+        "dodge_applied": true,
+        "moved_ft": 40,
+        "movement_policy": "move_away_from_danger",
+        "movement_status": "applied",
+        "on_no_command": "dodge",
+        "position_changed": true,
+        "status": "applied"
+      },
+      "duration": {
+        "unit": "minutes",
+        "value": 60
+      },
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XXVI.json",
+      "expected_armor_class": 14,
+      "expected_condition_immunities": [
+        "exhaustion",
+        "frightened",
+        "paralyzed",
+        "poisoned"
+      ],
+      "expected_damage_immunities": [
+        "necrotic",
+        "poison"
+      ],
+      "expected_hp": 30,
+      "expected_movement_modes": [
+        {
+          "mode": "walk",
+          "speed_ft": 40
+        },
+        {
+          "hover": true,
+          "mode": "fly",
+          "speed_ft": 40
+        }
+      ],
+      "hp": 30,
+      "movement_modes": [
+        {
+          "mode": "walk",
+          "speed_ft": 40
+        },
+        {
+          "hover": true,
+          "mode": "fly",
+          "speed_ft": 40
+        }
+      ],
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "schema_version": "content-ir-production-runtime-results-XXVI-1",
+      "shared_initiative": true,
+      "source": {
+        "source_fingerprint": "f051639e10dfdc7e9d340120f61a8c2bb3cd942f767a6d07da361717f178a5d8",
+        "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+        "source_record_id": "083419d9de551806a5ca9748"
+      }
+    },
+    "tashas-cauldron:spell:54c8c29188db1442473d9dc1": {
+      "action_cost": "action",
+      "armor_class": 13,
+      "checks": {
+        "action_economy_and_initiative": true,
+        "choice_and_stat_block": true,
+        "compile_full": true,
+        "default_behavior_executed": true,
+        "duration_and_concentration": true,
+        "formal_database_unchanged": true,
+        "formal_registry_unchanged": true,
+        "name_branch_free": true,
+        "occupied_position_rejected_before_payment": true,
+        "preview_confirm_replay": true,
+        "production_consumers": true,
+        "production_runtime_full": true,
+        "protected_fingerprints_unchanged": true,
+        "source_concentration_lifecycle": true,
+        "source_provenance": true,
+        "spell_slot_rollback": true,
+        "typed_clause_count": true
+      },
+      "choice": "land",
+      "clauses": 4,
+      "concentration_effect_count": 1,
+      "condition_immunities": [],
+      "confirm_status": 200,
+      "consumer": "spell.summon.v1",
+      "consumer_ids": [
+        "spell.summon.v1",
+        "spell_economy.concentration.v1"
+      ],
+      "content_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
+      "content_kind": null,
+      "damage_immunities": [],
+      "default_behavior": {
+        "action_available_after": false,
+        "dodge_applied": true,
+        "moved_ft": 30,
+        "movement_policy": "move_away_from_danger",
+        "movement_status": "applied",
+        "on_no_command": "dodge",
+        "position_changed": true,
+        "status": "applied"
+      },
+      "duration": {
+        "unit": "minutes",
+        "value": 60
+      },
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XXVI.json",
+      "expected_armor_class": 13,
+      "expected_condition_immunities": [],
+      "expected_damage_immunities": [],
+      "expected_hp": 30,
+      "expected_movement_modes": [
+        {
+          "mode": "walk",
+          "speed_ft": 30
+        },
+        {
+          "mode": "climb",
+          "speed_ft": 60
+        }
+      ],
+      "hp": 30,
+      "movement_modes": [
+        {
+          "mode": "walk",
+          "speed_ft": 30
+        },
+        {
+          "mode": "climb",
+          "speed_ft": 60
+        }
+      ],
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "schema_version": "content-ir-production-runtime-results-XXVI-1",
+      "shared_initiative": true,
+      "source": {
+        "source_fingerprint": "f57b0e2559fd8a0edbef3ef77cf0ead4daa815a664e1c412bd7e26a337961d50",
+        "source_path": "塔莎的万事坩埚/法术/法术详述/2环.html",
+        "source_record_id": "54c8c29188db1442473d9dc1"
+      }
+    },
+    "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac": {
+      "checks": {
+        "actor_cas_rejected": true,
+        "concentration_state_persisted": true,
+        "duration_effect_persisted": true,
+        "idempotency_replay": true,
+        "illegal_target_rejected": true,
+        "illegal_target_status": 409,
+        "resource_lack_rejected": true,
+        "rest_preview_confirmed": true,
+        "rollback_restored_spell_slot": true,
+        "target_cas_rejected": true,
+        "turn_advance_rebuilt_snapshot": true,
+        "upcast_production_loop": true,
+        "wrong_slot_rejected": true
+      },
+      "confirm_status": 200,
+      "content_id": "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac",
+      "content_kind": null,
       "evidence_path": "data/content-ir/compiled/batch-II/production-runtime-results.json",
       "pack_id": "tashas-cauldron",
       "preview_status": 200,
       "production_runtime_full": true,
       "replay_already_applied": true,
       "replay_status": 200,
-      "runtime_id": "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac"
+      "runtime_id": "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac",
+      "schema_version": "content-ir-production-runtime-results-1"
     },
     "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3": {
+      "checks": {
+        "batch_II_compile_full": true,
+        "character_resource_cleanup": true,
+        "compile_full": true,
+        "concentration_persisted": true,
+        "downstream_failure_rollback": true,
+        "formal_database_unchanged": true,
+        "formal_registry_unchanged": true,
+        "fourth_level_target_cap": true,
+        "grouped_concentration_end": true,
+        "name_branch_free": true,
+        "preview_confirm_replay": true,
+        "production_runtime_full": true,
+        "protected_fingerprints_unchanged": true,
+        "psychic_resistance_consumed": true,
+        "save_advantage_consumed": true,
+        "selected_count": true,
+        "stale_target_cas_rejected": true,
+        "target_cap_rejected": true,
+        "thirty_ft_group_distance_rejected": true,
+        "transactions_persisted": true,
+        "typed_clause_count": true,
+        "typed_defense_consumer": true
+      },
       "consumer_ids": [
         "spell.defense.v1",
         "spell_economy.concentration.v1"
       ],
+      "content_id": "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
+      "content_kind": null,
       "downstream_failure_rollback": true,
       "evidence_path": "data/content-ir/compiled/production-runtime-results-XXV.json",
       "formal_database_fingerprint": "f3abdcf57b0d71888f085ca081511df4f4f23f100066b402d49d769089fa6aad",
@@ -6651,6 +8702,7 @@
           "spell": "applied"
         }
       },
+      "production_runtime_full": true,
       "protected_fingerprints": {
         "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
         "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
@@ -6679,6 +8731,7 @@
       ],
       "runtime_definition_fingerprint": "392834c91b614ba8aaddb0f5192f2cc07f565b57a00e71bb4685af12bdca6616",
       "runtime_id": "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
+      "schema_version": "content-ir-production-runtime-results-XXV-1",
       "source_fingerprint": "f86c958ce95034df82a6a6301688c2c5117bcb4976c5bd9f15bc48d644ee8c31",
       "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
       "source_record_id": "b4ea0dc1907dd5ac08666af3",
@@ -6691,16 +8744,46 @@
       ]
     },
     "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea": {
+      "checks": {
+        "area_multi_target": true,
+        "idempotency_replay": true,
+        "rollback_restored_slot": true,
+        "snapshot_version_changed": true,
+        "target_cas_rejected": true,
+        "wrong_slot_rejected": true
+      },
       "confirm_status": 200,
+      "content_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+      "content_kind": null,
       "evidence_path": "data/content-ir/compiled/production-runtime-results-III.json",
       "pack_id": "tashas-cauldron",
       "preview_status": 200,
       "production_runtime_full": true,
       "replay_already_applied": true,
       "replay_status": 200,
-      "runtime_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea"
+      "runtime_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+      "schema_version": "content-ir-production-runtime-results-III-1"
     },
     "tashas-cauldron:spell:eec6bd94eb83a351fb987de2": {
+      "checks": {
+        "cantrip_scaling_levels": true,
+        "compile_full": true,
+        "generic_consumers_present": true,
+        "operation_transaction_persisted": true,
+        "preview_confirm_replay": true,
+        "production_runtime_full": true,
+        "replay_idempotent": true,
+        "rollback_restored_character": true,
+        "save_success_no_damage": true,
+        "selected_count": true,
+        "source_evidence_has_full_clause": true,
+        "source_provenance_complete": true,
+        "target_cas_rejected": true,
+        "two_area_targets_damage": true,
+        "typed_area_save_damage": true
+      },
+      "content_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+      "content_kind": null,
       "evidence_path": "data/content-ir/compiled/production-runtime-results-XXII.json",
       "manual_decisions": {
         "save_success": "按 source text 显式记录 half 或 no damage branch",
@@ -6731,6 +8814,7 @@
         "stale_target_cas_status": 409,
         "target_version_advanced": true
       },
+      "production_runtime_full": true,
       "reviewed_fields": [
         "schema_version",
         "spell_id",
@@ -6808,19 +8892,31 @@
           ]
         }
       ],
+      "schema_version": "content-ir-production-runtime-results-XXII-1",
       "source_fingerprint": "1dc4562d4b497156c7f5e46fdb7f06ff8461fcb9f8109752b03aac254d0a8bd6",
       "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
       "source_record_id": "eec6bd94eb83a351fb987de2"
     },
     "tashas-cauldron:spell:ef0f92b557fb48d421d462e1": {
+      "checks": {
+        "area_multi_target": true,
+        "idempotency_replay": true,
+        "rollback_restored_slot": true,
+        "snapshot_version_changed": true,
+        "target_cas_rejected": true,
+        "wrong_slot_rejected": true
+      },
       "confirm_status": 200,
+      "content_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1",
+      "content_kind": null,
       "evidence_path": "data/content-ir/compiled/production-runtime-results-III.json",
       "pack_id": "tashas-cauldron",
       "preview_status": 200,
       "production_runtime_full": true,
       "replay_already_applied": true,
       "replay_status": 200,
-      "runtime_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1"
+      "runtime_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1",
+      "schema_version": "content-ir-production-runtime-results-III-1"
     }
   },
   "runtime_preview_full_count": 94,

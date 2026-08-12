@@ -22,6 +22,21 @@
       "reprint_of": null,
       "runtime_evidence": {
         "cas": true,
+        "checks": {
+          "all_required_checks_passed": true,
+          "choice_window": true,
+          "command_schema": true,
+          "confirmation_schema": true,
+          "dm_adjudication": true,
+          "entity_lifecycle": true,
+          "movement": true,
+          "preview_schema": true,
+          "production_batch": true,
+          "result_schema": true,
+          "scene_delta": true,
+          "spatial_authority_scene_adapter": true,
+          "spatial_authority_test_adapter": true
+        },
         "confirm": true,
         "content_id": "tashas-cauldron:spell:0036d7dc058c496ef08fe340",
         "content_kind": "spell",
@@ -29,10 +44,12 @@
         "execution_mode": "dm_approved_typed",
         "pack_id": "tashas-cauldron",
         "preview": true,
+        "production_runtime_full": true,
         "replay": true,
         "result_id": "production-batch-II-008:result",
         "rollback_probe": true,
         "scene_delta": true,
+        "schema_version": "content-ir-production-runtime-results-IV-1",
         "snapshot_rebuild": true,
         "source_book": "塔莎的万事坩埚",
         "transaction": true,
@@ -1755,7 +1772,7 @@
       "instantiable": true,
       "level": null,
       "localized_name": "亡灵召唤术",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "name": "亡灵召唤术",
       "officiality": "unknown",
       "parent_atom_id": null,
@@ -1784,10 +1801,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "runtime_preview_full",
-        "isolated_runtime_validated": false,
-        "registered_production_full": false,
+        "game_usable": true,
+        "highest_status": "game_usable",
+        "isolated_runtime_validated": true,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -7593,7 +7610,7 @@
       "instantiable": true,
       "level": null,
       "localized_name": "野兽召唤术",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "name": "野兽召唤术",
       "officiality": "unknown",
       "parent_atom_id": null,
@@ -7622,10 +7639,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "runtime_preview_full",
-        "isolated_runtime_validated": false,
-        "registered_production_full": false,
+        "game_usable": true,
+        "highest_status": "game_usable",
+        "isolated_runtime_validated": true,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -14519,6 +14536,15 @@
       "reprint_of": null,
       "runtime_evidence": {
         "actor_target_cas": true,
+        "checks": {
+          "all_preview_confirm_replay": true,
+          "all_typed_consumers": true,
+          "formal_database_written": false,
+          "formal_registry_written": false,
+          "name_branch_count": 0,
+          "production_runtime_full_count": 12,
+          "selected_count": 12
+        },
         "confirm": true,
         "content_id": "content.tashas-cauldron.round2.feature.glory-paladin-glorious-defense",
         "content_kind": "feature",
@@ -14528,6 +14554,7 @@
         "preview": true,
         "production_runtime_full": true,
         "replay": true,
+        "schema_version": "content-ir-production-runtime-results-V-1",
         "source": "round-II-isolated-feature-contract",
         "transaction": true,
         "typed_consumer": "combat_engine.feature_action.v1"
@@ -30066,7 +30093,7 @@
       "player_facing": 408,
       "total": 525
     },
-    "audit_fingerprint": "a9c913d722542e3fb4ce2866ed85b5a8753abd55e815e2b53ffaf91a9068f7b0",
+    "audit_fingerprint": "f8c3d134dab9d3122b3d95db0c2e1c546ea0a6db51b3e128351b5ba542336d78",
     "before_atom_counts": {
       "by_kind": {
         "character_option": 15,
@@ -31390,7 +31417,7 @@
   "semantic_cluster_fingerprint": "ddd2d18315cfceeb0e469507e3f43504ce220479057b6adb394bcaab8c5ca5e3",
   "source_book": "塔莎的万事坩埚",
   "status_counts": {
-    "compile_only": 6,
+    "compile_only": 4,
     "dm_assisted": 2,
     "dm_reference": 107,
     "duplicate_or_reprint": 0,
@@ -31398,6 +31425,6 @@
     "manual_authoring": 314,
     "non_instantiable": 10,
     "out_of_scope_with_reason": 0,
-    "production_full": 86
+    "production_full": 88
   }
 }
