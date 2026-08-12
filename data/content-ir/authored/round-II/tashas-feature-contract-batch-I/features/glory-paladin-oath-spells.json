@@ -1,0 +1,186 @@
+{
+  "class_name": "圣武士",
+  "clause_boundaries": {
+    "always-prepared": {
+      "source_excerpt": "*第3级荣耀之誓特性*\n当你的圣武士达到特定等级时，你将获得以下的圣誓法术，如荣耀之誓法术表所示。有关圣誓法术的规则请查阅圣武士 神圣誓言Sacred Oath 特性中记载的文本。",
+      "source_fragment": "17"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-13-round-XXIX",
+        "source": "authored_ir",
+        "source_boundary": "always-prepared",
+        "source_excerpt": "*第3级荣耀之誓特性*\n当你的圣武士达到特定等级时，你将获得以下的圣誓法术，如荣耀之誓法术表所示。有关圣誓法术的规则请查阅圣武士 神圣誓言Sacred Oath 特性中记载的文本。"
+      },
+      "clause_id": "always-prepared",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "charisma",
+            "grant_mode": "always_prepared",
+            "source_class": "paladin",
+            "spell_id": "guiding_bolt"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "charisma",
+            "grant_mode": "always_prepared",
+            "source_class": "paladin",
+            "spell_id": "heroism"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "charisma",
+            "grant_mode": "always_prepared",
+            "source_class": "paladin",
+            "spell_id": "enhance_ability"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "charisma",
+            "grant_mode": "always_prepared",
+            "source_class": "paladin",
+            "spell_id": "magic_weapon"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "charisma",
+            "grant_mode": "always_prepared",
+            "source_class": "paladin",
+            "spell_id": "haste"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "charisma",
+            "grant_mode": "always_prepared",
+            "source_class": "paladin",
+            "spell_id": "protection_from_energy"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "charisma",
+            "grant_mode": "always_prepared",
+            "source_class": "paladin",
+            "spell_id": "compulsion"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "charisma",
+            "grant_mode": "always_prepared",
+            "source_class": "paladin",
+            "spell_id": "freedom_of_movement"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "charisma",
+            "grant_mode": "always_prepared",
+            "source_class": "paladin",
+            "spell_id": "commune"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "charisma",
+            "grant_mode": "always_prepared",
+            "source_class": "paladin",
+            "spell_id": "flame_strike"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "45fd86e477af10b4b8e6c862362d7f933b66cb490f0645941c56a15c342e9965"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "圣誓法术: *第3级荣耀之誓特性*\n当你的圣武士达到特定等级时，你将获得以下的圣誓法术，如荣耀之誓法术表所示。有关圣誓法术的规则请查阅圣武士 神圣誓言Sacred Oath 特性中记载的文本。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.glory-paladin-oath-spells",
+  "kind": "feature",
+  "level": 3,
+  "localized_names": {
+    "zh-CN": "圣誓法术"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-13-round-XXIX",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第3级荣耀之誓特性*\n当你的圣武士达到特定等级时，你将获得以下的圣誓法术，如荣耀之誓法术表所示。有关圣誓法术的规则请查阅圣武士 神圣誓言Sacred Oath 特性中记载的文本。",
+    "source_fragment": "17",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/圣武士（TCE）/荣耀之誓.html",
+    "source_record_id": "867896faa26eb295d846a574"
+  },
+  "source_fingerprint": "45fd86e477af10b4b8e6c862362d7f933b66cb490f0645941c56a15c342e9965",
+  "source_name": "圣誓法术",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/圣武士（TCE）/荣耀之誓.html",
+  "source_record_id": "867896faa26eb295d846a574",
+  "source_trust": "authored_ir",
+  "subclass_name": "荣耀之誓"
+}

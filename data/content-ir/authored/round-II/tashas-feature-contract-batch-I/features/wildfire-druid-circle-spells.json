@@ -1,0 +1,186 @@
+{
+  "class_name": "德鲁伊",
+  "clause_boundaries": {
+    "always-prepared": {
+      "source_excerpt": "*第2级野火结社特性*\n你与野火灵魄——一位兼具创生和毁灭的原初存在——之间的神秘连接业已形成。当你在此职业到达特定等级时，你与灵魄的连接将使你习得一些特定法术，就如野火结社法术列表所示。\n一旦你习得这些法术中任意一个，你就会一直准备着它，且不计入你的每日准备法术上限。",
+      "source_fragment": "8"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-13-round-XXIX",
+        "source": "authored_ir",
+        "source_boundary": "always-prepared",
+        "source_excerpt": "*第2级野火结社特性*\n你与野火灵魄——一位兼具创生和毁灭的原初存在——之间的神秘连接业已形成。当你在此职业到达特定等级时，你与灵魄的连接将使你习得一些特定法术，就如野火结社法术列表所示。\n一旦你习得这些法术中任意一个，你就会一直准备着它，且不计入你的每日准备法术上限。"
+      },
+      "clause_id": "always-prepared",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "always_prepared",
+            "source_class": "druid",
+            "spell_id": "burning_hands"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "always_prepared",
+            "source_class": "druid",
+            "spell_id": "cure_wounds"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "always_prepared",
+            "source_class": "druid",
+            "spell_id": "flaming_sphere"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "always_prepared",
+            "source_class": "druid",
+            "spell_id": "scorching_ray"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "always_prepared",
+            "source_class": "druid",
+            "spell_id": "plant_growth"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "always_prepared",
+            "source_class": "druid",
+            "spell_id": "revivify"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "always_prepared",
+            "source_class": "druid",
+            "spell_id": "aura_of_life"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "always_prepared",
+            "source_class": "druid",
+            "spell_id": "fire_shield"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "always_prepared",
+            "source_class": "druid",
+            "spell_id": "flame_strike"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "always_prepared",
+            "source_class": "druid",
+            "spell_id": "mass_cure_wounds"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "a737798ee474bdac2bae8eb7c468605ada7261871bc05c3fe44090219a954ec1"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "结社法术: *第2级野火结社特性*\n你与野火灵魄——一位兼具创生和毁灭的原初存在——之间的神秘连接业已形成。当你在此职业到达特定等级时，你与灵魄的连接将使你习得一些特定法术，就如野火结社法术列表所示。\n一旦你习得这些法术中任意一个，你就会一直准备着它，且不计入你的每日准备法术上限。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.wildfire-druid-circle-spells",
+  "kind": "feature",
+  "level": 2,
+  "localized_names": {
+    "zh-CN": "结社法术"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-13-round-XXIX",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第2级野火结社特性*\n你与野火灵魄——一位兼具创生和毁灭的原初存在——之间的神秘连接业已形成。当你在此职业到达特定等级时，你与灵魄的连接将使你习得一些特定法术，就如野火结社法术列表所示。\n一旦你习得这些法术中任意一个，你就会一直准备着它，且不计入你的每日准备法术上限。",
+    "source_fragment": "8",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/德鲁伊（TCE）/野火结社.html",
+    "source_record_id": "92c8bd3c6a3cd622e2ec4559"
+  },
+  "source_fingerprint": "a737798ee474bdac2bae8eb7c468605ada7261871bc05c3fe44090219a954ec1",
+  "source_name": "结社法术",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/德鲁伊（TCE）/野火结社.html",
+  "source_record_id": "92c8bd3c6a3cd622e2ec4559",
+  "source_trust": "authored_ir",
+  "subclass_name": "野火结社"
+}
