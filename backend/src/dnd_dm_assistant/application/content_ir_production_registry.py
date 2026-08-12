@@ -149,6 +149,17 @@ _CONSUMERS: dict[str, dict[str, Any]] = {
         "idempotency_scope": "campaign_content_ir_and_roll_intervention",
         "snapshot_effects": ("initiative", "roll_result", "resources", "audit"),
     },
+    "communication.mutual_comprehension.v1": {
+        "content_kind": "feature",
+        "runtime_schema_version": "feature-runtime-1",
+        "clause_types": ("communication",),
+        "required_fields": ("actor_combatant_id", "actor_version", "runtime_id"),
+        "required_services": ("communication_service",),
+        "transaction_boundary": "communication_readonly_and_operation_transaction",
+        "cas_entities": ("actor_combatant", "target_combatant"),
+        "idempotency_scope": "campaign_content_ir_and_communication",
+        "snapshot_effects": ("communication", "audit"),
+    },
     "combat_engine.feature_event_window.v1": {
         "content_kind": "feature",
         "runtime_schema_version": "feature-runtime-1",
@@ -389,6 +400,13 @@ def resolve_production_consumers(
                 dict(
                     _CONSUMERS["combat_engine.roll_intervention.v1"],
                     consumer_id="combat_engine.roll_intervention.v1",
+                ),
+            )
+        if blocks.get("communication"):
+            return (
+                dict(
+                    _CONSUMERS["communication.mutual_comprehension.v1"],
+                    consumer_id="communication.mutual_comprehension.v1",
                 ),
             )
         if blocks.get("attack_rider") or blocks.get("feature_action"):

@@ -652,6 +652,14 @@ def default_capability_catalog() -> CapabilityCatalog:
             evidence=("test_hunters_lore_target_defense_inspection",),
         ),
         _descriptor(
+            "communication.mutual_comprehension",
+            "grant_communication",
+            consumer="communication_service",
+            producer="feature_runtime_compiler",
+            persisted_state="combat_action.result_json",
+            evidence=("test_fathomless_underwater_mutual_comprehension",),
+        ),
+        _descriptor(
             "spell.context",
             "override_spell_components",
             consumer="spell_economy_service",

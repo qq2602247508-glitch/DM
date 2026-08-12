@@ -609,6 +609,45 @@ def _materialize_authorized_information(
     return MaterializedBlock("actions", entry)
 
 
+def _materialize_communication(context: MaterializerContext) -> MaterializedBlock:
+    params = context.parameters
+    channel = str(params["channel"])
+    direction = str(params["direction"])
+    if channel not in {"speech"}:
+        raise MaterializerError("grant_communication channel is unsupported")
+    if direction != "mutual":
+        raise MaterializerError("grant_communication direction is unsupported")
+    required_condition = str(params.get("required_condition") or "").strip()
+    target_kind = (
+        context.clause.targeting.kind
+        if context.clause.targeting is not None
+        else "one_creature"
+    )
+    entry = context.base(kind="communication")
+    entry.update(
+        {
+            "action_cost": context.clause.action_economy,
+            "target": target_kind,
+            "target_policy": {"mode": target_kind},
+            "availability": "any_time_readonly",
+            "resolution_kind": "communication",
+            "channel": channel,
+            "direction": direction,
+            "required_condition": required_condition,
+            "range_ft": params.get("range_ft"),
+            "effects": [
+                {
+                    "kind": "mutual_comprehension",
+                    "channel": channel,
+                    "direction": direction,
+                    "required_condition": required_condition,
+                }
+            ],
+        }
+    )
+    return MaterializedBlock("actions", entry)
+
+
 def _materialize_defense(context: MaterializerContext) -> MaterializedBlock:
     kind = {
         "grant_resistance": "damage_resistance",
@@ -785,6 +824,7 @@ def default_materializer_registry() -> MaterializerRegistry:
         "window.reaction": _materialize_trigger,
         "attack.roll.intervention": _materialize_attack_roll_intervention,
         "target.authorized_information": _materialize_authorized_information,
+        "communication.channel": _materialize_communication,
         "zero_hp.intervention": _materialize_zero_hp,
         "spell.healing_modifier": _materialize_spell_modifier,
         "spell.damage_modifier": _materialize_spell_modifier,

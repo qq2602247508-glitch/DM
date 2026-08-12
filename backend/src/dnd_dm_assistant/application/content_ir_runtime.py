@@ -1454,6 +1454,7 @@ class ContentIRRuntimeService:
             if action.get("target") == "self" and target.id != actor.id:
                 raise ValueError("feature runtime target policy requires self")
             feature_kind = _text(action.get("kind"))
+            teleport_preview = None
             if feature_kind == "attack_rider":
                 if data.get("attack_hit") is not True:
                     raise ValueError("attack rider runtime requires an authoritative parent attack hit")
@@ -1486,6 +1487,10 @@ class ContentIRRuntimeService:
                 combat_preview = None
             elif _text(action.get("resolution_kind")) == "timed_modifier":
                 feature_blocks = {"timed_modifier": [action]}
+                combat_preview = None
+            elif _text(action.get("resolution_kind")) == "communication":
+                self._validate_communication_condition(actor, target, action)
+                feature_blocks = {"communication": [action]}
                 combat_preview = None
             elif _text(action.get("resolution_kind")) == "inspection":
                 feature_blocks = {"passive_registry": [action.get("passive_block") or action]}
@@ -1559,6 +1564,13 @@ class ContentIRRuntimeService:
             }
             if teleport_preview is not None:
                 result["production_contract"]["teleport"] = teleport_preview
+            if _text(action.get("resolution_kind")) == "communication":
+                result["communication"] = {
+                    "channel": _text(action.get("channel")),
+                    "direction": _text(action.get("direction")),
+                    "required_condition": _text(action.get("required_condition")),
+                    "mutual_comprehension": True,
+                }
             result["preview_token"] = _fingerprint(
                 {"data": _stable_request_data(data), "result": result}
             )
@@ -1668,6 +1680,21 @@ class ContentIRRuntimeService:
             raise ValueError(f"feature damage rider must be between {bounds[0]} and {bounds[1]}")
         return value
 
+    @staticmethod
+    def _validate_communication_condition(
+        actor: Combatant,
+        target: Combatant,
+        action: Mapping[str, Any],
+    ) -> str:
+        required_condition = _text(action.get("required_condition"))
+        if not required_condition:
+            raise ValueError("communication runtime requires a required_condition")
+        if not CombatEngineService._has_condition(actor, required_condition):
+            raise ValueError("communication requires the actor to satisfy the stated condition")
+        if not CombatEngineService._has_condition(target, required_condition):
+            raise ValueError("communication requires the target to satisfy the stated condition")
+        return required_condition
+
     def preview(self, campaign_id: str, data: dict[str, Any]) -> dict[str, Any]:
         if _text(data.get("content_kind")) == "spell":
             return self._preview_spell(campaign_id, data)
@@ -1690,6 +1717,53 @@ class ContentIRRuntimeService:
                     confirmed_at=datetime.now(UTC),
                 )
             )
+
+    def _confirm_communication(
+        self,
+        campaign_id: str,
+        data: Mapping[str, Any],
+        action: Mapping[str, Any],
+        key: str,
+        token: str,
+    ) -> dict[str, Any]:
+        actor_id = _text(data.get("actor_combatant_id"))
+        target_id = _text(data.get("target_combatant_id")) or actor_id
+        with Session(self.engine) as session:
+            actor = session.get(Combatant, actor_id)
+            if actor is None:
+                raise StateNotFoundError("communication actor not found")
+            if actor.version != int(data.get("actor_version") or 0):
+                raise VersionConflict(
+                    "combatant", actor.id, int(data.get("actor_version") or 0), actor.version
+                )
+            target = session.get(Combatant, target_id)
+            if target is None or target.combat_id != actor.combat_id:
+                raise StateNotFoundError("communication target not found in combat")
+            if target_id != actor_id and target.version != int(data.get("target_version") or 0):
+                raise VersionConflict(
+                    "combatant", target.id, int(data.get("target_version") or 0), target.version
+                )
+            required_condition = self._validate_communication_condition(actor, target, action)
+        output = {
+            "schema_version": PRODUCTION_SCHEMA,
+            "content_kind": "feature",
+            "runtime_id": _text(data.get("runtime_id")),
+            "production_runtime_full": True,
+            "preview_token": token,
+            "consumer": "communication.mutual_comprehension.v1",
+            "communication": {
+                "channel": _text(action.get("channel")),
+                "direction": _text(action.get("direction")),
+                "required_condition": required_condition,
+                "actor_satisfies": True,
+                "target_satisfies": True,
+                "mutual_comprehension": True,
+            },
+            "actor_combatant_id": actor_id,
+            "target_combatant_id": target_id,
+        }
+        self._record_operation(campaign_id, key, output)
+        return output
 
     def confirm(self, campaign_id: str, data: dict[str, Any]) -> dict[str, Any]:
         if _text(data.get("content_kind")) == "advancement":
@@ -1714,6 +1788,10 @@ class ContentIRRuntimeService:
             runtime_action = dict(preview["feature_action"])
             if data.get("reaction_triggered") is True:
                 runtime_action["reaction_triggered"] = True
+            if runtime_action.get("resolution_kind") == "communication":
+                return self._confirm_communication(
+                    campaign_id, data, runtime_action, key, token
+                )
             if runtime_action.get("kind") == "attack_rider":
                 target_id = _text(data.get("target_combatant_id"))
                 with Session(self.engine) as session:
