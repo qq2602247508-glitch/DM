@@ -5,7 +5,7 @@
 - 当前实际 Tasha：`144 source records / 525 atoms / 408 executable / 101 authored Typed IR / 100 compile / 100 preview / 96 production / 2 DM-assisted / 98 game usable / 2 compile-only / 308 manual / 107 DM reference`；content-ID funnel `101 = 97 + 2 + 2`。
 - 当前 project：`196 production / 35 compile-only / 111 unique compiled`；Tasha evidence union `139`，project union `196`；ItemSpec 保持 `47/40/40/40`。
 - Round XXIX validator 3/3 production_runtime_full；focused receipt suite 3 passed；backend 全量 pytest 935 passed（仅既有 Starlette/httpx deprecation warning）；Ruff、compileall、diff-check 通过；whole-pack migration 双跑 projection SHA-256 `78b667e2fa838b7e77393bf4c05b230591ed2097c2c9ece5798fe927babce4a8`。
-- 分离提交 `c8ae7cd`（authored spell-list IR + author 工具）、`4f2f6be`（validator + test + evidence + 计数调和）、`2146a4c`（docs closeout）已推送到 `origin/main`（2026-08-13）。push receipt 已写入 ledger。
+- 分离提交 `c8ae7cd`（authored spell-list IR + author 工具）、`4f2f6be`（validator + test + evidence + 计数调和）、`2146a4c`（docs closeout）、`c357ade`（ledger/handoff checkpoint）已推送到 `origin/main`（`3a197da..c357ade`，2026-08-13）。push receipt 已写入 ledger。
 - 证据入口：`docs/tashas-feature-production-consumer-round-XXIX-2026-08-13.md`、`scripts/author-round-XXIX-spell-lists.py`、`scripts/validate-tashas-feature-production-consumer-round-XXIX.py`、`backend/tests/test_tashas_feature_production_consumer_round_XXIX.py`、`reports/tashas-feature-production-consumer-round-XXIX-2026-08-13.json`、`data/content-ir/compiled/production-runtime-results-XXX.json`。
 - 下一轮继续 vessel（genie-bottled-respite 异次元空间）、spectral-object entity lifecycle + remote spell origin（scribe-manifest-mind）与其余恒备法术表（孢子结社含戏法、巨灵宗主扩展法术、战地匠师/装甲师/魔炮师法术）；不迁移下一本扩展包、不触碰 3D。
 
