@@ -1,0 +1,186 @@
+{
+  "class_name": "奇械师",
+  "clause_boundaries": {
+    "always-prepared": {
+      "source_excerpt": "*第3级魔炮师特性*\n只要你达到相应的职业等级，魔炮师法术表格中的法术总是被视为已准备。这些法术对你来说是奇械师法术，且不会计入你可以准备法术的总数。",
+      "source_fragment": "12"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-13-round-XXX",
+        "source": "authored_ir",
+        "source_boundary": "always-prepared",
+        "source_excerpt": "*第3级魔炮师特性*\n只要你达到相应的职业等级，魔炮师法术表格中的法术总是被视为已准备。这些法术对你来说是奇械师法术，且不会计入你可以准备法术的总数。"
+      },
+      "clause_id": "always-prepared",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "shield"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "thunderwave"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "scorching_ray"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "shatter"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "fireball"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "wind_wall"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "ice_storm"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "wall_of_fire"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "cone_of_cold"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "wall_of_force"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "ad6e67b1ee27604cc2ffb41d3ac68ccbcc4a74362e25255c8f5b797f4916988a"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "魔炮师法术: *第3级魔炮师特性*\n只要你达到相应的职业等级，魔炮师法术表格中的法术总是被视为已准备。这些法术对你来说是奇械师法术，且不会计入你可以准备法术的总数。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.artillerist-spell-list",
+  "kind": "feature",
+  "level": 3,
+  "localized_names": {
+    "zh-CN": "魔炮师法术"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-13-round-XXX",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第3级魔炮师特性*\n只要你达到相应的职业等级，魔炮师法术表格中的法术总是被视为已准备。这些法术对你来说是奇械师法术，且不会计入你可以准备法术的总数。",
+    "source_fragment": "12",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/魔炮师.html",
+    "source_record_id": "fbf8451f879a169fb17a01e9"
+  },
+  "source_fingerprint": "ad6e67b1ee27604cc2ffb41d3ac68ccbcc4a74362e25255c8f5b797f4916988a",
+  "source_name": "魔炮师法术",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/魔炮师.html",
+  "source_record_id": "fbf8451f879a169fb17a01e9",
+  "source_trust": "authored_ir",
+  "subclass_name": "魔炮师"
+}

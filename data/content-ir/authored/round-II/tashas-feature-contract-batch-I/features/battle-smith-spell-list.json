@@ -1,0 +1,186 @@
+{
+  "class_name": "奇械师",
+  "clause_boundaries": {
+    "always-prepared": {
+      "source_excerpt": "*第3级战地匠师特性*\n只要你达到相应的职业等级，战地匠师法术表格中的法术总是被视为已准备。这些法术对你来说是奇械师法术，且不会计入你可以准备法术的总数。",
+      "source_fragment": "13"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-13-round-XXX",
+        "source": "authored_ir",
+        "source_boundary": "always-prepared",
+        "source_excerpt": "*第3级战地匠师特性*\n只要你达到相应的职业等级，战地匠师法术表格中的法术总是被视为已准备。这些法术对你来说是奇械师法术，且不会计入你可以准备法术的总数。"
+      },
+      "clause_id": "always-prepared",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "heroism"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "shield"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "branding_smite"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "warding_bond"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "aura_of_vitality"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "conjure_barrage"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "aura_of_purity"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "fire_shield"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "banishing_smite"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "mass_cure_wounds"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "11e6ee92ae2a0796271caaefa82befb2e7513731873cbc97c2fdd2128b42364b"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "战地匠师法术: *第3级战地匠师特性*\n只要你达到相应的职业等级，战地匠师法术表格中的法术总是被视为已准备。这些法术对你来说是奇械师法术，且不会计入你可以准备法术的总数。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.battle-smith-spell-list",
+  "kind": "feature",
+  "level": 3,
+  "localized_names": {
+    "zh-CN": "战地匠师法术"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-13-round-XXX",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第3级战地匠师特性*\n只要你达到相应的职业等级，战地匠师法术表格中的法术总是被视为已准备。这些法术对你来说是奇械师法术，且不会计入你可以准备法术的总数。",
+    "source_fragment": "13",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/战地匠师.html",
+    "source_record_id": "606d89f6e0ea3b2e0194f24c"
+  },
+  "source_fingerprint": "11e6ee92ae2a0796271caaefa82befb2e7513731873cbc97c2fdd2128b42364b",
+  "source_name": "战地匠师法术",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/战地匠师.html",
+  "source_record_id": "606d89f6e0ea3b2e0194f24c",
+  "source_trust": "authored_ir",
+  "subclass_name": "战地匠师"
+}
