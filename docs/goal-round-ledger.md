@@ -8,7 +8,7 @@
 
 ## Round 26：Ambush Generic Initiative / Roll Intervention Consumer
 
-当前状态：`accepted`；实现、receipt、报告、文档、全量门禁、分离提交和 push 已完成。
+当前状态：`accepted`；实现、receipt、报告、文档、全量门禁和分离提交已完成；push 因本机代理未恢复暂缓，待代理恢复后补 push receipt。
 
 - 战斗大师「伏击」补齐 source-complete 两个 typed clauses：`ambush:initiative` 与 `ambush:stealth`。两者都由名称无关的 `roll_intervention` materializer 生成，并使用同一 `combat_engine.roll_intervention.v1` consumer。
 - 先攻分支通过真实隔离 HTTP/SQLite：冻结先攻结果、持久化 `initiative_roll_prompt`、superiority die 输入、资源 `4→3`、CombatAction confirmed、OperationTransaction applied、拒绝不扣资源、同 request replay 不重复扣资源。
