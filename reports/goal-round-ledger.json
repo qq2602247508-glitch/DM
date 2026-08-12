@@ -1,7 +1,121 @@
 {
-  "current_round": "round-20",
+  "current_round": "round-21",
   "goal": "Local AI D&D DM Assistant complete official-content rules platform",
   "rounds": [
+    {
+      "round_id": "round-21",
+      "status": "accepted",
+      "started_at": "2026-08-12",
+      "accepted_at": "2026-08-12",
+      "objective": "Close the source-complete Psionic Sorcery Feature through a generic typed spell-context consumer: ignore non-costly components and replace spell-slot payment with sorcery points, with real character feature runtime binding, spell economy CAS, idempotency, snapshot persistence, and rollback.",
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 183,
+            "unique_compiled": 111
+          },
+          "formal_499": {
+            "dm_only": 61,
+            "full": 328,
+            "partial": 110,
+            "total": 499
+          },
+          "protected_fingerprints": {
+            "database": "f3abdcf57b0d71888f085ca081511df4f4f23f100066b402d49d769089fa6aad",
+            "formal_registry": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+            "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+            "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+          },
+          "tashas": {
+            "authored_typed_ir": 95,
+            "compile_only": 9,
+            "content_atoms_after_qa": 525,
+            "executable": 408,
+            "game_usable": 85,
+            "item_spec_compile_full": 40,
+            "item_spec_isolated_runtime_validated": 40,
+            "item_spec_registered_production_full": 40,
+            "item_spec_game_usable": 40,
+            "manual_authoring": 314,
+            "production_full": 83,
+            "runtime_preview_full": 94,
+            "source_records": 144
+          }
+        },
+        "difference": "Round XXI selects Psionic Sorcery because its authored source is complete with two explicit spell-context clauses and no unresolved source terms. It is a core D&D spell-economy exception: the generic consumer must persist typed component/payment context and settle it through the existing spell-cast transaction, not through a Feature-name branch.",
+        "prompt_baseline": {
+          "selected_feature_production": 1,
+          "core_rule_exception": true,
+          "minimum_normal_batch": 8,
+          "typed_clause_count": 2,
+          "selected_content_ids": [
+            "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery"
+          ]
+        }
+      },
+      "commits": [
+        "2066902"
+      ],
+      "compile_full_delta": 0,
+      "production_full_delta": 1,
+      "dm_assisted_delta": 0,
+      "item_compile_full_delta": 0,
+      "manual_delta": 0,
+      "pack_coverage_delta": {
+        "content_ir_production_full_before": 183,
+        "content_ir_production_full_after": 184,
+        "tasha_production_full_before": 83,
+        "tasha_production_full_after": 84,
+        "tasha_game_usable_before": 85,
+        "tasha_game_usable_after": 86,
+        "tasha_compile_only_before": 9,
+        "tasha_compile_only_after": 8,
+        "tasha_authored_typed_ir_unchanged": 95,
+        "tasha_compile_full_unchanged": 94,
+        "tasha_runtime_preview_full_unchanged": 94,
+        "tasha_content_atoms_unchanged": 525,
+        "item_registered_production_full_unchanged": 40,
+        "item_game_usable_unchanged": 40
+      },
+      "reports": [
+        "reports/tashas-feature-production-consumer-round-XXI-2026-08-12.json",
+        "data/content-ir/compiled/production-runtime-results-XXIII.json",
+        "docs/tashas-feature-production-consumer-round-XXI-2026-08-12.md"
+      ],
+      "selected_clusters": [
+        "spell.context.components",
+        "spell.context.payment",
+        "spell_economy.resource_cas",
+        "feature.runtime_binding",
+        "content_ir_runtime.preview_confirm_replay"
+      ],
+      "selected_platforms": [
+        "feature_compiler.spell_context",
+        "spell_economy_service.spell_context",
+        "content_ir_runtime.spell_cast",
+        "character_resource_and_operation_transaction"
+      ],
+      "next_round_reason": "After Round XXI, reassess the remaining summon/entity, defense, communication, maneuver eligibility, vessel, teleport destination, and spectral-object seams; keep each unresolved source contract fail-closed.",
+      "protected_paths_untouched": true,
+      "formal_registry_written": false,
+      "formal_database_written": false,
+      "push_receipt": {
+        "branch": "main",
+        "commit_hash": "2066902",
+        "pushed_at": "2026-08-12",
+        "remote": "origin",
+        "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
+        "result": "success"
+      },
+      "tests": [
+        "Round XXI validator: 1/1 Psionic Sorcery production runtime full; 16/16 required checks passed",
+        "Typed spell context component/payment override, sorcery-point CAS, spell-slot preservation, preview-confirm-replay, OperationTransaction and downstream rollback passed",
+        "focused pytest, Ruff, compileall and git diff --check passed",
+        "backend full pytest: 902 passed; 1 warning",
+        "whole-pack migration repeated with byte-identical stdout and three consecutive identical runtime/report/status/baseline/production SHA-256 sets"
+      ]
+    },
     {
       "round_id": "round-20",
       "status": "accepted",

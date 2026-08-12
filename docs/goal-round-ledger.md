@@ -6,6 +6,17 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 21：Psionic Sorcery Typed Spell-Context Consumer
+
+当前状态：`accepted`；实现、隔离 evidence、全量回归、提交与 push 已完成。
+
+- 本轮关闭 `content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery` 的两个完整 typed spell-context clauses：`component-override` 忽略非费用成分，`payment-override` 以等同法术环阶的 `sorcery_points` 替代 `spell_slot`。这是 spell-economy/context platform-core exception，正常批次门槛为 8。
+- 新增名称无关 `spell.context.v1` consumer；Feature compiler/materializer 持久化 `spell_context`，ContentIRRuntimeService 绑定 actor snapshot 的显式 `psionic_spell=true` metadata，SpellEconomyService 通过资源 CAS、法术交易、OperationTransaction、preview/confirm/replay 和 rollback 完成真实闭环，没有 Feature/spell name branch。
+- 真实隔离 SQLite：材料不可用仍能施展 1 环法术，法术位 `2→2`、灵能点 `3→2`；重放幂等、下游失败 rollback、snapshot/transaction 和 formal boundary 全通过，`name_branch=0`。
+- Round XXI after：Tasha `525/408/408/95/94/94/84/2/86/8/314/107`（atoms/player-facing/executable/authored/compile/preview/production/dm-assisted/game usable/compile-only/manual/DM reference）；当前项目 production full `184`；ItemSpec 保持 `47/40/40/40`。formal 499 保持 `328 full / 110 partial / 61 dm_only`。
+- Round XXI validator 1/1、focused tests、Ruff、compileall、diff-check、backend full pytest `902 passed, 1 warning` 均通过；whole-pack migration stdout 与连续三次 runtime/report/status/baseline/production report SHA-256 一致。formal database/registry/campaign/character、source corpus、3D、保护路径未写入。
+- 实现提交 `2066902` 已推送到 `origin/main`；receipt 已写入 ledger/handoff/plan/Round XXI doc。下一步继续 summon/entity、defense、communication、maneuver eligibility、vessel、teleport destination、spectral-object seams，保持 unresolved contract fail-closed。
+
 ## Round 20：Sword Burst Generic Spell Consumer
 
 当前状态：`in_progress`；实现与隔离 evidence 已完成，等待全量门禁、稳定性取证、提交与 push。

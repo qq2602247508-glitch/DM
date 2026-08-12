@@ -1,5 +1,12 @@
 # 特性自动化迁移预审报告
 
+## 持续 Goal Round 21：Psionic Sorcery Typed Spell-Context Consumer（2026-08-12）
+
+- Round XXI 已验收并推送：source-complete Psionic Sorcery 的两个 typed clauses 已接入名称无关 `spell.context.v1`；非费用组件忽略、法术位→灵能点支付、actor snapshot、资源 CAS、preview/confirm/replay 与 rollback 均在真实隔离 SQLite 通过。
+- Tasha after 为 `84 production / 2 dm-assisted / 86 game usable / 8 compile-only`，项目 production full `184`；ItemSpec 保持 `47/40/40/40`，formal 499 与正式数据库/registry 不变。
+- 全量 backend pytest `902 passed`，Ruff、compileall、diff-check、validator 1/1 及连续三次 deterministic migration gates 通过；实现提交 `2066902` 已推送，receipt 单独记录。
+- 下一步只继续剩余 summon/entity、defense、communication、maneuver eligibility、vessel、teleport destination、spectral-object seams；不增加名称分支，不迁移下一本扩展包。
+
 ## 持续 Goal Round 20：Sword Burst Generic Spell Consumer（2026-08-12）
 
 - Round XX 已验收并推送：已把 Sword Burst 的 authored typed area、Dexterity save、force damage 和 cantrip progression 接入通用 `spell.cantrip_scaling.v1` + 既有 area/damage consumer；没有 spell-name dispatch。

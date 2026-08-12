@@ -1,3 +1,13 @@
+# 2026-08-12 Round 21 检查点：Psionic Sorcery Typed Spell-Context Consumer
+
+- Round XXI 已验收 source-complete `content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery`（灵能术法）：两个 typed clauses `component-override` 与 `payment-override`，分别表达 `psionic_spell` 下忽略非费用成分、以等同法术环阶的 `sorcery_points` 替代 `spell_slot`。source fingerprint、reviewed fields、source record/path、manual decisions 和空 `unmodeled_source_terms` 已保留。
+- 新增名称无关 `spell.context.v1` consumer；Feature compiler/materializer 持久化 `spell_context`，`ContentIRRuntimeService` 只读取法术 metadata 的显式 `psionic_spell=true`，`SpellEconomyService` 通过 typed context 完成材料覆盖、灵能点 CAS、法术位保持、OperationTransaction、preview/confirm/replay 与 rollback；无 Feature/spell name branch。
+- 真实隔离 SQLite evidence：6 级角色施展 1 环塔莎酸蚀酿时材料不可用仍成功，法术位 `2→2`、灵能点 `3→2`；重放幂等，下游失败后 spell/resource rollback，两个 typed context clause、transaction、snapshot、formal boundary checks 全通过。
+- Round XXI after：Tasha `525 atoms / 408 player-facing / 408 executable / 95 authored Typed IR / 94 compile+preview / 84 production / 2 DM-assisted / 86 game usable / 8 compile-only / 314 manual / 107 DM reference`；项目 production full `184`、compile-only `35`、unique compiled `111`；ItemSpec `47/40/40/40`。formal 499 仍 `328/110/61`，name branch=0。
+- Round XXI 全量门禁：validator 1/1、focused pytest、Ruff、compileall、diff-check、backend full pytest `902 passed, 1 warning`；whole-pack migration stdout 和连续三次关键 report/runtime SHA-256 byte-identical。database `f3abdcf57b0d71888f085ca081511df4f4f23f100066b402d49d769089fa6aad`、formal registry `f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b`、integrations `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`、ollama `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3` 均保持。
+- 实现/evidence 提交 `2066902` 已推送到 `origin/main`；本交接 receipt 正在单独提交。外部 Obsidian memory write-back 曾因本轮 Codex usage limit 被拒，未绕过限制；仓库 handoff、ledger、plan 和 Round XXI doc 已作为本地交接 authority 更新。
+- 下一轮继续剩余 summon/entity、defense、communication、maneuver eligibility、vessel、teleport destination、spectral-object seams；保持 fail-closed，不迁移下一本扩展包，不把 isolated-only / DM-reference / 单条子句冒充 production。
+
 # 2026-08-12 Round 20 检查点：Sword Burst Generic Spell Consumer
 
 - Round XX 已选定唯一具备完整现有通用消费者覆盖的 compile-only spell：`tashas-cauldron:spell:eec6bd94eb83a351fb987de2`（剑刃爆发）。source text、source fingerprint、reviewed fields、manual decisions 和 typed area/save/damage/scaling clauses 已复核。
