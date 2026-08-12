@@ -6,6 +6,18 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 23：Intellect Fortress Typed Spell Defense Consumer
+
+当前状态：`in_progress`；实现、evidence、全量门禁和 deterministic migration 已完成，待分离提交与 push。
+
+- 本轮选择 source-complete `tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3`，保留五条真实 typed clauses：target selection、concentration、psychic resistance、三种 save advantage、upcast target increment。
+- 新增名称无关 `spell.defense.v1`，通过 `defense_bundle`、grouped `CombatEffect`、共享 concentration group、authoritative grid range/visibility/group distance、target cap、CAS、replacement、group end、rollback 和 replay 形成真实 spell production consumer。
+- Round XXIII validator 在临时迁移 SQLite 上 23/23 checks 通过；receipt test 5/5；`production-runtime-results-XXV.json` 与 Round XXIII report 已生成，`name_branch_count=0`。
+- Actual baseline：Tasha `525/408/408/95/94/94/85/2/87/7/314/107`；项目 production `185`、compile-only `35`、unique compiled `111`；ItemSpec `47/40/40/40`；formal 499 `328/110/61`。
+- Actual after：Tasha `525/408/408/95/94/94/86/2/88/6/314/107`；项目 production `186`、compile-only `35`、unique compiled `111`；ItemSpec `47/40/40/40`；formal 499 `328/110/61`。净增一个 registered production spell，compile-only `-1`，game usable `+1`。
+- 全量 backend pytest、Ruff、compileall、diff-check 通过；三次 whole-pack migration stdout SHA-256 `e3145aa3e6d84ec68bf2d8884057ada4fb26c40629418ee309359e843d234e74`，关键报告/runtime/isolated hashes 三次一致。
+- protected/formal fingerprints unchanged；详见 `docs/tashas-spell-production-consumer-round-XXIII-2026-08-12.md`、Round XXIII validator/test/report/result。待提交：实现/evidence 与 docs/ledger 分离提交，push 后改为 `accepted`。
+
 ## Round 22：Soulknife Psychic Teleportation Typed Feature Consumer
 
 当前状态：`accepted`；实现、隔离 evidence、全量回归、提交与 push 已完成。

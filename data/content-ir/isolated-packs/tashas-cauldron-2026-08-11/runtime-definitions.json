@@ -545,7 +545,7 @@
       "atom_id": "tashas-cauldron:atom:b4ea0dc1907dd5ac08666af3:9beb0f907f0a:000",
       "content_id": "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
       "content_kind": "spell",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "cd9ef32eba165fb7461604b077548c4e0e72af622c56f684f5117c0dee958d07",
       "typed_content_ids": [
         "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3"

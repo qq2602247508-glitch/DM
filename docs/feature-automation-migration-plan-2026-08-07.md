@@ -1,5 +1,13 @@
 # 特性自动化迁移预审报告
 
+## 持续 Goal Round 23：Intellect Fortress Typed Spell Defense Consumer（2026-08-12）
+
+- Round XXIII 已验收并推送前完成 source-complete Intellect Fortress 的五条 typed spell clauses：psychic resistance、Intelligence/Wisdom/Charisma save advantage、30 ft visible target、concentration、四环 target increment 与 30 ft group distance。
+- 新增名称无关 `spell.defense.v1`，以 compound `defense_bundle`、shared concentration group、CombatEffect lifecycle、authoritative grid geometry、CAS/idempotency/rollback 消费真实 spell runtime；没有 spell-name branch。
+- 临时 SQLite validator 23/23、receipt 5/5、backend full pytest、Ruff、compileall、diff-check 均通过。Tasha after 为 `86 production / 2 dm-assisted / 88 game usable / 6 compile-only`，项目 production `186`；ItemSpec `47/40/40/40`，formal 499 `328/110/61`。
+- Whole-pack migration 连续三次 stdout 与七个关键 report/runtime/isolated artifact SHA-256 byte-identical；正式 database/registry、source corpus、campaign/character、3D 和保护路径未写入。
+- 下一轮继续最高真实收益的 generic typed consumer；summon/entity、communication、maneuver eligibility、vessel、spectral-object 和完整 character-growth 继续 fail-closed，不迁移下一本扩展包。
+
 ## 持续 Goal Round 22：Soulknife Psychic Teleportation Typed Feature Consumer（2026-08-12）
 
 - Round XXII 已验收并推送：source-complete Psychic Teleportation 通过通用 `teleport` operator、`movement.teleport` capability 和既有 `combat_engine.feature_action.v1` 接入 authoritative grid；typed resource `psionic_dice` 单次消耗，距离为明确掷骰结果×10尺，目的地为可见未占据空间。

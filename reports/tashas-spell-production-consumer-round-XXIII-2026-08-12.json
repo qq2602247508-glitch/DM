@@ -1,0 +1,80 @@
+{
+  "after": {
+    "expected_project_production_full": 186,
+    "expected_tashas_compile_only": 6,
+    "expected_tashas_game_usable": 88,
+    "expected_tashas_production_full": 86,
+    "selected_production_runtime_full": 1
+  },
+  "all_required_checks_passed": true,
+  "baseline": {
+    "project_production_full": 185,
+    "tashas_compile_only": 7,
+    "tashas_game_usable": 87,
+    "tashas_production_full": 85
+  },
+  "checks": {
+    "batch_II_compile_full": true,
+    "character_resource_cleanup": true,
+    "compile_full": true,
+    "concentration_persisted": true,
+    "downstream_failure_rollback": true,
+    "formal_database_unchanged": true,
+    "formal_registry_unchanged": true,
+    "fourth_level_target_cap": true,
+    "grouped_concentration_end": true,
+    "name_branch_free": true,
+    "preview_confirm_replay": true,
+    "production_runtime_full": true,
+    "protected_fingerprints_unchanged": true,
+    "psychic_resistance_consumed": true,
+    "save_advantage_consumed": true,
+    "selected_count": true,
+    "stale_target_cas_rejected": true,
+    "target_cap_rejected": true,
+    "thirty_ft_group_distance_rejected": true,
+    "transactions_persisted": true,
+    "typed_clause_count": true,
+    "typed_defense_consumer": true
+  },
+  "formal_database_written": false,
+  "formal_registry_written": false,
+  "name_branch_count": 0,
+  "production_runtime_full_ids": [
+    "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3"
+  ],
+  "protected_boundaries_unchanged": true,
+  "round_id": "round-23",
+  "schema_version": "tashas-spell-production-consumer-round-XXIII-1",
+  "selected_cluster": "spell.defense.compound_resistance_save_advantage_group_geometry",
+  "selected_content_ids": [
+    "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3"
+  ],
+  "source_review": {
+    "reviewed_fields": [
+      "schema_version",
+      "spell_id",
+      "name",
+      "pack_id",
+      "pack_version",
+      "namespace",
+      "ruleset_version",
+      "source_record_id",
+      "source_path",
+      "source_book",
+      "source_fingerprint",
+      "source_trust",
+      "level",
+      "school",
+      "casting_time",
+      "range",
+      "duration",
+      "concentration",
+      "clauses",
+      "evidence"
+    ],
+    "source_fingerprint": "f86c958ce95034df82a6a6301688c2c5117bcb4976c5bd9f15bc48d644ee8c31",
+    "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+    "source_record_id": "b4ea0dc1907dd5ac08666af3"
+  }
+}

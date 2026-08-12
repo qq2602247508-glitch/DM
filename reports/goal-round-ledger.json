@@ -1,7 +1,135 @@
 {
-  "current_round": "round-22",
+  "current_round": "round-23",
   "goal": "Local AI D&D DM Assistant complete official-content rules platform",
   "rounds": [
+    {
+      "round_id": "round-23",
+      "status": "in_progress",
+      "started_at": "2026-08-12",
+      "objective": "Close source-complete Intellect Fortress through a generic typed spell defense consumer with compound resistance/save-advantage effects, concentration group lifecycle, authoritative target geometry, CAS, idempotency, rollback and character concentration cleanup.",
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 185,
+            "unique_compiled": 111
+          },
+          "formal_499": {
+            "dm_only": 61,
+            "full": 328,
+            "partial": 110,
+            "total": 499
+          },
+          "protected_fingerprints": {
+            "database": "f3abdcf57b0d71888f085ca081511df4f4f23f100066b402d49d769089fa6aad",
+            "formal_registry": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+            "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+            "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+          },
+          "tashas": {
+            "source_records": 144,
+            "content_atoms_after_qa": 525,
+            "executable": 408,
+            "authored_typed_ir": 95,
+            "compile_full": 94,
+            "runtime_preview_full": 94,
+            "production_full": 85,
+            "dm_assisted": 2,
+            "game_usable": 87,
+            "compile_only": 7,
+            "manual_authoring": 314,
+            "dm_reference": 107,
+            "item_spec_compile_full": 40,
+            "item_spec_isolated_runtime_validated": 40,
+            "item_spec_registered_production_full": 40,
+            "item_spec_game_usable": 40
+          }
+        },
+        "prompt_baseline": {
+          "source_records": 144,
+          "content_atoms_qa_before": 625,
+          "player_facing_executable": 407,
+          "template_catalog": 28,
+          "template_matched": 29,
+          "authored_typed_ir": 30,
+          "compile_full": 29,
+          "runtime_preview_full": 29,
+          "production_full": 17,
+          "dm_assisted": 1,
+          "game_usable": 18,
+          "compile_only": 11,
+          "manual_authoring": 378,
+          "dm_reference": 107
+        },
+        "difference": "The prompt baseline is historical and uses a different funnel denominator. Current source and reports are authoritative: 525 QA atoms, 408 executable atoms, 95 authored Typed IR, 94 compile/runtime preview, 85 Tasha production and 185 project production before this round.",
+        "evidence": [
+          "reports/tashas-whole-pack-report-2026-08-11.json",
+          "reports/tashas-status-layer-audit-2026-08-11.json",
+          "reports/tashas-production-runtime-report-2026-08-11.json"
+        ]
+      },
+      "commits": [
+        "f1d3ae8"
+      ],
+      "compile_full_delta": 0,
+      "production_full_delta": 1,
+      "dm_assisted_delta": 0,
+      "item_compile_full_delta": 0,
+      "manual_delta": 0,
+      "pack_coverage_delta": {
+        "content_ir_production_full_before": 185,
+        "content_ir_production_full_after": 186,
+        "tasha_production_full_before": 85,
+        "tasha_production_full_after": 86,
+        "tasha_game_usable_before": 87,
+        "tasha_game_usable_after": 88,
+        "tasha_compile_only_before": 7,
+        "tasha_compile_only_after": 6,
+        "tasha_authored_typed_ir_unchanged": 95,
+        "tasha_compile_full_unchanged": 94,
+        "tasha_runtime_preview_full_unchanged": 94,
+        "tasha_content_atoms_unchanged": 525,
+        "item_registered_production_full_unchanged": 40,
+        "item_game_usable_unchanged": 40
+      },
+      "reports": [
+        "docs/tashas-spell-production-consumer-round-XXIII-2026-08-12.md",
+        "reports/tashas-spell-production-consumer-round-XXIII-2026-08-12.json",
+        "data/content-ir/compiled/production-runtime-results-XXV.json",
+        "reports/tashas-whole-pack-report-2026-08-11.json",
+        "reports/tashas-status-layer-audit-2026-08-11.json",
+        "reports/tashas-production-runtime-report-2026-08-11.json"
+      ],
+      "selected_clusters": [
+        "spell.defense.compound_resistance_save_advantage",
+        "spell.target_selection.range_visibility_group_geometry",
+        "spell.concentration.group_lifecycle",
+        "spell_economy.concentration_resource_cleanup"
+      ],
+      "selected_platforms": [
+        "spell.defense.v1",
+        "combat_engine.defense_bundle",
+        "combat_engine.authoritative_spell_geometry",
+        "spell_economy.concentration",
+        "content_ir_runtime.spell_cast_rollback"
+      ],
+      "next_round_reason": "Reassess remaining source-complete typed contracts and choose the next generic consumer with real cross-content value; summon/entity, communication, maneuver eligibility, vessel, spectral-object and full character-growth seams remain fail-closed.",
+      "protected_paths_untouched": true,
+      "formal_registry_written": false,
+      "formal_database_written": false,
+      "push_receipt": "f1d3ae8 -> origin/main; docs/evidence receipt pending",
+      "tests": [
+        "scripts/validate-tashas-spell-production-consumer-round-XXIII.py: 23/23 checks passed",
+        "backend/tests/test_tashas_spell_production_consumer_round_XXIII.py: 5 passed",
+        "focused Content IR/combat regression suite: passed",
+        "backend/.venv/bin/pytest -q backend/tests: passed, 1 warning",
+        "backend/.venv/bin/ruff check backend/src backend/tests: passed",
+        "validator script Ruff: passed",
+        "backend/.venv/bin/python -m compileall -q backend/src backend/tests: passed",
+        "git diff --check: passed",
+        "whole-pack migration: 3 consecutive successful runs; stdout and seven key report/runtime/isolated SHA-256 sets identical"
+      ]
+    },
     {
       "round_id": "round-22",
       "status": "accepted",

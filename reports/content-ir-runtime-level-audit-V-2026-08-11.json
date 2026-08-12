@@ -1,12 +1,12 @@
 {
   "after": {
     "compile_only": 35,
-    "production_full": 185,
+    "production_full": 186,
     "tasha_atom_pack": {
       "authored_typed_ir": 95,
       "candidate_generated": 408,
       "compile_full": 94,
-      "compile_only": 7,
+      "compile_only": 6,
       "consumer_unlocks": {
         "existing_generic_consumer": {
           "content_ids": [
@@ -135,6 +135,7 @@
             "content.tashas-cauldron.round2.feature.twilight-cleric-steps-of-night",
             "tashas-cauldron:spell:0036d7dc058c496ef08fe340",
             "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac",
+            "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
             "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
             "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
             "tashas-cauldron:spell:ef0f92b557fb48d421d462e1"
@@ -145,16 +146,16 @@
       },
       "content_atom_total": 525,
       "content_id_funnel": {
-        "compile_only": 7,
+        "compile_only": 6,
         "dm_assisted": 2,
         "matched_typed_ir": 95,
-        "production_full": 86,
+        "production_full": 87,
         "relation_holds": true
       },
       "current_project_compile_only": 35,
       "current_project_compiled_unique": 111,
-      "current_project_production_full": 185,
-      "current_project_production_registry_fingerprint": "d0ca4b0b576e05b934accb86382c288517546c3c1f35559e385b68956c724b2c",
+      "current_project_production_full": 186,
+      "current_project_production_registry_fingerprint": "a2a3cd2a1ba81fda889424f6cfe26dc83b2d6b0503dc7b4f41859c1365bdc5ae",
       "dm_assisted": 2,
       "dm_reference": 107,
       "draft_total": 408,
@@ -171,7 +172,7 @@
         },
         "total": 499
       },
-      "game_usable": 87,
+      "game_usable": 88,
       "invalid_source": 0,
       "item_ir": {
         "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
@@ -243,7 +244,7 @@
         "spell": 21,
         "subclass_feature": 232
       },
-      "production_full": 85,
+      "production_full": 86,
       "reviewed_total": 408,
       "runtime_preview_full": 94,
       "schema_version": "tashas-whole-pack-migration-1",
@@ -253,7 +254,7 @@
       "source_record_total": 144,
       "source_record_unclassified": 0,
       "status_counts": {
-        "compile_only": 7,
+        "compile_only": 6,
         "dm_assisted": 2,
         "dm_reference": 107,
         "duplicate_or_reprint": 0,
@@ -261,7 +262,7 @@
         "manual_authoring": 314,
         "non_instantiable": 10,
         "out_of_scope_with_reason": 0,
-        "production_full": 85
+        "production_full": 86
       },
       "template_matched": 94
     },
@@ -269,7 +270,7 @@
   },
   "baseline": {
     "compile_only": 35,
-    "production_full": 185,
+    "production_full": 186,
     "unique_compiled": 111
   },
   "database_unchanged": true,

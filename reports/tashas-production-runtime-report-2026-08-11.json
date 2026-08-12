@@ -1,6 +1,6 @@
 {
   "atom_dm_assisted_count": 2,
-  "atom_production_full_count": 85,
+  "atom_production_full_count": 86,
   "dm_assisted_atoms": [
     "tashas-cauldron:atom:0036d7dc058c496ef08fe340:a27f6b57964b:000",
     "tashas-cauldron:atom:867896faa26eb295d846a574:glorious-defense:010"
@@ -133,6 +133,7 @@
         "content.tashas-cauldron.round2.feature.twilight-cleric-steps-of-night",
         "tashas-cauldron:spell:0036d7dc058c496ef08fe340",
         "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac",
+        "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
         "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
         "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
         "tashas-cauldron:spell:ef0f92b557fb48d421d462e1"
@@ -141,7 +142,7 @@
       "new_consumer_count": 0
     }
   },
-  "matched_atom_production_runtime_full_count": 88,
+  "matched_atom_production_runtime_full_count": 89,
   "name_branch_count": 0,
   "new_consumer_count": 0,
   "pack_id": "tashas-cauldron",
@@ -193,6 +194,7 @@
     "tashas-cauldron:atom:a13253dc90904c96eaa719ab:telekinetic-master:010",
     "tashas-cauldron:atom:a13253dc90904c96eaa719ab:telekinetic-movement:004",
     "tashas-cauldron:atom:b23e97de6529e42be59f8b0d:bestial-soul:005",
+    "tashas-cauldron:atom:b4ea0dc1907dd5ac08666af3:9beb0f907f0a:000",
     "tashas-cauldron:atom:b63c217774b977cdb0c1a23e:homing-strikes:006",
     "tashas-cauldron:atom:b63c217774b977cdb0c1a23e:psi-bolstered-knack:002",
     "tashas-cauldron:atom:b63c217774b977cdb0c1a23e:psychic-teleportation:007",
@@ -232,7 +234,7 @@
     "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:tool-proficiency:001",
     "tashas-cauldron:authored-subclause:12139219bf7e575f9cde019c:0d3fc31f44e0"
   ],
-  "registry_production_runtime_full_count": 128,
+  "registry_production_runtime_full_count": 129,
   "runtime_evidence": {
     "content.tashas-cauldron.feature.alchemist-chemical-mastery": {
       "confirm_status": 200,
@@ -6091,6 +6093,602 @@
       "replay_already_applied": true,
       "replay_status": 200,
       "runtime_id": "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac"
+    },
+    "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3": {
+      "consumer_ids": [
+        "spell.defense.v1",
+        "spell_economy.concentration.v1"
+      ],
+      "downstream_failure_rollback": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XXV.json",
+      "formal_database_fingerprint": "f3abdcf57b0d71888f085ca081511df4f4f23f100066b402d49d769089fa6aad",
+      "formal_registry_fingerprint": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+      "lifecycle": {
+        "character_concentration_after_end": null,
+        "far_group_status": 400,
+        "group_end_count": 2,
+        "group_end_status": 200,
+        "grouped_effect_count": 2,
+        "stale_target_cas_status": 409,
+        "target_cap_status": 400,
+        "upcast_confirm_status": 200,
+        "upcast_preview_status": 200
+      },
+      "production": {
+        "concentration": {
+          "character": {
+            "rule_reference": "PHB 2024",
+            "spell_id": "aefefe87-d4f1-400f-9fa1-187d5c1e0023"
+          },
+          "combatant": {
+            "concentration_group_id": "spell-defense:content-ir:round-xxiii-validator-defense:defense",
+            "effect_id": "0d684f8f-51b7-4eee-94a4-77b6c9552c7e",
+            "effect_ids": [
+              "0d684f8f-51b7-4eee-94a4-77b6c9552c7e"
+            ],
+            "name": "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
+            "started_round": 1
+          }
+        },
+        "confirm_status": 200,
+        "consumer": "spell.defense.v1",
+        "effect": {
+          "campaign_id": "dac43de6-b774-42ad-a897-3ccc8eb69e24",
+          "combat_id": "dc48ec29-9423-4e4b-b0bf-8e30988d26f1",
+          "created_at": "2026-08-12T08:47:41+00:00",
+          "details_json": {
+            "_effect_instance_key": "content-ir:round-xxiii-validator-defense:defense:646e033c-1cee-43e4-b6bc-ace658d2dcec",
+            "_effect_instance_order": 1,
+            "applied_state": {
+              "0": {
+                "damage_resistances": []
+              },
+              "1": {
+                "rule_modifier_key": "saving_throw:all::effect:content-ir:round-xxiii-validator-defense:defense:646e033c-1cee-43e4-b6bc-ace658d2dcec",
+                "rule_modifiers": {}
+              }
+            },
+            "concentration_group_id": "spell-defense:content-ir:round-xxiii-validator-defense:defense",
+            "known_spell_id": "aefefe87-d4f1-400f-9fa1-187d5c1e0023",
+            "rule_block": {
+              "components": [
+                {
+                  "damage_types": [
+                    "psychic"
+                  ],
+                  "kind": "defense",
+                  "operation": "resistance",
+                  "source": "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3"
+                },
+                {
+                  "abilities": [
+                    "intelligence",
+                    "wisdom",
+                    "charisma"
+                  ],
+                  "applies_when": "always",
+                  "kind": "modifier",
+                  "operation": "advantage",
+                  "scope": "all",
+                  "source": "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
+                  "stat": "saving_throw"
+                }
+              ],
+              "kind": "defense_bundle",
+              "known_spell_id": "aefefe87-d4f1-400f-9fa1-187d5c1e0023",
+              "spell_id": "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3"
+            },
+            "runtime_state": {
+              "concentration_group_id": "spell-defense:content-ir:round-xxiii-validator-defense:defense",
+              "end_triggers": [
+                "concentration_broken",
+                "source_unconscious",
+                "source_dead",
+                "source_inactive"
+              ],
+              "name": "content_ir_spell_defense"
+            },
+            "spell_id": "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3"
+          },
+          "duration_unit": "concentration",
+          "duration_value": null,
+          "effect_type": "spell_defense",
+          "end_reason": null,
+          "ended_at": null,
+          "ends_round": null,
+          "id": "0d684f8f-51b7-4eee-94a4-77b6c9552c7e",
+          "name": "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
+          "requires_concentration": true,
+          "save_ability": null,
+          "save_dc": null,
+          "source_action_id": null,
+          "source_combatant_id": "0d24a46c-a062-4d4c-ab33-71c41cc07f80",
+          "started_round": 1,
+          "status": "active",
+          "target_combatant_id": "646e033c-1cee-43e4-b6bc-ace658d2dcec",
+          "trigger_timing": null,
+          "updated_at": "2026-08-12T08:47:41+00:00",
+          "version": 1
+        },
+        "preview_consumers": [
+          "spell.defense.v1",
+          "spell_economy.concentration.v1"
+        ],
+        "preview_status": 200,
+        "production_runtime_full": true,
+        "psychic_damage": {
+          "adjusted": 5,
+          "applied": [
+            "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3:resistance:psychic"
+          ],
+          "original": 11,
+          "unresolved": []
+        },
+        "replay_already_applied": true,
+        "replay_status": 200,
+        "save": {
+          "applied_defenses": [
+            "feature:tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3"
+          ],
+          "damage": 0,
+          "defense_resource_consumed": null,
+          "effective_roll_total": 16,
+          "feature_reroll_consumed": null,
+          "reported_roll_totals": [
+            5,
+            16
+          ],
+          "roll_bonus_applied": false,
+          "success": true
+        },
+        "scene": {
+          "actor": {
+            "action_available": true,
+            "armor_class": 10,
+            "bonus_action_available": true,
+            "combat_id": "dc48ec29-9423-4e4b-b0bf-8e30988d26f1",
+            "concentration": {},
+            "condition_immunities": [],
+            "conditions": [],
+            "created_at": "2026-08-12T08:47:41+00:00",
+            "damage_immunities": [],
+            "damage_resistances": [],
+            "damage_vulnerabilities": [],
+            "display_name": "Caster",
+            "entity_id": "800611e5-ef39-4729-a38e-390089e286da",
+            "entity_type": "character",
+            "hp": 30,
+            "id": "0d24a46c-a062-4d4c-ab33-71c41cc07f80",
+            "initiative": 20,
+            "is_active": true,
+            "max_hp": 30,
+            "max_hp_reduction": 0,
+            "movement_remaining_ft": 30,
+            "reaction_available": true,
+            "snapshot_json": {
+              "combat_start_state": {
+                "concentration": {},
+                "conditions": [],
+                "hp": 30,
+                "is_active": true,
+                "max_hp_reduction": 0,
+                "snapshot_json": {
+                  "combat_start_state": {
+                    "concentration": {},
+                    "conditions": [],
+                    "hp": 30,
+                    "is_active": true,
+                    "max_hp_reduction": 0,
+                    "temporary_hp": 0
+                  },
+                  "feature_runtime": {
+                    "actions": {},
+                    "attack_riders": [],
+                    "combat_start": {
+                      "attack_action_count": 1,
+                      "attack_slot_replacements": [],
+                      "defenses": [],
+                      "modifiers": [],
+                      "movement_modes": []
+                    },
+                    "dm_only": [],
+                    "feature_block_schema_version": "1.0",
+                    "feature_blocks": [],
+                    "feature_contracts": [],
+                    "proficiencies": [],
+                    "progression": {
+                      "class_levels": {},
+                      "proficiency_bonus": 3,
+                      "spell_slots": {},
+                      "total_level": 5
+                    },
+                    "resources": {},
+                    "schema_version": "1.2",
+                    "spellcasting": [],
+                    "triggers": []
+                  },
+                  "grid_position": {
+                    "col": 8,
+                    "row": 8
+                  }
+                },
+                "temporary_hp": 0
+              },
+              "feature_runtime": {
+                "actions": {},
+                "attack_riders": [],
+                "combat_start": {
+                  "attack_action_count": 1,
+                  "attack_slot_replacements": [],
+                  "defenses": [],
+                  "modifiers": [],
+                  "movement_modes": []
+                },
+                "dm_only": [],
+                "feature_block_schema_version": "1.0",
+                "feature_blocks": [],
+                "feature_contracts": [],
+                "proficiencies": [],
+                "progression": {
+                  "class_levels": {},
+                  "proficiency_bonus": 3,
+                  "spell_slots": {},
+                  "total_level": 5
+                },
+                "resources": {},
+                "schema_version": "1.2",
+                "spellcasting": [],
+                "triggers": []
+              },
+              "grid_position": {
+                "col": 8,
+                "row": 8
+              }
+            },
+            "speed_ft": 30,
+            "temporary_hp": 0,
+            "updated_at": "2026-08-12T08:47:41+00:00",
+            "version": 1
+          },
+          "base": "/api/v1/campaigns/dac43de6-b774-42ad-a897-3ccc8eb69e24",
+          "campaign": {
+            "allow_legacy": false,
+            "created_at": "2026-08-12T08:47:40Z",
+            "current_location_id": null,
+            "current_time": null,
+            "description": null,
+            "enabled_content_packs": [],
+            "enabled_rule_extensions": [],
+            "encumbrance_mode": "standard",
+            "id": "dac43de6-b774-42ad-a897-3ccc8eb69e24",
+            "name": "Round XXIII Intellect Fortress",
+            "primary_rules_year": 2024,
+            "ruleset": "dnd5e",
+            "status": "active",
+            "updated_at": "2026-08-12T08:47:40Z",
+            "version": 1,
+            "world_setting": null
+          },
+          "character": {
+            "ability_score_reductions": {},
+            "ability_scores": {},
+            "actions": [
+              {
+                "name": "智能壁垒",
+                "prepared": true,
+                "source_record_id": null,
+                "source_reference": "PHB 2024",
+                "spell_level": 3
+              }
+            ],
+            "armor_class": 10,
+            "background": null,
+            "campaign_id": "dac43de6-b774-42ad-a897-3ccc8eb69e24",
+            "class_levels": {},
+            "class_name": null,
+            "content_pack_pins": [],
+            "created_at": "2026-08-12T08:47:40Z",
+            "death_saves": {
+              "failures": 0,
+              "successes": 0
+            },
+            "equipment": [],
+            "experience": 0,
+            "features": [],
+            "hp": 30,
+            "id": "800611e5-ef39-4729-a38e-390089e286da",
+            "inventory": [],
+            "level": 5,
+            "max_hp": 30,
+            "max_hp_reduction": 0,
+            "name": "Intellect Fortress caster",
+            "notes": null,
+            "proficiencies": [],
+            "race": null,
+            "resources": {},
+            "skills": {},
+            "speed": 30,
+            "spellcasting": {
+              "slots": {
+                "3": {
+                  "current": 2,
+                  "max": 2
+                },
+                "4": {
+                  "current": 2,
+                  "max": 2
+                }
+              }
+            },
+            "spells": [
+              {
+                "name": "智能壁垒",
+                "prepared": true,
+                "source_record_id": null,
+                "source_reference": "PHB 2024",
+                "spell_level": 3
+              }
+            ],
+            "subclass_choices": {},
+            "updated_at": "2026-08-12T08:47:41Z",
+            "version": 2
+          },
+          "combat": {
+            "base_xp": 0,
+            "campaign_id": "dac43de6-b774-42ad-a897-3ccc8eb69e24",
+            "created_at": "2026-08-12T08:47:41+00:00",
+            "current_turn_index": 0,
+            "difficulty": null,
+            "difficulty_adjustments": [],
+            "ended_at": null,
+            "id": "dc48ec29-9423-4e4b-b0bf-8e30988d26f1",
+            "name": "Intellect Fortress combat",
+            "round_number": 1,
+            "scene_id": "9c9b3ca7-500d-4c6b-b3d1-81b9e27a3451",
+            "started_at": "2026-08-12T08:47:41+00:00",
+            "status": "active",
+            "updated_at": "2026-08-12T08:47:41+00:00",
+            "version": 1,
+            "xp_awarded": false
+          },
+          "known_spell": {
+            "campaign_id": "dac43de6-b774-42ad-a897-3ccc8eb69e24",
+            "character_id": "800611e5-ef39-4729-a38e-390089e286da",
+            "created_at": "2026-08-12T08:47:41+00:00",
+            "id": "aefefe87-d4f1-400f-9fa1-187d5c1e0023",
+            "metadata_json": {
+              "content_ir_runtime": {
+                "casting_time": "1 动作",
+                "components": null,
+                "concentration": true,
+                "duration": "专注，最长 1 \n小时",
+                "execution_status": "ready",
+                "kind": "spell",
+                "level": 3,
+                "name": "智能壁垒",
+                "range": "30 尺",
+                "resolution": {
+                  "attack_roll": [],
+                  "concentration": [
+                    {
+                      "clause_id": "concentration",
+                      "duration": "专注，最长 1 \n小时",
+                      "evidence_ref": "ess *三环 防护（奇械师、吟游诗人、术士、魔契师、法师）* **施法时间：**1 动作 **施法距离：**30 尺 **法术成分：**V **持续时间：**专注，最长 1 小时 在法术持续时间内，你或一个施法距离内的可见生物获得对心灵伤害的抗性，同时在智力、感知和魅力豁免检定上具有优势。 **升环施法。**使用四环或更高环阶的法术位施展该法术时，你使用的法术位每比三环高 1 环，就可以多选择一个生物作为目标。而各目标之间距离不能超过 30 尺。",
+                      "required": true,
+                      "type": "concentration"
+                    }
+                  ],
+                  "duration": [],
+                  "effects": [
+                    {
+                      "applies_to": [
+                        "psychic"
+                      ],
+                      "clause_id": "psychic-resistance",
+                      "evidence_ref": "在法术持续时间内，你或一个施法距离内的可见生物获得对心灵伤害的抗性。",
+                      "modifier": "damage_resistance",
+                      "type": "spell_modifier",
+                      "value": [
+                        "psychic"
+                      ]
+                    },
+                    {
+                      "applies_to": [
+                        "intelligence",
+                        "wisdom",
+                        "charisma"
+                      ],
+                      "clause_id": "saving-throw-advantage",
+                      "evidence_ref": "同时在智力、感知和魅力豁免检定上具有优势。",
+                      "modifier": "saving_throw_advantage",
+                      "type": "spell_modifier",
+                      "value": [
+                        "intelligence",
+                        "wisdom",
+                        "charisma"
+                      ]
+                    }
+                  ],
+                  "saving_throw": [],
+                  "target_selection": [
+                    {
+                      "clause_id": "target",
+                      "count": 1,
+                      "evidence_ref": "同时在智力、感知和魅力豁免检定上具有优势。 **升环施法。**使用四环或更高环阶的法术位施展该法术时，你使用的法术位每比三环高 1 环，就可以多选择一个生物作为目标。而各目标之间距离不能超过 30 尺。",
+                      "kind": "one_creature",
+                      "max_distance_ft": 30,
+                      "range_ft": 30,
+                      "type": "target_selection",
+                      "visibility": "visible"
+                    }
+                  ],
+                  "upcast": [
+                    {
+                      "applies_to": [
+                        "target_selection"
+                      ],
+                      "clause_id": "upcast-targets",
+                      "evidence_ref": "使用四环或更高环阶的法术位施展该法术时，你使用的法术位每比三环高 1 环，就可以多选择一个生物作为目标。而各目标之间距离不能超过 30 尺。",
+                      "minimum_slot": 4,
+                      "target_count_increment": 1,
+                      "type": "upcast"
+                    }
+                  ]
+                },
+                "runtime_schema_version": "spell-runtime-1",
+                "school": "防护",
+                "source": {
+                  "source_book": "塔莎的万事坩埚",
+                  "source_fingerprint": "f86c958ce95034df82a6a6301688c2c5117bcb4976c5bd9f15bc48d644ee8c31",
+                  "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+                  "source_record_id": "b4ea0dc1907dd5ac08666af3",
+                  "source_trust": "authored_ir"
+                },
+                "spell_id": "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
+                "target": null
+              }
+            },
+            "name": "智能壁垒",
+            "prepared": true,
+            "source_reference": "PHB 2024",
+            "spell_level": 3,
+            "updated_at": "2026-08-12T08:47:41+00:00",
+            "version": 1
+          },
+          "targets": [
+            {
+              "action_available": true,
+              "armor_class": 10,
+              "bonus_action_available": true,
+              "combat_id": "dc48ec29-9423-4e4b-b0bf-8e30988d26f1",
+              "concentration": {},
+              "condition_immunities": [],
+              "conditions": [],
+              "created_at": "2026-08-12T08:47:41+00:00",
+              "damage_immunities": [],
+              "damage_resistances": [],
+              "damage_vulnerabilities": [],
+              "display_name": "Target 1",
+              "entity_id": null,
+              "entity_type": "character",
+              "hp": 20,
+              "id": "646e033c-1cee-43e4-b6bc-ace658d2dcec",
+              "initiative": 9,
+              "is_active": true,
+              "max_hp": 20,
+              "max_hp_reduction": 0,
+              "movement_remaining_ft": 30,
+              "reaction_available": true,
+              "snapshot_json": {
+                "combat_start_state": {
+                  "concentration": {},
+                  "conditions": [],
+                  "hp": 20,
+                  "is_active": true,
+                  "max_hp_reduction": 0,
+                  "temporary_hp": 0
+                },
+                "grid_position": {
+                  "col": 9,
+                  "row": 8
+                }
+              },
+              "speed_ft": 30,
+              "temporary_hp": 0,
+              "updated_at": "2026-08-12T08:47:41+00:00",
+              "version": 1
+            },
+            {
+              "action_available": true,
+              "armor_class": 10,
+              "bonus_action_available": true,
+              "combat_id": "dc48ec29-9423-4e4b-b0bf-8e30988d26f1",
+              "concentration": {},
+              "condition_immunities": [],
+              "conditions": [],
+              "created_at": "2026-08-12T08:47:41+00:00",
+              "damage_immunities": [],
+              "damage_resistances": [],
+              "damage_vulnerabilities": [],
+              "display_name": "Target 2",
+              "entity_id": null,
+              "entity_type": "character",
+              "hp": 20,
+              "id": "0b042b30-095b-4e32-afe9-311da7bf1ef0",
+              "initiative": 8,
+              "is_active": true,
+              "max_hp": 20,
+              "max_hp_reduction": 0,
+              "movement_remaining_ft": 30,
+              "reaction_available": true,
+              "snapshot_json": {
+                "combat_start_state": {
+                  "concentration": {},
+                  "conditions": [],
+                  "hp": 20,
+                  "is_active": true,
+                  "max_hp_reduction": 0,
+                  "temporary_hp": 0
+                },
+                "grid_position": {
+                  "col": 10,
+                  "row": 8
+                }
+              },
+              "speed_ft": 30,
+              "temporary_hp": 0,
+              "updated_at": "2026-08-12T08:47:41+00:00",
+              "version": 1
+            }
+          ]
+        },
+        "target_resistances": [
+          "psychic"
+        ],
+        "transactions": {
+          "combat_action": "confirmed",
+          "runtime": "applied",
+          "spell": "applied"
+        }
+      },
+      "protected_fingerprints": {
+        "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+        "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+      },
+      "reviewed_fields": [
+        "schema_version",
+        "spell_id",
+        "name",
+        "pack_id",
+        "pack_version",
+        "namespace",
+        "ruleset_version",
+        "source_record_id",
+        "source_path",
+        "source_book",
+        "source_fingerprint",
+        "source_trust",
+        "level",
+        "school",
+        "casting_time",
+        "range",
+        "duration",
+        "concentration",
+        "clauses",
+        "evidence"
+      ],
+      "runtime_definition_fingerprint": "392834c91b614ba8aaddb0f5192f2cc07f565b57a00e71bb4685af12bdca6616",
+      "runtime_id": "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
+      "source_fingerprint": "f86c958ce95034df82a6a6301688c2c5117bcb4976c5bd9f15bc48d644ee8c31",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+      "source_record_id": "b4ea0dc1907dd5ac08666af3",
+      "typed_clause_ids": [
+        "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3:target",
+        "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3:concentration",
+        "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3:psychic-resistance",
+        "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3:saving-throw-advantage",
+        "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3:upcast-targets"
+      ]
     },
     "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea": {
       "confirm_status": 200,
