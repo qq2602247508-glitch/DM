@@ -1,3 +1,12 @@
+# 2026-08-12 Round 20 检查点：Sword Burst Generic Spell Consumer
+
+- Round XX 已选定唯一具备完整现有通用消费者覆盖的 compile-only spell：`tashas-cauldron:spell:eec6bd94eb83a351fb987de2`（剑刃爆发）。source text、source fingerprint、reviewed fields、manual decisions 和 typed area/save/damage/scaling clauses 已复核。
+- 新增名称无关 `spell.cantrip_scaling.v1` descriptor；runtime 从角色等级消费 authored `upcast.progression`，与既有 area geometry、saving throw、damage、batch CAS、OperationTransaction 和 rollback 链连接。真实临时 SQLite 已通过等级 1/5/11/17 scaling、双目标 preview→confirm→幂等 replay、save-success 0 damage、stale target 409、事务与 rollback。
+- 当前 migration after：Tasha `525 atoms / 408 player-facing / 408 executable / 95 authored Typed IR / 94 compile+preview / 83 production / 2 DM-assisted / 85 game usable / 9 compile-only / 314 manual / 107 DM reference`；项目 production full `183`；ItemSpec `47/40/40/40`。正式 database/registry/campaign/character、source corpus、3D、永久保护路径未写入，name branch=0。
+- Round XX 已验收：全量 backend pytest `899 passed, 1 warning`、全源 Ruff、变更范围 compileall、diff-check、migration 三次 byte-identical、formal/protected fingerprint 复核均通过；tracked worktree 只剩永久保护的两个未跟踪路径。实现提交 `c2823e5` 已推送到 `origin/main`，receipt 另行提交。
+- 证据入口：`scripts/validate-tashas-spell-production-consumer-round-XX.py`、`backend/tests/test_tashas_spell_production_consumer_round_XX.py`、`reports/tashas-spell-production-consumer-round-XX-2026-08-12.json`、`data/content-ir/compiled/production-runtime-results-XXII.json`、Round XX doc。
+- 剩余 blocker：Summon Beast/Undead 的 entity/stat-block lifecycle、Intellect Fortress defense effect、Oceanic Soul communication、Ambush 双触发 eligibility、Bottled Respite vessel、Psychic Teleportation destination、Psionic Sorcery payment、Manifest Mind spectral object；均不因本轮 spell scaling consumer 被伪升 full。
+
 # 2026-08-12 Round 19 检查点：Character Growth / Implements of Mercy Closure
 
 - Round XIX 完成 `content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy` 的三条 typed proficiency clause：洞悉、医药、草药工具；全部通过既有 `advancement_service.character_growth.v1` 的隔离 SQLite preview→confirm→幂等 replay、character CAS、OperationTransaction、feature snapshot，`name_branch=0`。

@@ -6,6 +6,18 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 20：Sword Burst Generic Spell Consumer
+
+当前状态：`in_progress`；实现与隔离 evidence 已完成，等待全量门禁、稳定性取证、提交与 push。
+
+- 选中唯一仍具完整通用消费者覆盖的 compile-only spell：`tashas-cauldron:spell:eec6bd94eb83a351fb987de2`（剑刃爆发 / Sword Burst）。source text 逐字段复核了 5 尺球形范围、敏捷豁免、失败 1d6 力场伤害和 5/11/17 级戏法强化；source fingerprint、reviewed fields、manual decisions 和 source evidence 均保留。
+- 新增名称无关的 `spell.cantrip_scaling.v1` registry descriptor。`ContentIRRuntimeService` 从角色当前等级消费 typed `upcast.progression`，再交给既有 `combat_engine.area_damage.v1` 与 `combat_engine.damage_heal.v1`；没有 spell-name dispatch。
+- 临时 SQLite 真实 API evidence：等级 5 的两个范围目标各受到 8 点，等级 1/5/11/17 的 scaling 为 1d6/2d6/3d6/4d6；成功豁免为 0 伤害。preview→confirm→replay、双目标 CAS、OperationTransaction、stale 409、下游失败 rollback 全通过，name branch=0。
+- Round XX after：Tasha `525/408/408/95/94/94/83/2/85/9/314/107`（atoms/player-facing/executable/authored/compile/preview/production/dm-assisted/game usable/compile-only/manual/DM reference）；当前项目 production full `183`；ItemSpec 保持 `47/40/40/40`。
+- 召唤术、智能壁垒、Oceanic Soul、Ambush、Bottled Respite、Psychic Teleportation、Psionic Sorcery、Manifest Mind 继续保持真实 entity/defense/eligibility/vessel/teleport/spectral/payment blocker，不因本轮通用 spell seam 被伪升 full。
+
+证据：`docs/tashas-spell-production-consumer-round-XX-2026-08-12.md`、Round XX validator/test/report/result、whole-pack report 与 isolated runtime registry。正式 database/registry/campaign/character、source corpus、3D、保护路径未写入；下一步在全量门禁和 push 后继续下一个有完整 generic consumer 的 typed cluster。
+
 ## Round 19：Character Growth / Implements of Mercy Closure
 
 当前状态：`accepted`；实现、隔离 evidence、全量回归、提交与 push 已完成。

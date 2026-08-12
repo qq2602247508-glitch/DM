@@ -1,5 +1,11 @@
 # 特性自动化迁移预审报告
 
+## 持续 Goal Round 20：Sword Burst Generic Spell Consumer（2026-08-12）
+
+- Round XX 已验收并推送：已把 Sword Burst 的 authored typed area、Dexterity save、force damage 和 cantrip progression 接入通用 `spell.cantrip_scaling.v1` + 既有 area/damage consumer；没有 spell-name dispatch。
+- 隔离 SQLite 已完成等级 1/5/11/17 scaling、双目标 area damage、save-success、preview→confirm→replay、target CAS、OperationTransaction 与 downstream rollback；Tasha after 为 `83 production / 2 dm-assisted / 85 game usable / 9 compile-only`，项目 production full `183`。
+- Summon、defense、communication、vessel、teleport、payment、spectral-object 等剩余 typed contracts 仍保持各自 blocker，不把单个子句或 isolated-only evidence 计为 full。实现提交 `c2823e5` 已推送；全量 backend pytest `899 passed`，Ruff、compileall、diff-check 和 deterministic migration gates 通过。
+
 ## 持续 Goal Round 3：Feature Production Consumer Evidence（2026-08-12）
 
 - 12 条 Round 2 full Feature contracts 经过真实 API preview→confirm→幂等 replay；11 条进入 production evidence，1 条以 DM-confirmed typed reaction 记为 DM-assisted。

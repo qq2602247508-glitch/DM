@@ -1,7 +1,116 @@
 {
-  "current_round": "round-19",
+  "current_round": "round-20",
   "goal": "Local AI D&D DM Assistant complete official-content rules platform",
   "rounds": [
+    {
+      "round_id": "round-20",
+      "status": "accepted",
+      "started_at": "2026-08-12",
+      "accepted_at": "2026-08-12",
+      "objective": "Run Sword Burst through the existing generic spell area + saving-throw + damage consumer with source-validated cantrip scaling, authoritative area targeting, CAS, rollback, idempotency, snapshot persistence, and preview/confirm/replay evidence.",
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 182,
+            "unique_compiled": 111
+          },
+          "formal_499": {
+            "dm_only": 61,
+            "full": 328,
+            "partial": 110,
+            "total": 499
+          },
+          "protected_fingerprints": {
+            "database": "f3abdcf57b0d71888f085ca081511df4f4f23f100066b402d49d769089fa6aad",
+            "formal_registry": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+            "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+            "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+          },
+          "tashas": {
+            "authored_typed_ir": 95,
+            "compile_only": 10,
+            "content_atoms_after_qa": 525,
+            "executable": 408,
+            "game_usable": 84,
+            "item_spec_compile_full": 40,
+            "item_spec_isolated_runtime_validated": 40,
+            "item_spec_registered_production_full": 40,
+            "item_spec_game_usable": 40,
+            "manual_authoring": 314,
+            "production_full": 82,
+            "runtime_preview_full": 94,
+            "source_records": 144
+          }
+        },
+        "difference": "Round XX selects the only remaining compile-only spell whose complete typed clauses are already covered by the generic production consumer: Sword Burst has area targeting, Dexterity saving throw, force damage, and explicit cantrip-level scaling. Summon Beast/Undead, Intellect Fortress, and the remaining Features retain real entity-lifecycle or defense-effect blockers.",
+        "prompt_baseline": {
+          "selected_spell_production": 1,
+          "core_runtime_exception": false,
+          "selected_content_ids": [
+            "tashas-cauldron:spell:eec6bd94eb83a351fb987de2"
+          ]
+        }
+      },
+      "commits": ["c2823e5"],
+      "compile_full_delta": 0,
+      "production_full_delta": 1,
+      "dm_assisted_delta": 0,
+      "item_compile_full_delta": 0,
+      "manual_delta": 0,
+      "pack_coverage_delta": {
+        "content_ir_production_full_before": 182,
+        "content_ir_production_full_after": 183,
+        "tasha_production_full_before": 82,
+        "tasha_production_full_after": 83,
+        "tasha_game_usable_before": 84,
+        "tasha_game_usable_after": 85,
+        "tasha_compile_only_before": 10,
+        "tasha_compile_only_after": 9,
+        "tasha_authored_typed_ir_unchanged": 95,
+        "tasha_compile_full_unchanged": 94,
+        "item_registered_production_full_unchanged": 40,
+        "item_game_usable_unchanged": 40
+      },
+      "reports": [
+        "reports/tashas-spell-production-consumer-round-XX-2026-08-12.json",
+        "data/content-ir/compiled/production-runtime-results-XXII.json",
+        "docs/tashas-spell-production-consumer-round-XX-2026-08-12.md"
+      ],
+      "selected_clusters": [
+        "spell.target_selection.area",
+        "spell.saving_throw",
+        "spell.damage",
+        "spell.cantrip_scaling",
+        "content_ir_runtime.preview_confirm_replay"
+      ],
+      "selected_platforms": [
+        "combat_engine.area_geometry.v1",
+        "combat_engine.area_damage.v1",
+        "spell.cantrip_scaling.v1",
+        "spell_economy.concentration.v1",
+        "content_ir_runtime.spell-runtime-1",
+        "combat_engine.batch_cas_and_idempotency"
+      ],
+      "next_round_reason": "After Round XX, reassess the remaining compile-only Feature and spell seams by complete generic consumer coverage; do not promote summon or defense semantics until their missing consumers are implemented and verified.",
+      "protected_paths_untouched": true,
+      "formal_registry_written": false,
+      "formal_database_written": false,
+      "push_receipt": {
+        "branch": "main",
+        "commit_hash": "c2823e5",
+        "pushed_at": "2026-08-12",
+        "remote": "origin",
+        "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
+        "result": "success"
+      },
+      "tests": [
+        "Round XX validator: 1/1 Sword Burst production runtime full",
+        "Sword Burst area/save/damage/scaling, preview-confirm-replay, CAS, transaction and rollback passed",
+        "backend full pytest: 899 passed; Ruff, compileall, git diff --check passed",
+        "whole-pack migration repeated three times with byte-identical stdout and key report/runtime hashes"
+      ]
+    },
     {
       "round_id": "round-19",
       "status": "accepted",
