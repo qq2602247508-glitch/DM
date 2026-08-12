@@ -26714,7 +26714,7 @@
       "instantiable": true,
       "level": 6,
       "localized_name": "灵能术法",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "name": "灵能术法 Psionic Sorcery",
       "officiality": "unknown",
       "parent_atom_id": "tashas-cauldron:atom:e94f0c903dd025796d7a2d22:29fc3970170f:000",
@@ -26743,10 +26743,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "runtime_preview_full",
-        "isolated_runtime_validated": false,
-        "registered_production_full": false,
+        "game_usable": true,
+        "highest_status": "game_usable",
+        "isolated_runtime_validated": true,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -30040,7 +30040,7 @@
   "schema_version": "tashas-content-atom-catalog-2",
   "source_book": "塔莎的万事坩埚",
   "status_counts": {
-    "compile_only": 9,
+    "compile_only": 8,
     "dm_assisted": 2,
     "dm_reference": 107,
     "duplicate_or_reprint": 0,
@@ -30048,6 +30048,6 @@
     "manual_authoring": 314,
     "non_instantiable": 10,
     "out_of_scope_with_reason": 0,
-    "production_full": 83
+    "production_full": 84
   }
 }

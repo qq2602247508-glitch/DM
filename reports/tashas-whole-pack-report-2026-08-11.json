@@ -3,7 +3,7 @@
     "authored_typed_ir": 95,
     "candidate_generated": 408,
     "compile_full": 94,
-    "compile_only": 9,
+    "compile_only": 8,
     "consumer_unlocks": {
       "existing_generic_consumer": {
         "content_ids": [
@@ -69,6 +69,7 @@
           "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-shadowfellbrand-tattoo-006",
           "content.tashas-cauldron.item.tashas-cauldron-atom-953875067ac4d9a793c844f0-6ad29778c06b-000",
           "content.tashas-cauldron.item.tashas-cauldron-atom-953875067ac4d9a793c844f0-771dcd20c4dc-001",
+          "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery",
           "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list",
           "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech",
           "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant",
@@ -140,16 +141,16 @@
     },
     "content_atom_total": 525,
     "content_id_funnel": {
-      "compile_only": 9,
+      "compile_only": 8,
       "dm_assisted": 2,
       "matched_typed_ir": 95,
-      "production_full": 84,
+      "production_full": 85,
       "relation_holds": true
     },
     "current_project_compile_only": 35,
     "current_project_compiled_unique": 111,
-    "current_project_production_full": 183,
-    "current_project_production_registry_fingerprint": "859365795890e9eeca5e21fb467237095af9c496074f22a3d60437cfa56c8b30",
+    "current_project_production_full": 184,
+    "current_project_production_registry_fingerprint": "4478f8a5876365da342a7cb39b5e24f0aafcc95ed3fa7ab90a92ed358e656906",
     "dm_assisted": 2,
     "dm_reference": 107,
     "draft_total": 408,
@@ -166,7 +167,7 @@
       },
       "total": 499
     },
-    "game_usable": 85,
+    "game_usable": 86,
     "invalid_source": 0,
     "item_ir": {
       "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
@@ -238,7 +239,7 @@
       "spell": 21,
       "subclass_feature": 232
     },
-    "production_full": 83,
+    "production_full": 84,
     "reviewed_total": 408,
     "runtime_preview_full": 94,
     "schema_version": "tashas-whole-pack-migration-1",
@@ -248,7 +249,7 @@
     "source_record_total": 144,
     "source_record_unclassified": 0,
     "status_counts": {
-      "compile_only": 9,
+      "compile_only": 8,
       "dm_assisted": 2,
       "dm_reference": 107,
       "duplicate_or_reprint": 0,
@@ -256,7 +257,7 @@
       "manual_authoring": 314,
       "non_instantiable": 10,
       "out_of_scope_with_reason": 0,
-      "production_full": 83
+      "production_full": 84
     },
     "template_matched": 94
   },
@@ -284,7 +285,7 @@
     "authored_typed_ir": 95,
     "candidate_generated": 408,
     "compile_full": 94,
-    "compile_only": 9,
+    "compile_only": 8,
     "consumer_unlocks": {
       "existing_generic_consumer": {
         "content_ids": [
@@ -350,6 +351,7 @@
           "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-shadowfellbrand-tattoo-006",
           "content.tashas-cauldron.item.tashas-cauldron-atom-953875067ac4d9a793c844f0-6ad29778c06b-000",
           "content.tashas-cauldron.item.tashas-cauldron-atom-953875067ac4d9a793c844f0-771dcd20c4dc-001",
+          "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery",
           "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list",
           "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech",
           "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant",
@@ -421,16 +423,16 @@
     },
     "content_atom_total": 525,
     "content_id_funnel": {
-      "compile_only": 9,
+      "compile_only": 8,
       "dm_assisted": 2,
       "matched_typed_ir": 95,
-      "production_full": 84,
+      "production_full": 85,
       "relation_holds": true
     },
     "current_project_compile_only": 35,
     "current_project_compiled_unique": 111,
-    "current_project_production_full": 183,
-    "current_project_production_registry_fingerprint": "859365795890e9eeca5e21fb467237095af9c496074f22a3d60437cfa56c8b30",
+    "current_project_production_full": 184,
+    "current_project_production_registry_fingerprint": "4478f8a5876365da342a7cb39b5e24f0aafcc95ed3fa7ab90a92ed358e656906",
     "dm_assisted": 2,
     "dm_reference": 107,
     "draft_total": 408,
@@ -447,7 +449,7 @@
       },
       "total": 499
     },
-    "game_usable": 85,
+    "game_usable": 86,
     "invalid_source": 0,
     "item_ir": {
       "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
@@ -519,7 +521,7 @@
       "spell": 21,
       "subclass_feature": 232
     },
-    "production_full": 83,
+    "production_full": 84,
     "reviewed_total": 408,
     "runtime_preview_full": 94,
     "schema_version": "tashas-whole-pack-migration-1",
@@ -529,7 +531,7 @@
     "source_record_total": 144,
     "source_record_unclassified": 0,
     "status_counts": {
-      "compile_only": 9,
+      "compile_only": 8,
       "dm_assisted": 2,
       "dm_reference": 107,
       "duplicate_or_reprint": 0,
@@ -537,7 +539,7 @@
       "manual_authoring": 314,
       "non_instantiable": 10,
       "out_of_scope_with_reason": 0,
-      "production_full": 83
+      "production_full": 84
     },
     "template_matched": 94
   },
@@ -17857,7 +17859,7 @@
         "instantiable": true,
         "level": 6,
         "localized_name": "灵能术法",
-        "migration_status": "compile_only",
+        "migration_status": "production_full",
         "name": "灵能术法 Psionic Sorcery",
         "officiality": "unknown",
         "parent_atom_id": "tashas-cauldron:atom:e94f0c903dd025796d7a2d22:29fc3970170f:000",
@@ -17886,10 +17888,10 @@
           "compile_full": true,
           "dm_assisted": false,
           "draft": true,
-          "game_usable": false,
-          "highest_status": "runtime_preview_full",
-          "isolated_runtime_validated": false,
-          "registered_production_full": false,
+          "game_usable": true,
+          "highest_status": "game_usable",
+          "isolated_runtime_validated": true,
+          "registered_production_full": true,
           "reviewed": true,
           "runtime_preview_full": true,
           "source_identified": true
@@ -19531,11 +19533,11 @@
     "pack_id": "tashas-cauldron",
     "schema_version": "tashas-feature-ir-report-1",
     "status_counts": {
-      "compile_only": 5,
+      "compile_only": 4,
       "dm_assisted": 1,
       "dm_reference": 31,
       "manual_authoring": 222,
-      "production_full": 67
+      "production_full": 68
     },
     "typed_atom_total": 73
   },
@@ -19554,7 +19556,7 @@
     "gate_status": "partial",
     "manual_total": 254,
     "pack_id": "tashas-cauldron",
-    "production_full_total": 79,
+    "production_full_total": 80,
     "review_blocker_counts": {
       "reviewed_typed_mapping": 86,
       "unmatched_requires_review": 254
@@ -26491,7 +26493,7 @@
   },
   "runtime": {
     "atom_dm_assisted_count": 2,
-    "atom_production_full_count": 83,
+    "atom_production_full_count": 84,
     "dm_assisted_atoms": [
       "tashas-cauldron:atom:0036d7dc058c496ef08fe340:a27f6b57964b:000",
       "tashas-cauldron:atom:867896faa26eb295d846a574:glorious-defense:010"
@@ -26561,6 +26563,7 @@
           "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-shadowfellbrand-tattoo-006",
           "content.tashas-cauldron.item.tashas-cauldron-atom-953875067ac4d9a793c844f0-6ad29778c06b-000",
           "content.tashas-cauldron.item.tashas-cauldron-atom-953875067ac4d9a793c844f0-771dcd20c4dc-001",
+          "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery",
           "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list",
           "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech",
           "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant",
@@ -26630,7 +26633,7 @@
         "new_consumer_count": 0
       }
     },
-    "matched_atom_production_runtime_full_count": 86,
+    "matched_atom_production_runtime_full_count": 87,
     "name_branch_count": 0,
     "new_consumer_count": 0,
     "pack_id": "tashas-cauldron",
@@ -26707,6 +26710,7 @@
       "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:chemical-mastery:006",
       "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:restorative-reagents:005",
       "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:tool-proficiency:001",
+      "tashas-cauldron:atom:e94f0c903dd025796d7a2d22:psionic-sorcery:003",
       "tashas-cauldron:atom:e94f0c903dd025796d7a2d22:psionic-spells:001",
       "tashas-cauldron:atom:e94f0c903dd025796d7a2d22:telepathic-speech:002",
       "tashas-cauldron:atom:ee901996f0fcc3e576657e06:clockwork-magic:001",
@@ -26719,7 +26723,7 @@
       "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:tool-proficiency:001",
       "tashas-cauldron:authored-subclause:12139219bf7e575f9cde019c:0d3fc31f44e0"
     ],
-    "registry_production_runtime_full_count": 126,
+    "registry_production_runtime_full_count": 127,
     "runtime_evidence": {
       "content.tashas-cauldron.feature.alchemist-chemical-mastery": {
         "confirm_status": 200,
@@ -31169,6 +31173,70 @@
           "item.equipment_modifier.v1"
         ]
       },
+      "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery": {
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-XXIII.json",
+        "feature_consumer_ids": [
+          "spell.context.v1"
+        ],
+        "feature_manual_decisions": {
+          "isolated_runtime_only": true,
+          "operator_mapping": "explicit_atom_mapping",
+          "unmodeled_source_terms": []
+        },
+        "feature_reviewed_fields": [
+          "feature_id",
+          "source_record_id",
+          "source_name",
+          "source_path",
+          "source_book",
+          "source_fingerprint",
+          "content_kind",
+          "class_name",
+          "subclass_name",
+          "level",
+          "source_completeness",
+          "clauses",
+          "required_inputs",
+          "runtime_boundary"
+        ],
+        "feature_runtime_fingerprint": "28bb84cd64838caef9b329fa4e43d077759b78c014b5f6451cf672791cd6169b",
+        "feature_source_fingerprint": "edc9b2cf480295475fe7a1452cc257465c1037f3a2dd01903d13df83701ae683",
+        "feature_source_path": "塔莎的万事坩埚/玩家选项/职业/术士（TCE）/畸变心智.html",
+        "feature_source_record_id": "e94f0c903dd025796d7a2d22",
+        "payment_evidence": {
+          "cast_spell_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+          "character_version_advanced": true,
+          "components_ignored": true,
+          "confirm_status": 200,
+          "feature_consumer_ids": [
+            "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery"
+          ],
+          "payment_cost": 1,
+          "payment_resource_key": "sorcery_points",
+          "preview_status": 200,
+          "production_runtime_full": true,
+          "replay_already_applied": true,
+          "replay_status": 200,
+          "runtime_id": "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery",
+          "runtime_transaction": true,
+          "slot_after": 2,
+          "slot_before": 2,
+          "sorcery_points_after": 2,
+          "spell_consumers": [
+            "combat_engine.area_damage.v1",
+            "combat_engine.damage_heal.v1"
+          ],
+          "spell_transaction": true,
+          "target_hp_after": 95
+        },
+        "rollback_evidence": true,
+        "runtime_id": "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery",
+        "source_spell_runtime_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+        "typed_clause_ids": [
+          "component-override",
+          "payment-override"
+        ]
+      },
       "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list": {
         "character_cas": true,
         "choice_lifecycle": false,
@@ -33901,9 +33969,9 @@
     "compile_full": 94,
     "dm_assisted": 2,
     "draft": 408,
-    "game_usable": 85,
-    "isolated_runtime_validated": 85,
-    "registered_production_full": 83,
+    "game_usable": 86,
+    "isolated_runtime_validated": 86,
+    "registered_production_full": 84,
     "reviewed": 408,
     "runtime_preview_full": 94,
     "source_identified": 525

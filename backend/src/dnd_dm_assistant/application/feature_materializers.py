@@ -381,6 +381,11 @@ def _materialize_modifier(context: MaterializerContext) -> MaterializedBlock:
     ):
         if key in params:
             entry[key] = params[key]
+    if context.operator in {"override_spell_components", "override_spell_payment"}:
+        entry.update(dict(params))
+        entry["operator"] = context.operator
+        entry["context_kind"] = "spell_cast"
+        return MaterializedBlock("spell_context", entry)
     if (
         "value" not in entry
         and "value_source" not in entry

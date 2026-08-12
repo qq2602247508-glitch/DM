@@ -569,6 +569,7 @@ def materialize_runtime_definition(
         ]
     definition: dict[str, Any] = {
         "combat_start": {"modifiers": [], "defenses": [], "movement_modes": []},
+        "spell_context": [],
         "resources": {},
         "actions": {},
         "triggers": [],
@@ -625,6 +626,8 @@ def materialize_runtime_definition(
             section = "actions"
         if section == "combat_modifiers":
             definition["combat_start"]["modifiers"].append(entry)
+        elif section == "spell_context":
+            definition["spell_context"].append(entry)
         elif section == "combat_defenses":
             definition["combat_start"]["defenses"].append(entry)
             if operator == "zero_hp_intervention":

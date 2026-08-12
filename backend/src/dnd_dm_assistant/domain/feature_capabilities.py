@@ -645,9 +645,7 @@ def default_capability_catalog() -> CapabilityCatalog:
             consumer="spell_economy_service",
             producer="spell_cast_resolution",
             persisted_state="combat_action.spell_context",
-            status="production_partial",
-            limitations=("施法上下文 modifier 仍在 shadow 试点。",),
-            evidence=("spell_context_partial_contract",),
+            evidence=("test_typed_spell_context_payment_and_components",),
         ),
         _descriptor(
             "spell.context.range",
@@ -665,9 +663,7 @@ def default_capability_catalog() -> CapabilityCatalog:
             consumer="spell_economy_service",
             producer="spell_cast_resolution",
             persisted_state="combat_action.spell_context",
-            status="production_partial",
-            limitations=("替代法术位支付尚未完成全量生产闭环。",),
-            evidence=("spell_context_partial_contract",),
+            evidence=("test_typed_spell_context_payment_and_components",),
         ),
     ]
     return CapabilityCatalog(closed)

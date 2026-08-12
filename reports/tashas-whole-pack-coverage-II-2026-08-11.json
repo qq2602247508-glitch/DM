@@ -32,7 +32,7 @@
       "player_facing": 408,
       "total": 525
     },
-    "audit_fingerprint": "602a62db5e0028cd932941cbca41304a889ddd7ace1d73e39045fc6cb2b2cb7b",
+    "audit_fingerprint": "e185d82a51ac8ff9e03a9fd22a0b1116f77fb738e386bfc6519f87af63e260e8",
     "before_atom_counts": {
       "by_kind": {
         "character_option": 15,
@@ -1356,12 +1356,12 @@
     "authored_typed_ir": 95,
     "candidate_generated": 408,
     "compile_full": 94,
-    "compile_only": 9,
+    "compile_only": 8,
     "dm_assisted": 2,
     "draft_total": 408,
     "invalid": 0,
     "manual_authoring": 314,
-    "production_full": 83,
+    "production_full": 84,
     "reviewed_total": 408,
     "runtime_preview_full": 94,
     "template_matched": 94
@@ -1381,7 +1381,7 @@
     "gate_status": "partial",
     "manual_total": 254,
     "pack_id": "tashas-cauldron",
-    "production_full_total": 79,
+    "production_full_total": 80,
     "review_blocker_counts": {
       "reviewed_typed_mapping": 86,
       "unmatched_requires_review": 254
@@ -13414,7 +13414,7 @@
     "source_record_unclassified": 0
   },
   "status_counts": {
-    "compile_only": 9,
+    "compile_only": 8,
     "dm_assisted": 2,
     "dm_reference": 107,
     "duplicate_or_reprint": 0,
@@ -13422,7 +13422,7 @@
     "manual_authoring": 314,
     "non_instantiable": 10,
     "out_of_scope_with_reason": 0,
-    "production_full": 83
+    "production_full": 84
   },
   "status_layers": {
     "authored_typed_ir": 94,
@@ -13430,17 +13430,17 @@
     "compile_full": 94,
     "dm_assisted": 2,
     "draft": 408,
-    "game_usable": 85,
-    "isolated_runtime_validated": 85,
-    "registered_production_full": 83,
+    "game_usable": 86,
+    "isolated_runtime_validated": 86,
+    "registered_production_full": 84,
     "reviewed": 408,
     "runtime_preview_full": 94,
     "source_identified": 525
   },
   "usable_coverage": {
     "dm_assisted_rate": 0.004902,
-    "game_usable_rate": 0.208333,
+    "game_usable_rate": 0.210784,
     "manual_rate": 0.769608,
-    "production_full_rate": 0.203431
+    "production_full_rate": 0.205882
   }
 }

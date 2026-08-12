@@ -1,0 +1,90 @@
+{
+  "all_required_checks_passed": true,
+  "checks": {
+    "component_override_consumed": true,
+    "downstream_rollback": true,
+    "feature_compile_full": true,
+    "formal_database_unchanged": true,
+    "formal_registry_unchanged": true,
+    "generic_feature_context_consumer": true,
+    "name_branch_free": true,
+    "real_spell_preview_confirm_replay": true,
+    "replay_idempotent": true,
+    "selected_count": true,
+    "slot_replaced_not_spent": true,
+    "sorcery_payment_consumed": true,
+    "sorcery_points_cas_snapshot": true,
+    "spell_and_runtime_transactions": true,
+    "two_typed_context_clauses": true
+  },
+  "evidence_by_id": {
+    "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery": {
+      "feature_consumer_ids": [
+        "spell.context.v1"
+      ],
+      "feature_manual_decisions": {
+        "isolated_runtime_only": true,
+        "operator_mapping": "explicit_atom_mapping",
+        "unmodeled_source_terms": []
+      },
+      "feature_reviewed_fields": [
+        "feature_id",
+        "source_record_id",
+        "source_name",
+        "source_path",
+        "source_book",
+        "source_fingerprint",
+        "content_kind",
+        "class_name",
+        "subclass_name",
+        "level",
+        "source_completeness",
+        "clauses",
+        "required_inputs",
+        "runtime_boundary"
+      ],
+      "feature_runtime_fingerprint": "28bb84cd64838caef9b329fa4e43d077759b78c014b5f6451cf672791cd6169b",
+      "feature_source_fingerprint": "edc9b2cf480295475fe7a1452cc257465c1037f3a2dd01903d13df83701ae683",
+      "feature_source_path": "塔莎的万事坩埚/玩家选项/职业/术士（TCE）/畸变心智.html",
+      "feature_source_record_id": "e94f0c903dd025796d7a2d22",
+      "payment_evidence": {
+        "cast_spell_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+        "character_version_advanced": true,
+        "components_ignored": true,
+        "confirm_status": 200,
+        "feature_consumer_ids": [
+          "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery"
+        ],
+        "payment_cost": 1,
+        "payment_resource_key": "sorcery_points",
+        "preview_status": 200,
+        "production_runtime_full": true,
+        "replay_already_applied": true,
+        "replay_status": 200,
+        "runtime_id": "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery",
+        "runtime_transaction": true,
+        "slot_after": 2,
+        "slot_before": 2,
+        "sorcery_points_after": 2,
+        "spell_consumers": [
+          "combat_engine.area_damage.v1",
+          "combat_engine.damage_heal.v1"
+        ],
+        "spell_transaction": true,
+        "target_hp_after": 95
+      },
+      "rollback_evidence": true,
+      "runtime_id": "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery",
+      "source_spell_runtime_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+      "typed_clause_ids": [
+        "component-override",
+        "payment-override"
+      ]
+    }
+  },
+  "production_runtime_full_ids": [
+    "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery"
+  ],
+  "round_id": "round-21",
+  "schema_version": "content-ir-production-runtime-results-XXIII-1"
+}

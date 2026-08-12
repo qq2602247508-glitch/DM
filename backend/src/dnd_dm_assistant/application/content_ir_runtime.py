@@ -408,6 +408,68 @@ class ContentIRRuntimeService:
         return spell, character, runtime, self._runtime_blocks(runtime)
 
     @staticmethod
+    def _spell_context(
+        actor: Combatant,
+        spell: KnownSpell,
+    ) -> dict[str, Any]:
+        """Resolve typed spell-context modifiers from the actor snapshot.
+
+        The context predicate is data carried by the authored Feature IR.  A
+        spell must explicitly opt into the psionic context in its persisted
+        metadata; no spell or feature display name participates in dispatch.
+        """
+
+        metadata = dict(spell.metadata_json or {})
+        if spell.spell_level < 1 or metadata.get("psionic_spell") is not True:
+            return {}
+        feature_runtime = actor.snapshot_json.get("feature_runtime")
+        direct_context = (
+            feature_runtime.get("spell_context")
+            if isinstance(feature_runtime, Mapping)
+            else None
+        )
+        combat_start = feature_runtime.get("combat_start") if isinstance(feature_runtime, Mapping) else None
+        modifiers = combat_start.get("modifiers") if isinstance(combat_start, Mapping) else None
+        modifiers = [
+            *(direct_context if isinstance(direct_context, list) else []),
+            *(modifiers if isinstance(modifiers, list) else []),
+        ]
+        components: list[dict[str, Any]] = []
+        payments: list[dict[str, Any]] = []
+        for modifier in modifiers:
+            if not isinstance(modifier, Mapping):
+                continue
+            parameters = modifier.get("parameters")
+            parameters = parameters if isinstance(parameters, Mapping) else modifier
+            if _text(parameters.get("applies_when")) != "psionic_spell":
+                continue
+            operator = _text(modifier.get("operator") or parameters.get("operator"))
+            if operator == "override_spell_components":
+                components.append(dict(parameters))
+            elif operator == "override_spell_payment":
+                payments.append(dict(parameters))
+        if len(payments) > 1:
+            raise ValueError("spell runtime has multiple typed payment overrides")
+        return {
+            "component_override": components[0] if components else None,
+            "payment_override": payments[0] if payments else None,
+            "source_feature_ids": sorted(
+                {
+                    _text(modifier.get("feature_id"))
+                    for modifier in modifiers
+                    if isinstance(modifier, Mapping)
+                    and _text(modifier.get("feature_id"))
+                    and _text(
+                        (modifier.get("parameters") or modifier).get("applies_when")
+                        if isinstance(modifier.get("parameters") or modifier, Mapping)
+                        else ""
+                    )
+                    == "psionic_spell"
+                }
+            ),
+        }
+
+    @staticmethod
     def _feature_runtime(
         session: Session,
         campaign_id: str,
@@ -860,6 +922,10 @@ class ContentIRRuntimeService:
     def _preview_spell(self, campaign_id: str, data: dict[str, Any]) -> dict[str, Any]:
         with Session(self.engine) as session:
             spell, character, runtime, blocks = self._spell_runtime(session, campaign_id, data)
+            actor = session.get(Combatant, _text(data.get("actor_combatant_id")))
+            if actor is None or actor.combat_id != _text(data.get("combat_id")):
+                raise StateNotFoundError("content runtime spell actor not found")
+            spell_context = self._spell_context(actor, spell)
             execution_data = {
                 **data,
                 "runtime_level": runtime.get("level"),
@@ -888,6 +954,7 @@ class ContentIRRuntimeService:
                 "concentration": bool(data.get("concentration")),
                 "free_cast": bool(data.get("free_cast")),
                 "recovery_slot_level": data.get("recovery_slot_level"),
+                "spell_context": spell_context,
                 "preview_token": None,
                 "idempotency_key": None,
             }
@@ -909,6 +976,7 @@ class ContentIRRuntimeService:
                     "requires_cas": True,
                     "requires_idempotency": True,
                     "caster_level": int(character.level or 0),
+                    "spell_context": spell_context,
                     "consumers": [str(item["consumer_id"]) for item in consumers],
                     "area_batch": len(commands or []) > 1,
                 },
@@ -1234,6 +1302,10 @@ class ContentIRRuntimeService:
             _spell, character, runtime, blocks = self._spell_runtime(
                 session, campaign_id, data
             )
+            actor = session.get(Combatant, _text(data.get("actor_combatant_id")))
+            if actor is None or actor.combat_id != _text(data.get("combat_id")):
+                raise StateNotFoundError("content runtime spell actor not found")
+            spell_context = self._spell_context(actor, _spell)
         spell_key = f"{key}:spell"
         cast_data = {
             "character_id": data["character_id"],
@@ -1245,6 +1317,7 @@ class ContentIRRuntimeService:
             "concentration": data.get("concentration", False),
             "free_cast": data.get("free_cast", False),
             "recovery_slot_level": data.get("recovery_slot_level"),
+            "spell_context": spell_context,
             "preview_token": cast_preview["preview_token"],
             "idempotency_key": spell_key,
         }

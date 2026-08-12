@@ -815,7 +815,7 @@
       "atom_id": "tashas-cauldron:atom:e94f0c903dd025796d7a2d22:psionic-sorcery:003",
       "content_id": "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "edc9b2cf480295475fe7a1452cc257465c1037f3a2dd01903d13df83701ae683",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery"

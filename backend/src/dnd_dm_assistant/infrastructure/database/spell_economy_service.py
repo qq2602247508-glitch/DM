@@ -510,6 +510,46 @@ class SpellEconomyService:
                     raise ValueError(warning)
             if data["slot_level"] < spell.spell_level:
                 raise ValueError("slot level is below spell level")
+            raw_spell_context = data.get("spell_context")
+            spell_context = (
+                dict(raw_spell_context)
+                if isinstance(raw_spell_context, dict)
+                else {}
+            )
+            component_override = spell_context.get("component_override")
+            component_override = (
+                dict(component_override)
+                if isinstance(component_override, dict)
+                else None
+            )
+            payment_override = spell_context.get("payment_override")
+            payment_override = (
+                dict(payment_override)
+                if isinstance(payment_override, dict)
+                else None
+            )
+            payment_resource_key = ""
+            payment_cost = 0
+            payment_before = 0
+            if payment_override is not None:
+                if (
+                    spell.spell_level < 1
+                    or data["ritual"]
+                    or data.get("free_cast")
+                    or str(payment_override.get("operation") or "")
+                    != "replace_with_sorcery_points"
+                    or str(payment_override.get("payment_kind") or "") != "spell_slot"
+                ):
+                    raise ValueError("typed spell payment override is not applicable")
+                payment_resource_key = str(payment_override.get("resource_key") or "").strip()
+                payment_cost = int(data["slot_level"])
+                if not payment_resource_key or payment_cost < 1:
+                    raise ValueError("typed spell payment override lacks a resource cost")
+                raw_resource = c.resources.get(payment_resource_key)
+                resource = raw_resource if isinstance(raw_resource, dict) else {}
+                payment_before = int(resource.get("current") or 0)
+                if payment_before < payment_cost:
+                    raise ValueError("typed spell payment resource unavailable")
             free_cast_key = ""
             free_cast_cost = 0
             free_cast_before = 0
@@ -540,14 +580,25 @@ class SpellEconomyService:
                 free_cast_before = int(resource.get("current") or 0)
                 if free_cast_before < free_cast_cost:
                     raise ValueError("free cast resource unavailable")
-            if not data["ritual"] and spell.spell_level and not data["material_available"]:
+            if (
+                not data["ritual"]
+                and spell.spell_level
+                and not data["material_available"]
+                and component_override is None
+            ):
                 raise ValueError("required material is unavailable")
             raw_slots = c.spellcasting.get("slots", {})
             slots = dict(raw_slots) if isinstance(raw_slots, dict) else {}
             key = str(data["slot_level"])
             before = slots.get(key, {})
             current = int(before.get("current", 0)) if isinstance(before, dict) else 0
-            if spell.spell_level and not data["ritual"] and not data.get("free_cast") and current < 1:
+            if (
+                spell.spell_level
+                and not data["ritual"]
+                and not data.get("free_cast")
+                and payment_override is None
+                and current < 1
+            ):
                 raise ValueError("spell slot unavailable")
             result = {
                 "character_id": c.id,
@@ -556,7 +607,12 @@ class SpellEconomyService:
                 "ritual": data["ritual"],
                 "slot_before": current,
                 "slot_after": current
-                if data["ritual"] or spell.spell_level == 0 or data.get("free_cast")
+                if (
+                    data["ritual"]
+                    or spell.spell_level == 0
+                    or data.get("free_cast")
+                    or payment_override is not None
+                )
                 else current - 1,
                 "free_cast": bool(data.get("free_cast")),
                 "free_cast_resource_key": free_cast_key or None,
@@ -564,6 +620,21 @@ class SpellEconomyService:
                 "free_cast_after": (
                     free_cast_before - free_cast_cost if free_cast_key else free_cast_before
                 ),
+                "payment_override": payment_override is not None,
+                "payment_resource_key": payment_resource_key or None,
+                "payment_cost": payment_cost,
+                "payment_before": payment_before,
+                "spell_context": {
+                    "component_override": component_override,
+                    "components_ignored": component_override is not None,
+                    "payment_override": payment_override,
+                    "payment_resource_key": payment_resource_key or None,
+                    "payment_cost": payment_cost,
+                    "payment_before": payment_before,
+                    "payment_after": payment_before - payment_cost
+                    if payment_override is not None
+                    else payment_before,
+                },
                 "concentration": data["concentration"],
                 "focus_equipment_id": focus_equipment.id if focus_equipment else None,
                 "rule_reference": RULE,
@@ -605,7 +676,25 @@ class SpellEconomyService:
                 "resources": dict(c.resources or {}),
             }
             before_concentration = dict(c.resources or {}).get("concentration")
-            if preview.get("free_cast"):
+            if preview.get("payment_override"):
+                resource_key = str(preview.get("payment_resource_key") or "").strip()
+                cost = int(preview.get("payment_cost") or 0)
+                resources = dict(c.resources or {})
+                raw_resource = resources.get(resource_key)
+                resource = dict(raw_resource) if isinstance(raw_resource, dict) else {}
+                before = int(resource.get("current") or 0)
+                expected_before = int(preview.get("payment_before") or 0)
+                if (
+                    not resource_key
+                    or cost < 1
+                    or before != expected_before
+                    or before < cost
+                ):
+                    raise VersionConflict("spell resource", resource_key, expected_before, before)
+                resource["current"] = before - cost
+                resources[resource_key] = resource
+                c.resources = resources
+            elif preview.get("free_cast"):
                 resource_key = str(preview.get("free_cast_resource_key") or "").strip()
                 resources = dict(c.resources or {})
                 raw_resource = resources.get(resource_key)

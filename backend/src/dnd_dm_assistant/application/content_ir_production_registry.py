@@ -91,6 +91,17 @@ _CONSUMERS: dict[str, dict[str, Any]] = {
         "idempotency_scope": "campaign_content_ir_and_feature_window",
         "snapshot_effects": ("feature_window", "resources", "combat_action", "audit"),
     },
+    "spell.context.v1": {
+        "content_kind": "feature",
+        "runtime_schema_version": "feature-runtime-1",
+        "clause_types": ("spell_context",),
+        "required_fields": ("actor_combatant_id", "actor_version", "runtime_id"),
+        "required_services": ("spell_economy", "combat_engine.feature_runtime"),
+        "transaction_boundary": "spell_cast_with_context_and_rollback_boundary",
+        "cas_entities": ("character", "actor_combatant", "spell_resource"),
+        "idempotency_scope": "campaign_content_ir_and_spell_cast",
+        "snapshot_effects": ("spell_context", "resources", "spell_slots", "audit"),
+    },
     "advancement_service.character_growth.v1": {
         "content_kind": "advancement",
         "runtime_schema_version": "feature-runtime-1",
@@ -283,6 +294,13 @@ def resolve_production_consumers(
     if content_kind == "feature":
         if runtime_schema_version not in {"feature-runtime-1", ""}:
             raise ValueError("unsupported Content IR feature runtime schema")
+        if blocks.get("spell_context"):
+            return (
+                dict(
+                    _CONSUMERS["spell.context.v1"],
+                    consumer_id="spell.context.v1",
+                ),
+            )
         if blocks.get("feature_event_window"):
             return (
                 dict(
