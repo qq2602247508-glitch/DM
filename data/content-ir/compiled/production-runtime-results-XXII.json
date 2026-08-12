@@ -1,0 +1,138 @@
+{
+  "all_required_checks_passed": true,
+  "checks": {
+    "cantrip_scaling_levels": true,
+    "compile_full": true,
+    "generic_consumers_present": true,
+    "operation_transaction_persisted": true,
+    "preview_confirm_replay": true,
+    "production_runtime_full": true,
+    "replay_idempotent": true,
+    "rollback_restored_character": true,
+    "save_success_no_damage": true,
+    "selected_count": true,
+    "source_evidence_has_full_clause": true,
+    "source_provenance_complete": true,
+    "target_cas_rejected": true,
+    "two_area_targets_damage": true,
+    "typed_area_save_damage": true
+  },
+  "evidence_by_id": {
+    "tashas-cauldron:spell:eec6bd94eb83a351fb987de2": {
+      "manual_decisions": {
+        "save_success": "按 source text 显式记录 half 或 no damage branch",
+        "targeting": "target_selection 与 area clause 共同定义目标集合"
+      },
+      "production": {
+        "confirm_status": 200,
+        "confirmed_second_target_hp": 92,
+        "confirmed_target_hp": 92,
+        "consumer_ids": [
+          "combat_engine.area_damage.v1",
+          "combat_engine.damage_heal.v1",
+          "spell.cantrip_scaling.v1"
+        ],
+        "level": 5,
+        "operation_transaction": true,
+        "pack_id": "tashas-cauldron",
+        "preview_amounts": [
+          8,
+          8
+        ],
+        "preview_status": 200,
+        "production_runtime_full": true,
+        "replay_already_applied": true,
+        "replay_status": 200,
+        "runtime_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+        "second_target_version_advanced": true,
+        "stale_target_cas_status": 409,
+        "target_version_advanced": true
+      },
+      "reviewed_fields": [
+        "schema_version",
+        "spell_id",
+        "name",
+        "pack_id",
+        "pack_version",
+        "namespace",
+        "ruleset_version",
+        "source_record_id",
+        "source_path",
+        "source_book",
+        "source_fingerprint",
+        "source_trust",
+        "level",
+        "school",
+        "casting_time",
+        "range",
+        "target",
+        "components",
+        "duration",
+        "concentration",
+        "clauses",
+        "evidence"
+      ],
+      "runtime_definition_fingerprint": "40c434b24f4651e87e3c8c69fad12c99e72ce166420e12a901ceb4008bd4bba7",
+      "runtime_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+      "runtime_schema_version": "spell-runtime-1",
+      "scaling_previews": [
+        {
+          "character_level": 1,
+          "consumer_ids": [
+            "combat_engine.area_damage.v1",
+            "combat_engine.damage_heal.v1",
+            "spell.cantrip_scaling.v1"
+          ],
+          "reported_total": 4,
+          "resolved_amounts": [
+            4
+          ]
+        },
+        {
+          "character_level": 5,
+          "consumer_ids": [
+            "combat_engine.area_damage.v1",
+            "combat_engine.damage_heal.v1",
+            "spell.cantrip_scaling.v1"
+          ],
+          "reported_total": 8,
+          "resolved_amounts": [
+            8
+          ]
+        },
+        {
+          "character_level": 11,
+          "consumer_ids": [
+            "combat_engine.area_damage.v1",
+            "combat_engine.damage_heal.v1",
+            "spell.cantrip_scaling.v1"
+          ],
+          "reported_total": 12,
+          "resolved_amounts": [
+            12
+          ]
+        },
+        {
+          "character_level": 17,
+          "consumer_ids": [
+            "combat_engine.area_damage.v1",
+            "combat_engine.damage_heal.v1",
+            "spell.cantrip_scaling.v1"
+          ],
+          "reported_total": 16,
+          "resolved_amounts": [
+            16
+          ]
+        }
+      ],
+      "source_fingerprint": "1dc4562d4b497156c7f5e46fdb7f06ff8461fcb9f8109752b03aac254d0a8bd6",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
+      "source_record_id": "eec6bd94eb83a351fb987de2"
+    }
+  },
+  "production_runtime_full_ids": [
+    "tashas-cauldron:spell:eec6bd94eb83a351fb987de2"
+  ],
+  "round_id": "round-20",
+  "schema_version": "content-ir-production-runtime-results-XXII-1"
+}

@@ -36,6 +36,17 @@ _CONSUMERS: dict[str, dict[str, Any]] = {
         "idempotency_scope": "campaign_content_ir_and_each_combat_action",
         "snapshot_effects": ("hp", "temporary_hp", "conditions", "combatant_versions", "audit"),
     },
+    "spell.cantrip_scaling.v1": {
+        "content_kind": "spell",
+        "runtime_schema_version": "spell-runtime-1",
+        "clause_types": ("upcast", "damage"),
+        "required_fields": ("caster_level", "resolution_total"),
+        "required_services": ("content_ir_runtime.spell_scaling",),
+        "transaction_boundary": "spell_cast_with_combat_rollback_boundary",
+        "cas_entities": ("character", "actor_combatant", "target_combatants"),
+        "idempotency_scope": "campaign_content_ir_and_spell_cast",
+        "snapshot_effects": ("hp", "combatant_versions", "audit"),
+    },
     "combat_engine.condition_lifecycle.v1": {
         "content_kind": "spell_or_feature",
         "runtime_schema_version": "spell-runtime-1|feature-runtime-1",
@@ -252,6 +263,13 @@ def resolve_production_consumers(
             if not _has_effect(blocks, "damage"):
                 raise ValueError("area runtime requires a typed damage effect")
             resolved.append("combat_engine.area_damage.v1")
+        if any(
+            isinstance(_parameters(block).get("progression"), list)
+            for block in blocks.get("upcast", [])
+        ):
+            if not _has_effect(blocks, "damage", "healing"):
+                raise ValueError("spell scaling requires a typed damage or healing effect")
+            resolved.append("spell.cantrip_scaling.v1")
         if blocks.get("saving_throw") and _has_effect(blocks, "damage"):
             resolved.append("combat_engine.damage_heal.v1")
         if blocks.get("concentration"):

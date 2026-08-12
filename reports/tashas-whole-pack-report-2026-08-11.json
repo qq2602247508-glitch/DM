@@ -3,7 +3,7 @@
     "authored_typed_ir": 95,
     "candidate_generated": 408,
     "compile_full": 94,
-    "compile_only": 10,
+    "compile_only": 9,
     "consumer_unlocks": {
       "existing_generic_consumer": {
         "content_ids": [
@@ -131,6 +131,7 @@
           "tashas-cauldron:spell:0036d7dc058c496ef08fe340",
           "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac",
           "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+          "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
           "tashas-cauldron:spell:ef0f92b557fb48d421d462e1"
         ],
         "name_branch_count": 0,
@@ -139,16 +140,16 @@
     },
     "content_atom_total": 525,
     "content_id_funnel": {
-      "compile_only": 10,
+      "compile_only": 9,
       "dm_assisted": 2,
       "matched_typed_ir": 95,
-      "production_full": 83,
+      "production_full": 84,
       "relation_holds": true
     },
     "current_project_compile_only": 35,
     "current_project_compiled_unique": 111,
-    "current_project_production_full": 182,
-    "current_project_production_registry_fingerprint": "b2cc8a2c1f4a622bbd66d0365247e3906941577b63a83eac66b2fde6f16cee29",
+    "current_project_production_full": 183,
+    "current_project_production_registry_fingerprint": "859365795890e9eeca5e21fb467237095af9c496074f22a3d60437cfa56c8b30",
     "dm_assisted": 2,
     "dm_reference": 107,
     "draft_total": 408,
@@ -165,7 +166,7 @@
       },
       "total": 499
     },
-    "game_usable": 84,
+    "game_usable": 85,
     "invalid_source": 0,
     "item_ir": {
       "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
@@ -237,7 +238,7 @@
       "spell": 21,
       "subclass_feature": 232
     },
-    "production_full": 82,
+    "production_full": 83,
     "reviewed_total": 408,
     "runtime_preview_full": 94,
     "schema_version": "tashas-whole-pack-migration-1",
@@ -247,7 +248,7 @@
     "source_record_total": 144,
     "source_record_unclassified": 0,
     "status_counts": {
-      "compile_only": 10,
+      "compile_only": 9,
       "dm_assisted": 2,
       "dm_reference": 107,
       "duplicate_or_reprint": 0,
@@ -255,7 +256,7 @@
       "manual_authoring": 314,
       "non_instantiable": 10,
       "out_of_scope_with_reason": 0,
-      "production_full": 82
+      "production_full": 83
     },
     "template_matched": 94
   },
@@ -283,7 +284,7 @@
     "authored_typed_ir": 95,
     "candidate_generated": 408,
     "compile_full": 94,
-    "compile_only": 10,
+    "compile_only": 9,
     "consumer_unlocks": {
       "existing_generic_consumer": {
         "content_ids": [
@@ -411,6 +412,7 @@
           "tashas-cauldron:spell:0036d7dc058c496ef08fe340",
           "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac",
           "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+          "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
           "tashas-cauldron:spell:ef0f92b557fb48d421d462e1"
         ],
         "name_branch_count": 0,
@@ -419,16 +421,16 @@
     },
     "content_atom_total": 525,
     "content_id_funnel": {
-      "compile_only": 10,
+      "compile_only": 9,
       "dm_assisted": 2,
       "matched_typed_ir": 95,
-      "production_full": 83,
+      "production_full": 84,
       "relation_holds": true
     },
     "current_project_compile_only": 35,
     "current_project_compiled_unique": 111,
-    "current_project_production_full": 182,
-    "current_project_production_registry_fingerprint": "b2cc8a2c1f4a622bbd66d0365247e3906941577b63a83eac66b2fde6f16cee29",
+    "current_project_production_full": 183,
+    "current_project_production_registry_fingerprint": "859365795890e9eeca5e21fb467237095af9c496074f22a3d60437cfa56c8b30",
     "dm_assisted": 2,
     "dm_reference": 107,
     "draft_total": 408,
@@ -445,7 +447,7 @@
       },
       "total": 499
     },
-    "game_usable": 84,
+    "game_usable": 85,
     "invalid_source": 0,
     "item_ir": {
       "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
@@ -517,7 +519,7 @@
       "spell": 21,
       "subclass_feature": 232
     },
-    "production_full": 82,
+    "production_full": 83,
     "reviewed_total": 408,
     "runtime_preview_full": 94,
     "schema_version": "tashas-whole-pack-migration-1",
@@ -527,7 +529,7 @@
     "source_record_total": 144,
     "source_record_unclassified": 0,
     "status_counts": {
-      "compile_only": 10,
+      "compile_only": 9,
       "dm_assisted": 2,
       "dm_reference": 107,
       "duplicate_or_reprint": 0,
@@ -535,7 +537,7 @@
       "manual_authoring": 314,
       "non_instantiable": 10,
       "out_of_scope_with_reason": 0,
-      "production_full": 82
+      "production_full": 83
     },
     "template_matched": 94
   },
@@ -26489,7 +26491,7 @@
   },
   "runtime": {
     "atom_dm_assisted_count": 2,
-    "atom_production_full_count": 82,
+    "atom_production_full_count": 83,
     "dm_assisted_atoms": [
       "tashas-cauldron:atom:0036d7dc058c496ef08fe340:a27f6b57964b:000",
       "tashas-cauldron:atom:867896faa26eb295d846a574:glorious-defense:010"
@@ -26621,13 +26623,14 @@
           "tashas-cauldron:spell:0036d7dc058c496ef08fe340",
           "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac",
           "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+          "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
           "tashas-cauldron:spell:ef0f92b557fb48d421d462e1"
         ],
         "name_branch_count": 0,
         "new_consumer_count": 0
       }
     },
-    "matched_atom_production_runtime_full_count": 85,
+    "matched_atom_production_runtime_full_count": 86,
     "name_branch_count": 0,
     "new_consumer_count": 0,
     "pack_id": "tashas-cauldron",
@@ -26707,6 +26710,7 @@
       "tashas-cauldron:atom:e94f0c903dd025796d7a2d22:psionic-spells:001",
       "tashas-cauldron:atom:e94f0c903dd025796d7a2d22:telepathic-speech:002",
       "tashas-cauldron:atom:ee901996f0fcc3e576657e06:clockwork-magic:001",
+      "tashas-cauldron:atom:eec6bd94eb83a351fb987de2:a306ecfb0c3f:000",
       "tashas-cauldron:atom:ef0f92b557fb48d421d462e1:0a329ff7f32b:000",
       "tashas-cauldron:atom:f8e42149abd618bfa3d0eac1:swarmkeeper-magic:002",
       "tashas-cauldron:atom:f8e42149abd618bfa3d0eac1:writhing-tide:003",
@@ -26715,7 +26719,7 @@
       "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:tool-proficiency:001",
       "tashas-cauldron:authored-subclause:12139219bf7e575f9cde019c:0d3fc31f44e0"
     ],
-    "registry_production_runtime_full_count": 125,
+    "registry_production_runtime_full_count": 126,
     "runtime_evidence": {
       "content.tashas-cauldron.feature.alchemist-chemical-mastery": {
         "confirm_status": 200,
@@ -32380,6 +32384,118 @@
         "replay_status": 200,
         "runtime_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea"
       },
+      "tashas-cauldron:spell:eec6bd94eb83a351fb987de2": {
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-XXII.json",
+        "manual_decisions": {
+          "save_success": "按 source text 显式记录 half 或 no damage branch",
+          "targeting": "target_selection 与 area clause 共同定义目标集合"
+        },
+        "production": {
+          "confirm_status": 200,
+          "confirmed_second_target_hp": 92,
+          "confirmed_target_hp": 92,
+          "consumer_ids": [
+            "combat_engine.area_damage.v1",
+            "combat_engine.damage_heal.v1",
+            "spell.cantrip_scaling.v1"
+          ],
+          "level": 5,
+          "operation_transaction": true,
+          "pack_id": "tashas-cauldron",
+          "preview_amounts": [
+            8,
+            8
+          ],
+          "preview_status": 200,
+          "production_runtime_full": true,
+          "replay_already_applied": true,
+          "replay_status": 200,
+          "runtime_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+          "second_target_version_advanced": true,
+          "stale_target_cas_status": 409,
+          "target_version_advanced": true
+        },
+        "reviewed_fields": [
+          "schema_version",
+          "spell_id",
+          "name",
+          "pack_id",
+          "pack_version",
+          "namespace",
+          "ruleset_version",
+          "source_record_id",
+          "source_path",
+          "source_book",
+          "source_fingerprint",
+          "source_trust",
+          "level",
+          "school",
+          "casting_time",
+          "range",
+          "target",
+          "components",
+          "duration",
+          "concentration",
+          "clauses",
+          "evidence"
+        ],
+        "runtime_definition_fingerprint": "40c434b24f4651e87e3c8c69fad12c99e72ce166420e12a901ceb4008bd4bba7",
+        "runtime_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+        "runtime_schema_version": "spell-runtime-1",
+        "scaling_previews": [
+          {
+            "character_level": 1,
+            "consumer_ids": [
+              "combat_engine.area_damage.v1",
+              "combat_engine.damage_heal.v1",
+              "spell.cantrip_scaling.v1"
+            ],
+            "reported_total": 4,
+            "resolved_amounts": [
+              4
+            ]
+          },
+          {
+            "character_level": 5,
+            "consumer_ids": [
+              "combat_engine.area_damage.v1",
+              "combat_engine.damage_heal.v1",
+              "spell.cantrip_scaling.v1"
+            ],
+            "reported_total": 8,
+            "resolved_amounts": [
+              8
+            ]
+          },
+          {
+            "character_level": 11,
+            "consumer_ids": [
+              "combat_engine.area_damage.v1",
+              "combat_engine.damage_heal.v1",
+              "spell.cantrip_scaling.v1"
+            ],
+            "reported_total": 12,
+            "resolved_amounts": [
+              12
+            ]
+          },
+          {
+            "character_level": 17,
+            "consumer_ids": [
+              "combat_engine.area_damage.v1",
+              "combat_engine.damage_heal.v1",
+              "spell.cantrip_scaling.v1"
+            ],
+            "reported_total": 16,
+            "resolved_amounts": [
+              16
+            ]
+          }
+        ],
+        "source_fingerprint": "1dc4562d4b497156c7f5e46fdb7f06ff8461fcb9f8109752b03aac254d0a8bd6",
+        "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
+        "source_record_id": "eec6bd94eb83a351fb987de2"
+      },
       "tashas-cauldron:spell:ef0f92b557fb48d421d462e1": {
         "confirm_status": 200,
         "evidence_path": "data/content-ir/compiled/production-runtime-results-III.json",
@@ -33549,7 +33665,7 @@
         "instantiable": true,
         "level": null,
         "localized_name": "剑刃爆发",
-        "migration_status": "compile_only",
+        "migration_status": "production_full",
         "name": "剑刃爆发",
         "officiality": "unknown",
         "parent_atom_id": null,
@@ -33578,10 +33694,10 @@
           "compile_full": true,
           "dm_assisted": false,
           "draft": true,
-          "game_usable": false,
-          "highest_status": "runtime_preview_full",
-          "isolated_runtime_validated": false,
-          "registered_production_full": false,
+          "game_usable": true,
+          "highest_status": "game_usable",
+          "isolated_runtime_validated": true,
+          "registered_production_full": true,
           "reviewed": true,
           "runtime_preview_full": true,
           "source_identified": true
@@ -33737,10 +33853,10 @@
     "pack_id": "tashas-cauldron",
     "schema_version": "tashas-spell-ir-report-1",
     "status_counts": {
-      "compile_only": 4,
+      "compile_only": 3,
       "dm_assisted": 1,
       "manual_authoring": 13,
-      "production_full": 3
+      "production_full": 4
     },
     "typed_atom_total": 8
   },
@@ -33757,6 +33873,7 @@
       "tashas-cauldron:atom:0036d7dc058c496ef08fe340:a27f6b57964b:000",
       "tashas-cauldron:atom:7947fb03852a7bc77d69e3ac:be0996c2cd7c:000",
       "tashas-cauldron:atom:bef5ef39397ea7aa8a0856ea:1d00c9156655:000",
+      "tashas-cauldron:atom:eec6bd94eb83a351fb987de2:a306ecfb0c3f:000",
       "tashas-cauldron:atom:ef0f92b557fb48d421d462e1:0a329ff7f32b:000"
     ],
     "schema_version": "tashas-spell-runtime-validation-1",
@@ -33784,9 +33901,9 @@
     "compile_full": 94,
     "dm_assisted": 2,
     "draft": 408,
-    "game_usable": 84,
-    "isolated_runtime_validated": 84,
-    "registered_production_full": 82,
+    "game_usable": 85,
+    "isolated_runtime_validated": 85,
+    "registered_production_full": 83,
     "reviewed": 408,
     "runtime_preview_full": 94,
     "source_identified": 525

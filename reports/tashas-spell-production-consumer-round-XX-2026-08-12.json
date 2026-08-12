@@ -1,0 +1,79 @@
+{
+  "after": {
+    "consumer_unlocks": {
+      "combat_engine.area_damage.v1": 1,
+      "combat_engine.damage_heal.v1": 1,
+      "spell.cantrip_scaling.v1": 1
+    },
+    "selected_production_runtime_full": 1
+  },
+  "all_required_checks_passed": true,
+  "baseline": {
+    "project_production_full": 182,
+    "tashas_compile_only": 10,
+    "tashas_game_usable": 84,
+    "tashas_production_full": 82
+  },
+  "checks": {
+    "cantrip_scaling_levels": true,
+    "compile_full": true,
+    "generic_consumers_present": true,
+    "operation_transaction_persisted": true,
+    "preview_confirm_replay": true,
+    "production_runtime_full": true,
+    "replay_idempotent": true,
+    "rollback_restored_character": true,
+    "save_success_no_damage": true,
+    "selected_count": true,
+    "source_evidence_has_full_clause": true,
+    "source_provenance_complete": true,
+    "target_cas_rejected": true,
+    "two_area_targets_damage": true,
+    "typed_area_save_damage": true
+  },
+  "formal_database_written": false,
+  "formal_registry_written": false,
+  "name_branch_count": 0,
+  "production_runtime_full_ids": [
+    "tashas-cauldron:spell:eec6bd94eb83a351fb987de2"
+  ],
+  "round_id": "round-20",
+  "schema_version": "tashas-spell-production-consumer-round-XX-1",
+  "selected_cluster": "spell.area_saving_throw_damage_cantrip_scaling",
+  "selected_content_ids": [
+    "tashas-cauldron:spell:eec6bd94eb83a351fb987de2"
+  ],
+  "source_review": {
+    "manual_decisions": {
+      "save_success": "按 source text 显式记录 half 或 no damage branch",
+      "targeting": "target_selection 与 area clause 共同定义目标集合"
+    },
+    "reviewed_fields": [
+      "schema_version",
+      "spell_id",
+      "name",
+      "pack_id",
+      "pack_version",
+      "namespace",
+      "ruleset_version",
+      "source_record_id",
+      "source_path",
+      "source_book",
+      "source_fingerprint",
+      "source_trust",
+      "level",
+      "school",
+      "casting_time",
+      "range",
+      "target",
+      "components",
+      "duration",
+      "concentration",
+      "clauses",
+      "evidence"
+    ],
+    "source_fingerprint": "1dc4562d4b497156c7f5e46fdb7f06ff8461fcb9f8109752b03aac254d0a8bd6",
+    "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
+    "source_record_id": "eec6bd94eb83a351fb987de2"
+  }
+}

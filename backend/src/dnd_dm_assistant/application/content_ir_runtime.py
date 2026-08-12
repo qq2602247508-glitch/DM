@@ -641,11 +641,34 @@ class ContentIRRuntimeService:
         if bounds is not None and upcast:
             slot_level = int(data.get("slot_level") or 0)
             source_level = int(data.get("runtime_level") or slot_level)
-            per_slot = int(upcast.get("per_slot") or 1)
-            delta = max(0, slot_level - source_level)
-            increment = cls._roll_bounds(upcast.get("increments"))
-            if increment is not None:
-                bounds = (bounds[0] + delta * per_slot * increment[0], bounds[1] + delta * per_slot * increment[1])
+            progression = upcast.get("progression")
+            if source_level == 0 and isinstance(progression, list):
+                caster_level = int(data.get("caster_level") or 0)
+                selected_expression: str | None = None
+                selected_level = 0
+                for step in progression:
+                    if not isinstance(step, Mapping):
+                        continue
+                    try:
+                        threshold = int(step.get("character_level") or 0)
+                    except (TypeError, ValueError):
+                        continue
+                    expression_value = _text(step.get("expression"))
+                    if threshold > selected_level and threshold <= caster_level and expression_value:
+                        selected_level = threshold
+                        selected_expression = expression_value
+                scaled_bounds = cls._roll_bounds(selected_expression)
+                if scaled_bounds is not None:
+                    bounds = scaled_bounds
+            else:
+                per_slot = int(upcast.get("per_slot") or 1)
+                delta = max(0, slot_level - source_level)
+                increment = cls._roll_bounds(upcast.get("increments"))
+                if increment is not None:
+                    bounds = (
+                        bounds[0] + delta * per_slot * increment[0],
+                        bounds[1] + delta * per_slot * increment[1],
+                    )
         value = int(amount)
         if bounds is not None and not bounds[0] <= value <= bounds[1]:
             kind = "healing" if healing else "damage"
@@ -837,7 +860,11 @@ class ContentIRRuntimeService:
     def _preview_spell(self, campaign_id: str, data: dict[str, Any]) -> dict[str, Any]:
         with Session(self.engine) as session:
             spell, character, runtime, blocks = self._spell_runtime(session, campaign_id, data)
-            execution_data = {**data, "runtime_level": runtime.get("level")}
+            execution_data = {
+                **data,
+                "runtime_level": runtime.get("level"),
+                "caster_level": int(character.level or 0),
+            }
             consumers = resolve_production_consumers(
                 content_kind="spell",
                 runtime_schema_version=str(runtime.get("runtime_schema_version") or ""),
@@ -881,6 +908,7 @@ class ContentIRRuntimeService:
                     "requires_resolution_input": commands is not None,
                     "requires_cas": True,
                     "requires_idempotency": True,
+                    "caster_level": int(character.level or 0),
                     "consumers": [str(item["consumer_id"]) for item in consumers],
                     "area_batch": len(commands or []) > 1,
                 },
@@ -1203,7 +1231,7 @@ class ContentIRRuntimeService:
 
         cast_preview = preview["spell_preview"]
         with Session(self.engine) as session:
-            _spell, _character, runtime, blocks = self._spell_runtime(
+            _spell, character, runtime, blocks = self._spell_runtime(
                 session, campaign_id, data
             )
         spell_key = f"{key}:spell"
@@ -1223,7 +1251,11 @@ class ContentIRRuntimeService:
         spell_done = self.spells.spell_confirm(campaign_id, cast_data)
         expected_character_version = int(spell_done.get("character_version_after") or int(data["character_version"]) + 1)
         try:
-            execution_data = {**data, "runtime_level": runtime.get("level")}
+            execution_data = {
+                **data,
+                "runtime_level": runtime.get("level"),
+                "caster_level": int(character.level or 0),
+            }
             commands = self._spell_commands(execution_data, blocks)
             if commands is not None:
                 if len(commands) == 1:
