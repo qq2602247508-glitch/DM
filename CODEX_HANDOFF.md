@@ -8,7 +8,7 @@
 - 当前权威 database fingerprint `f3abdcf57b0d71888f085ca081511df4f4e23f100066b402d49d769089fa6aad`，formal registry fingerprint `f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b`，integrations manifest `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`，ollama `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`。历史 Round XXVI receipt 的 database 字符串旧一位，validator 已并列记录，未修改历史 receipt。
 - 证据入口：`scripts/validate-tashas-production-reconciliation-round-XXV.py`、`backend/tests/test_tashas_production_reconciliation_round_XXV.py`、`reports/tashas-production-reconciliation-round-XXV-2026-08-12.json`、`docs/tashas-production-reconciliation-round-XXV-2026-08-12.md`。
 - Round XXV 已完成验证；分离提交、push 与 receipt 更新随后完成，然后继续下一个 source-complete generic consumer。
-- Round XXV implementation/evidence/closeout commits `1b155dd`、`d0b6846`、`10bf95b` 已推送到 `origin/main`；本 receipt commit 将在 push 后补记。
+- Round XXV implementation/evidence/closeout/receipt commits `1b155dd`、`d0b6846`、`10bf95b`、`d304924` 已推送到 `origin/main`。
 
 # 2026-08-12 Round 24 检查点：Summon Beast / Summon Undead Typed Summon Consumer
 

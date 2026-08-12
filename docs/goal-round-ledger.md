@@ -17,7 +17,7 @@
 - Round XXV validator 17/17 checks 通过；focused reconciliation suite `18 passed`；backend 全量 pytest 通过；Ruff、compileall、diff-check 通过；whole-pack migration 双跑 stdout SHA-256 均为 `f49d04eeb7158151289e61216da4e2908bf075d5d0777a0c24408c19a0630677`。
 - database、formal registry、source corpus、campaign/character、3D 与永久保护路径未写入。当前 database fingerprint 为 `f3abdcf57b0d71888f085ca081511df4f4e23f100066b402d49d769089fa6aad`；formal registry 为 `f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b`。
 - 证据入口：`scripts/validate-tashas-production-reconciliation-round-XXV.py`、`backend/tests/test_tashas_production_reconciliation_round_XXV.py`、`reports/tashas-production-reconciliation-round-XXV-2026-08-12.json`、`docs/tashas-production-reconciliation-round-XXV-2026-08-12.md`。
-- Push receipt：`1b155dd`、`d0b6846`、`10bf95b` 已推送至 `origin/main`；随后 receipt commit 会补记远端确认。
+- Push receipt：`1b155dd`、`d0b6846`、`10bf95b`、`d304924` 已推送至 `origin/main`。
 
 ## Round 24：Summon Beast / Summon Undead Typed Summon Consumer
 
