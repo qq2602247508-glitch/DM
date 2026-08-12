@@ -1,12 +1,12 @@
 {
   "after": {
     "compile_only": 35,
-    "production_full": 184,
+    "production_full": 185,
     "tasha_atom_pack": {
       "authored_typed_ir": 95,
       "candidate_generated": 408,
       "compile_full": 94,
-      "compile_only": 8,
+      "compile_only": 7,
       "consumer_unlocks": {
         "existing_generic_consumer": {
           "content_ids": [
@@ -123,6 +123,7 @@
             "content.tashas-cauldron.round2.feature.rune-knight-runic-shield",
             "content.tashas-cauldron.round2.feature.soulknife-homing-strikes",
             "content.tashas-cauldron.round2.feature.soulknife-psi-bolstered-knack",
+            "content.tashas-cauldron.round2.feature.soulknife-psychic-teleportation",
             "content.tashas-cauldron.round2.feature.soulknife-psychic-whispers",
             "content.tashas-cauldron.round2.feature.stars-druid-full-of-stars",
             "content.tashas-cauldron.round2.feature.stars-druid-weal",
@@ -144,16 +145,16 @@
       },
       "content_atom_total": 525,
       "content_id_funnel": {
-        "compile_only": 8,
+        "compile_only": 7,
         "dm_assisted": 2,
         "matched_typed_ir": 95,
-        "production_full": 85,
+        "production_full": 86,
         "relation_holds": true
       },
       "current_project_compile_only": 35,
       "current_project_compiled_unique": 111,
-      "current_project_production_full": 184,
-      "current_project_production_registry_fingerprint": "4478f8a5876365da342a7cb39b5e24f0aafcc95ed3fa7ab90a92ed358e656906",
+      "current_project_production_full": 185,
+      "current_project_production_registry_fingerprint": "d0ca4b0b576e05b934accb86382c288517546c3c1f35559e385b68956c724b2c",
       "dm_assisted": 2,
       "dm_reference": 107,
       "draft_total": 408,
@@ -170,7 +171,7 @@
         },
         "total": 499
       },
-      "game_usable": 86,
+      "game_usable": 87,
       "invalid_source": 0,
       "item_ir": {
         "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
@@ -242,7 +243,7 @@
         "spell": 21,
         "subclass_feature": 232
       },
-      "production_full": 84,
+      "production_full": 85,
       "reviewed_total": 408,
       "runtime_preview_full": 94,
       "schema_version": "tashas-whole-pack-migration-1",
@@ -252,7 +253,7 @@
       "source_record_total": 144,
       "source_record_unclassified": 0,
       "status_counts": {
-        "compile_only": 8,
+        "compile_only": 7,
         "dm_assisted": 2,
         "dm_reference": 107,
         "duplicate_or_reprint": 0,
@@ -260,7 +261,7 @@
         "manual_authoring": 314,
         "non_instantiable": 10,
         "out_of_scope_with_reason": 0,
-        "production_full": 84
+        "production_full": 85
       },
       "template_matched": 94
     },
@@ -268,7 +269,7 @@
   },
   "baseline": {
     "compile_only": 35,
-    "production_full": 184,
+    "production_full": 185,
     "unique_compiled": 111
   },
   "existing_production_full_not_retracted": true,

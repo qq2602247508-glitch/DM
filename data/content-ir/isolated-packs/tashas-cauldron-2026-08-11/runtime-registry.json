@@ -575,7 +575,7 @@
       "atom_id": "tashas-cauldron:atom:b63c217774b977cdb0c1a23e:psychic-teleportation:007",
       "content_id": "content.tashas-cauldron.round2.feature.soulknife-psychic-teleportation",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "6806e8e7559a74d901c4eb97994d4e89f4a3bbdce9a489439d344041940d9044",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.soulknife-psychic-teleportation"

@@ -472,6 +472,18 @@ def default_capability_catalog() -> CapabilityCatalog:
             persisted_state="combatant.snapshot_json",
         ),
         _descriptor(
+            "movement.teleport",
+            "teleport",
+            consumer="authoritative_grid_movement",
+            producer="feature_runtime_compiler",
+            persisted_state="combatant.snapshot_json",
+            targets=frozenset({"self"}),
+            durations=frozenset({"current_turn"}),
+            actions=frozenset({"bonus_action", "action", "reaction", "explicit_player_choice"}),
+            resources=_ALL_RESOURCES,
+            evidence=("test_feature_teleport_runtime_consumer",),
+        ),
+        _descriptor(
             "sight.mode",
             "grant_sight_mode",
             consumer="combat_visibility_and_attack_context",

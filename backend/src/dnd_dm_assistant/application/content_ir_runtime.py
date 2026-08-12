@@ -1043,6 +1043,41 @@ class ContentIRRuntimeService:
                 feature_blocks = {"feature_event_window": [action]}
                 combat_preview = None
             else:
+                if _text(action.get("resolution_kind")) == "teleport":
+                    raw_roll = data.get("movement_roll_total")
+                    if (
+                        not isinstance(raw_roll, int)
+                        or isinstance(raw_roll, bool)
+                        or raw_roll < 1
+                    ):
+                        raise ValueError("传送特性预览需要明确的正整数灵能骰结果")
+                    if data.get("destination_row") is None or data.get("destination_col") is None:
+                        raise ValueError("传送特性预览需要明确的目的地行列")
+                    teleport_effect = next(
+                        (
+                            item
+                            for item in action.get("effects", [])
+                            if isinstance(item, Mapping) and item.get("kind") == "teleport"
+                        ),
+                        None,
+                    )
+                    if not isinstance(teleport_effect, Mapping):
+                        raise ValueError("传送特性缺少结构化 teleport effect")
+                    multiplier = int(teleport_effect.get("roll_multiplier_ft") or 0)
+                    if multiplier < 1:
+                        raise ValueError("传送特性缺少正整数距离倍率")
+                    teleport_preview = {
+                        "movement_roll_total": raw_roll,
+                        "roll_input": _text(teleport_effect.get("roll_input")),
+                        "roll_source": _text(teleport_effect.get("roll_source")),
+                        "max_distance_ft": raw_roll * multiplier,
+                        "destination": {
+                            "row": int(data["destination_row"]),
+                            "col": int(data["destination_col"]),
+                        },
+                    }
+                else:
+                    teleport_preview = None
                 feature_blocks = {"feature_action": [action]}
                 combat_preview = None
             consumers = resolve_production_consumers(
@@ -1067,6 +1102,8 @@ class ContentIRRuntimeService:
                     "permission": _text(data.get("permission")) or "player",
                 },
             }
+            if teleport_preview is not None:
+                result["production_contract"]["teleport"] = teleport_preview
             result["preview_token"] = _fingerprint(
                 {"data": _stable_request_data(data), "result": result}
             )
@@ -1270,6 +1307,17 @@ class ContentIRRuntimeService:
                 reset_spell_slot_level=(
                     int(data["reset_spell_slot_level"])
                     if data.get("reset_spell_slot_level") is not None
+                    else None
+                ),
+                destination_row=(
+                    int(data["destination_row"]) if data.get("destination_row") is not None else None
+                ),
+                destination_col=(
+                    int(data["destination_col"]) if data.get("destination_col") is not None else None
+                ),
+                movement_roll_total=(
+                    int(data["movement_roll_total"])
+                    if data.get("movement_roll_total") is not None
                     else None
                 ),
                 dm_override=_text(data.get("permission")) == "dm",

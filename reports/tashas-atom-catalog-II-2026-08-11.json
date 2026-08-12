@@ -20793,7 +20793,7 @@
       "instantiable": true,
       "level": null,
       "localized_name": "心灵传送",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "name": "心灵传送Psychic Teleportation。",
       "officiality": "unknown",
       "parent_atom_id": "tashas-cauldron:atom:b63c217774b977cdb0c1a23e:aa4cb9e2693f:000",
@@ -20822,10 +20822,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "runtime_preview_full",
-        "isolated_runtime_validated": false,
-        "registered_production_full": false,
+        "game_usable": true,
+        "highest_status": "game_usable",
+        "isolated_runtime_validated": true,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -30066,7 +30066,7 @@
       "player_facing": 408,
       "total": 525
     },
-    "audit_fingerprint": "e185d82a51ac8ff9e03a9fd22a0b1116f77fb738e386bfc6519f87af63e260e8",
+    "audit_fingerprint": "f0a66da7959f31f3993b6fe565bf38aca400166cc78839d9c6a2a36105241abb",
     "before_atom_counts": {
       "by_kind": {
         "character_option": 15,
@@ -31390,7 +31390,7 @@
   "semantic_cluster_fingerprint": "ddd2d18315cfceeb0e469507e3f43504ce220479057b6adb394bcaab8c5ca5e3",
   "source_book": "塔莎的万事坩埚",
   "status_counts": {
-    "compile_only": 8,
+    "compile_only": 7,
     "dm_assisted": 2,
     "dm_reference": 107,
     "duplicate_or_reprint": 0,
@@ -31398,6 +31398,6 @@
     "manual_authoring": 314,
     "non_instantiable": 10,
     "out_of_scope_with_reason": 0,
-    "production_full": 84
+    "production_full": 85
   }
 }

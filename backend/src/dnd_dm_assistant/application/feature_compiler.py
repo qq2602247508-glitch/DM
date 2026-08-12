@@ -522,6 +522,7 @@ _RUNTIME_SECTION_BY_OPERATOR = {
     "impose_advantage": "combat_modifiers",
     "impose_disadvantage": "combat_modifiers",
     "grant_movement_mode": "movement_modes",
+    "teleport": "actions",
     "grant_sight_mode": "combat_modifiers",
     "heal": "actions",
     "grant_temporary_hp": "triggers",
@@ -607,19 +608,29 @@ def materialize_runtime_definition(
             ),
             None,
         )
-        if operator in {"heal", "grant_temporary_hp"} and clause.trigger == "explicit_activation":
+        if (
+            operator in {"heal", "grant_temporary_hp", "teleport"}
+            and clause.trigger == "explicit_activation"
+        ):
             # These operators are ordinary production feature actions.  The
             # generic combat consumer needs the same action envelope as an
             # older hand-authored feature, while the formula/target/resource
             # remain data carried by the materialized block.
             entry["kind"] = "feature_action"
             entry["target"] = str(clause.targeting.kind if clause.targeting else "self")
-            entry["resolution_kind"] = (
-                "temporary_healing" if operator == "grant_temporary_hp" else "healing"
-            )
-            entry["healing"] = str(
-                entry.get("formula") or entry.get("healing") or entry.get("healing_formula") or ""
-            )
+            if operator == "teleport":
+                entry["resolution_kind"] = "teleport"
+                entry["target_policy"] = {"mode": "self"}
+            else:
+                entry["resolution_kind"] = (
+                    "temporary_healing" if operator == "grant_temporary_hp" else "healing"
+                )
+                entry["healing"] = str(
+                    entry.get("formula")
+                    or entry.get("healing")
+                    or entry.get("healing_formula")
+                    or ""
+                )
             if consume_effect:
                 entry["resource_key"] = str(consume_effect.get("resource_key") or "")
                 entry["resource_cost"] = int(consume_effect.get("amount") or 1)

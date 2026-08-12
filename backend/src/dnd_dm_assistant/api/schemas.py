@@ -2510,6 +2510,9 @@ class ContentIRRuntimeRequest(BaseModel):
     save_succeeded_by_target: dict[str, bool] = Field(default_factory=dict, max_length=20)
     attack_hit: bool | None = None
     reaction_triggered: bool = False
+    destination_row: int | None = Field(default=None, ge=1, le=10_000)
+    destination_col: int | None = Field(default=None, ge=1, le=10_000)
+    movement_roll_total: int | None = Field(default=None, ge=1, le=1_000)
     reset_spell_slot_level: int | None = Field(default=None, ge=1, le=9)
     condition_to_remove: Literal["charmed", "frightened", "poisoned"] | None = None
     advancement_choices: dict[str, list[str]] = Field(default_factory=dict, max_length=50)
@@ -2530,6 +2533,8 @@ class ContentIRRuntimeRequest(BaseModel):
             raise ValueError("combat content runtime requires combat actor binding")
         if self.content_kind == "feature" and self.known_spell_id is not None:
             raise ValueError("feature content runtime cannot bind known_spell_id")
+        if (self.destination_row is None) != (self.destination_col is None):
+            raise ValueError("destination_row and destination_col are required together")
         if self.content_kind == "advancement":
             if not self.character_id or self.character_version is None:
                 raise ValueError("advancement content runtime requires character binding")

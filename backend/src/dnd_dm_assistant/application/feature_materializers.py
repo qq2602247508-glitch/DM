@@ -444,6 +444,26 @@ def _materialize_sight(context: MaterializerContext) -> MaterializedBlock:
 
 
 def _materialize_action(context: MaterializerContext) -> MaterializedBlock:
+    if context.operator == "teleport":
+        params = context.parameters
+        entry = context.base(kind="feature_action")
+        entry.update(
+            {
+                "target": "self",
+                "target_policy": {"mode": "self"},
+                "resolution_kind": "teleport",
+                "effects": [
+                    {
+                        "kind": "teleport",
+                        "destination_kind": str(params["destination_kind"]),
+                        "roll_multiplier_ft": int(params["roll_multiplier_ft"]),
+                        "roll_input": str(params.get("roll_input") or "movement_roll_total"),
+                        "roll_source": str(params.get("roll_source") or "feature_resource"),
+                    }
+                ],
+            }
+        )
+        return MaterializedBlock("actions", entry)
     entry = _with_parameters(context, kind=context.operator)
     return MaterializedBlock("actions", entry)
 
@@ -723,6 +743,7 @@ def default_materializer_registry() -> MaterializerRegistry:
         "modifier.roll": _materialize_modifier,
         "modifier.roll.disadvantage": _materialize_modifier,
         "movement.mode": _materialize_movement,
+        "movement.teleport": _materialize_action,
         "sight.mode": _materialize_sight,
         "damage.healing": _materialize_action,
         "damage.temporary_hp": _materialize_trigger,

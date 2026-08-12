@@ -1,6 +1,6 @@
 {
   "atom_dm_assisted_count": 2,
-  "atom_production_full_count": 84,
+  "atom_production_full_count": 85,
   "dm_assisted_atoms": [
     "tashas-cauldron:atom:0036d7dc058c496ef08fe340:a27f6b57964b:000",
     "tashas-cauldron:atom:867896faa26eb295d846a574:glorious-defense:010"
@@ -121,6 +121,7 @@
         "content.tashas-cauldron.round2.feature.rune-knight-runic-shield",
         "content.tashas-cauldron.round2.feature.soulknife-homing-strikes",
         "content.tashas-cauldron.round2.feature.soulknife-psi-bolstered-knack",
+        "content.tashas-cauldron.round2.feature.soulknife-psychic-teleportation",
         "content.tashas-cauldron.round2.feature.soulknife-psychic-whispers",
         "content.tashas-cauldron.round2.feature.stars-druid-full-of-stars",
         "content.tashas-cauldron.round2.feature.stars-druid-weal",
@@ -140,7 +141,7 @@
       "new_consumer_count": 0
     }
   },
-  "matched_atom_production_runtime_full_count": 87,
+  "matched_atom_production_runtime_full_count": 88,
   "name_branch_count": 0,
   "new_consumer_count": 0,
   "pack_id": "tashas-cauldron",
@@ -194,6 +195,7 @@
     "tashas-cauldron:atom:b23e97de6529e42be59f8b0d:bestial-soul:005",
     "tashas-cauldron:atom:b63c217774b977cdb0c1a23e:homing-strikes:006",
     "tashas-cauldron:atom:b63c217774b977cdb0c1a23e:psi-bolstered-knack:002",
+    "tashas-cauldron:atom:b63c217774b977cdb0c1a23e:psychic-teleportation:007",
     "tashas-cauldron:atom:b63c217774b977cdb0c1a23e:psychic-whispers:003",
     "tashas-cauldron:atom:b6d0bbfbdc36f195e62683c5:armor-of-the-spirit:010",
     "tashas-cauldron:atom:b6d0bbfbdc36f195e62683c5:astral-sight:003",
@@ -230,7 +232,7 @@
     "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:tool-proficiency:001",
     "tashas-cauldron:authored-subclause:12139219bf7e575f9cde019c:0d3fc31f44e0"
   ],
-  "registry_production_runtime_full_count": 127,
+  "registry_production_runtime_full_count": 128,
   "runtime_evidence": {
     "content.tashas-cauldron.feature.alchemist-chemical-mastery": {
       "confirm_status": 200,
@@ -5745,6 +5747,147 @@
       "runtime_id_bound": true,
       "source": "round-II-reviewed-feature-contract-through-round-VIII-typed-combat-consumer",
       "typed_consumer": "combat_engine.feature_action.v1"
+    },
+    "content.tashas-cauldron.round2.feature.soulknife-psychic-teleportation": {
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XXIV.json",
+      "feature_consumer_ids": [
+        "combat_engine.feature_action.v1"
+      ],
+      "feature_manual_decisions": {
+        "isolated_runtime_only": true,
+        "operator_mapping": "explicit_atom_mapping",
+        "unmodeled_source_terms": []
+      },
+      "feature_reviewed_fields": [
+        "feature_id",
+        "source_record_id",
+        "source_name",
+        "source_path",
+        "source_book",
+        "source_fingerprint",
+        "content_kind",
+        "class_name",
+        "subclass_name",
+        "level",
+        "source_completeness",
+        "clauses",
+        "required_inputs",
+        "runtime_boundary"
+      ],
+      "feature_runtime_fingerprint": "12c0de6e78f847715d57db6917345e8fd0c40c9c5f282228870a650e278bbbda",
+      "feature_source_fingerprint": "6806e8e7559a74d901c4eb97994d4e89f4a3bbdce9a489439d344041940d9044",
+      "feature_source_path": "塔莎的万事坩埚/玩家选项/职业/游荡者（TCE）/魂刃.html",
+      "feature_source_record_id": "b63c217774b977cdb0c1a23e",
+      "runtime_evidence": {
+        "action_cost": "bonus_action",
+        "actor_position_after": {
+          "col": 6,
+          "row": 2
+        },
+        "actor_version_advanced": true,
+        "bonus_action_consumed": true,
+        "confirm_status": 200,
+        "consumer": "combat_engine.feature_action.v1",
+        "destination": {
+          "col": 6,
+          "row": 2
+        },
+        "distance_ft": 20,
+        "preview_status": 200,
+        "preview_teleport": {
+          "destination": {
+            "col": 6,
+            "row": 2
+          },
+          "max_distance_ft": 20,
+          "movement_roll_total": 2,
+          "roll_input": "movement_roll_total",
+          "roll_source": "psionic_dice"
+        },
+        "production_runtime_full": true,
+        "replay_already_applied": true,
+        "replay_status": 200,
+        "resource_after": 2,
+        "resource_before": 3,
+        "resource_cas": true,
+        "resource_cost": 1,
+        "resource_key": "psionic_dice",
+        "rollback": {
+          "action_economy_unchanged": true,
+          "actor_snapshot_unchanged": true,
+          "actor_version_unchanged": true,
+          "character_version_unchanged": true,
+          "confirm_status": 400,
+          "error_mentions_occupied": true,
+          "no_failed_operation": true,
+          "preview_status": 200,
+          "resource_unchanged": true
+        },
+        "runtime_id": "content.tashas-cauldron.round2.feature.soulknife-psychic-teleportation",
+        "transactions": {
+          "combat_action": "confirmed",
+          "combat_operation": "applied",
+          "runtime_operation": "applied"
+        }
+      },
+      "typed_action": {
+        "action_cost": "bonus_action",
+        "activation": "automatic",
+        "automation_status": "full",
+        "class_level": 0,
+        "class_name": "游荡者",
+        "clause_id": "teleport-window",
+        "effects": [
+          {
+            "destination_kind": "visible_unoccupied_space",
+            "kind": "teleport",
+            "roll_input": "movement_roll_total",
+            "roll_multiplier_ft": 10,
+            "roll_source": "psionic_dice"
+          }
+        ],
+        "feature_id": "content.tashas-cauldron.round2.feature.soulknife-psychic-teleportation",
+        "feature_name": "心灵传送",
+        "id": "content.tashas-cauldron.round2.feature.soulknife-psychic-teleportation:teleport-window:1",
+        "kind": "feature_action",
+        "operator": "teleport",
+        "requires_dm_adjudication": false,
+        "resolution_kind": "teleport",
+        "resource_cost": 1,
+        "resource_key": "psionic_dice",
+        "runtime_execution": {
+          "capability_id": "movement.teleport",
+          "consumer": "authoritative_grid_movement",
+          "contract_version": "1.0",
+          "materializer_id": "movement.teleport",
+          "persistence": "combatant.snapshot_json",
+          "status": "ready"
+        },
+        "source_record_id": "b63c217774b977cdb0c1a23e",
+        "target": "self",
+        "target_policy": {
+          "mode": "self"
+        },
+        "targeting": {
+          "kind": "self",
+          "parameters": {}
+        },
+        "trigger": "explicit_activation"
+      },
+      "typed_clause_ids": [
+        "teleport-window"
+      ],
+      "typed_operators": [
+        "consume_resource",
+        "teleport"
+      ],
+      "typed_teleport_effect": {
+        "destination_kind": "visible_unoccupied_space",
+        "kind": "teleport",
+        "roll_input": "movement_roll_total",
+        "roll_multiplier_ft": 10,
+        "roll_source": "psionic_dice"
+      }
     },
     "content.tashas-cauldron.round2.feature.soulknife-psychic-whispers": {
       "actor_target_cas": true,
