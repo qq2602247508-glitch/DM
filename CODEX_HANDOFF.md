@@ -1,3 +1,14 @@
+# 2026-08-13 Round 28 检查点：三张牧师领域法术表 Character-Growth Consumer
+
+- 本轮关闭三个 source-complete 牧师领域法术表特性：`order-cleric-domain-spells`（秩序领域）、`peace-cleric-domain-spells`（和平领域）、`twilight-cleric-domain-spells`（暮光领域）。每个特性是单条 `always-prepared` 子句，效果为 10 个 `grant_spell`（`source_class=cleric`、`casting_ability=wisdom`、`grant_mode=always_prepared`），完全复用既有名称无关 `advancement_service.character_growth.v1` + `advancement_service.spell_registry` 消费者，未新增任何 dispatch 分支或底层 capability。
+- 法术 slug 逐一对照 `玩家手册 2014` spell corpus 英文别名（`command`、`heroism`、`hold_person`、`zone_of_truth`、`mass_healing_word`、`slow`、`compulsion`、`locate_creature`、`commune`、`dominate_person` / `sanctuary`、`aid`、`warding_bond`、`beacon_of_hope`、`sending`、`aura_of_purity`、`otilukes_resilient_sphere`、`greater_restoration`、`rarys_telepathic_bond` / `faerie_fire`、`sleep`、`moonbeam`、`see_invisibility`、`aura_of_vitality`、`leomunds_tiny_hut`、`aura_of_life`、`greater_invisibility`、`circle_of_power`、`mislead`），三张法术表互不重叠。
+- 当前实际 Tasha：`144 source records / 525 atoms / 408 executable / 98 authored Typed IR / 97 compile / 97 preview / 93 production / 2 DM-assisted / 95 game usable / 2 compile-only / 311 manual / 107 DM reference`；content-ID funnel `98 = 94 + 2 + 2`。
+- 当前 project：`193 production / 35 compile-only / 111 unique compiled`；Tasha evidence union `136`，project union `193`；ItemSpec 保持 `47/40/40/40`。
+- Round XXVIII validator 3/3 production_runtime_full；focused receipt suite 3 passed；backend 全量 pytest 932 passed（仅既有 Starlette/httpx deprecation warning）；Ruff、compileall、diff-check 通过；whole-pack migration 双跑 projection SHA-256 `8da4ddacecdca1d14bd97b48929e6581922ce5077b4268dedbeef041094ea2d4`。
+- 分离提交 `a0e8d73`（authored Domain Spells IR + author 工具）、`12f4b8d`（validator + test + evidence + 计数调和）、`4d8890b`（docs closeout）已推送到 `origin/main`（2026-08-13）。push receipt 已写入 ledger。
+- 证据入口：`docs/tashas-feature-production-consumer-round-XXVIII-2026-08-13.md`、`scripts/author-round-XXVIII-cleric-domain-spells.py`、`scripts/validate-tashas-feature-production-consumer-round-XXVIII.py`、`backend/tests/test_tashas_feature_production_consumer_round_XXVIII.py`、`reports/tashas-feature-production-consumer-round-XXVIII-2026-08-13.json`、`data/content-ir/compiled/production-runtime-results-XXIX.json`。
+- 下一轮继续 vessel（genie-bottled-respite 异次元空间）、spectral-object entity lifecycle + remote spell origin（scribe-manifest-mind）与其余领域/圣誓/结社法术表；不迁移下一本扩展包、不触碰 3D。
+
 # 2026-08-13 Round 27 检查点：Fathomless Oceanic Soul Generic Communication Consumer
 
 - 本轮完成海渊魂灵 source-complete typed IR：`cold-resistance`（寒冷抗性）+ 新增 `underwater-communication`（水下互相语言理解）；后者通过名称无关 `grant_communication` operator（`channel=speech`、`direction=mutual`、`required_condition=submerged`）与 `communication.mutual_comprehension.v1` consumer。

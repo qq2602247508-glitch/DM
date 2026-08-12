@@ -6,6 +6,19 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 28：三张牧师领域法术表 Character-Growth Consumer
+
+当前状态：`accepted`；实现、receipt、报告、文档、全量门禁、分离提交和 push 均已完成。
+
+- 本轮关闭三个 source-complete 牧师领域法术表：秩序领域、和平领域、暮光领域（各 1 级）。每个特性是单条 `always-prepared` 子句，效果为 10 个 `grant_spell`（`source_class=cleric`、`casting_ability=wisdom`、`grant_mode=always_prepared`），复用既有 `advancement_service.character_growth.v1` + `advancement_service.spell_registry` 消费者，未新增 dispatch 分支。
+- 法术 slug 逐一对照 `玩家手册 2014` spell corpus 英文别名（`command`、`hold_person`、`mass_healing_word`、`otilukes_resilient_sphere`、`rarys_telepathic_bond`、`leomunds_tiny_hut` 等），三张法术表互不重叠。
+- Round XXVIII validator 3/3 production_runtime_full；focused Round XXVIII receipt suite 3 passed；backend 全量 pytest 932 passed（仅既有 Starlette/httpx deprecation warning）；Ruff、compileall、diff-check 通过；whole-pack migration 双跑 projection SHA-256 均为 `8da4ddacecdca1d14bd97b48929e6581922ce5077b4268dedbeef041094ea2d4`。
+- Actual after：Tasha `525/408/408/98/97/97/93/2/95/2/311/107`；ItemSpec `47/40/40/40`；项目 `193 production / 35 compile-only / 111 unique compiled`；Tasha evidence union `136`，project evidence union `193`。content-ID funnel 为 `98 = 94 + 2 + 2`。
+- 证据入口：`docs/tashas-feature-production-consumer-round-XXVIII-2026-08-13.md`、`scripts/author-round-XXVIII-cleric-domain-spells.py`、`scripts/validate-tashas-feature-production-consumer-round-XXVIII.py`、`backend/tests/test_tashas_feature_production_consumer_round_XXVIII.py`、`reports/tashas-feature-production-consumer-round-XXVIII-2026-08-13.json`、`data/content-ir/compiled/production-runtime-results-XXIX.json`。
+- 保护路径、正式 database、formal registry、source corpus、campaign/character 与 3D 未写入；`name_branch_count=0`。下一轮继续 vessel、spectral-object 与其余领域/圣誓/结社法术表，不迁移下一本扩展包。
+- 保护指纹保持 database `f3abdcf57b0d71888f085ca081511df4f4e23f100066b402d49d769089fa6aad`、formal registry `f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b`、integrations manifest `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`、ollama `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`。
+- Push receipt：`a0e8d73`、`12f4b8d`、`4d8890b` 已推送到 `origin/main`（2026-08-13）。
+
 ## Round 27：Fathomless Oceanic Soul Generic Communication Consumer
 
 当前状态：`accepted`；实现、receipt、报告、文档、全量门禁、分离提交和 push 均已完成。

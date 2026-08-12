@@ -1,7 +1,136 @@
 {
-  "current_round": "round-27",
+  "current_round": "round-28",
   "goal": "Local AI D&D DM Assistant complete official-content rules platform",
   "rounds": [
+    {
+      "round_id": "round-28",
+      "status": "accepted",
+      "started_at": "2026-08-13",
+      "accepted_at": "2026-08-13",
+      "objective": "Close three source-complete cleric Domain Spells features (Order/Peace/Twilight) through the existing name-agnostic advancement_service.character_growth.v1 + spell_registry consumer; each is a single always-prepared grant_spell clause with ten canonical PHB spell slugs.",
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 190,
+            "unique_compiled": 111
+          },
+          "formal_499": {
+            "dm_only": 61,
+            "full": 328,
+            "partial": 110,
+            "total": 499
+          },
+          "protected_fingerprints": {
+            "database": "f3abdcf57b0d71888f085ca081511df4f4e23f100066b402d49d769089fa6aad",
+            "formal_registry": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+            "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+            "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+          },
+          "tashas": {
+            "source_records": 144,
+            "content_atoms": 525,
+            "executable": 408,
+            "authored_typed_ir": 95,
+            "compile_full": 94,
+            "runtime_preview_full": 94,
+            "production_full": 90,
+            "dm_assisted": 2,
+            "game_usable": 92,
+            "compile_only": 2,
+            "manual_authoring": 314,
+            "dm_reference": 107,
+            "item_spec_total": 47,
+            "item_spec_compile_full": 40,
+            "item_spec_isolated_runtime_validated": 40,
+            "item_spec_registered_production_full": 40,
+            "item_spec_dm_assisted": 0,
+            "item_spec_game_usable": 40
+          }
+        }
+      },
+      "selected_content_ids": [
+        "content.tashas-cauldron.round2.feature.order-cleric-domain-spells",
+        "content.tashas-cauldron.round2.feature.peace-cleric-domain-spells",
+        "content.tashas-cauldron.round2.feature.twilight-cleric-domain-spells"
+      ],
+      "selected_clusters": [
+        "advancement.fixed_spell_grant",
+        "feature.clause.always_prepared",
+        "content_ir.source_complete_provenance"
+      ],
+      "selected_platforms": [
+        "advancement_service.character_growth.v1",
+        "advancement_service.spell_registry",
+        "ContentIRRuntimeService"
+      ],
+      "after": {
+        "tashas": {
+          "production_full": 93,
+          "dm_assisted": 2,
+          "game_usable": 95,
+          "compile_only": 2
+        },
+        "project": {
+          "production_full": 193,
+          "compile_only": 35,
+          "unique_compiled": 111
+        },
+        "evidence": {
+          "tasha_receipt_ids": 136,
+          "project_receipt_ids": 193
+        }
+      },
+      "delta": {
+        "tasha_production_full": 3,
+        "tasha_game_usable": 3,
+        "tasha_compile_only": 0,
+        "tasha_manual_authoring": -3,
+        "project_production_full": 3,
+        "project_receipt_ids": 3
+      },
+      "reports": [
+        "docs/tashas-feature-production-consumer-round-XXVIII-2026-08-13.md",
+        "reports/tashas-feature-production-consumer-round-XXVIII-2026-08-13.json",
+        "data/content-ir/compiled/production-runtime-results-XXIX.json",
+        "reports/tashas-whole-pack-report-2026-08-11.json"
+      ],
+      "checks": [
+        "Round XXVIII validator: all required checks passed",
+        "focused Round XXVIII receipt suite: 3 passed",
+        "whole-pack migration twice: projection SHA-256 8da4ddacecdca1d14bd97b48929e6581922ce5077b4268dedbeef041094ea2d4",
+        "formal database and registry unchanged",
+        "protected paths unchanged",
+        "name branch count 0"
+      ],
+      "tests": [
+        "backend/.venv/bin/pytest -q backend/tests: 932 passed, 1 warning (existing Starlette/httpx deprecation)",
+        "focused Round XXVIII receipt suite: 3 passed",
+        "backend/src and backend/tests Ruff: passed",
+        "backend/src and backend/tests compileall: passed",
+        "git diff --check: passed",
+        "Round XXVIII validator: 3/3 production_runtime_full",
+        "whole-pack migration twice: projection SHA-256 8da4ddacecdca1d14bd97b48929e6581922ce5077b4268dedbeef041094ea2d4"
+      ],
+      "protected_paths_untouched": true,
+      "formal_registry_written": false,
+      "formal_database_written": false,
+      "name_branch_count": 0,
+      "next_round_reason": "Continue closing the remaining compile-only (genie-bottled-respite vessel, scribe-manifest-mind spectral-object) and further manual domain-spell / oath-spell / circle-spell lists; keep other character-growth seams fail-closed.",
+      "commits": [
+        "a0e8d73",
+        "12f4b8d",
+        "4d8890b"
+      ],
+      "push_receipt": {
+        "branch": "main",
+        "commit_hash": "4d8890b",
+        "pushed_at": "2026-08-13",
+        "remote": "origin",
+        "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
+        "result": "pending"
+      }
+    },
     {
       "round_id": "round-27",
       "status": "accepted",
@@ -938,7 +1067,9 @@
           ]
         }
       },
-      "commits": ["c2823e5"],
+      "commits": [
+        "c2823e5"
+      ],
       "compile_full_delta": 0,
       "production_full_delta": 1,
       "dm_assisted_delta": 0,
@@ -1045,7 +1176,9 @@
           "proficiency_clause_count": 3
         }
       },
-      "commits": ["e09e804eef50552fd9a6af24ab8146168c4f0d03"],
+      "commits": [
+        "e09e804eef50552fd9a6af24ab8146168c4f0d03"
+      ],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "item_compile_full_delta": 0,
@@ -1147,7 +1280,9 @@
           "source_subclause_atom_recovery": 1
         }
       },
-      "commits": ["0509c93a9c7cd7462c67098a1b0c53d709d0fba3"],
+      "commits": [
+        "0509c93a9c7cd7462c67098a1b0c53d709d0fba3"
+      ],
       "compile_full_delta": 1,
       "dm_assisted_delta": 0,
       "item_compile_full_delta": 0,
@@ -1337,10 +1472,15 @@
           }
         },
         "difference": "Round 16 starts from 94 authored Tasha Typed IR and expands the existing character-growth consumer over the remaining safe proficiency cluster; communication/entity/action-window blockers remain explicit.",
-        "prompt_baseline": {"round_target_feature_production": 8, "safe_proficiency_cluster_count": 4}
+        "prompt_baseline": {
+          "round_target_feature_production": 8,
+          "safe_proficiency_cluster_count": 4
+        }
       },
       "round_id": "round-16",
-      "commits": ["d61e5ad"],
+      "commits": [
+        "d61e5ad"
+      ],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [
@@ -1445,10 +1585,15 @@
           }
         },
         "difference": "Round 15 adds a typed inline spell-list parser and real item.granted_spell.v1 equipment consumer for three artifact ItemSpecs; generic prose and variable/manual spells remain fail-closed.",
-        "prompt_baseline": {"round_target_item_production": 8, "residual_partial_item_count": 10}
+        "prompt_baseline": {
+          "round_target_item_production": 8,
+          "residual_partial_item_count": 10
+        }
       },
       "round_id": "round-15",
-      "commits": ["f34148d"],
+      "commits": [
+        "f34148d"
+      ],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [
@@ -1559,10 +1704,15 @@
           }
         },
         "difference": "Round 14 closes the final five complete ItemSpecs and verifies the typed dawn boundary; no complete ItemSpec remains below registered production.",
-        "prompt_baseline": {"round_target_item_production": 8, "residual_complete_item_count": 5}
+        "prompt_baseline": {
+          "round_target_item_production": 8,
+          "residual_complete_item_count": 5
+        }
       },
       "round_id": "round-14",
-      "commits": ["d6cae79"],
+      "commits": [
+        "d6cae79"
+      ],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [
@@ -1672,10 +1822,14 @@
           }
         },
         "difference": "Round 13 starts from 24 registered ItemSpecs and adds eight remaining complete items through the shared equipment, attunement, granted-action and charge consumers.",
-        "prompt_baseline": {"round_target_item_production": 8}
+        "prompt_baseline": {
+          "round_target_item_production": 8
+        }
       },
       "round_id": "round-13",
-      "commits": ["5ceb72a"],
+      "commits": [
+        "5ceb72a"
+      ],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [
@@ -1784,10 +1938,14 @@
           }
         },
         "difference": "Round 12 starts from the corrected 37 full ItemSpec catalog and 16 registered items; it closes the typed tattoo lifecycle transition through the same equipment/attunement consumer.",
-        "prompt_baseline": {"round_target_item_production": 8}
+        "prompt_baseline": {
+          "round_target_item_production": 8
+        }
       },
       "round_id": "round-12",
-      "commits": ["8947eff"],
+      "commits": [
+        "8947eff"
+      ],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [
@@ -1890,10 +2048,14 @@
           }
         },
         "difference": "Round 11 starts from Round 10's 8 registered ItemSpecs, corrects false granted-spell extraction fail-closed, and adds eight further complete ItemSpecs through the shared equipment consumer.",
-        "prompt_baseline": {"round_target_item_production": 8}
+        "prompt_baseline": {
+          "round_target_item_production": 8
+        }
       },
       "round_id": "round-11",
-      "commits": ["0f3eccf"],
+      "commits": [
+        "0f3eccf"
+      ],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [
@@ -2000,10 +2162,14 @@
           }
         },
         "difference": "Round 10 starts from the accepted Round 9 state and promotes a bounded batch of complete ItemSpec contracts through the existing equipment, attunement, charge and granted-action consumers; item production remains separate from Feature status layers.",
-        "prompt_baseline": {"round_target_item_production": 8}
+        "prompt_baseline": {
+          "round_target_item_production": 8
+        }
       },
       "round_id": "round-10",
-      "commits": ["42153f2"],
+      "commits": [
+        "42153f2"
+      ],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [
@@ -2099,10 +2265,14 @@
           }
         },
         "difference": "Round 9 is a platform/core growth round: it closes the remaining six full Tasha Feature contracts by adding generic typed resource profile, exchange and event-window consumers; formal rows remain outside the evidence boundary.",
-        "prompt_baseline": {"round_target_production_or_dm": 8}
+        "prompt_baseline": {
+          "round_target_production_or_dm": 8
+        }
       },
       "round_id": "round-9",
-      "commits": ["b2c6421"],
+      "commits": [
+        "b2c6421"
+      ],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [],
@@ -2193,10 +2363,14 @@
           }
         },
         "difference": "Round 8 starts from the accepted Round 7 state and selects only full contracts whose typed combat snapshot already has a generic passive/feature-action consumer; unresolved reaction-window and resource-exchange contracts remain ranked but unpromoted.",
-        "prompt_baseline": {"round_target_production_or_dm": 8}
+        "prompt_baseline": {
+          "round_target_production_or_dm": 8
+        }
       },
       "round_id": "round-8",
-      "commits": ["c2e0a65"],
+      "commits": [
+        "c2e0a65"
+      ],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [
@@ -2299,10 +2473,14 @@
           }
         },
         "difference": "Round 7 harvests eight remaining full advancement/spell-list Feature contracts through the existing typed character-growth consumer; formal campaign/character/database rows remain outside the evidence boundary.",
-        "prompt_baseline": {"round_target_production_or_dm": 8}
+        "prompt_baseline": {
+          "round_target_production_or_dm": 8
+        }
       },
       "round_id": "round-7",
-      "commits": ["0f49029"],
+      "commits": [
+        "0f49029"
+      ],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [
@@ -2407,10 +2585,14 @@
           }
         },
         "difference": "Round 6 harvests eight remaining full Feature contracts through the existing typed passive/inspection consumer; formal campaign/character/database rows remain outside the evidence boundary.",
-        "prompt_baseline": {"round_target_production_or_dm": 8}
+        "prompt_baseline": {
+          "round_target_production_or_dm": 8
+        }
       },
       "round_id": "round-6",
-      "commits": ["8df8ca3"],
+      "commits": [
+        "8df8ca3"
+      ],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [
@@ -2508,10 +2690,14 @@
           }
         },
         "difference": "Round 5 adds a generic typed advancement consumer and promotes eight compile-only Tasha Feature contracts through real character snapshot growth; formal campaign/character/database rows remain outside the evidence boundary.",
-        "prompt_baseline": {"round_target_production_or_dm": 8}
+        "prompt_baseline": {
+          "round_target_production_or_dm": 8
+        }
       },
       "round_id": "round-5",
-      "commits": ["2125670"],
+      "commits": [
+        "2125670"
+      ],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [
@@ -2720,7 +2906,10 @@
         }
       },
       "round_id": "round-3",
-      "commits": ["5049db3", "a981cd4"],
+      "commits": [
+        "5049db3",
+        "a981cd4"
+      ],
       "compile_full_delta": 58,
       "dm_assisted_delta": 0,
       "files_changed": [
@@ -2826,7 +3015,10 @@
         }
       },
       "round_id": "round-2",
-      "commits": ["21b61ac", "ca13067"],
+      "commits": [
+        "21b61ac",
+        "ca13067"
+      ],
       "compile_full_delta": 0,
       "dm_assisted_delta": 1,
       "files_changed": [
@@ -2927,7 +3119,9 @@
         }
       },
       "round_id": "round-1",
-      "commits": ["8776dcb"],
+      "commits": [
+        "8776dcb"
+      ],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [
