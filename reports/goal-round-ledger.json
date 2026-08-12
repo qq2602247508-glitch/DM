@@ -118,7 +118,7 @@
       "formal_registry_written": false,
       "formal_database_written": false,
       "accepted_at": "2026-08-12",
-      "push_receipt": "f1d3ae8, 6ed1a30 -> origin/main",
+      "push_receipt": "f1d3ae8, 6ed1a30, 43781cd -> origin/main",
       "tests": [
         "scripts/validate-tashas-spell-production-consumer-round-XXIII.py: 23/23 checks passed",
         "backend/tests/test_tashas_spell_production_consumer_round_XXIII.py: 5 passed",
