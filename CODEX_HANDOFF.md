@@ -1,3 +1,14 @@
+# 2026-08-12 Round 25 检查点：Production Evidence / Status Reconciliation
+
+- Round XXV 已完成 persisted production-runtime evidence、whole-pack status layer 与 ItemSpec production/game-usable 口径统一；没有新增名称分支、source corpus、正式 database、formal registry、campaign/character 或 3D 改动。
+- 新增共享 `content_ir_production_evidence` loader：按 pack namespace、content kind、required checks 与 `name_branch_count` gate 过滤，content ID 去重。当前 Tasha receipt union `131`，project receipt union `188`，ItemSpec valid production evidence `40`。
+- whole-pack migration 与 `existing_project_production_ids()` 共享 evidence projection；Round XXIV 的 Summon Beast / Summon Undead 两条 receipt 已进入 Tasha union。ItemSpec catalog 显式包含 `dm_assisted` 和 canonical status layers；`game_usable = registered_production_full + dm_assisted`。
+- 当前真实状态：Tasha `144 source records / 525 atoms / 408 executable / 95 authored Typed IR / 94 compile / 94 preview / 88 production / 2 DM-assisted / 90 game usable / 4 compile-only / 314 manual / 107 DM reference`；ItemSpec `47 total / 40 compile / 40 isolated / 40 registered / 0 DM-assisted / 40 game usable`；项目 `188 production / 35 compile-only / 111 unique compiled`。
+- Round XXV validator 17/17 checks 通过；focused reconciliation tests `18 passed`；backend full pytest 通过（仅既有 Starlette/httpx deprecation warning）；Ruff、compileall、diff-check 通过；whole-pack migration 双跑 stdout SHA-256 `f49d04eeb7158151289e61216da4e2908bf075d5d0777a0c24408c19a0630677`。
+- 当前权威 database fingerprint `f3abdcf57b0d71888f085ca081511df4f4e23f100066b402d49d769089fa6aad`，formal registry fingerprint `f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b`，integrations manifest `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`，ollama `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`。历史 Round XXVI receipt 的 database 字符串旧一位，validator 已并列记录，未修改历史 receipt。
+- 证据入口：`scripts/validate-tashas-production-reconciliation-round-XXV.py`、`backend/tests/test_tashas_production_reconciliation_round_XXV.py`、`reports/tashas-production-reconciliation-round-XXV-2026-08-12.json`、`docs/tashas-production-reconciliation-round-XXV-2026-08-12.md`。
+- Round XXV 已完成验证；分离提交、push 与 receipt 更新随后完成，然后继续下一个 source-complete generic consumer。
+
 # 2026-08-12 Round 24 检查点：Summon Beast / Summon Undead Typed Summon Consumer
 
 - Round XXIV 已验收 source-complete `tashas-cauldron:spell:54c8c29188db1442473d9dc1`（野兽召唤术）与 `tashas-cauldron:spell:083419d9de551806a5ca9748`（亡灵召唤术）。两条均保留 `target_selection`、`summon_or_creation`、`concentration`、`upcast` 四条 typed clauses，以及 source fingerprint、source checksum、source path 和 clause boundaries。

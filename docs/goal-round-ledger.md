@@ -6,6 +6,18 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 25：Production Evidence / Status Reconciliation
+
+当前状态：`accepted`；代码、evidence、全量门禁、交接和 push 已完成。
+
+- 新增共享 `content_ir_production_evidence` loader：按 pack namespace、content kind、required checks 与 `name_branch_count` gate 过滤，并按 content ID 去重。当前 Tasha receipt union 为 131 条，项目 union 为 188 条，ItemSpec valid production evidence 为 40 条。
+- whole-pack migration 与 `existing_project_production_ids()` 共享 evidence projection；Round XXIV 的 Summon Beast / Summon Undead 两条 receipt 已正确进入 Tasha production union。
+- ItemSpec catalog 显式发布 `dm_assisted` 与 canonical status layers；`game_usable = registered_production_full + dm_assisted`，当前为 `40 = 40 + 0`。
+- 当前 Tasha funnel：`144 source records / 525 atoms / 408 executable / 95 authored Typed IR / 94 compile / 94 preview / 88 production / 2 DM-assisted / 90 game usable / 4 compile-only / 314 manual / 107 DM reference`。项目为 `188 production / 35 compile-only / 111 unique compiled`。
+- Round XXV validator 17/17 checks 通过；focused reconciliation suite `18 passed`；backend 全量 pytest 通过；Ruff、compileall、diff-check 通过；whole-pack migration 双跑 stdout SHA-256 均为 `f49d04eeb7158151289e61216da4e2908bf075d5d0777a0c24408c19a0630677`。
+- database、formal registry、source corpus、campaign/character、3D 与永久保护路径未写入。当前 database fingerprint 为 `f3abdcf57b0d71888f085ca081511df4f4e23f100066b402d49d769089fa6aad`；formal registry 为 `f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b`。
+- 证据入口：`scripts/validate-tashas-production-reconciliation-round-XXV.py`、`backend/tests/test_tashas_production_reconciliation_round_XXV.py`、`reports/tashas-production-reconciliation-round-XXV-2026-08-12.json`、`docs/tashas-production-reconciliation-round-XXV-2026-08-12.md`。
+
 ## Round 24：Summon Beast / Summon Undead Typed Summon Consumer
 
 当前状态：`accepted`；实现、evidence、全量门禁、交接和 push 已完成。

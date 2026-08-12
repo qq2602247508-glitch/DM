@@ -1,7 +1,146 @@
 {
-  "current_round": "round-24",
+  "current_round": "round-25",
   "goal": "Local AI D&D DM Assistant complete official-content rules platform",
   "rounds": [
+    {
+      "round_id": "round-25",
+      "status": "accepted",
+      "started_at": "2026-08-12",
+      "accepted_at": "2026-08-12",
+      "objective": "Unify persisted production-runtime evidence, whole-pack status layers and ItemSpec production/game-usable reconciliation without changing source corpus, formal registry, formal database or protected paths.",
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 188,
+            "unique_compiled": 111
+          },
+          "formal_499": {
+            "dm_only": 61,
+            "full": 328,
+            "partial": 110,
+            "total": 499
+          },
+          "protected_fingerprints": {
+            "database": "f3abdcf57b0d71888f085ca081511df4f4f23f100066b402d49d769089fa6aad",
+            "formal_registry": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+            "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+            "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+          },
+          "tashas": {
+            "source_records": 144,
+            "content_atoms": 525,
+            "executable": 408,
+            "authored_typed_ir": 95,
+            "compile_full": 94,
+            "runtime_preview_full": 94,
+            "production_full": 88,
+            "dm_assisted": 2,
+            "game_usable": 90,
+            "compile_only": 4,
+            "manual_authoring": 314,
+            "dm_reference": 107,
+            "item_spec_total": 47,
+            "item_spec_compile_full": 40,
+            "item_spec_isolated_runtime_validated": 40,
+            "item_spec_registered_production_full": 40,
+            "item_spec_dm_assisted": 0,
+            "item_spec_game_usable": 40
+          },
+          "evidence": {
+            "tasha_receipt_ids": 131,
+            "project_receipt_ids": 188,
+            "item_production_evidence_ids": 40
+          }
+        },
+        "prompt_baseline": {
+          "historical_round_1": {
+            "content_atoms_qa_before": 625,
+            "player_facing_executable": 558,
+            "template_matched": 28,
+            "compile_full": 28,
+            "production_full": 18,
+            "dm_assisted": 1,
+            "game_usable": 19,
+            "compile_only": 9,
+            "manual_authoring": 530,
+            "dm_reference": 57
+          },
+          "historical_round_24": {
+            "tasha_production_full": 86,
+            "tasha_dm_assisted": 2,
+            "tasha_game_usable": 88,
+            "tasha_compile_only": 6,
+            "item_spec": "47/40/40/40"
+          }
+        },
+        "difference": "Current reports are authoritative: Round XXIV summon evidence gives Tasha 88 production, 2 DM-assisted, 90 game usable and 4 compile-only; ItemSpec remains 47/40/40/40. Historical Round XXVI receipt contains an older database string, while current baseline and aggregate agree.",
+        "evidence": [
+          "reports/tashas-production-reconciliation-round-XXV-2026-08-12.json",
+          "reports/tashas-whole-pack-report-2026-08-11.json",
+          "reports/tashas-item-ir-report-2026-08-11.json",
+          "reports/tashas-baseline-2026-08-11.json"
+        ]
+      },
+      "commits": [
+        "1b155dd",
+        "d0b6846"
+      ],
+      "compile_full_delta": 0,
+      "production_full_delta": 0,
+      "dm_assisted_delta": 0,
+      "item_compile_full_delta": 0,
+      "manual_delta": 0,
+      "pack_coverage_delta": {
+        "tasha_production_full_reconciled": 88,
+        "tasha_dm_assisted_reconciled": 2,
+        "tasha_game_usable_reconciled": 90,
+        "tasha_compile_only_reconciled": 4,
+        "project_production_full_reconciled": 188,
+        "project_unique_compiled_reconciled": 111,
+        "item_spec_registered_production_full_reconciled": 40,
+        "item_spec_game_usable_reconciled": 40
+      },
+      "reports": [
+        "docs/tashas-production-reconciliation-round-XXV-2026-08-12.md",
+        "reports/tashas-production-reconciliation-round-XXV-2026-08-12.json",
+        "reports/tashas-whole-pack-report-2026-08-11.json",
+        "reports/tashas-item-ir-report-2026-08-11.json"
+      ],
+      "selected_content_ids": [
+        "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
+        "tashas-cauldron:spell:083419d9de551806a5ca9748"
+      ],
+      "selected_clusters": [
+        "production_evidence.namespace_filter",
+        "production_evidence.deterministic_deduplication",
+        "content_ir.status_layers",
+        "item_spec.status_reconciliation"
+      ],
+      "selected_platforms": [
+        "content_ir_production_evidence",
+        "content_ir_status",
+        "tashas_whole_pack_migration",
+        "ItemSpec",
+        "ContentPackRuntimeRegistry"
+      ],
+      "next_round_reason": "Continue the highest-value source-complete generic consumer batch; communication, maneuver eligibility, vessel, spectral-object and unresolved character-growth seams remain fail-closed.",
+      "protected_paths_untouched": true,
+      "formal_registry_written": false,
+      "formal_database_written": false,
+      "name_branch_count": 0,
+      "push_receipt": null,
+      "tests": [
+        "backend/.venv/bin/pytest -q backend/tests: passed, 1 warning",
+        "focused reconciliation suite: 18 passed",
+        "backend/src and backend/tests Ruff: passed",
+        "migration and Round XXV validator Ruff: passed",
+        "backend/src, scripts and tests compileall: passed",
+        "git diff --check: passed",
+        "whole-pack migration twice: stdout SHA-256 f49d04eeb7158151289e61216da4e2908bf075d5d0777a0c24408c19a0630677",
+        "Round XXV validator: 17/17 checks passed"
+      ]
+    },
     {
       "round_id": "round-24",
       "status": "accepted",
