@@ -105,3 +105,5 @@ git diff --check
 结果：validator 全部 checks 通过，focused `38 passed`，backend 全量通过；仅保留既有 Starlette/httpx deprecation warning。
 
 本轮没有修改 source corpus、正式 database、formal registry、campaign、character、3D 项目或永久保护路径；`name_branch_count=0`。
+
+提交与推送：`22f78e7`（实现）与 `0932a0f`（证据/交接）已推送到 `origin/main`。

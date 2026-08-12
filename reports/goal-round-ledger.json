@@ -121,7 +121,7 @@
       "formal_registry_written": false,
       "formal_database_written": false,
       "name_branch_count": 0,
-      "push_receipt": "22f78e7 -> origin/main",
+      "push_receipt": "22f78e7, 0932a0f -> origin/main",
       "tests": [
         "scripts/validate-tashas-spell-production-consumer-round-XXIV.py: all checks passed",
         "backend/tests/test_tashas_spell_production_consumer_round_XXIV.py: focused receipt passed",
