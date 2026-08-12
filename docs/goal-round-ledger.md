@@ -8,7 +8,7 @@
 
 ## Round 26：Ambush Generic Initiative / Roll Intervention Consumer
 
-当前状态：`accepted`；实现、receipt、报告、文档、全量门禁和分离提交已完成；push 因本机代理未恢复暂缓，待代理恢复后补 push receipt。
+当前状态：`accepted`；实现、receipt、报告、文档、全量门禁、分离提交和 push 均已完成。
 
 - 战斗大师「伏击」补齐 source-complete 两个 typed clauses：`ambush:initiative` 与 `ambush:stealth`。两者都由名称无关的 `roll_intervention` materializer 生成，并使用同一 `combat_engine.roll_intervention.v1` consumer。
 - 先攻分支通过真实隔离 HTTP/SQLite：冻结先攻结果、持久化 `initiative_roll_prompt`、superiority die 输入、资源 `4→3`、CombatAction confirmed、OperationTransaction applied、拒绝不扣资源、同 request replay 不重复扣资源。
@@ -18,6 +18,7 @@
 - 证据入口：`docs/tashas-feature-production-consumer-round-XXVI-2026-08-12.md`、`scripts/validate-tashas-feature-production-consumer-round-XXVI.py`、`backend/tests/test_tashas_feature_production_consumer_round_XXVI.py`、`reports/tashas-feature-production-consumer-round-XXVI-2026-08-12.json`、`data/content-ir/compiled/production-runtime-results-XXVII.json`。
 - 保护路径、正式 database、formal registry、source corpus、campaign/character 与 3D 未写入；`name_branch_count=0`。下一轮继续 source-complete generic consumer，不迁移下一本扩展包。
 - 保护指纹保持 database `f3abdcf57b0d71888f085ca081511df4f4e23f100066b402d49d769089fa6aad`、formal registry `f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b`、integrations manifest `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`、ollama `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`。
+- Push receipt：`feb5fb7`、`d4fa353`、`3b08410`、`bb61ae1`、`74bb1d2` 已推送到 `origin/main`（`a7f8586..74bb1d2`）。
 
 ## Round 25：Production Evidence / Status Reconciliation
 
