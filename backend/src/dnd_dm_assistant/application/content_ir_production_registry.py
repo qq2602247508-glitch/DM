@@ -69,6 +69,28 @@ _CONSUMERS: dict[str, dict[str, Any]] = {
         "idempotency_scope": "campaign_content_ir_and_spell_cast",
         "snapshot_effects": ("spell_slots", "concentration", "combat_effect", "audit"),
     },
+    "spell.defense.v1": {
+        "content_kind": "spell",
+        "runtime_schema_version": "spell-runtime-1",
+        "clause_types": ("spell_modifier", "target_selection"),
+        "required_fields": (
+            "target_combatant_ids",
+            "target_versions",
+            "actor_combatant_id",
+            "actor_version",
+        ),
+        "required_services": ("combat_engine.effect_lifecycle", "combat_engine.geometry"),
+        "transaction_boundary": "spell_cast_with_grouped_effect_and_rollback_boundary",
+        "cas_entities": ("character", "actor_combatant", "target_combatants"),
+        "idempotency_scope": "campaign_content_ir_and_spell_cast",
+        "snapshot_effects": (
+            "damage_resistances",
+            "saving_throw_modifiers",
+            "combat_effect",
+            "concentration",
+            "audit",
+        ),
+    },
     "combat_engine.feature_action.v1": {
         "content_kind": "feature",
         "runtime_schema_version": "feature-runtime-1",
@@ -285,6 +307,8 @@ def resolve_production_consumers(
             resolved.append("combat_engine.damage_heal.v1")
         if blocks.get("concentration"):
             resolved.append("spell_economy.concentration.v1")
+        if _has_effect(blocks, "spell_modifier"):
+            resolved.append("spell.defense.v1")
         if blocks.get("apply_condition"):
             resolved.append("combat_engine.condition_lifecycle.v1")
         if not resolved:

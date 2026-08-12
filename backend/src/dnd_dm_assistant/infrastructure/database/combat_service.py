@@ -1263,10 +1263,93 @@ class CombatEngineService:
                     end_height_ft=cls._explicit_grid_elevation_ft(target),
                 )
             if not visible:
+                if policy.get("requires_visible") is True:
+                    raise ValueError("职业特性目标必须处于可见状态")
                 actor_conditions = cls._condition_set(actor)
                 target_conditions = cls._condition_set(target)
                 if {"deafened", "silenced"} & (actor_conditions | target_conditions):
                     raise ValueError("职业特性目标既不可见且无法听见，需由 DM 裁定")
+
+    @classmethod
+    def validate_typed_spell_targets(
+        cls,
+        session: Session,
+        combat: Combat,
+        actor: Combatant,
+        targets: list[Combatant],
+        *,
+        range_ft: int | None = None,
+        require_visible: bool = False,
+        max_target_distance_ft: int | None = None,
+    ) -> dict[str, object]:
+        """Validate a typed spell target group against authoritative geometry."""
+
+        if not targets:
+            raise ValueError("typed spell runtime requires at least one target")
+        grid = (
+            session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
+            if combat.scene_id
+            else None
+        )
+        cell_size = grid.cell_size_ft if grid is not None else 5
+
+        def position(combatant: Combatant) -> tuple[int, int]:
+            raw = (combatant.snapshot_json or {}).get("grid_position")
+            if not isinstance(raw, dict):
+                raise ValueError(
+                    "typed spell target geometry requires authoritative grid positions"
+                )
+            try:
+                return int(raw["row"]), int(raw["col"])
+            except (KeyError, TypeError, ValueError) as exc:
+                raise ValueError("typed spell target grid position is invalid") from exc
+
+        actor_position = position(actor)
+        distances: dict[str, int] = {}
+        for target in targets:
+            if target.combat_id != combat.id or not target.is_active:
+                raise StateNotFoundError("typed spell target is not active in combat")
+            target_position = actor_position if target.id == actor.id else position(target)
+            distance = grid_distance_ft(actor_position, target_position, cell_size_ft=cell_size)
+            distances[target.id] = distance
+            if range_ft is not None and distance > range_ft:
+                raise ValueError(f"typed spell target must be within {range_ft} ft")
+            if require_visible and target.id != actor.id:
+                if grid is None:
+                    raise ValueError("typed spell visibility requires an authoritative scene grid")
+                blockers, _cover_cells = cls._grid_obstacles(session, grid)
+                visible, _mode, _pair = cls._grid_footprint_line_of_sight(
+                    session,
+                    grid,
+                    cls._grid_footprint(actor),
+                    cls._grid_footprint(target),
+                    blockers,
+                    start_height_ft=cls._explicit_grid_elevation_ft(actor),
+                    end_height_ft=cls._explicit_grid_elevation_ft(target),
+                )
+                if not visible:
+                    raise ValueError("typed spell target must be visible")
+        if max_target_distance_ft is not None and len(targets) > 1:
+            positions = {target.id: position(target) for target in targets}
+            for index, left in enumerate(targets):
+                for right in targets[index + 1 :]:
+                    distance = grid_distance_ft(
+                        positions[left.id],
+                        positions[right.id],
+                        cell_size_ft=cell_size,
+                    )
+                    if distance > max_target_distance_ft:
+                        raise ValueError(
+                            "typed spell targets must be within "
+                            f"{max_target_distance_ft} ft of one another"
+                        )
+        return {
+            "range_ft": range_ft,
+            "max_target_distance_ft": max_target_distance_ft,
+            "distances_ft": distances,
+            "visible_required": require_visible,
+            "target_ids": [target.id for target in targets],
+        }
 
     @classmethod
     def _rage_attack_counts_as_activity(
@@ -1956,8 +2039,7 @@ class CombatEngineService:
                 if effect.source_combatant_id is not None:
                     source = session.get(Combatant, effect.source_combatant_id)
                     if source is not None:
-                        if source.concentration.get("effect_id") == effect.id:
-                            source.concentration = {}
+                        self._clear_concentration_effect(source, effect, session=session)
                         touched_combatants[source.id] = source
             for combatant in touched_combatants.values():
                 if combatant.id != summon.id:
@@ -7502,6 +7584,76 @@ class CombatEngineService:
         raw = dict(effect.details_json or {}).get("runtime_state")
         return dict(raw) if isinstance(raw, dict) else None
 
+    @staticmethod
+    def _concentration_contains_effect(
+        concentration: Mapping[str, object],
+        effect: CombatEffect,
+    ) -> bool:
+        if concentration.get("effect_id") == effect.id:
+            return True
+        raw_ids = concentration.get("effect_ids")
+        if isinstance(raw_ids, list) and effect.id in raw_ids:
+            return True
+        group_id = str(concentration.get("concentration_group_id") or "").strip()
+        effect_group_id = str(
+            dict(effect.details_json or {}).get("concentration_group_id") or ""
+        ).strip()
+        return bool(group_id and effect_group_id and group_id == effect_group_id)
+
+    @classmethod
+    def _clear_concentration_effect(
+        cls,
+        source: Combatant,
+        effect: CombatEffect,
+        *,
+        session: Session | None = None,
+    ) -> bool:
+        concentration = dict(source.concentration or {})
+        if not cls._concentration_contains_effect(concentration, effect):
+            return False
+        raw_ids = concentration.get("effect_ids")
+        if isinstance(raw_ids, list):
+            remaining = [item for item in raw_ids if item != effect.id]
+            if remaining:
+                concentration["effect_ids"] = remaining
+                if concentration.get("effect_id") == effect.id:
+                    concentration["effect_id"] = remaining[0]
+                source.concentration = concentration
+                return True
+        source.concentration = {}
+        cls._clear_character_concentration(session, source, effect)
+        return True
+
+    @staticmethod
+    def _clear_character_concentration(
+        session: Session | None,
+        source: Combatant,
+        effect: CombatEffect,
+    ) -> None:
+        if session is None or source.entity_type != "character" or not source.entity_id:
+            return
+        character = session.get(Character, source.entity_id)
+        if character is None:
+            return
+        resources = dict(character.resources or {})
+        current = resources.get("concentration")
+        if not isinstance(current, dict):
+            return
+        effect_details = dict(effect.details_json or {})
+        effect_spell_id = str(effect_details.get("spell_id") or "").strip()
+        effect_known_spell_id = str(effect_details.get("known_spell_id") or "").strip()
+        current_spell_id = str(current.get("spell_id") or "").strip()
+        if (
+            (effect_spell_id or effect_known_spell_id)
+            and current_spell_id
+            and current_spell_id not in {effect_spell_id, effect_known_spell_id}
+        ):
+            return
+        resources.pop("concentration", None)
+        character.resources = resources
+        character.version += 1
+        character.updated_at = datetime.now(UTC)
+
     @classmethod
     def _active_runtime_effects(
         cls,
@@ -8955,7 +9107,7 @@ class CombatEngineService:
                 if (
                     effect.source_combatant_id is None
                     or source is None
-                    or source.concentration.get("effect_id") != effect.id
+                    or not cls._concentration_contains_effect(source.concentration, effect)
                 ):
                     return "专注已中断"
         return None
@@ -9081,8 +9233,8 @@ class CombatEngineService:
             if not effect.source_combatant_id:
                 continue
             source = session.get(Combatant, effect.source_combatant_id)
-            if source is not None and source.concentration.get("effect_id") == effect.id:
-                source.concentration = {}
+            if source is not None:
+                cls._clear_concentration_effect(source, effect, session=session)
                 changed_sources[source.id] = source
         for target in changed_targets.values():
             target.version += 1
@@ -9230,18 +9382,26 @@ class CombatEngineService:
         matched: list[CombatEffect] = []
         for effect in effects:
             details = dict(effect.details_json or {})
-            block = details.get("rule_block")
-            if not isinstance(block, dict) or str(block.get("kind") or "") != kind:
+            blocks = cls._compiled_rule_blocks(details)
+            if not any(str(block.get("kind") or "") == kind for block in blocks):
                 continue
-            if kind == "modifier" and str(block.get("stat") or "") != field:
+            if kind == "modifier" and not any(
+                str(block.get("kind") or "") == kind
+                and str(block.get("stat") or "") == field
+                for block in blocks
+            ):
                 continue
             if kind == "defense":
-                defense_field = {
-                    "resistance": "damage_resistances",
-                    "vulnerability": "damage_vulnerabilities",
-                    "immunity": "damage_immunities",
-                }.get(str(block.get("operation") or ""))
-                if defense_field != field:
+                if not any(
+                    {
+                        "resistance": "damage_resistances",
+                        "vulnerability": "damage_vulnerabilities",
+                        "immunity": "damage_immunities",
+                    }.get(str(block.get("operation") or ""))
+                    == field
+                    for block in blocks
+                    if str(block.get("kind") or "") == "defense"
+                ):
                     continue
             matched.append(effect)
 
@@ -9333,7 +9493,18 @@ class CombatEngineService:
             return False
         first_details = dict(effects[0].details_json or {})
         first_applied = first_details.get("applied_state")
-        baseline = first_applied.get(field) if isinstance(first_applied, dict) else None
+
+        def find_applied(value: object) -> object:
+            if isinstance(value, dict):
+                if field in value:
+                    return value[field]
+                for nested in value.values():
+                    found = find_applied(nested)
+                    if found is not None:
+                        return found
+            return None
+
+        baseline = find_applied(first_applied)
         if not isinstance(baseline, list):
             return False
         values = {str(item) for item in baseline}
@@ -9341,19 +9512,37 @@ class CombatEngineService:
             if row.id == effect.id or row.status != "active":
                 continue
             details = dict(row.details_json or {})
-            block = details.get("rule_block")
-            if not isinstance(block, dict):
-                continue
-            row_applied = details.get("applied_state")
-            if isinstance(row_applied, dict):
-                row_applied = dict(row_applied)
-                row_applied[field] = sorted(values)
-                details["applied_state"] = row_applied
-                row.details_json = details
-            raw_types = block.get("damage_types")
-            if not isinstance(raw_types, list):
-                return False
-            values.update(str(item) for item in raw_types if str(item))
+            blocks = cls._compiled_rule_blocks(details)
+            applied = details.get("applied_state")
+            for index, block in enumerate(blocks):
+                if str(block.get("kind") or "") != "defense":
+                    continue
+                defense_field = {
+                    "resistance": "damage_resistances",
+                    "vulnerability": "damage_vulnerabilities",
+                    "immunity": "damage_immunities",
+                }.get(str(block.get("operation") or ""))
+                if defense_field != field:
+                    continue
+                raw_types = block.get("damage_types")
+                if not isinstance(raw_types, list):
+                    return False
+                if isinstance(applied, dict):
+                    updated_applied = dict(applied)
+                    if (
+                        str(dict(details.get("rule_block") or {}).get("kind") or "")
+                        == "defense_bundle"
+                    ):
+                        nested = updated_applied.get(str(index))
+                        if isinstance(nested, dict):
+                            nested = dict(nested)
+                            nested[field] = sorted(values)
+                            updated_applied[str(index)] = nested
+                    else:
+                        updated_applied[field] = sorted(values)
+                    details["applied_state"] = updated_applied
+                    row.details_json = details
+                values.update(str(item) for item in raw_types if str(item))
         setattr(target, field, sorted(values))
         return True
 
@@ -10846,6 +11035,40 @@ class CombatEngineService:
             resistance.extend(types)
             defense_id = str(defense.get("id") or "feature_damage_resistance")
             applied.append(f"{defense_id}:resistance:{','.join(types)}")
+        if session is not None:
+            active_effects = session.scalars(
+                select(CombatEffect).where(
+                    CombatEffect.combat_id == (combat_id or target.combat_id),
+                    CombatEffect.target_combatant_id == target.id,
+                    CombatEffect.status == "active",
+                )
+            ).all()
+            normalized_damage_types = {
+                str(value).strip().lower() for value in damage_types if str(value).strip()
+            }
+            for effect in active_effects:
+                if not isinstance(effect, CombatEffect):
+                    continue
+                details = dict(effect.details_json or {})
+                for block in cls._compiled_rule_blocks(details):
+                    if (
+                        str(block.get("kind") or "") != "defense"
+                        or str(block.get("operation") or "") != "resistance"
+                    ):
+                        continue
+                    raw_types = block.get("damage_types")
+                    if not isinstance(raw_types, list):
+                        continue
+                    types = [
+                        str(value).strip().lower()
+                        for value in raw_types
+                        if str(value).strip()
+                    ]
+                    if not normalized_damage_types.intersection(types):
+                        continue
+                    resistance.extend(types)
+                    source = str(block.get("source") or effect.name)
+                    applied.append(f"{source}:resistance:{','.join(types)}")
         if session is not None:
             normalized_types = {str(value).strip().lower() for value in damage_types}
             for defense in cls._ranged_passive_effects(
@@ -20003,8 +20226,8 @@ class CombatEngineService:
                         if effect.source_combatant_id
                         else None
                     )
-                    if source is not None and source.concentration.get("effect_id") == effect.id:
-                        source.concentration = {}
+                    if source is not None:
+                        self._clear_concentration_effect(source, effect, session=session)
                         source.version += 1
                         source.updated_at = now
             for effect_target in expired_targets.values():
@@ -20341,6 +20564,329 @@ class CombatEngineService:
                 raise StateNotFoundError("source combatant not found in combat")
         return combat, target, source
 
+    def _spell_defense_scope(
+        self,
+        session: Session,
+        campaign_id: str,
+        combat_id: str,
+        *,
+        source_combatant_id: str,
+        source_version: int,
+        target_combatant_ids: list[str],
+        target_versions: Mapping[str, int],
+        rule_block: Mapping[str, object],
+        range_ft: int | None,
+        require_visible: bool,
+        max_target_distance_ft: int | None,
+    ) -> tuple[Combat, Combatant, list[Combatant], dict[str, object]]:
+        campaign = session.get(Campaign, campaign_id)
+        if campaign is None:
+            raise StateNotFoundError("campaign not found")
+        combat = session.get(Combat, combat_id)
+        if combat is None or combat.campaign_id != campaign_id:
+            raise StateNotFoundError("combat not found in campaign")
+        if combat.status != "active":
+            raise ValueError("only an active combat can confirm spell defenses")
+        source = session.get(Combatant, source_combatant_id)
+        if source is None or source.combat_id != combat_id or not source.is_active:
+            raise StateNotFoundError("spell defense source combatant not found")
+        if source.version != source_version:
+            raise VersionConflict("combatant", source.id, source_version, source.version)
+        if not target_combatant_ids:
+            raise ValueError("spell defense requires at least one target")
+        if len(target_combatant_ids) != len(set(target_combatant_ids)):
+            raise ValueError("spell defense target ids must be unique")
+        if str(rule_block.get("kind") or "") != "defense_bundle":
+            raise ValueError("spell defense requires a typed defense bundle")
+        targets: list[Combatant] = []
+        for target_id in target_combatant_ids:
+            target = session.get(Combatant, target_id)
+            if target is None or target.combat_id != combat_id:
+                raise StateNotFoundError("spell defense target combatant not found")
+            expected_version = int(target_versions.get(target.id) or 0)
+            if target.version != expected_version:
+                raise VersionConflict("combatant", target.id, expected_version, target.version)
+            targets.append(target)
+        geometry = self.validate_typed_spell_targets(
+            session,
+            combat,
+            source,
+            targets,
+            range_ft=range_ft,
+            require_visible=require_visible,
+            max_target_distance_ft=max_target_distance_ft,
+        )
+        return combat, source, targets, geometry
+
+    def preview_spell_defense(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        *,
+        source_combatant_id: str,
+        source_version: int,
+        target_combatant_ids: list[str],
+        target_versions: Mapping[str, int],
+        name: str,
+        rule_block: Mapping[str, object],
+        range_ft: int | None,
+        require_visible: bool,
+        max_target_distance_ft: int | None,
+    ) -> dict[str, Any]:
+        with Session(self.engine) as session:
+            combat, source, targets, geometry = self._spell_defense_scope(
+                session,
+                campaign_id,
+                combat_id,
+                source_combatant_id=source_combatant_id,
+                source_version=source_version,
+                target_combatant_ids=target_combatant_ids,
+                target_versions=target_versions,
+                rule_block=rule_block,
+                range_ft=range_ft,
+                require_visible=require_visible,
+                max_target_distance_ft=max_target_distance_ft,
+            )
+            old_effects = self._active_concentration_effects(session, combat.id, source.id)
+            return {
+                "name": name,
+                "rule_block": dict(rule_block),
+                "duration_unit": "concentration",
+                "requires_concentration": True,
+                "effects_to_end": [serialize(effect) for effect in old_effects],
+                "source": serialize(source),
+                "targets": [serialize(target) for target in targets],
+                "geometry": geometry,
+            }
+
+    def confirm_spell_defense(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        *,
+        source_combatant_id: str,
+        source_version: int,
+        target_combatant_ids: list[str],
+        target_versions: Mapping[str, int],
+        name: str,
+        rule_block: Mapping[str, object],
+        range_ft: int | None,
+        require_visible: bool,
+        max_target_distance_ft: int | None,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        if not idempotency_key.strip():
+            raise ValueError("idempotency key is required")
+        with Session(self.engine) as session, session.begin():
+            combat = session.get(Combat, combat_id)
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("combat not found in campaign")
+            existing_action = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat_id,
+                    CombatAction.idempotency_key == idempotency_key,
+                )
+            )
+            if existing_action is not None:
+                result = dict(existing_action.result_json or {})
+                effect_ids = [
+                    item for item in result.get("effect_ids", []) if isinstance(item, str)
+                ]
+                effects = [
+                    effect
+                    for effect_id in effect_ids
+                    if (effect := session.get(CombatEffect, effect_id)) is not None
+                ]
+                target_ids = [
+                    item for item in result.get("target_ids", []) if isinstance(item, str)
+                ]
+                targets = [
+                    target
+                    for target_id in target_ids
+                    if (target := session.get(Combatant, target_id)) is not None
+                ]
+                source = session.get(Combatant, source_combatant_id)
+                return {
+                    "action": serialize(existing_action),
+                    "effects": [serialize(effect) for effect in effects],
+                    "targets": [serialize(target) for target in targets],
+                    "source": serialize(source) if source is not None else None,
+                    "ended_effects": [
+                        serialize(effect)
+                        for effect_id in result.get("ended_effect_ids", [])
+                        if isinstance(effect_id, str)
+                        and (effect := session.get(CombatEffect, effect_id)) is not None
+                    ],
+                    "already_applied": True,
+                }
+            combat, source, targets, geometry = self._spell_defense_scope(
+                session,
+                campaign_id,
+                combat_id,
+                source_combatant_id=source_combatant_id,
+                source_version=source_version,
+                target_combatant_ids=target_combatant_ids,
+                target_versions=target_versions,
+                rule_block=rule_block,
+                range_ft=range_ft,
+                require_visible=require_visible,
+                max_target_distance_ft=max_target_distance_ft,
+            )
+            now = datetime.now(UTC)
+            old_effects = self._active_concentration_effects(session, combat.id, source.id)
+            before = {
+                "source": serialize(source),
+                "targets": [serialize(target) for target in targets],
+                "effects_to_end": [serialize(effect) for effect in old_effects],
+            }
+            touched_targets: dict[str, Combatant] = {}
+            for old_effect in old_effects:
+                old_target = session.get(Combatant, old_effect.target_combatant_id)
+                if old_target is not None:
+                    self._reverse_compiled_effect(session, old_target, old_effect)
+                    touched_targets[old_target.id] = old_target
+                old_effect.status = "ended"
+                old_effect.ended_at = now
+                old_effect.end_reason = f"开始新专注：{name}"
+                old_effect.version += 1
+
+            group_id = f"spell-defense:{idempotency_key}"
+            created: list[CombatEffect] = []
+            for target in targets:
+                details_json: dict[str, object] = {
+                    "rule_block": dict(rule_block),
+                    "runtime_state": {
+                        "name": "content_ir_spell_defense",
+                        "end_triggers": [
+                            "concentration_broken",
+                            "source_unconscious",
+                            "source_dead",
+                            "source_inactive",
+                        ],
+                        "concentration_group_id": group_id,
+                    },
+                    "concentration_group_id": group_id,
+                    "spell_id": str(rule_block.get("spell_id") or ""),
+                    "known_spell_id": str(rule_block.get("known_spell_id") or ""),
+                    "_effect_instance_key": f"{idempotency_key}:{target.id}",
+                }
+                prior_effects = session.scalars(
+                    select(CombatEffect).where(
+                        CombatEffect.combat_id == combat.id,
+                        CombatEffect.target_combatant_id == target.id,
+                    )
+                ).all()
+                prior_orders = [
+                    int(order)
+                    for prior_effect in prior_effects
+                    for order in [
+                        dict(prior_effect.details_json or {}).get("_effect_instance_order")
+                    ]
+                    if isinstance(order, int) and not isinstance(order, bool)
+                ]
+                details_json["_effect_instance_order"] = max(prior_orders, default=0) + 1
+                applied_state = self._apply_rule_block_effect(
+                    target,
+                    details_json,
+                    session=session,
+                )
+                if applied_state:
+                    details_json["applied_state"] = applied_state
+                effect = CombatEffect(
+                    campaign_id=campaign_id,
+                    combat_id=combat.id,
+                    target_combatant_id=target.id,
+                    source_combatant_id=source.id,
+                    name=name,
+                    effect_type="spell_defense",
+                    details_json=details_json,
+                    started_round=combat.round_number,
+                    duration_unit="concentration",
+                    requires_concentration=True,
+                    status="active",
+                )
+                session.add(effect)
+                created.append(effect)
+                touched_targets[target.id] = target
+            session.flush()
+            effect_ids = [effect.id for effect in created]
+            source.concentration = {
+                "effect_id": effect_ids[0],
+                "effect_ids": effect_ids,
+                "concentration_group_id": group_id,
+                "name": name,
+                "started_round": combat.round_number,
+            }
+            for target in touched_targets.values():
+                target.version += 1
+                target.updated_at = now
+            if source.id not in touched_targets:
+                source.version += 1
+                source.updated_at = now
+            ended_summons = self._deactivate_summons_for_effects(
+                session,
+                combat,
+                old_effects,
+                now=now,
+            )
+            transaction = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="combat_add_spell_defense",
+                idempotency_key=idempotency_key,
+                status="applied",
+                before_snapshot=before,
+                after_snapshot={
+                    "effect_ids": effect_ids,
+                    "target_ids": [target.id for target in targets],
+                    "ended_effect_ids": [effect.id for effect in old_effects],
+                    "ended_summon_ids": [item.id for item in ended_summons],
+                    "geometry": geometry,
+                },
+                reason=f"确认结构化法术防御：{name}",
+                source="combat",
+                confirmed_at=now,
+            )
+            session.add(transaction)
+            session.flush()
+            result = {
+                "effect_ids": effect_ids,
+                "target_ids": [target.id for target in targets],
+                "ended_effect_ids": [effect.id for effect in old_effects],
+                "ended_summon_ids": [item.id for item in ended_summons],
+                "geometry": geometry,
+            }
+            action = CombatAction(
+                campaign_id=campaign_id,
+                combat_id=combat.id,
+                actor_combatant_id=source.id,
+                transaction_id=transaction.id,
+                action_type="spell_defense",
+                target_combatant_ids=[target.id for target in targets],
+                request_json={
+                    "source_combatant_id": source.id,
+                    "target_combatant_ids": [target.id for target in targets],
+                    "name": name,
+                    "rule_block": dict(rule_block),
+                },
+                result_json=result,
+                explanation="建立一个共享专注的多目标结构化法术防御效果",
+                round_number=combat.round_number,
+                turn_index=combat.current_turn_index,
+                summary=f"{source.display_name} 建立法术防御：{name}",
+                idempotency_key=idempotency_key,
+                status="confirmed",
+            )
+            session.add(action)
+            session.flush()
+            return {
+                "action": serialize(action),
+                "effects": [serialize(effect) for effect in created],
+                "targets": [serialize(target) for target in targets],
+                "source": serialize(source),
+                "ended_effects": [serialize(effect) for effect in old_effects],
+                "geometry": geometry,
+            }
+
     @staticmethod
     def _active_concentration_effects(
         session: Session,
@@ -20447,6 +20993,41 @@ class CombatEngineService:
         return persisted
 
     @staticmethod
+    def _compiled_rule_blocks(details: Mapping[str, object]) -> list[dict[str, object]]:
+        """Return the concrete rule blocks owned by one compiled effect.
+
+        A spell can grant several defenses while still having one
+        concentration/lifecycle row. ``defense_bundle`` keeps those clauses
+        atomic without teaching the combat engine any spell names.
+        """
+
+        raw_block = details.get("rule_block")
+        if not isinstance(raw_block, dict):
+            return []
+        if str(raw_block.get("kind") or "") != "defense_bundle":
+            return [raw_block]
+        raw_components = raw_block.get("components") or raw_block.get("blocks")
+        if not isinstance(raw_components, list):
+            return []
+        return [item for item in raw_components if isinstance(item, dict)]
+
+    @classmethod
+    def _bundle_component_details(
+        cls,
+        details: Mapping[str, object],
+        block: dict[str, object],
+        index: int,
+    ) -> dict[str, object]:
+        component_details = dict(details)
+        component_details["rule_block"] = block
+        applied = details.get("applied_state")
+        if isinstance(applied, dict):
+            component_applied = applied.get(str(index))
+            if isinstance(component_applied, dict):
+                component_details["applied_state"] = component_applied
+        return component_details
+
+    @staticmethod
     def _apply_rule_block_effect(
         target: Combatant,
         details: dict[str, object],
@@ -20466,6 +21047,37 @@ class CombatEngineService:
         block = raw_block if isinstance(raw_block, dict) else None
         if block is None:
             return {}
+        if str(block.get("kind") or "") == "defense_bundle":
+            raw_components = block.get("components") or block.get("blocks")
+            components = (
+                [item for item in raw_components if isinstance(item, dict)]
+                if isinstance(raw_components, list)
+                else []
+            )
+            if not components:
+                return {}
+            if remove:
+                for index, component in enumerate(components):
+                    CombatEngineService._apply_rule_block_effect(
+                        target,
+                        CombatEngineService._bundle_component_details(details, component, index),
+                        remove=True,
+                        session=session,
+                        effect=effect,
+                    )
+                return {}
+            applied_bundle: dict[str, object] = {}
+            for index, component in enumerate(components):
+                component_details = dict(details)
+                component_details["rule_block"] = component
+                component_applied = CombatEngineService._apply_rule_block_effect(
+                    target,
+                    component_details,
+                    session=session,
+                )
+                if component_applied:
+                    applied_bundle[str(index)] = component_applied
+            return applied_bundle
         applied = details.get("applied_state")
         if remove:
             kind = str(block.get("kind") or "")
@@ -20646,10 +21258,17 @@ class CombatEngineService:
                 before["rule_modifiers"] = dict(modifiers)
                 before["rule_modifier_key"] = key
                 modifiers[key] = {
+                    "stat": stat,
+                    "scope": block.get("scope") or "all",
+                    "ability": block.get("ability"),
+                    "abilities": block.get("abilities"),
+                    "skill": block.get("skill"),
                     "operation": operation,
                     "value": value,
                     "expression": block.get("expression"),
                     "source": block.get("source"),
+                    "applies_when": block.get("applies_when"),
+                    "target_combatant_id": block.get("target_combatant_id"),
                 }
                 snapshot = dict(target.snapshot_json)
                 snapshot["rule_modifiers"] = modifiers
@@ -21660,6 +22279,8 @@ class CombatEngineService:
                     effect.version += 1
                     ended.append(effect)
                 target.concentration = {}
+                for effect in ended:
+                    self._clear_character_concentration(session, target, effect)
                 target.version += 1
                 target.updated_at = now
             ended_summons = self._deactivate_summons_for_effects(
@@ -21760,6 +22381,29 @@ class CombatEngineService:
                 if effect.source_combatant_id is not None
                 else None
             )
+            effect_details = dict(effect.details_json or {})
+            concentration_group_id = str(
+                effect_details.get("concentration_group_id") or ""
+            ).strip()
+            effects_to_end = [effect]
+            if concentration_group_id:
+                effects_to_end = list(
+                    session.scalars(
+                        select(CombatEffect).where(
+                            CombatEffect.combat_id == combat_id,
+                            CombatEffect.source_combatant_id == effect.source_combatant_id,
+                            CombatEffect.status == "active",
+                        )
+                    ).all()
+                )
+                effects_to_end = [
+                    row
+                    for row in effects_to_end
+                    if str(dict(row.details_json or {}).get("concentration_group_id") or "")
+                    == concentration_group_id
+                ]
+                if effect not in effects_to_end:
+                    effects_to_end.append(effect)
             existing = session.scalar(
                 select(CombatAction).where(
                     CombatAction.combat_id == combat_id,
@@ -21809,36 +22453,43 @@ class CombatEngineService:
                 )
             before = {
                 "effect": serialize(effect),
+                "effects": [serialize(row) for row in effects_to_end],
                 "target": serialize(target),
                 "source": serialize(source) if source is not None else None,
             }
             now = datetime.now(UTC)
-            if self._runtime_state(effect) is not None:
-                self._end_runtime_effect(
-                    session,
-                    effect,
-                    reason=command.reason,
-                    now=now,
-                )
-            else:
-                self._reverse_compiled_effect(session, target, effect)
-                effect.status = "ended"
-                effect.ended_at = now
-                effect.end_reason = command.reason
-                effect.version += 1
-            target.version += 1
-            target.updated_at = now
+            touched_targets: dict[str, Combatant] = {}
+            for effect_to_end in effects_to_end:
+                effect_target = session.get(Combatant, effect_to_end.target_combatant_id)
+                if effect_target is None:
+                    continue
+                if self._runtime_state(effect_to_end) is not None:
+                    self._end_runtime_effect(
+                        session,
+                        effect_to_end,
+                        reason=command.reason,
+                        now=now,
+                    )
+                else:
+                    self._reverse_compiled_effect(session, effect_target, effect_to_end)
+                    effect_to_end.status = "ended"
+                    effect_to_end.ended_at = now
+                    effect_to_end.end_reason = command.reason
+                    effect_to_end.version += 1
+                touched_targets[effect_target.id] = effect_target
+            for effect_target in touched_targets.values():
+                effect_target.version += 1
+                effect_target.updated_at = now
             if source is not None:
-                concentration_id = source.concentration.get("effect_id")
-                if concentration_id == effect.id:
-                    source.concentration = {}
-                if source.id != target.id:
+                for effect_to_end in effects_to_end:
+                    self._clear_concentration_effect(source, effect_to_end, session=session)
+                if source.id not in touched_targets:
                     source.version += 1
                     source.updated_at = now
             ended_summons = self._deactivate_summons_for_effects(
                 session,
                 combat,
-                [effect],
+                effects_to_end,
                 now=now,
             )
             transaction = OperationTransaction(
@@ -21849,6 +22500,7 @@ class CombatEngineService:
                 before_snapshot=before,
                 after_snapshot={
                     "effect_id": effect.id,
+                    "effect_ids": [row.id for row in effects_to_end],
                     "status": effect.status,
                     "end_reason": effect.end_reason,
                     "ended_summon_ids": [row.id for row in ended_summons],
@@ -21865,10 +22517,11 @@ class CombatEngineService:
                 actor_combatant_id=source.id if source is not None else None,
                 transaction_id=transaction.id,
                 action_type="end_effect",
-                target_combatant_ids=[target.id],
+                target_combatant_ids=[row.target_combatant_id for row in effects_to_end],
                 request_json=command.model_dump(mode="json"),
                 result_json={
                     "effect_id": effect.id,
+                    "ended_effect_ids": [row.id for row in effects_to_end],
                     "effect_name": effect.name,
                     "reason": command.reason,
                     "ended_summon_ids": [row.id for row in ended_summons],
@@ -21885,6 +22538,7 @@ class CombatEngineService:
             return {
                 "action": serialize(action),
                 "effect": serialize(effect),
+                "ended_effects": [serialize(row) for row in effects_to_end],
                 "target": serialize(target),
                 "source": serialize(source) if source is not None else None,
                 "ended_summons": [serialize(row) for row in ended_summons],
@@ -21970,8 +22624,8 @@ class CombatEngineService:
                     if effect.source_combatant_id
                     else None
                 )
-                if source is not None and source.concentration.get("effect_id") == effect.id:
-                    source.concentration = {}
+                if source is not None:
+                    self._clear_concentration_effect(source, effect, session=session)
                     source.version += 1
                     source.updated_at = now
                 ended_summons = self._deactivate_summons_for_effects(

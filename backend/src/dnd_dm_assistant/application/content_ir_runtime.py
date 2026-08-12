@@ -737,11 +737,8 @@ class ContentIRRuntimeService:
             raise ValueError(f"{kind} roll must be between {bounds[0]} and {bounds[1]}")
         return value
 
-    def _spell_commands(
-        self,
-        data: Mapping[str, Any],
-        blocks: Mapping[str, list[dict[str, Any]]],
-    ) -> list[CombatActionCommand] | None:
+    @staticmethod
+    def _runtime_target_ids(data: Mapping[str, Any]) -> list[str]:
         target_ids = [
             item
             for item in [_text(data.get("target_combatant_id")), *data.get("target_combatant_ids", [])]
@@ -751,6 +748,136 @@ class ContentIRRuntimeService:
             raise ValueError("production spell runtime requires a target")
         if len(target_ids) != len(set(target_ids)):
             raise ValueError("production spell runtime target ids must be unique")
+        return target_ids
+
+    @staticmethod
+    def _text_list(value: object, *, field: str) -> list[str]:
+        raw_values = [value] if isinstance(value, str) else value
+        if not isinstance(raw_values, list):
+            raise ValueError(f"typed spell defense field {field} must be a string list")
+        values = [str(item).strip().lower() for item in raw_values if str(item).strip()]
+        if not values:
+            raise ValueError(f"typed spell defense field {field} must not be empty")
+        return list(dict.fromkeys(values))
+
+    @classmethod
+    def _spell_defense_contract(
+        cls,
+        data: Mapping[str, Any],
+        blocks: Mapping[str, list[dict[str, Any]]],
+        *,
+        runtime_id: str,
+        runtime_level: int,
+        caster_level: int,
+    ) -> dict[str, Any] | None:
+        modifier_blocks = [
+            cls._parameters(block)
+            for block in blocks.get("effects", [])
+            if cls._parameters(block).get("type") == "spell_modifier"
+        ]
+        if not modifier_blocks:
+            return None
+        components: list[dict[str, Any]] = []
+        for modifier in modifier_blocks:
+            operator = _text(modifier.get("modifier")).lower()
+            value = modifier.get("value")
+            if operator in {"damage_resistance", "resistance"}:
+                components.append(
+                    {
+                        "kind": "defense",
+                        "operation": "resistance",
+                        "damage_types": cls._text_list(value, field="value"),
+                        "source": runtime_id,
+                    }
+                )
+            elif operator in {"saving_throw_advantage", "saving_advantage"}:
+                abilities = modifier.get("applies_to")
+                if abilities in (None, ""):
+                    abilities = value
+                components.append(
+                    {
+                        "kind": "modifier",
+                        "stat": "saving_throw",
+                        "scope": "all",
+                        "operation": "advantage",
+                        "abilities": cls._text_list(abilities, field="applies_to"),
+                        "source": runtime_id,
+                        "applies_when": "always",
+                    }
+                )
+            else:
+                raise ValueError(f"unsupported typed spell modifier: {operator}")
+        target = cls._first_parameters(blocks, "target_selection")
+        target_count = int(target.get("count") or 1)
+        if target_count < 1:
+            raise ValueError("typed spell target count must be positive")
+        range_ft = target.get("range_ft", target.get("range"))
+        if range_ft is None:
+            range_ft = data.get("spell_range_ft")
+        if isinstance(range_ft, str):
+            range_match = re.search(r"\d+", range_ft)
+            range_ft = int(range_match.group(0)) if range_match else None
+        if range_ft is not None and (
+            isinstance(range_ft, bool) or not isinstance(range_ft, (int, float)) or int(range_ft) < 0
+        ):
+            raise ValueError("typed spell target range must be a non-negative number")
+        range_ft = int(range_ft) if range_ft is not None else None
+        max_target_distance_ft = target.get(
+            "max_distance_ft",
+            target.get("max_target_distance_ft"),
+        )
+        if max_target_distance_ft is not None:
+            max_target_distance_ft = int(max_target_distance_ft)
+            if max_target_distance_ft < 0:
+                raise ValueError("typed spell target group distance must be non-negative")
+        upcast = cls._first_parameters(blocks, "upcast")
+        increment = int(upcast.get("target_count_increment") or 0)
+        minimum_slot = int(upcast.get("minimum_slot") or runtime_level + 1)
+        slot_level = int(data.get("slot_level") or 0)
+        maximum_count = target_count
+        if increment:
+            if slot_level >= minimum_slot:
+                maximum_count += max(0, slot_level - runtime_level) * increment
+        elif slot_level > runtime_level:
+            maximum_count = target_count
+        target_ids = cls._runtime_target_ids(data)
+        if len(target_ids) > maximum_count:
+            raise ValueError(f"typed spell runtime allows at most {maximum_count} targets")
+        if len(target_ids) < target_count:
+            raise ValueError(f"typed spell runtime requires at least {target_count} target")
+        target_versions = dict(data.get("target_versions") or {})
+        if data.get("target_combatant_id"):
+            target_versions.setdefault(
+                _text(data.get("target_combatant_id")),
+                int(data.get("target_version") or 0),
+            )
+        if any(int(target_versions.get(item) or 0) < 1 for item in target_ids):
+            raise ValueError("typed spell runtime requires every target version")
+        return {
+            "name": _text(data.get("runtime_name")) or runtime_id,
+            "rule_block": {
+                "kind": "defense_bundle",
+                "spell_id": runtime_id,
+                "known_spell_id": _text(data.get("known_spell_id")),
+                "components": components,
+            },
+            "target_ids": target_ids,
+            "target_versions": {item: int(target_versions[item]) for item in target_ids},
+            "range_ft": range_ft,
+            "require_visible": str(target.get("visibility") or "").lower() == "visible",
+            "max_target_distance_ft": max_target_distance_ft,
+            "slot_level": slot_level,
+            "maximum_target_count": maximum_count,
+            "runtime_level": runtime_level,
+            "caster_level": caster_level,
+        }
+
+    def _spell_commands(
+        self,
+        data: Mapping[str, Any],
+        blocks: Mapping[str, list[dict[str, Any]]],
+    ) -> list[CombatActionCommand] | None:
+        target_ids = self._runtime_target_ids(data)
         actor_id = _text(data.get("actor_combatant_id"))
         actor_version = int(data.get("actor_version") or 0)
         target_versions = dict(data.get("target_versions") or {})
@@ -936,9 +1063,38 @@ class ContentIRRuntimeService:
                 runtime_schema_version=str(runtime.get("runtime_schema_version") or ""),
                 blocks=blocks,
             )
-            commands = self._spell_commands(execution_data, blocks)
+            defense_contract = self._spell_defense_contract(
+                execution_data,
+                blocks,
+                runtime_id=_text(runtime.get("spell_id")),
+                runtime_level=int(runtime.get("level") or 0),
+                caster_level=int(character.level or 0),
+            )
+            commands = (
+                None
+                if defense_contract is not None
+                else self._spell_commands(execution_data, blocks)
+            )
             combat_preview = None
-            if commands is not None:
+            if defense_contract is not None:
+                if not blocks.get("concentration") or data.get("concentration") is not True:
+                    raise ValueError(
+                        "typed spell defense runtime requires concentration=True"
+                    )
+                combat_preview = self.combat.preview_spell_defense(
+                    campaign_id,
+                    _text(data.get("combat_id")),
+                    source_combatant_id=actor.id,
+                    source_version=int(data.get("actor_version") or 0),
+                    target_combatant_ids=defense_contract["target_ids"],
+                    target_versions=defense_contract["target_versions"],
+                    name=defense_contract["name"],
+                    rule_block=defense_contract["rule_block"],
+                    range_ft=defense_contract["range_ft"],
+                    require_visible=defense_contract["require_visible"],
+                    max_target_distance_ft=defense_contract["max_target_distance_ft"],
+                )
+            elif commands is not None:
                 previews = [
                     self.combat.preview(campaign_id, _text(data.get("combat_id")), command)
                     for command in commands
@@ -979,6 +1135,7 @@ class ContentIRRuntimeService:
                     "spell_context": spell_context,
                     "consumers": [str(item["consumer_id"]) for item in consumers],
                     "area_batch": len(commands or []) > 1,
+                    "defense": defense_contract,
                 },
             }
             result["preview_token"] = _fingerprint(
@@ -1377,8 +1534,37 @@ class ContentIRRuntimeService:
                 "runtime_level": runtime.get("level"),
                 "caster_level": int(character.level or 0),
             }
-            commands = self._spell_commands(execution_data, blocks)
-            if commands is not None:
+            defense_contract = self._spell_defense_contract(
+                execution_data,
+                blocks,
+                runtime_id=_text(runtime.get("spell_id")),
+                runtime_level=int(runtime.get("level") or 0),
+                caster_level=int(character.level or 0),
+            )
+            if defense_contract is not None:
+                if not blocks.get("concentration") or data.get("concentration") is not True:
+                    raise ValueError(
+                        "typed spell defense runtime requires concentration=True"
+                    )
+                combat_done = self.combat.confirm_spell_defense(
+                    campaign_id,
+                    _text(data["combat_id"]),
+                    source_combatant_id=_text(data["actor_combatant_id"]),
+                    source_version=int(data["actor_version"]),
+                    target_combatant_ids=defense_contract["target_ids"],
+                    target_versions=defense_contract["target_versions"],
+                    name=defense_contract["name"],
+                    rule_block=defense_contract["rule_block"],
+                    range_ft=defense_contract["range_ft"],
+                    require_visible=defense_contract["require_visible"],
+                    max_target_distance_ft=defense_contract["max_target_distance_ft"],
+                    idempotency_key=f"content-ir:{key}:defense",
+                )
+            else:
+                commands = self._spell_commands(execution_data, blocks)
+            if defense_contract is not None:
+                pass
+            elif commands is not None:
                 if len(commands) == 1:
                     combat_done = self.combat.confirm(
                         campaign_id,
@@ -1438,7 +1624,13 @@ class ContentIRRuntimeService:
             "runtime_id": data.get("runtime_id"),
             "production_runtime_full": True,
             "preview_token": token,
-            "consumer": "spell_economy.concentration.v1" if blocks.get("concentration") else "combat_engine.damage_heal.v1",
+            "consumer": (
+                "spell.defense.v1"
+                if defense_contract is not None
+                else "spell_economy.concentration.v1"
+                if blocks.get("concentration")
+                else "combat_engine.damage_heal.v1"
+            ),
             "spell_cast": spell_done,
             "combat": combat_done,
             "upcast": {"slot_level": data.get("slot_level")},

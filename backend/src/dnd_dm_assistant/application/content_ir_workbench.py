@@ -238,6 +238,7 @@ _SPELL_CLAUSE_FIELDS = {
             "per_slot",
             "progression",
             "minimum_slot",
+            "target_count_increment",
             "applies_to",
         }
     ),
@@ -251,6 +252,8 @@ _SPELL_CLAUSE_FIELDS = {
             "kind",
             "count",
             "range",
+            "range_ft",
+            "max_distance_ft",
             "visibility",
             "shape",
             "size_ft",
@@ -274,7 +277,7 @@ _SPELL_REQUIRED_FIELDS = {
     "movement": (("distance_ft", "speed", "speed_delta_ft"),),
     "summon_or_creation": (("kind",),),
     "resource_effect": (("resource_key", "operation"),),
-    "upcast": (("increments", "text", "per_slot"),),
+    "upcast": (("increments", "text", "per_slot", "target_count_increment"),),
     "spell_modifier": (("modifier",),),
     "target_selection": (("kind",),),
 }

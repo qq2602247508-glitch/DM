@@ -18,7 +18,10 @@
   },
   "clause_identity": [
     "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3:target",
-    "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3:concentration"
+    "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3:concentration",
+    "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3:psychic-resistance",
+    "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3:saving-throw-advantage",
+    "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3:upcast-targets"
   ],
   "clauses": [
     {
@@ -27,7 +30,9 @@
       "evidence_ref": "同时在智力、感知和魅力豁免检定上具有优势。 **升环施法。**使用四环或更高环阶的法术位施展该法术时，你使用的法术位每比三环高 1 环，就可以多选择一个生物作为目标。而各目标之间距离不能超过 30 尺。",
       "kind": "one_creature",
       "type": "target_selection",
-      "visibility": "visible"
+      "visibility": "visible",
+      "range_ft": 30,
+      "max_distance_ft": 30
     },
     {
       "clause_id": "concentration",
@@ -35,6 +40,44 @@
       "evidence_ref": "ess *三环 防护（奇械师、吟游诗人、术士、魔契师、法师）* **施法时间：**1 动作 **施法距离：**30 尺 **法术成分：**V **持续时间：**专注，最长 1 小时 在法术持续时间内，你或一个施法距离内的可见生物获得对心灵伤害的抗性，同时在智力、感知和魅力豁免检定上具有优势。 **升环施法。**使用四环或更高环阶的法术位施展该法术时，你使用的法术位每比三环高 1 环，就可以多选择一个生物作为目标。而各目标之间距离不能超过 30 尺。",
       "required": true,
       "type": "concentration"
+    },
+    {
+      "applies_to": [
+        "psychic"
+      ],
+      "clause_id": "psychic-resistance",
+      "evidence_ref": "在法术持续时间内，你或一个施法距离内的可见生物获得对心灵伤害的抗性。",
+      "modifier": "damage_resistance",
+      "type": "spell_modifier",
+      "value": [
+        "psychic"
+      ]
+    },
+    {
+      "applies_to": [
+        "intelligence",
+        "wisdom",
+        "charisma"
+      ],
+      "clause_id": "saving-throw-advantage",
+      "evidence_ref": "同时在智力、感知和魅力豁免检定上具有优势。",
+      "modifier": "saving_throw_advantage",
+      "type": "spell_modifier",
+      "value": [
+        "intelligence",
+        "wisdom",
+        "charisma"
+      ]
+    },
+    {
+      "applies_to": [
+        "target_selection"
+      ],
+      "clause_id": "upcast-targets",
+      "evidence_ref": "使用四环或更高环阶的法术位施展该法术时，你使用的法术位每比三环高 1 环，就可以多选择一个生物作为目标。而各目标之间距离不能超过 30 尺。",
+      "minimum_slot": 4,
+      "target_count_increment": 1,
+      "type": "upcast"
     }
   ],
   "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
