@@ -224,7 +224,27 @@ _SPELL_CLAUSE_FIELDS = {
         }
     ),
     "summon_or_creation": frozenset(
-        {"type", "clause_id", "kind", "stat_block_id", "duration", "count"}
+        {
+            "type",
+            "clause_id",
+            "kind",
+            "stat_block_id",
+            "duration",
+            "count",
+            "template",
+            "controller",
+            "disposition",
+            "initiative_mode",
+            "action_economy",
+            "requires_concentration",
+            "choice_key",
+            "choice_values",
+            "choice_required",
+            "default_behavior",
+            "position_policy",
+            "scaling",
+            "name",
+        }
     ),
     "resource_effect": frozenset(
         {"type", "clause_id", "resource_key", "operation", "amount"}
@@ -257,6 +277,8 @@ _SPELL_CLAUSE_FIELDS = {
             "visibility",
             "shape",
             "size_ft",
+            "requires_unoccupied",
+            "position_policy",
         }
     ),
 }
@@ -1040,6 +1062,60 @@ def _spell_clause_errors(
         and clause.get("speed") in (None, "")
     ):
         errors.append(f"clause:{index}:missing_movement_value")
+    if strict and clause_type == "summon_or_creation":
+        if _text(clause.get("kind")).lower() != "summon":
+            errors.append(f"clause:{index}:unsupported_summon_kind")
+        if not _text(clause.get("stat_block_id")):
+            errors.append(f"clause:{index}:missing_stat_block_id")
+        if not isinstance(clause.get("template"), Mapping):
+            errors.append(f"clause:{index}:missing_typed_summon_template")
+        count = clause.get("count")
+        if count is not None and (
+            isinstance(count, bool) or not isinstance(count, int) or count < 1
+        ):
+            errors.append(f"clause:{index}:summon_count_must_be_positive_integer")
+        choice_values = clause.get("choice_values")
+        if choice_values is not None and (
+            not isinstance(choice_values, list)
+            or not choice_values
+            or any(not _text(value) for value in choice_values)
+        ):
+            errors.append(f"clause:{index}:choice_values_must_be_non_empty_string_list")
+        for field in ("controller", "disposition", "initiative_mode", "action_economy"):
+            if not _text(clause.get(field)):
+                errors.append(f"clause:{index}:missing_summon_{field}")
+        if not isinstance(clause.get("requires_concentration"), bool):
+            errors.append(f"clause:{index}:requires_concentration_must_be_bool")
+        duration = clause.get("duration")
+        if not isinstance(duration, Mapping):
+            errors.append(f"clause:{index}:missing_typed_summon_duration")
+        else:
+            if _text(duration.get("unit")) not in {"rounds", "minutes", "until_removed"}:
+                errors.append(f"clause:{index}:unsupported_summon_duration_unit")
+            if _text(duration.get("unit")) in {"rounds", "minutes"} and (
+                isinstance(duration.get("value"), bool)
+                or not isinstance(duration.get("value"), int)
+                or duration.get("value") <= 0
+            ):
+                errors.append(f"clause:{index}:timed_summon_duration_value_invalid")
+        behavior = clause.get("default_behavior")
+        if not isinstance(behavior, Mapping):
+            errors.append(f"clause:{index}:missing_summon_default_behavior")
+        else:
+            for field in (
+                "command_mode",
+                "control_boundary",
+                "movement_policy",
+                "on_no_command",
+            ):
+                if not _text(behavior.get(field)):
+                    errors.append(f"clause:{index}:missing_default_behavior_{field}")
+    if strict and clause_type == "target_selection":
+        if _text(clause.get("kind")).lower() == "one_unoccupied_position":
+            if clause.get("requires_unoccupied") is not True:
+                errors.append(f"clause:{index}:summon_position_must_be_unoccupied")
+            if _text(clause.get("visibility")).lower() != "visible":
+                errors.append(f"clause:{index}:summon_position_must_be_visible")
     return tuple(errors)
 
 

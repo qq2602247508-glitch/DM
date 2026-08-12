@@ -91,6 +91,37 @@ _CONSUMERS: dict[str, dict[str, Any]] = {
             "audit",
         ),
     },
+    "spell.summon.v1": {
+        "content_kind": "spell",
+        "runtime_schema_version": "spell-runtime-1",
+        "clause_types": ("summon_or_creation", "target_selection"),
+        "required_fields": (
+            "character_id",
+            "character_version",
+            "known_spell_id",
+            "slot_level",
+            "combat_id",
+            "actor_combatant_id",
+            "actor_version",
+            "summon_choice",
+            "destination_row",
+            "destination_col",
+        ),
+        "required_services": ("spell_economy", "combat_engine.summon_lifecycle"),
+        "transaction_boundary": "spell_cast_with_summon_lifecycle_and_rollback_boundary",
+        "cas_entities": ("character", "actor_combatant", "summon_combatants"),
+        "idempotency_scope": "campaign_content_ir_and_spell_cast",
+        "snapshot_effects": (
+            "spell_slots",
+            "action_economy",
+            "summon_stat_block",
+            "summon_initiative",
+            "summon_lifecycle",
+            "summon_default_behavior",
+            "concentration",
+            "audit",
+        ),
+    },
     "combat_engine.feature_action.v1": {
         "content_kind": "feature",
         "runtime_schema_version": "feature-runtime-1",
@@ -222,6 +253,7 @@ _ALLOWED_SPELL_BLOCKS = {
     "healing",
     "saving_throw",
     "target_selection",
+    "summon_or_creation",
     "temporary_hp",
     "upcast",
     "area",
@@ -309,6 +341,10 @@ def resolve_production_consumers(
             resolved.append("spell_economy.concentration.v1")
         if _has_effect(blocks, "spell_modifier"):
             resolved.append("spell.defense.v1")
+        if _has_effect(blocks, "summon_or_creation"):
+            if not blocks.get("target_selection"):
+                raise ValueError("summon runtime requires a typed target selection")
+            resolved.append("spell.summon.v1")
         if blocks.get("apply_condition"):
             resolved.append("combat_engine.condition_lifecycle.v1")
         if not resolved:

@@ -1909,7 +1909,11 @@ class CombatSummonCommand(BaseModel):
     owner_character_id: str | None = Field(default=None, min_length=1, max_length=36)
     disposition: Literal["ally", "enemy"] = "enemy"
     source_combatant_id: str | None = Field(default=None, min_length=1, max_length=36)
+    source_version: int | None = Field(default=None, ge=1)
     position: dict[str, int] | None = None
+    range_ft: int | None = Field(default=None, ge=0, le=10_000)
+    require_visible: bool = False
+    requires_unoccupied: bool = False
     initiative_mode: Literal["independent", "shared_with_source", "not_applicable"] = "independent"
     action_cost: Literal["action", "bonus_action", "reaction", "none"] = "action"
     resource_key: str | None = Field(default=None, max_length=120)
@@ -1924,6 +1928,11 @@ class CombatSummonCommand(BaseModel):
     speed_ft: int | None = Field(default=None, ge=0, le=1_000)
     ability_scores: dict[str, int] = Field(default_factory=dict)
     actions: list[Any] = Field(default_factory=list)
+    movement_modes: list[Any] = Field(default_factory=list)
+    damage_resistances: list[str] = Field(default_factory=list)
+    damage_vulnerabilities: list[str] = Field(default_factory=list)
+    damage_immunities: list[str] = Field(default_factory=list)
+    condition_immunities: list[str] = Field(default_factory=list)
     template_json: dict[str, Any] = Field(default_factory=dict)
 
     @model_validator(mode="after")
@@ -1938,6 +1947,8 @@ class CombatSummonCommand(BaseModel):
             raise ValueError("duration_value is required for timed summons")
         if self.requires_concentration and self.source_combatant_id is None:
             raise ValueError("source_combatant_id is required for concentration summons")
+        if self.source_version is not None and self.source_combatant_id is None:
+            raise ValueError("source_version requires source_combatant_id")
         if self.position is not None:
             if set(self.position) != {"row", "col"} or any(
                 isinstance(value, bool) or value < 1 for value in self.position.values()
@@ -2496,6 +2507,7 @@ class ContentIRRuntimeRequest(BaseModel):
     target_version: int | None = Field(default=None, ge=1)
     target_combatant_ids: list[str] = Field(default_factory=list, max_length=20)
     target_versions: dict[str, int] = Field(default_factory=dict, max_length=20)
+    summon_choice: str | None = Field(default=None, min_length=1, max_length=80)
     area_shape: Literal["cone", "line", "cube", "sphere", "cylinder"] | None = None
     area_size_ft: int | None = Field(default=None, ge=5, le=1_000)
     area_width_ft: int | None = Field(default=None, ge=5, le=1_000)

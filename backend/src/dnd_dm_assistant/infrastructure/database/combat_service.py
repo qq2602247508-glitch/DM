@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 import secrets
 from collections.abc import Iterable, Mapping
+from copy import deepcopy
 from dataclasses import asdict
 from datetime import UTC, datetime, timedelta
 from hashlib import sha256
@@ -1352,6 +1353,79 @@ class CombatEngineService:
         }
 
     @classmethod
+    def validate_summon_position(
+        cls,
+        session: Session,
+        combat: Combat,
+        source: Combatant,
+        position: tuple[int, int],
+        *,
+        range_ft: int | None = None,
+        require_visible: bool = False,
+        requires_unoccupied: bool = False,
+    ) -> dict[str, object]:
+        """Validate a typed summon destination against authoritative geometry."""
+
+        if combat.scene_id is None:
+            raise ValueError("typed summon position requires an authoritative scene")
+        grid = session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
+        if grid is None:
+            raise ValueError("typed summon position requires an authoritative scene grid")
+        row, col = position
+        if not (1 <= row <= grid.height and 1 <= col <= grid.width):
+            raise ValueError("typed summon position is outside the scene grid")
+        source_footprint = cls._grid_footprint(source)
+        if not source_footprint:
+            raise ValueError("typed summon source requires an authoritative grid position")
+        source_point = min(
+            source_footprint,
+            key=lambda point: grid_distance_ft(
+                point,
+                position,
+                cell_size_ft=grid.cell_size_ft,
+            ),
+        )
+        distance_ft = grid_distance_ft(
+            source_point,
+            position,
+            cell_size_ft=grid.cell_size_ft,
+        )
+        if range_ft is not None and distance_ft > range_ft:
+            raise ValueError(f"typed summon position must be within {range_ft} ft")
+        visible = None
+        if require_visible:
+            blockers, _cover_cells = cls._grid_obstacles(session, grid)
+            visible, _mode = cls._grid_line_of_sight(
+                session,
+                grid,
+                source_point,
+                position,
+                blockers,
+                start_height_ft=cls._explicit_grid_elevation_ft(source),
+                end_height_ft=None,
+            )
+            if not visible:
+                raise ValueError("typed summon position must be visible")
+        if requires_unoccupied:
+            occupied = {
+                cell
+                for combatant in cls._ordered_combatants(session, combat.id)
+                for cell in cls._grid_footprint(combatant)
+            }
+            if position in occupied:
+                raise ValueError("typed summon position is occupied")
+        blockers, _cover_cells = cls._grid_obstacles(session, grid)
+        if position in blockers:
+            raise ValueError("typed summon position is blocked")
+        return {
+            "position": {"row": row, "col": col},
+            "distance_ft": distance_ft,
+            "range_ft": range_ft,
+            "visible_required": require_visible,
+            "visible": visible,
+        }
+
+    @classmethod
     def _rage_attack_counts_as_activity(
         cls,
         actor: Combatant,
@@ -1538,6 +1612,14 @@ class CombatEngineService:
             )
             if source is not None and (source.combat_id != combat_id or not source.is_active):
                 raise StateNotFoundError("召唤来源不在当前战斗中")
+            if source is not None and command.source_version is not None:
+                if source.version != command.source_version:
+                    raise VersionConflict(
+                        "combatant",
+                        source.id,
+                        command.source_version,
+                        source.version,
+                    )
             if command.initiative_mode == "not_applicable":
                 raise ValueError("initiative_mode=not_applicable 的召唤效果不能加入战斗")
             if command.initiative_mode == "shared_with_source" and source is None:
@@ -1647,6 +1729,33 @@ class CombatEngineService:
                 and isinstance(template_actions, list)
             ):
                 actions = list(template_actions)
+            damage_resistances = list(
+                command.damage_resistances or template.get("damage_resistances") or []
+            )
+            damage_vulnerabilities = list(
+                command.damage_vulnerabilities or template.get("damage_vulnerabilities") or []
+            )
+            damage_immunities = list(
+                command.damage_immunities or template.get("damage_immunities") or []
+            )
+            condition_immunities = list(
+                command.condition_immunities or template.get("condition_immunities") or []
+            )
+            movement_modes_raw = value("movement_modes", [])
+            if not isinstance(movement_modes_raw, list) or any(
+                not isinstance(item, dict)
+                or not str(item.get("mode") or "").strip()
+                for item in movement_modes_raw
+            ):
+                raise ValueError("召唤物移动模式必须是结构化列表")
+            movement_modes = [dict(item) for item in movement_modes_raw]
+            active_movement_modes = {
+                str(item["mode"]): int(item["speed_ft"])
+                for item in movement_modes
+                if isinstance(item.get("speed_ft"), int)
+                and not isinstance(item.get("speed_ft"), bool)
+                and int(item["speed_ft"]) >= 0
+            }
 
             before_order = self._ordered_combatants(session, combat_id)
             current_id = (
@@ -1735,6 +1844,20 @@ class CombatEngineService:
                     )
             elif command.position is not None:
                 raise ValueError("选择召唤位置需要当前战斗地图网格")
+            if command.position is not None and source is not None and (
+                command.range_ft is not None
+                or command.require_visible
+                or command.requires_unoccupied
+            ):
+                self.validate_summon_position(
+                    session,
+                    combat,
+                    source,
+                    (int(command.position["row"]), int(command.position["col"])),
+                    range_ft=command.range_ft,
+                    require_visible=command.require_visible,
+                    requires_unoccupied=command.requires_unoccupied,
+                )
             dexterity = int(ability_scores.get("dexterity", ability_scores.get("敏捷", 10)))
             disposition = command.disposition
             owner_id = command.owner_character_id
@@ -1757,12 +1880,21 @@ class CombatEngineService:
                 snapshot: dict[str, object] = {
                     "ability_scores": ability_scores,
                     "actions": actions,
+                    "movement_modes": movement_modes,
+                    "active_movement_modes": active_movement_modes,
+                    "damage_resistances": damage_resistances,
+                    "damage_vulnerabilities": damage_vulnerabilities,
+                    "damage_immunities": damage_immunities,
+                    "condition_immunities": condition_immunities,
                     "controller": command.controller,
                     "owner_character_id": owner_id,
                     "disposition": disposition,
                     "initiative_mode": command.initiative_mode,
                     "summon_source_combatant_id": command.source_combatant_id,
                     "summon_source": dict(command.template_json or {}),
+                    "default_behavior": dict(
+                        (command.template_json or {}).get("default_behavior") or {}
+                    ),
                     # Enemy summons never opt into autonomous combat merely
                     # by existing.  A DM must explicitly choose a basic AI
                     # policy in the DM-owned summon command; player summons
@@ -1776,6 +1908,11 @@ class CombatEngineService:
                         "unit": command.duration_unit,
                         "value": command.duration_value,
                         "requires_concentration": command.requires_concentration,
+                    },
+                    "summon_position_policy": {
+                        "range_ft": command.range_ft,
+                        "require_visible": command.require_visible,
+                        "requires_unoccupied": command.requires_unoccupied,
                     },
                     "combat_start_state": {
                         "hp": hp,
@@ -1800,6 +1937,10 @@ class CombatEngineService:
                     armor_class=armor_class,
                     hp=hp,
                     max_hp=max_hp,
+                    damage_resistances=damage_resistances,
+                    damage_vulnerabilities=damage_vulnerabilities,
+                    damage_immunities=damage_immunities,
+                    condition_immunities=condition_immunities,
                     speed_ft=speed_ft,
                     movement_remaining_ft=speed_ft,
                     snapshot_json=snapshot,
@@ -1836,10 +1977,10 @@ class CombatEngineService:
                 )
             if command.requires_concentration or command.duration_unit != "until_removed":
                 lifecycle_target = source or combatants[0]
-                ends_round = (
-                    combat.round_number + int(command.duration_value or 0)
-                    if command.duration_unit == "rounds"
-                    else None
+                ends_round = self._effect_ends_round(
+                    combat.round_number,
+                    command.duration_unit,
+                    command.duration_value,
                 )
                 lifecycle_effect = CombatEffect(
                     campaign_id=campaign_id,
@@ -1868,6 +2009,10 @@ class CombatEngineService:
                         },
                         "ends_summon_combatant_ids": [item.id for item in combatants],
                         "source_action": dict(command.template_json or {}),
+                        "spell_id": str((command.template_json or {}).get("spell_id") or ""),
+                        "known_spell_id": str(
+                            (command.template_json or {}).get("known_spell_id") or ""
+                        ),
                     },
                     started_round=combat.round_number,
                     duration_unit=command.duration_unit,
@@ -7901,6 +8046,182 @@ class CombatEngineService:
         session.add(effect)
         session.flush()
         return effect
+
+    @classmethod
+    def _apply_summon_default_behavior(
+        cls,
+        session: Session,
+        combat: Combat,
+        transaction: OperationTransaction,
+        summon: Combatant | None,
+        *,
+        now: datetime,
+    ) -> dict[str, Any] | None:
+        """Execute a typed player-summon fallback at the start of its turn.
+
+        This is deliberately content-name agnostic.  The authored summon
+        contract declares the policy; the combat engine supplies the generic
+        action-economy, Dodge effect, and authoritative grid movement.
+        """
+
+        if summon is None or not cls._is_summon(summon) or not summon.is_active:
+            return None
+        state = dict(summon.snapshot_json or {})
+        raw_behavior = state.get("default_behavior")
+        if not isinstance(raw_behavior, dict):
+            return None
+        if state.get("controller") != "player" or state.get("disposition") != "ally":
+            return None
+        if str(raw_behavior.get("command_mode") or "").strip() != "verbal_without_action":
+            return None
+        if str(raw_behavior.get("on_no_command") or "").strip() != "dodge":
+            return None
+
+        danger_candidates: list[tuple[int, Combatant]] = []
+        summon_position = state.get("grid_position")
+        grid = (
+            session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
+            if combat.scene_id
+            else None
+        )
+        cell_size_ft = int(grid.cell_size_ft) if grid is not None else 5
+        if isinstance(summon_position, dict):
+            summon_point = (
+                int(summon_position.get("row", 0)),
+                int(summon_position.get("col", 0)),
+            )
+            for candidate in cls._ordered_combatants(session, combat.id):
+                if (
+                    candidate.id == summon.id
+                    or not candidate.is_active
+                    or candidate.hp <= 0
+                    or cls._combatant_faction(candidate)
+                    == cls._combatant_faction(summon)
+                ):
+                    continue
+                raw_position = (candidate.snapshot_json or {}).get("grid_position")
+                if not isinstance(raw_position, dict):
+                    continue
+                candidate_point = (
+                    int(raw_position.get("row", 0)),
+                    int(raw_position.get("col", 0)),
+                )
+                danger_candidates.append(
+                    (
+                        grid_distance_ft(
+                            summon_point,
+                            candidate_point,
+                            cell_size_ft=cell_size_ft,
+                        ),
+                        candidate,
+                    )
+                )
+        danger_candidates.sort(key=lambda item: (item[0], item[1].initiative, item[1].id))
+        danger = danger_candidates[0][1] if danger_candidates else None
+        result: dict[str, Any] = {
+            "status": "applied",
+            "policy": deepcopy(raw_behavior),
+            "on_no_command": "dodge",
+            "action_cost": "action",
+            "danger_source_combatant_id": danger.id if danger is not None else None,
+            "danger_source_name": danger.display_name if danger is not None else None,
+        }
+
+        cls._validate_action_economy(
+            session,
+            combat,
+            summon,
+            actor_version=summon.version,
+            action_cost="action",
+            consume=True,
+        )
+        dodge_effect = cls._create_runtime_effect(
+            session,
+            combat,
+            actor=summon,
+            target=summon,
+            state_name="dodge",
+            expires="turn_start",
+            expires_combatant_id=summon.id,
+        )
+        result["dodge"] = {
+            "effect_id": dodge_effect.id,
+            "action_available_after": summon.action_available,
+        }
+
+        movement_policy = str(raw_behavior.get("movement_policy") or "").strip()
+        movement: dict[str, Any] = {
+            "policy": movement_policy or None,
+            "moved_ft": 0,
+            "status": "not_requested",
+        }
+        if movement_policy == "move_away_from_danger":
+            if danger is None:
+                movement["status"] = "requires_dm_review"
+                movement["reason"] = "no authoritative hostile position is available"
+            elif summon.movement_remaining_ft <= 0:
+                movement["status"] = "blocked"
+                movement["reason"] = "summon has no movement remaining"
+            else:
+                moved = cls._move_away_on_grid(
+                    session,
+                    combat,
+                    target=summon,
+                    source=danger,
+                    distance_ft=summon.movement_remaining_ft,
+                    direction="away",
+                )
+                summon.movement_remaining_ft = max(
+                    0,
+                    summon.movement_remaining_ft - int(moved["moved_ft"]),
+                )
+                if int(moved["moved_ft"]) > 0:
+                    summon.version += 1
+                    summon.updated_at = now
+                movement = {
+                    **moved,
+                    "policy": movement_policy,
+                    "status": "applied" if int(moved["moved_ft"]) > 0 else "blocked",
+                }
+        else:
+            movement["status"] = "not_requested"
+        result["movement"] = movement
+        result["after"] = serialize(summon)
+
+        action = CombatAction(
+            campaign_id=combat.campaign_id,
+            combat_id=combat.id,
+            actor_combatant_id=summon.id,
+            transaction_id=transaction.id,
+            action_type="summon_default_behavior",
+            target_combatant_ids=[summon.id] + ([danger.id] if danger is not None else []),
+            request_json={
+                "kind": "summon_default_behavior",
+                "summon_combatant_id": summon.id,
+                "default_behavior": deepcopy(raw_behavior),
+                "no_command": True,
+            },
+            result_json=result,
+            explanation="玩家未提供口头命令；按召唤物 Typed IR 默认行为执行。",
+            round_number=combat.round_number,
+            turn_index=combat.current_turn_index,
+            summary=f"{summon.display_name} 未收到命令，自动闪避并远离危险",
+            idempotency_key=(
+                f"summon-default-behavior:{combat.id}:{summon.id}:"
+                f"{combat.round_number}:{combat.current_turn_index}"
+            ),
+            status="confirmed",
+        )
+        session.add(action)
+        session.flush()
+        if dodge_effect.source_action_id is None:
+            dodge_effect.source_action_id = action.id
+        result["action_id"] = action.id
+        transaction.after_snapshot = {
+            **dict(transaction.after_snapshot or {}),
+            "default_behavior": result,
+        }
+        return result
 
     @classmethod
     def _apply_feature_action_triggers(
@@ -20284,6 +20605,21 @@ class CombatEngineService:
             )
             session.add(transaction)
             session.flush()
+            default_behavior_result = self._apply_summon_default_behavior(
+                session,
+                combat,
+                transaction,
+                turn_active,
+                now=now,
+            )
+            if default_behavior_result is not None:
+                transaction.after_snapshot = {
+                    **dict(transaction.after_snapshot or {}),
+                    "default_behavior": default_behavior_result,
+                }
+                transaction.version += 1
+                transaction.updated_at = now
+                session.flush()
             self._persist_eligible_advanced_action_windows(
                 session,
                 combat=combat,
@@ -20342,9 +20678,10 @@ class CombatEngineService:
                 "ended_summon_ids": [summon.id for summon in ended_summons],
                 "expired_rule_effects": [serialize(effect) for effect in expired_rule_effects],
                 "recharge_rolls": recharge_rolls,
-                "trait_results": trait_results,
-                "expired_attack_sequence_ids": expired_attack_sequence_ids,
-            }
+                    "trait_results": trait_results,
+                    "expired_attack_sequence_ids": expired_attack_sequence_ids,
+                    "default_behavior": default_behavior_result,
+                }
             action = CombatAction(
                 campaign_id=campaign_id,
                 combat_id=combat_id,
@@ -20383,6 +20720,7 @@ class CombatEngineService:
                 "recharge_rolls": recharge_rolls,
                 "trait_results": trait_results,
                 "expired_attack_sequence_ids": expired_attack_sequence_ids,
+                "default_behavior": default_behavior_result,
             }
 
     def reset_combat(

@@ -9,8 +9,9 @@
     "spell.healing.v1": 3,
     "spell.saving_throw.v1": 17,
     "spell.spell_modifier.v1": 1,
-    "spell.target_selection.v1": 77,
-    "spell.upcast.v1": 14
+    "spell.summon_or_creation.v1": 2,
+    "spell.target_selection.v1": 79,
+    "spell.upcast.v1": 16
   },
   "capability_registry_version": "content-capabilities-1",
   "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
@@ -9510,7 +9511,10 @@
     {
       "blockers": [],
       "capability_ids": [
-        "spell.concentration.v1"
+        "spell.concentration.v1",
+        "spell.summon_or_creation.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
       ],
       "capability_registry": {
         "id": "spell",
@@ -9519,21 +9523,254 @@
       "clause_results": [
         {
           "blockers": [],
-          "capability_id": "spell.concentration.v1",
+          "capability_id": "spell.target_selection.v1",
           "clause_id": "tashas-cauldron:spell:083419d9de551806a5ca9748:clause:0",
           "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.summon_or_creation.v1",
+          "clause_id": "tashas-cauldron:spell:083419d9de551806a5ca9748:clause:1",
+          "status": "full",
+          "type": "summon_or_creation"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.concentration.v1",
+          "clause_id": "tashas-cauldron:spell:083419d9de551806a5ca9748:clause:2",
+          "status": "full",
           "type": "concentration"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "tashas-cauldron:spell:083419d9de551806a5ca9748:clause:3",
+          "status": "full",
+          "type": "upcast"
         }
       ],
       "compile_status": "full",
       "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
-      "fingerprint": "081c468cec48a97d3157fd0e884c8d33b9c020347d82ed042786c7d755071d51",
+      "fingerprint": "e9d55717f60f46cda9097b3a8098864bfc7a6100b8c72179bdda619f592c3235",
       "kind": "spell",
       "materialized": true,
       "runtime_blocks": [
         {
-          "capability_id": "spell.concentration.v1",
+          "capability_id": "spell.target_selection.v1",
           "clause_id": "tashas-cauldron:spell:083419d9de551806a5ca9748:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target_selection",
+            "count": 1,
+            "evidence_ref": "其在施法距离内你可见的一个未占据位置化为实体。",
+            "kind": "one_unoccupied_position",
+            "position_policy": {
+              "requires_unoccupied": true,
+              "visibility": "visible"
+            },
+            "range_ft": 90,
+            "requires_unoccupied": true,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "tashas-cauldron:spell:083419d9de551806a5ca9748",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.summon_or_creation.v1",
+          "clause_id": "tashas-cauldron:spell:083419d9de551806a5ca9748:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "choice_key": "form",
+            "choice_required": true,
+            "choice_values": [
+              "ghostly",
+              "putrid",
+              "skeletal"
+            ],
+            "clause_id": "summon_or_creation",
+            "controller": "player",
+            "count": 1,
+            "default_behavior": {
+              "command_mode": "verbal_without_action",
+              "control_boundary": "player",
+              "movement_policy": "move_away_from_danger",
+              "on_no_command": "dodge"
+            },
+            "disposition": "ally",
+            "duration": {
+              "maximum": true,
+              "unit": "minutes",
+              "value": 60
+            },
+            "initiative_mode": "shared_with_source",
+            "kind": "summon",
+            "name": "Undead Spirit",
+            "position_policy": {
+              "requires_unoccupied": true,
+              "visibility": "visible"
+            },
+            "requires_concentration": true,
+            "scaling": {
+              "armor_class_per_slot": 0,
+              "base_level": 3,
+              "hp_per_slot": 10
+            },
+            "stat_block_id": "tashas-cauldron:stat-block:undead-spirit",
+            "template": {
+              "condition_immunities": [
+                "exhaustion",
+                "frightened",
+                "paralyzed",
+                "poisoned"
+              ],
+              "creature_type": "undead",
+              "damage_immunities": [
+                "necrotic",
+                "poison"
+              ],
+              "size": "medium",
+              "variants": {
+                "ghostly": {
+                  "ability_scores": {
+                    "charisma": 9,
+                    "constitution": 15,
+                    "dexterity": 16,
+                    "intelligence": 4,
+                    "strength": 12,
+                    "wisdom": 10
+                  },
+                  "actions": [
+                    {
+                      "action_type": "action",
+                      "attack_count_formula": "floor(spell_level / 2)",
+                      "attack_type": "multiattack",
+                      "name": "Multiattack"
+                    },
+                    {
+                      "action_type": "action",
+                      "damage_expression": "1d8 + 3 + spell_level",
+                      "damage_type": "necrotic",
+                      "is_weapon_attack": true,
+                      "melee_weapon_attack": true,
+                      "name": "Deathly Touch",
+                      "range_ft": 5,
+                      "target": "one_creature"
+                    }
+                  ],
+                  "armor_class": "11 + spell_level",
+                  "hp": 30,
+                  "movement_modes": [
+                    {
+                      "mode": "walk",
+                      "speed_ft": 40
+                    },
+                    {
+                      "hover": true,
+                      "mode": "fly",
+                      "speed_ft": 40
+                    }
+                  ],
+                  "speed_ft": 40,
+                  "traits": [
+                    {
+                      "name": "Incorporeal Movement",
+                      "rule": "can_move_through_creatures_and_objects"
+                    }
+                  ]
+                },
+                "putrid": {
+                  "ability_scores": {
+                    "charisma": 9,
+                    "constitution": 15,
+                    "dexterity": 16,
+                    "intelligence": 4,
+                    "strength": 12,
+                    "wisdom": 10
+                  },
+                  "actions": [
+                    {
+                      "action_type": "action",
+                      "attack_count_formula": "floor(spell_level / 2)",
+                      "attack_type": "multiattack",
+                      "name": "Multiattack"
+                    },
+                    {
+                      "action_type": "action",
+                      "damage_expression": "1d6 + 3 + spell_level",
+                      "damage_type": "slashing",
+                      "is_weapon_attack": true,
+                      "melee_weapon_attack": true,
+                      "name": "Rotting Claw",
+                      "range_ft": 5,
+                      "target": "one_creature"
+                    }
+                  ],
+                  "armor_class": "11 + spell_level",
+                  "hp": 30,
+                  "movement_modes": [
+                    {
+                      "mode": "walk",
+                      "speed_ft": 40
+                    }
+                  ],
+                  "speed_ft": 40,
+                  "traits": [
+                    {
+                      "name": "Festering Aura",
+                      "rule": "nearby_creatures_save_or_become_poisoned"
+                    }
+                  ]
+                },
+                "skeletal": {
+                  "ability_scores": {
+                    "charisma": 9,
+                    "constitution": 15,
+                    "dexterity": 16,
+                    "intelligence": 4,
+                    "strength": 12,
+                    "wisdom": 10
+                  },
+                  "actions": [
+                    {
+                      "action_type": "action",
+                      "attack_count_formula": "floor(spell_level / 2)",
+                      "attack_type": "multiattack",
+                      "name": "Multiattack"
+                    },
+                    {
+                      "action_type": "action",
+                      "attack_type": "ranged_spell_attack",
+                      "damage_expression": "2d4 + 3 + spell_level",
+                      "damage_type": "necrotic",
+                      "is_weapon_attack": true,
+                      "name": "Grave Bolt",
+                      "range_ft": 150,
+                      "target": "one_creature"
+                    }
+                  ],
+                  "armor_class": "11 + spell_level",
+                  "hp": 20,
+                  "movement_modes": [
+                    {
+                      "mode": "walk",
+                      "speed_ft": 40
+                    }
+                  ],
+                  "speed_ft": 40
+                }
+              }
+            },
+            "type": "summon_or_creation"
+          },
+          "spell_id": "tashas-cauldron:spell:083419d9de551806a5ca9748",
+          "type": "summon_or_creation"
+        },
+        {
+          "capability_id": "spell.concentration.v1",
+          "clause_id": "tashas-cauldron:spell:083419d9de551806a5ca9748:clause:2",
           "kind": "spell_clause",
           "parameters": {
             "clause_id": "concentration",
@@ -9544,6 +9781,22 @@
           },
           "spell_id": "tashas-cauldron:spell:083419d9de551806a5ca9748",
           "type": "concentration"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "tashas-cauldron:spell:083419d9de551806a5ca9748:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "summon_stat_block",
+            "clause_id": "upcast",
+            "evidence_ref": "使用四环或更高环阶的法术位施展该法术时，该生物数据中使用更高的法术环数。",
+            "minimum_slot": 4,
+            "per_slot": 10,
+            "text": "每高于三环一个法术位等级，召唤物生命值增加10点。",
+            "type": "upcast"
+          },
+          "spell_id": "tashas-cauldron:spell:083419d9de551806a5ca9748",
+          "type": "upcast"
         }
       ],
       "runtime_spell_definition": {
@@ -9568,10 +9821,220 @@
             }
           ],
           "duration": [],
-          "effects": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "choice_key": "form",
+              "choice_required": true,
+              "choice_values": [
+                "ghostly",
+                "putrid",
+                "skeletal"
+              ],
+              "clause_id": "summon_or_creation",
+              "controller": "player",
+              "count": 1,
+              "default_behavior": {
+                "command_mode": "verbal_without_action",
+                "control_boundary": "player",
+                "movement_policy": "move_away_from_danger",
+                "on_no_command": "dodge"
+              },
+              "disposition": "ally",
+              "duration": {
+                "maximum": true,
+                "unit": "minutes",
+                "value": 60
+              },
+              "initiative_mode": "shared_with_source",
+              "kind": "summon",
+              "name": "Undead Spirit",
+              "position_policy": {
+                "requires_unoccupied": true,
+                "visibility": "visible"
+              },
+              "requires_concentration": true,
+              "scaling": {
+                "armor_class_per_slot": 0,
+                "base_level": 3,
+                "hp_per_slot": 10
+              },
+              "stat_block_id": "tashas-cauldron:stat-block:undead-spirit",
+              "template": {
+                "condition_immunities": [
+                  "exhaustion",
+                  "frightened",
+                  "paralyzed",
+                  "poisoned"
+                ],
+                "creature_type": "undead",
+                "damage_immunities": [
+                  "necrotic",
+                  "poison"
+                ],
+                "size": "medium",
+                "variants": {
+                  "ghostly": {
+                    "ability_scores": {
+                      "charisma": 9,
+                      "constitution": 15,
+                      "dexterity": 16,
+                      "intelligence": 4,
+                      "strength": 12,
+                      "wisdom": 10
+                    },
+                    "actions": [
+                      {
+                        "action_type": "action",
+                        "attack_count_formula": "floor(spell_level / 2)",
+                        "attack_type": "multiattack",
+                        "name": "Multiattack"
+                      },
+                      {
+                        "action_type": "action",
+                        "damage_expression": "1d8 + 3 + spell_level",
+                        "damage_type": "necrotic",
+                        "is_weapon_attack": true,
+                        "melee_weapon_attack": true,
+                        "name": "Deathly Touch",
+                        "range_ft": 5,
+                        "target": "one_creature"
+                      }
+                    ],
+                    "armor_class": "11 + spell_level",
+                    "hp": 30,
+                    "movement_modes": [
+                      {
+                        "mode": "walk",
+                        "speed_ft": 40
+                      },
+                      {
+                        "hover": true,
+                        "mode": "fly",
+                        "speed_ft": 40
+                      }
+                    ],
+                    "speed_ft": 40,
+                    "traits": [
+                      {
+                        "name": "Incorporeal Movement",
+                        "rule": "can_move_through_creatures_and_objects"
+                      }
+                    ]
+                  },
+                  "putrid": {
+                    "ability_scores": {
+                      "charisma": 9,
+                      "constitution": 15,
+                      "dexterity": 16,
+                      "intelligence": 4,
+                      "strength": 12,
+                      "wisdom": 10
+                    },
+                    "actions": [
+                      {
+                        "action_type": "action",
+                        "attack_count_formula": "floor(spell_level / 2)",
+                        "attack_type": "multiattack",
+                        "name": "Multiattack"
+                      },
+                      {
+                        "action_type": "action",
+                        "damage_expression": "1d6 + 3 + spell_level",
+                        "damage_type": "slashing",
+                        "is_weapon_attack": true,
+                        "melee_weapon_attack": true,
+                        "name": "Rotting Claw",
+                        "range_ft": 5,
+                        "target": "one_creature"
+                      }
+                    ],
+                    "armor_class": "11 + spell_level",
+                    "hp": 30,
+                    "movement_modes": [
+                      {
+                        "mode": "walk",
+                        "speed_ft": 40
+                      }
+                    ],
+                    "speed_ft": 40,
+                    "traits": [
+                      {
+                        "name": "Festering Aura",
+                        "rule": "nearby_creatures_save_or_become_poisoned"
+                      }
+                    ]
+                  },
+                  "skeletal": {
+                    "ability_scores": {
+                      "charisma": 9,
+                      "constitution": 15,
+                      "dexterity": 16,
+                      "intelligence": 4,
+                      "strength": 12,
+                      "wisdom": 10
+                    },
+                    "actions": [
+                      {
+                        "action_type": "action",
+                        "attack_count_formula": "floor(spell_level / 2)",
+                        "attack_type": "multiattack",
+                        "name": "Multiattack"
+                      },
+                      {
+                        "action_type": "action",
+                        "attack_type": "ranged_spell_attack",
+                        "damage_expression": "2d4 + 3 + spell_level",
+                        "damage_type": "necrotic",
+                        "is_weapon_attack": true,
+                        "name": "Grave Bolt",
+                        "range_ft": 150,
+                        "target": "one_creature"
+                      }
+                    ],
+                    "armor_class": "11 + spell_level",
+                    "hp": 20,
+                    "movement_modes": [
+                      {
+                        "mode": "walk",
+                        "speed_ft": 40
+                      }
+                    ],
+                    "speed_ft": 40
+                  }
+                }
+              },
+              "type": "summon_or_creation"
+            }
+          ],
           "saving_throw": [],
-          "target_selection": [],
-          "upcast": []
+          "target_selection": [
+            {
+              "clause_id": "target_selection",
+              "count": 1,
+              "evidence_ref": "其在施法距离内你可见的一个未占据位置化为实体。",
+              "kind": "one_unoccupied_position",
+              "position_policy": {
+                "requires_unoccupied": true,
+                "visibility": "visible"
+              },
+              "range_ft": 90,
+              "requires_unoccupied": true,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "summon_stat_block",
+              "clause_id": "upcast",
+              "evidence_ref": "使用四环或更高环阶的法术位施展该法术时，该生物数据中使用更高的法术环数。",
+              "minimum_slot": 4,
+              "per_slot": 10,
+              "text": "每高于三环一个法术位等级，召唤物生命值增加10点。",
+              "type": "upcast"
+            }
+          ]
         },
         "runtime_schema_version": "spell-runtime-1",
         "school": "死灵",
@@ -9587,16 +10050,19 @@
       },
       "source_fingerprint": "f051639e10dfdc7e9d340120f61a8c2bb3cd942f767a6d07da361717f178a5d8",
       "source_trust": "authored_ir",
-      "spec_fingerprint": "7fef6775c3fcf1b6f7a897d9eafb8f134160602c74275fa32371d9667cadadf6",
+      "spec_fingerprint": "c6b5c68344e8b1814e52e5334bd01f084569fbd9764299404e2d52d7a795d4d2",
       "spell_id": "tashas-cauldron:spell:083419d9de551806a5ca9748",
-      "typed_clause_count": 1,
+      "typed_clause_count": 4,
       "typed_ir": true,
       "unsupported_clause_ids": []
     },
     {
       "blockers": [],
       "capability_ids": [
-        "spell.concentration.v1"
+        "spell.concentration.v1",
+        "spell.summon_or_creation.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
       ],
       "capability_registry": {
         "id": "spell",
@@ -9605,21 +10071,257 @@
       "clause_results": [
         {
           "blockers": [],
-          "capability_id": "spell.concentration.v1",
+          "capability_id": "spell.target_selection.v1",
           "clause_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1:clause:0",
           "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.summon_or_creation.v1",
+          "clause_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1:clause:1",
+          "status": "full",
+          "type": "summon_or_creation"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.concentration.v1",
+          "clause_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1:clause:2",
+          "status": "full",
           "type": "concentration"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1:clause:3",
+          "status": "full",
+          "type": "upcast"
         }
       ],
       "compile_status": "full",
       "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
-      "fingerprint": "66ca21e1429ff804cc0b8a1cd516482be659a11732b99622bf8b5a66f6eddf79",
+      "fingerprint": "2d4fba457354cd73e6200961bc798bdf89cb3bbd376af5a56117e0f61177fe27",
       "kind": "spell",
       "materialized": true,
       "runtime_blocks": [
         {
-          "capability_id": "spell.concentration.v1",
+          "capability_id": "spell.target_selection.v1",
           "clause_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target_selection",
+            "count": 1,
+            "evidence_ref": "其在施法距离内你可见的一个未占据位置化为实体。",
+            "kind": "one_unoccupied_position",
+            "position_policy": {
+              "requires_unoccupied": true,
+              "visibility": "visible"
+            },
+            "range_ft": 90,
+            "requires_unoccupied": true,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.summon_or_creation.v1",
+          "clause_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "choice_key": "environment",
+            "choice_required": true,
+            "choice_values": [
+              "air",
+              "land",
+              "water"
+            ],
+            "clause_id": "summon_or_creation",
+            "controller": "player",
+            "count": 1,
+            "default_behavior": {
+              "command_mode": "verbal_without_action",
+              "control_boundary": "player",
+              "movement_policy": "move_away_from_danger",
+              "on_no_command": "dodge"
+            },
+            "disposition": "ally",
+            "duration": {
+              "maximum": true,
+              "unit": "minutes",
+              "value": 60
+            },
+            "initiative_mode": "shared_with_source",
+            "kind": "summon",
+            "name": "Bestial Spirit",
+            "position_policy": {
+              "requires_unoccupied": true,
+              "visibility": "visible"
+            },
+            "requires_concentration": true,
+            "scaling": {
+              "armor_class_per_slot": 0,
+              "base_level": 2,
+              "hp_per_slot": 5
+            },
+            "stat_block_id": "tashas-cauldron:stat-block:bestial-spirit",
+            "template": {
+              "creature_type": "beast",
+              "size": "small",
+              "variants": {
+                "air": {
+                  "ability_scores": {
+                    "charisma": 5,
+                    "constitution": 16,
+                    "dexterity": 11,
+                    "intelligence": 4,
+                    "strength": 18,
+                    "wisdom": 14
+                  },
+                  "actions": [
+                    {
+                      "action_type": "action",
+                      "attack_count_formula": "floor(spell_level / 2)",
+                      "attack_type": "multiattack",
+                      "name": "Multiattack"
+                    },
+                    {
+                      "action_type": "action",
+                      "damage_expression": "1d8 + 4 + spell_level",
+                      "damage_type": "piercing",
+                      "is_weapon_attack": true,
+                      "melee_weapon_attack": true,
+                      "name": "Maul",
+                      "range_ft": 5,
+                      "target": "one_creature"
+                    }
+                  ],
+                  "armor_class": "11 + spell_level",
+                  "hp": 20,
+                  "movement_modes": [
+                    {
+                      "mode": "walk",
+                      "speed_ft": 30
+                    },
+                    {
+                      "mode": "fly",
+                      "speed_ft": 60
+                    }
+                  ],
+                  "speed_ft": 30,
+                  "traits": [
+                    {
+                      "name": "Flyby",
+                      "rule": "leaving_enemy_reach_does_not_provoke_opportunity_attack"
+                    }
+                  ]
+                },
+                "land": {
+                  "ability_scores": {
+                    "charisma": 5,
+                    "constitution": 16,
+                    "dexterity": 11,
+                    "intelligence": 4,
+                    "strength": 18,
+                    "wisdom": 14
+                  },
+                  "actions": [
+                    {
+                      "action_type": "action",
+                      "attack_count_formula": "floor(spell_level / 2)",
+                      "attack_type": "multiattack",
+                      "name": "Multiattack"
+                    },
+                    {
+                      "action_type": "action",
+                      "damage_expression": "1d8 + 4 + spell_level",
+                      "damage_type": "piercing",
+                      "is_weapon_attack": true,
+                      "melee_weapon_attack": true,
+                      "name": "Maul",
+                      "range_ft": 5,
+                      "target": "one_creature"
+                    }
+                  ],
+                  "armor_class": "11 + spell_level",
+                  "hp": 30,
+                  "movement_modes": [
+                    {
+                      "mode": "walk",
+                      "speed_ft": 30
+                    },
+                    {
+                      "mode": "climb",
+                      "speed_ft": 60
+                    }
+                  ],
+                  "speed_ft": 30,
+                  "traits": [
+                    {
+                      "name": "Pack Tactics",
+                      "rule": "advantage_when_ally_is_within_5_ft_of_target"
+                    }
+                  ]
+                },
+                "water": {
+                  "ability_scores": {
+                    "charisma": 5,
+                    "constitution": 16,
+                    "dexterity": 11,
+                    "intelligence": 4,
+                    "strength": 18,
+                    "wisdom": 14
+                  },
+                  "actions": [
+                    {
+                      "action_type": "action",
+                      "attack_count_formula": "floor(spell_level / 2)",
+                      "attack_type": "multiattack",
+                      "name": "Multiattack"
+                    },
+                    {
+                      "action_type": "action",
+                      "damage_expression": "1d8 + 4 + spell_level",
+                      "damage_type": "piercing",
+                      "is_weapon_attack": true,
+                      "melee_weapon_attack": true,
+                      "name": "Maul",
+                      "range_ft": 5,
+                      "target": "one_creature"
+                    }
+                  ],
+                  "armor_class": "11 + spell_level",
+                  "hp": 30,
+                  "movement_modes": [
+                    {
+                      "mode": "walk",
+                      "speed_ft": 30
+                    },
+                    {
+                      "mode": "swim",
+                      "speed_ft": 30
+                    }
+                  ],
+                  "speed_ft": 30,
+                  "traits": [
+                    {
+                      "name": "Water Breathing",
+                      "rule": "can_breathe_only_underwater"
+                    }
+                  ]
+                }
+              }
+            },
+            "type": "summon_or_creation"
+          },
+          "spell_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
+          "type": "summon_or_creation"
+        },
+        {
+          "capability_id": "spell.concentration.v1",
+          "clause_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1:clause:2",
           "kind": "spell_clause",
           "parameters": {
             "clause_id": "concentration",
@@ -9630,6 +10332,22 @@
           },
           "spell_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
           "type": "concentration"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "summon_stat_block",
+            "clause_id": "upcast",
+            "evidence_ref": "使用三环或更高法术位施展该法术时，该生物数据中使用更高的法术环数。",
+            "minimum_slot": 3,
+            "per_slot": 5,
+            "text": "每高于二环一个法术位等级，召唤物生命值增加5点。",
+            "type": "upcast"
+          },
+          "spell_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
+          "type": "upcast"
         }
       ],
       "runtime_spell_definition": {
@@ -9654,10 +10372,223 @@
             }
           ],
           "duration": [],
-          "effects": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "choice_key": "environment",
+              "choice_required": true,
+              "choice_values": [
+                "air",
+                "land",
+                "water"
+              ],
+              "clause_id": "summon_or_creation",
+              "controller": "player",
+              "count": 1,
+              "default_behavior": {
+                "command_mode": "verbal_without_action",
+                "control_boundary": "player",
+                "movement_policy": "move_away_from_danger",
+                "on_no_command": "dodge"
+              },
+              "disposition": "ally",
+              "duration": {
+                "maximum": true,
+                "unit": "minutes",
+                "value": 60
+              },
+              "initiative_mode": "shared_with_source",
+              "kind": "summon",
+              "name": "Bestial Spirit",
+              "position_policy": {
+                "requires_unoccupied": true,
+                "visibility": "visible"
+              },
+              "requires_concentration": true,
+              "scaling": {
+                "armor_class_per_slot": 0,
+                "base_level": 2,
+                "hp_per_slot": 5
+              },
+              "stat_block_id": "tashas-cauldron:stat-block:bestial-spirit",
+              "template": {
+                "creature_type": "beast",
+                "size": "small",
+                "variants": {
+                  "air": {
+                    "ability_scores": {
+                      "charisma": 5,
+                      "constitution": 16,
+                      "dexterity": 11,
+                      "intelligence": 4,
+                      "strength": 18,
+                      "wisdom": 14
+                    },
+                    "actions": [
+                      {
+                        "action_type": "action",
+                        "attack_count_formula": "floor(spell_level / 2)",
+                        "attack_type": "multiattack",
+                        "name": "Multiattack"
+                      },
+                      {
+                        "action_type": "action",
+                        "damage_expression": "1d8 + 4 + spell_level",
+                        "damage_type": "piercing",
+                        "is_weapon_attack": true,
+                        "melee_weapon_attack": true,
+                        "name": "Maul",
+                        "range_ft": 5,
+                        "target": "one_creature"
+                      }
+                    ],
+                    "armor_class": "11 + spell_level",
+                    "hp": 20,
+                    "movement_modes": [
+                      {
+                        "mode": "walk",
+                        "speed_ft": 30
+                      },
+                      {
+                        "mode": "fly",
+                        "speed_ft": 60
+                      }
+                    ],
+                    "speed_ft": 30,
+                    "traits": [
+                      {
+                        "name": "Flyby",
+                        "rule": "leaving_enemy_reach_does_not_provoke_opportunity_attack"
+                      }
+                    ]
+                  },
+                  "land": {
+                    "ability_scores": {
+                      "charisma": 5,
+                      "constitution": 16,
+                      "dexterity": 11,
+                      "intelligence": 4,
+                      "strength": 18,
+                      "wisdom": 14
+                    },
+                    "actions": [
+                      {
+                        "action_type": "action",
+                        "attack_count_formula": "floor(spell_level / 2)",
+                        "attack_type": "multiattack",
+                        "name": "Multiattack"
+                      },
+                      {
+                        "action_type": "action",
+                        "damage_expression": "1d8 + 4 + spell_level",
+                        "damage_type": "piercing",
+                        "is_weapon_attack": true,
+                        "melee_weapon_attack": true,
+                        "name": "Maul",
+                        "range_ft": 5,
+                        "target": "one_creature"
+                      }
+                    ],
+                    "armor_class": "11 + spell_level",
+                    "hp": 30,
+                    "movement_modes": [
+                      {
+                        "mode": "walk",
+                        "speed_ft": 30
+                      },
+                      {
+                        "mode": "climb",
+                        "speed_ft": 60
+                      }
+                    ],
+                    "speed_ft": 30,
+                    "traits": [
+                      {
+                        "name": "Pack Tactics",
+                        "rule": "advantage_when_ally_is_within_5_ft_of_target"
+                      }
+                    ]
+                  },
+                  "water": {
+                    "ability_scores": {
+                      "charisma": 5,
+                      "constitution": 16,
+                      "dexterity": 11,
+                      "intelligence": 4,
+                      "strength": 18,
+                      "wisdom": 14
+                    },
+                    "actions": [
+                      {
+                        "action_type": "action",
+                        "attack_count_formula": "floor(spell_level / 2)",
+                        "attack_type": "multiattack",
+                        "name": "Multiattack"
+                      },
+                      {
+                        "action_type": "action",
+                        "damage_expression": "1d8 + 4 + spell_level",
+                        "damage_type": "piercing",
+                        "is_weapon_attack": true,
+                        "melee_weapon_attack": true,
+                        "name": "Maul",
+                        "range_ft": 5,
+                        "target": "one_creature"
+                      }
+                    ],
+                    "armor_class": "11 + spell_level",
+                    "hp": 30,
+                    "movement_modes": [
+                      {
+                        "mode": "walk",
+                        "speed_ft": 30
+                      },
+                      {
+                        "mode": "swim",
+                        "speed_ft": 30
+                      }
+                    ],
+                    "speed_ft": 30,
+                    "traits": [
+                      {
+                        "name": "Water Breathing",
+                        "rule": "can_breathe_only_underwater"
+                      }
+                    ]
+                  }
+                }
+              },
+              "type": "summon_or_creation"
+            }
+          ],
           "saving_throw": [],
-          "target_selection": [],
-          "upcast": []
+          "target_selection": [
+            {
+              "clause_id": "target_selection",
+              "count": 1,
+              "evidence_ref": "其在施法距离内你可见的一个未占据位置化为实体。",
+              "kind": "one_unoccupied_position",
+              "position_policy": {
+                "requires_unoccupied": true,
+                "visibility": "visible"
+              },
+              "range_ft": 90,
+              "requires_unoccupied": true,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "summon_stat_block",
+              "clause_id": "upcast",
+              "evidence_ref": "使用三环或更高法术位施展该法术时，该生物数据中使用更高的法术环数。",
+              "minimum_slot": 3,
+              "per_slot": 5,
+              "text": "每高于二环一个法术位等级，召唤物生命值增加5点。",
+              "type": "upcast"
+            }
+          ]
         },
         "runtime_schema_version": "spell-runtime-1",
         "school": "咒法",
@@ -9673,9 +10604,9 @@
       },
       "source_fingerprint": "f57b0e2559fd8a0edbef3ef77cf0ead4daa815a664e1c412bd7e26a337961d50",
       "source_trust": "authored_ir",
-      "spec_fingerprint": "53bd51b044e99aa95474c573880b093f6603bb4e94e6ef46e1d27c75ff5b7a63",
+      "spec_fingerprint": "333acc7fe9a613c2f1d2792df95628243c9b3e55d9a9b5f416d7d786b8326350",
       "spell_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
-      "typed_clause_count": 1,
+      "typed_clause_count": 4,
       "typed_ir": true,
       "unsupported_clause_ids": []
     },
@@ -23786,7 +24717,10 @@
     {
       "blockers": [],
       "capability_ids": [
-        "spell.concentration.v1"
+        "spell.concentration.v1",
+        "spell.summon_or_creation.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
       ],
       "capability_registry": {
         "id": "spell",
@@ -23795,21 +24729,254 @@
       "clause_results": [
         {
           "blockers": [],
-          "capability_id": "spell.concentration.v1",
+          "capability_id": "spell.target_selection.v1",
           "clause_id": "tashas-cauldron:spell:083419d9de551806a5ca9748:clause:0",
           "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.summon_or_creation.v1",
+          "clause_id": "tashas-cauldron:spell:083419d9de551806a5ca9748:clause:1",
+          "status": "full",
+          "type": "summon_or_creation"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.concentration.v1",
+          "clause_id": "tashas-cauldron:spell:083419d9de551806a5ca9748:clause:2",
+          "status": "full",
           "type": "concentration"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "tashas-cauldron:spell:083419d9de551806a5ca9748:clause:3",
+          "status": "full",
+          "type": "upcast"
         }
       ],
       "compile_status": "full",
       "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
-      "fingerprint": "081c468cec48a97d3157fd0e884c8d33b9c020347d82ed042786c7d755071d51",
+      "fingerprint": "e9d55717f60f46cda9097b3a8098864bfc7a6100b8c72179bdda619f592c3235",
       "kind": "spell",
       "materialized": true,
       "runtime_blocks": [
         {
-          "capability_id": "spell.concentration.v1",
+          "capability_id": "spell.target_selection.v1",
           "clause_id": "tashas-cauldron:spell:083419d9de551806a5ca9748:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target_selection",
+            "count": 1,
+            "evidence_ref": "其在施法距离内你可见的一个未占据位置化为实体。",
+            "kind": "one_unoccupied_position",
+            "position_policy": {
+              "requires_unoccupied": true,
+              "visibility": "visible"
+            },
+            "range_ft": 90,
+            "requires_unoccupied": true,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "tashas-cauldron:spell:083419d9de551806a5ca9748",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.summon_or_creation.v1",
+          "clause_id": "tashas-cauldron:spell:083419d9de551806a5ca9748:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "choice_key": "form",
+            "choice_required": true,
+            "choice_values": [
+              "ghostly",
+              "putrid",
+              "skeletal"
+            ],
+            "clause_id": "summon_or_creation",
+            "controller": "player",
+            "count": 1,
+            "default_behavior": {
+              "command_mode": "verbal_without_action",
+              "control_boundary": "player",
+              "movement_policy": "move_away_from_danger",
+              "on_no_command": "dodge"
+            },
+            "disposition": "ally",
+            "duration": {
+              "maximum": true,
+              "unit": "minutes",
+              "value": 60
+            },
+            "initiative_mode": "shared_with_source",
+            "kind": "summon",
+            "name": "Undead Spirit",
+            "position_policy": {
+              "requires_unoccupied": true,
+              "visibility": "visible"
+            },
+            "requires_concentration": true,
+            "scaling": {
+              "armor_class_per_slot": 0,
+              "base_level": 3,
+              "hp_per_slot": 10
+            },
+            "stat_block_id": "tashas-cauldron:stat-block:undead-spirit",
+            "template": {
+              "condition_immunities": [
+                "exhaustion",
+                "frightened",
+                "paralyzed",
+                "poisoned"
+              ],
+              "creature_type": "undead",
+              "damage_immunities": [
+                "necrotic",
+                "poison"
+              ],
+              "size": "medium",
+              "variants": {
+                "ghostly": {
+                  "ability_scores": {
+                    "charisma": 9,
+                    "constitution": 15,
+                    "dexterity": 16,
+                    "intelligence": 4,
+                    "strength": 12,
+                    "wisdom": 10
+                  },
+                  "actions": [
+                    {
+                      "action_type": "action",
+                      "attack_count_formula": "floor(spell_level / 2)",
+                      "attack_type": "multiattack",
+                      "name": "Multiattack"
+                    },
+                    {
+                      "action_type": "action",
+                      "damage_expression": "1d8 + 3 + spell_level",
+                      "damage_type": "necrotic",
+                      "is_weapon_attack": true,
+                      "melee_weapon_attack": true,
+                      "name": "Deathly Touch",
+                      "range_ft": 5,
+                      "target": "one_creature"
+                    }
+                  ],
+                  "armor_class": "11 + spell_level",
+                  "hp": 30,
+                  "movement_modes": [
+                    {
+                      "mode": "walk",
+                      "speed_ft": 40
+                    },
+                    {
+                      "hover": true,
+                      "mode": "fly",
+                      "speed_ft": 40
+                    }
+                  ],
+                  "speed_ft": 40,
+                  "traits": [
+                    {
+                      "name": "Incorporeal Movement",
+                      "rule": "can_move_through_creatures_and_objects"
+                    }
+                  ]
+                },
+                "putrid": {
+                  "ability_scores": {
+                    "charisma": 9,
+                    "constitution": 15,
+                    "dexterity": 16,
+                    "intelligence": 4,
+                    "strength": 12,
+                    "wisdom": 10
+                  },
+                  "actions": [
+                    {
+                      "action_type": "action",
+                      "attack_count_formula": "floor(spell_level / 2)",
+                      "attack_type": "multiattack",
+                      "name": "Multiattack"
+                    },
+                    {
+                      "action_type": "action",
+                      "damage_expression": "1d6 + 3 + spell_level",
+                      "damage_type": "slashing",
+                      "is_weapon_attack": true,
+                      "melee_weapon_attack": true,
+                      "name": "Rotting Claw",
+                      "range_ft": 5,
+                      "target": "one_creature"
+                    }
+                  ],
+                  "armor_class": "11 + spell_level",
+                  "hp": 30,
+                  "movement_modes": [
+                    {
+                      "mode": "walk",
+                      "speed_ft": 40
+                    }
+                  ],
+                  "speed_ft": 40,
+                  "traits": [
+                    {
+                      "name": "Festering Aura",
+                      "rule": "nearby_creatures_save_or_become_poisoned"
+                    }
+                  ]
+                },
+                "skeletal": {
+                  "ability_scores": {
+                    "charisma": 9,
+                    "constitution": 15,
+                    "dexterity": 16,
+                    "intelligence": 4,
+                    "strength": 12,
+                    "wisdom": 10
+                  },
+                  "actions": [
+                    {
+                      "action_type": "action",
+                      "attack_count_formula": "floor(spell_level / 2)",
+                      "attack_type": "multiattack",
+                      "name": "Multiattack"
+                    },
+                    {
+                      "action_type": "action",
+                      "attack_type": "ranged_spell_attack",
+                      "damage_expression": "2d4 + 3 + spell_level",
+                      "damage_type": "necrotic",
+                      "is_weapon_attack": true,
+                      "name": "Grave Bolt",
+                      "range_ft": 150,
+                      "target": "one_creature"
+                    }
+                  ],
+                  "armor_class": "11 + spell_level",
+                  "hp": 20,
+                  "movement_modes": [
+                    {
+                      "mode": "walk",
+                      "speed_ft": 40
+                    }
+                  ],
+                  "speed_ft": 40
+                }
+              }
+            },
+            "type": "summon_or_creation"
+          },
+          "spell_id": "tashas-cauldron:spell:083419d9de551806a5ca9748",
+          "type": "summon_or_creation"
+        },
+        {
+          "capability_id": "spell.concentration.v1",
+          "clause_id": "tashas-cauldron:spell:083419d9de551806a5ca9748:clause:2",
           "kind": "spell_clause",
           "parameters": {
             "clause_id": "concentration",
@@ -23820,6 +24987,22 @@
           },
           "spell_id": "tashas-cauldron:spell:083419d9de551806a5ca9748",
           "type": "concentration"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "tashas-cauldron:spell:083419d9de551806a5ca9748:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "summon_stat_block",
+            "clause_id": "upcast",
+            "evidence_ref": "使用四环或更高环阶的法术位施展该法术时，该生物数据中使用更高的法术环数。",
+            "minimum_slot": 4,
+            "per_slot": 10,
+            "text": "每高于三环一个法术位等级，召唤物生命值增加10点。",
+            "type": "upcast"
+          },
+          "spell_id": "tashas-cauldron:spell:083419d9de551806a5ca9748",
+          "type": "upcast"
         }
       ],
       "runtime_spell_definition": {
@@ -23844,10 +25027,220 @@
             }
           ],
           "duration": [],
-          "effects": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "choice_key": "form",
+              "choice_required": true,
+              "choice_values": [
+                "ghostly",
+                "putrid",
+                "skeletal"
+              ],
+              "clause_id": "summon_or_creation",
+              "controller": "player",
+              "count": 1,
+              "default_behavior": {
+                "command_mode": "verbal_without_action",
+                "control_boundary": "player",
+                "movement_policy": "move_away_from_danger",
+                "on_no_command": "dodge"
+              },
+              "disposition": "ally",
+              "duration": {
+                "maximum": true,
+                "unit": "minutes",
+                "value": 60
+              },
+              "initiative_mode": "shared_with_source",
+              "kind": "summon",
+              "name": "Undead Spirit",
+              "position_policy": {
+                "requires_unoccupied": true,
+                "visibility": "visible"
+              },
+              "requires_concentration": true,
+              "scaling": {
+                "armor_class_per_slot": 0,
+                "base_level": 3,
+                "hp_per_slot": 10
+              },
+              "stat_block_id": "tashas-cauldron:stat-block:undead-spirit",
+              "template": {
+                "condition_immunities": [
+                  "exhaustion",
+                  "frightened",
+                  "paralyzed",
+                  "poisoned"
+                ],
+                "creature_type": "undead",
+                "damage_immunities": [
+                  "necrotic",
+                  "poison"
+                ],
+                "size": "medium",
+                "variants": {
+                  "ghostly": {
+                    "ability_scores": {
+                      "charisma": 9,
+                      "constitution": 15,
+                      "dexterity": 16,
+                      "intelligence": 4,
+                      "strength": 12,
+                      "wisdom": 10
+                    },
+                    "actions": [
+                      {
+                        "action_type": "action",
+                        "attack_count_formula": "floor(spell_level / 2)",
+                        "attack_type": "multiattack",
+                        "name": "Multiattack"
+                      },
+                      {
+                        "action_type": "action",
+                        "damage_expression": "1d8 + 3 + spell_level",
+                        "damage_type": "necrotic",
+                        "is_weapon_attack": true,
+                        "melee_weapon_attack": true,
+                        "name": "Deathly Touch",
+                        "range_ft": 5,
+                        "target": "one_creature"
+                      }
+                    ],
+                    "armor_class": "11 + spell_level",
+                    "hp": 30,
+                    "movement_modes": [
+                      {
+                        "mode": "walk",
+                        "speed_ft": 40
+                      },
+                      {
+                        "hover": true,
+                        "mode": "fly",
+                        "speed_ft": 40
+                      }
+                    ],
+                    "speed_ft": 40,
+                    "traits": [
+                      {
+                        "name": "Incorporeal Movement",
+                        "rule": "can_move_through_creatures_and_objects"
+                      }
+                    ]
+                  },
+                  "putrid": {
+                    "ability_scores": {
+                      "charisma": 9,
+                      "constitution": 15,
+                      "dexterity": 16,
+                      "intelligence": 4,
+                      "strength": 12,
+                      "wisdom": 10
+                    },
+                    "actions": [
+                      {
+                        "action_type": "action",
+                        "attack_count_formula": "floor(spell_level / 2)",
+                        "attack_type": "multiattack",
+                        "name": "Multiattack"
+                      },
+                      {
+                        "action_type": "action",
+                        "damage_expression": "1d6 + 3 + spell_level",
+                        "damage_type": "slashing",
+                        "is_weapon_attack": true,
+                        "melee_weapon_attack": true,
+                        "name": "Rotting Claw",
+                        "range_ft": 5,
+                        "target": "one_creature"
+                      }
+                    ],
+                    "armor_class": "11 + spell_level",
+                    "hp": 30,
+                    "movement_modes": [
+                      {
+                        "mode": "walk",
+                        "speed_ft": 40
+                      }
+                    ],
+                    "speed_ft": 40,
+                    "traits": [
+                      {
+                        "name": "Festering Aura",
+                        "rule": "nearby_creatures_save_or_become_poisoned"
+                      }
+                    ]
+                  },
+                  "skeletal": {
+                    "ability_scores": {
+                      "charisma": 9,
+                      "constitution": 15,
+                      "dexterity": 16,
+                      "intelligence": 4,
+                      "strength": 12,
+                      "wisdom": 10
+                    },
+                    "actions": [
+                      {
+                        "action_type": "action",
+                        "attack_count_formula": "floor(spell_level / 2)",
+                        "attack_type": "multiattack",
+                        "name": "Multiattack"
+                      },
+                      {
+                        "action_type": "action",
+                        "attack_type": "ranged_spell_attack",
+                        "damage_expression": "2d4 + 3 + spell_level",
+                        "damage_type": "necrotic",
+                        "is_weapon_attack": true,
+                        "name": "Grave Bolt",
+                        "range_ft": 150,
+                        "target": "one_creature"
+                      }
+                    ],
+                    "armor_class": "11 + spell_level",
+                    "hp": 20,
+                    "movement_modes": [
+                      {
+                        "mode": "walk",
+                        "speed_ft": 40
+                      }
+                    ],
+                    "speed_ft": 40
+                  }
+                }
+              },
+              "type": "summon_or_creation"
+            }
+          ],
           "saving_throw": [],
-          "target_selection": [],
-          "upcast": []
+          "target_selection": [
+            {
+              "clause_id": "target_selection",
+              "count": 1,
+              "evidence_ref": "其在施法距离内你可见的一个未占据位置化为实体。",
+              "kind": "one_unoccupied_position",
+              "position_policy": {
+                "requires_unoccupied": true,
+                "visibility": "visible"
+              },
+              "range_ft": 90,
+              "requires_unoccupied": true,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "summon_stat_block",
+              "clause_id": "upcast",
+              "evidence_ref": "使用四环或更高环阶的法术位施展该法术时，该生物数据中使用更高的法术环数。",
+              "minimum_slot": 4,
+              "per_slot": 10,
+              "text": "每高于三环一个法术位等级，召唤物生命值增加10点。",
+              "type": "upcast"
+            }
+          ]
         },
         "runtime_schema_version": "spell-runtime-1",
         "school": "死灵",
@@ -23863,16 +25256,19 @@
       },
       "source_fingerprint": "f051639e10dfdc7e9d340120f61a8c2bb3cd942f767a6d07da361717f178a5d8",
       "source_trust": "authored_ir",
-      "spec_fingerprint": "7fef6775c3fcf1b6f7a897d9eafb8f134160602c74275fa32371d9667cadadf6",
+      "spec_fingerprint": "c6b5c68344e8b1814e52e5334bd01f084569fbd9764299404e2d52d7a795d4d2",
       "spell_id": "tashas-cauldron:spell:083419d9de551806a5ca9748",
-      "typed_clause_count": 1,
+      "typed_clause_count": 4,
       "typed_ir": true,
       "unsupported_clause_ids": []
     },
     {
       "blockers": [],
       "capability_ids": [
-        "spell.concentration.v1"
+        "spell.concentration.v1",
+        "spell.summon_or_creation.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
       ],
       "capability_registry": {
         "id": "spell",
@@ -23881,21 +25277,257 @@
       "clause_results": [
         {
           "blockers": [],
-          "capability_id": "spell.concentration.v1",
+          "capability_id": "spell.target_selection.v1",
           "clause_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1:clause:0",
           "status": "full",
+          "type": "target_selection"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.summon_or_creation.v1",
+          "clause_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1:clause:1",
+          "status": "full",
+          "type": "summon_or_creation"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.concentration.v1",
+          "clause_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1:clause:2",
+          "status": "full",
           "type": "concentration"
+        },
+        {
+          "blockers": [],
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1:clause:3",
+          "status": "full",
+          "type": "upcast"
         }
       ],
       "compile_status": "full",
       "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
-      "fingerprint": "66ca21e1429ff804cc0b8a1cd516482be659a11732b99622bf8b5a66f6eddf79",
+      "fingerprint": "2d4fba457354cd73e6200961bc798bdf89cb3bbd376af5a56117e0f61177fe27",
       "kind": "spell",
       "materialized": true,
       "runtime_blocks": [
         {
-          "capability_id": "spell.concentration.v1",
+          "capability_id": "spell.target_selection.v1",
           "clause_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "target_selection",
+            "count": 1,
+            "evidence_ref": "其在施法距离内你可见的一个未占据位置化为实体。",
+            "kind": "one_unoccupied_position",
+            "position_policy": {
+              "requires_unoccupied": true,
+              "visibility": "visible"
+            },
+            "range_ft": 90,
+            "requires_unoccupied": true,
+            "type": "target_selection",
+            "visibility": "visible"
+          },
+          "spell_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
+          "type": "target_selection"
+        },
+        {
+          "capability_id": "spell.summon_or_creation.v1",
+          "clause_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "choice_key": "environment",
+            "choice_required": true,
+            "choice_values": [
+              "air",
+              "land",
+              "water"
+            ],
+            "clause_id": "summon_or_creation",
+            "controller": "player",
+            "count": 1,
+            "default_behavior": {
+              "command_mode": "verbal_without_action",
+              "control_boundary": "player",
+              "movement_policy": "move_away_from_danger",
+              "on_no_command": "dodge"
+            },
+            "disposition": "ally",
+            "duration": {
+              "maximum": true,
+              "unit": "minutes",
+              "value": 60
+            },
+            "initiative_mode": "shared_with_source",
+            "kind": "summon",
+            "name": "Bestial Spirit",
+            "position_policy": {
+              "requires_unoccupied": true,
+              "visibility": "visible"
+            },
+            "requires_concentration": true,
+            "scaling": {
+              "armor_class_per_slot": 0,
+              "base_level": 2,
+              "hp_per_slot": 5
+            },
+            "stat_block_id": "tashas-cauldron:stat-block:bestial-spirit",
+            "template": {
+              "creature_type": "beast",
+              "size": "small",
+              "variants": {
+                "air": {
+                  "ability_scores": {
+                    "charisma": 5,
+                    "constitution": 16,
+                    "dexterity": 11,
+                    "intelligence": 4,
+                    "strength": 18,
+                    "wisdom": 14
+                  },
+                  "actions": [
+                    {
+                      "action_type": "action",
+                      "attack_count_formula": "floor(spell_level / 2)",
+                      "attack_type": "multiattack",
+                      "name": "Multiattack"
+                    },
+                    {
+                      "action_type": "action",
+                      "damage_expression": "1d8 + 4 + spell_level",
+                      "damage_type": "piercing",
+                      "is_weapon_attack": true,
+                      "melee_weapon_attack": true,
+                      "name": "Maul",
+                      "range_ft": 5,
+                      "target": "one_creature"
+                    }
+                  ],
+                  "armor_class": "11 + spell_level",
+                  "hp": 20,
+                  "movement_modes": [
+                    {
+                      "mode": "walk",
+                      "speed_ft": 30
+                    },
+                    {
+                      "mode": "fly",
+                      "speed_ft": 60
+                    }
+                  ],
+                  "speed_ft": 30,
+                  "traits": [
+                    {
+                      "name": "Flyby",
+                      "rule": "leaving_enemy_reach_does_not_provoke_opportunity_attack"
+                    }
+                  ]
+                },
+                "land": {
+                  "ability_scores": {
+                    "charisma": 5,
+                    "constitution": 16,
+                    "dexterity": 11,
+                    "intelligence": 4,
+                    "strength": 18,
+                    "wisdom": 14
+                  },
+                  "actions": [
+                    {
+                      "action_type": "action",
+                      "attack_count_formula": "floor(spell_level / 2)",
+                      "attack_type": "multiattack",
+                      "name": "Multiattack"
+                    },
+                    {
+                      "action_type": "action",
+                      "damage_expression": "1d8 + 4 + spell_level",
+                      "damage_type": "piercing",
+                      "is_weapon_attack": true,
+                      "melee_weapon_attack": true,
+                      "name": "Maul",
+                      "range_ft": 5,
+                      "target": "one_creature"
+                    }
+                  ],
+                  "armor_class": "11 + spell_level",
+                  "hp": 30,
+                  "movement_modes": [
+                    {
+                      "mode": "walk",
+                      "speed_ft": 30
+                    },
+                    {
+                      "mode": "climb",
+                      "speed_ft": 60
+                    }
+                  ],
+                  "speed_ft": 30,
+                  "traits": [
+                    {
+                      "name": "Pack Tactics",
+                      "rule": "advantage_when_ally_is_within_5_ft_of_target"
+                    }
+                  ]
+                },
+                "water": {
+                  "ability_scores": {
+                    "charisma": 5,
+                    "constitution": 16,
+                    "dexterity": 11,
+                    "intelligence": 4,
+                    "strength": 18,
+                    "wisdom": 14
+                  },
+                  "actions": [
+                    {
+                      "action_type": "action",
+                      "attack_count_formula": "floor(spell_level / 2)",
+                      "attack_type": "multiattack",
+                      "name": "Multiattack"
+                    },
+                    {
+                      "action_type": "action",
+                      "damage_expression": "1d8 + 4 + spell_level",
+                      "damage_type": "piercing",
+                      "is_weapon_attack": true,
+                      "melee_weapon_attack": true,
+                      "name": "Maul",
+                      "range_ft": 5,
+                      "target": "one_creature"
+                    }
+                  ],
+                  "armor_class": "11 + spell_level",
+                  "hp": 30,
+                  "movement_modes": [
+                    {
+                      "mode": "walk",
+                      "speed_ft": 30
+                    },
+                    {
+                      "mode": "swim",
+                      "speed_ft": 30
+                    }
+                  ],
+                  "speed_ft": 30,
+                  "traits": [
+                    {
+                      "name": "Water Breathing",
+                      "rule": "can_breathe_only_underwater"
+                    }
+                  ]
+                }
+              }
+            },
+            "type": "summon_or_creation"
+          },
+          "spell_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
+          "type": "summon_or_creation"
+        },
+        {
+          "capability_id": "spell.concentration.v1",
+          "clause_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1:clause:2",
           "kind": "spell_clause",
           "parameters": {
             "clause_id": "concentration",
@@ -23906,6 +25538,22 @@
           },
           "spell_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
           "type": "concentration"
+        },
+        {
+          "capability_id": "spell.upcast.v1",
+          "clause_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1:clause:3",
+          "kind": "spell_clause",
+          "parameters": {
+            "applies_to": "summon_stat_block",
+            "clause_id": "upcast",
+            "evidence_ref": "使用三环或更高法术位施展该法术时，该生物数据中使用更高的法术环数。",
+            "minimum_slot": 3,
+            "per_slot": 5,
+            "text": "每高于二环一个法术位等级，召唤物生命值增加5点。",
+            "type": "upcast"
+          },
+          "spell_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
+          "type": "upcast"
         }
       ],
       "runtime_spell_definition": {
@@ -23930,10 +25578,223 @@
             }
           ],
           "duration": [],
-          "effects": [],
+          "effects": [
+            {
+              "action_economy": "action",
+              "choice_key": "environment",
+              "choice_required": true,
+              "choice_values": [
+                "air",
+                "land",
+                "water"
+              ],
+              "clause_id": "summon_or_creation",
+              "controller": "player",
+              "count": 1,
+              "default_behavior": {
+                "command_mode": "verbal_without_action",
+                "control_boundary": "player",
+                "movement_policy": "move_away_from_danger",
+                "on_no_command": "dodge"
+              },
+              "disposition": "ally",
+              "duration": {
+                "maximum": true,
+                "unit": "minutes",
+                "value": 60
+              },
+              "initiative_mode": "shared_with_source",
+              "kind": "summon",
+              "name": "Bestial Spirit",
+              "position_policy": {
+                "requires_unoccupied": true,
+                "visibility": "visible"
+              },
+              "requires_concentration": true,
+              "scaling": {
+                "armor_class_per_slot": 0,
+                "base_level": 2,
+                "hp_per_slot": 5
+              },
+              "stat_block_id": "tashas-cauldron:stat-block:bestial-spirit",
+              "template": {
+                "creature_type": "beast",
+                "size": "small",
+                "variants": {
+                  "air": {
+                    "ability_scores": {
+                      "charisma": 5,
+                      "constitution": 16,
+                      "dexterity": 11,
+                      "intelligence": 4,
+                      "strength": 18,
+                      "wisdom": 14
+                    },
+                    "actions": [
+                      {
+                        "action_type": "action",
+                        "attack_count_formula": "floor(spell_level / 2)",
+                        "attack_type": "multiattack",
+                        "name": "Multiattack"
+                      },
+                      {
+                        "action_type": "action",
+                        "damage_expression": "1d8 + 4 + spell_level",
+                        "damage_type": "piercing",
+                        "is_weapon_attack": true,
+                        "melee_weapon_attack": true,
+                        "name": "Maul",
+                        "range_ft": 5,
+                        "target": "one_creature"
+                      }
+                    ],
+                    "armor_class": "11 + spell_level",
+                    "hp": 20,
+                    "movement_modes": [
+                      {
+                        "mode": "walk",
+                        "speed_ft": 30
+                      },
+                      {
+                        "mode": "fly",
+                        "speed_ft": 60
+                      }
+                    ],
+                    "speed_ft": 30,
+                    "traits": [
+                      {
+                        "name": "Flyby",
+                        "rule": "leaving_enemy_reach_does_not_provoke_opportunity_attack"
+                      }
+                    ]
+                  },
+                  "land": {
+                    "ability_scores": {
+                      "charisma": 5,
+                      "constitution": 16,
+                      "dexterity": 11,
+                      "intelligence": 4,
+                      "strength": 18,
+                      "wisdom": 14
+                    },
+                    "actions": [
+                      {
+                        "action_type": "action",
+                        "attack_count_formula": "floor(spell_level / 2)",
+                        "attack_type": "multiattack",
+                        "name": "Multiattack"
+                      },
+                      {
+                        "action_type": "action",
+                        "damage_expression": "1d8 + 4 + spell_level",
+                        "damage_type": "piercing",
+                        "is_weapon_attack": true,
+                        "melee_weapon_attack": true,
+                        "name": "Maul",
+                        "range_ft": 5,
+                        "target": "one_creature"
+                      }
+                    ],
+                    "armor_class": "11 + spell_level",
+                    "hp": 30,
+                    "movement_modes": [
+                      {
+                        "mode": "walk",
+                        "speed_ft": 30
+                      },
+                      {
+                        "mode": "climb",
+                        "speed_ft": 60
+                      }
+                    ],
+                    "speed_ft": 30,
+                    "traits": [
+                      {
+                        "name": "Pack Tactics",
+                        "rule": "advantage_when_ally_is_within_5_ft_of_target"
+                      }
+                    ]
+                  },
+                  "water": {
+                    "ability_scores": {
+                      "charisma": 5,
+                      "constitution": 16,
+                      "dexterity": 11,
+                      "intelligence": 4,
+                      "strength": 18,
+                      "wisdom": 14
+                    },
+                    "actions": [
+                      {
+                        "action_type": "action",
+                        "attack_count_formula": "floor(spell_level / 2)",
+                        "attack_type": "multiattack",
+                        "name": "Multiattack"
+                      },
+                      {
+                        "action_type": "action",
+                        "damage_expression": "1d8 + 4 + spell_level",
+                        "damage_type": "piercing",
+                        "is_weapon_attack": true,
+                        "melee_weapon_attack": true,
+                        "name": "Maul",
+                        "range_ft": 5,
+                        "target": "one_creature"
+                      }
+                    ],
+                    "armor_class": "11 + spell_level",
+                    "hp": 30,
+                    "movement_modes": [
+                      {
+                        "mode": "walk",
+                        "speed_ft": 30
+                      },
+                      {
+                        "mode": "swim",
+                        "speed_ft": 30
+                      }
+                    ],
+                    "speed_ft": 30,
+                    "traits": [
+                      {
+                        "name": "Water Breathing",
+                        "rule": "can_breathe_only_underwater"
+                      }
+                    ]
+                  }
+                }
+              },
+              "type": "summon_or_creation"
+            }
+          ],
           "saving_throw": [],
-          "target_selection": [],
-          "upcast": []
+          "target_selection": [
+            {
+              "clause_id": "target_selection",
+              "count": 1,
+              "evidence_ref": "其在施法距离内你可见的一个未占据位置化为实体。",
+              "kind": "one_unoccupied_position",
+              "position_policy": {
+                "requires_unoccupied": true,
+                "visibility": "visible"
+              },
+              "range_ft": 90,
+              "requires_unoccupied": true,
+              "type": "target_selection",
+              "visibility": "visible"
+            }
+          ],
+          "upcast": [
+            {
+              "applies_to": "summon_stat_block",
+              "clause_id": "upcast",
+              "evidence_ref": "使用三环或更高法术位施展该法术时，该生物数据中使用更高的法术环数。",
+              "minimum_slot": 3,
+              "per_slot": 5,
+              "text": "每高于二环一个法术位等级，召唤物生命值增加5点。",
+              "type": "upcast"
+            }
+          ]
         },
         "runtime_schema_version": "spell-runtime-1",
         "school": "咒法",
@@ -23949,9 +25810,9 @@
       },
       "source_fingerprint": "f57b0e2559fd8a0edbef3ef77cf0ead4daa815a664e1c412bd7e26a337961d50",
       "source_trust": "authored_ir",
-      "spec_fingerprint": "53bd51b044e99aa95474c573880b093f6603bb4e94e6ef46e1d27c75ff5b7a63",
+      "spec_fingerprint": "333acc7fe9a613c2f1d2792df95628243c9b3e55d9a9b5f416d7d786b8326350",
       "spell_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
-      "typed_clause_count": 1,
+      "typed_clause_count": 4,
       "typed_ir": true,
       "unsupported_clause_ids": []
     },

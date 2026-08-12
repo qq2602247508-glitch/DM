@@ -21,7 +21,11 @@ from sqlalchemy import select, update
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from dnd_dm_assistant.api.schemas import CombatActionCommand, CombatFeatureActionCommand
+from dnd_dm_assistant.api.schemas import (
+    CombatActionCommand,
+    CombatFeatureActionCommand,
+    CombatSummonCommand,
+)
 from dnd_dm_assistant.application.content_ir_production_registry import (
     resolve_production_consumers,
 )
@@ -29,6 +33,7 @@ from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionCo
 from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngineService
 from dnd_dm_assistant.infrastructure.database.models import (
     Character,
+    Combat,
     Combatant,
     KnownSpell,
     OperationTransaction,
@@ -661,6 +666,10 @@ class ContentIRRuntimeService:
 
     @staticmethod
     def _action_cost(blocks: Mapping[str, list[dict[str, Any]]]) -> str:
+        for block in blocks.get("effects", []):
+            parameters = ContentIRRuntimeService._parameters(block)
+            if _text(parameters.get("type")) == "summon_or_creation":
+                return _text(parameters.get("action_economy")) or "none"
         for key in ("attack_roll", "saving_throw", "effects", "healing", "temporary_hp"):
             for block in blocks.get(key, []):
                 parameters = ContentIRRuntimeService._parameters(block)
@@ -872,6 +881,266 @@ class ContentIRRuntimeService:
             "caster_level": caster_level,
         }
 
+    @classmethod
+    def _spell_summon_contract(
+        cls,
+        data: Mapping[str, Any],
+        blocks: Mapping[str, list[dict[str, Any]]],
+        *,
+        runtime_id: str,
+        runtime_name: str,
+        runtime_level: int,
+        caster_level: int,
+    ) -> dict[str, Any] | None:
+        """Resolve a typed summon stat block without dispatching on its name."""
+
+        summon = next(
+            (
+                cls._parameters(block)
+                for block in blocks.get("effects", [])
+                if cls._parameters(block).get("type") == "summon_or_creation"
+            ),
+            None,
+        )
+        if not summon:
+            return None
+        if _text(summon.get("kind")).lower() != "summon":
+            raise ValueError("typed spell summon kind is unsupported")
+        stat_block_id = _text(summon.get("stat_block_id"))
+        template = summon.get("template")
+        if not stat_block_id or not isinstance(template, Mapping):
+            raise ValueError("typed spell summon requires a stat block template")
+        template = deepcopy(dict(template))
+        choice_key = _text(summon.get("choice_key"))
+        choice_values = [
+            _text(value)
+            for value in (summon.get("choice_values") or [])
+            if _text(value)
+        ]
+        choice = _text(data.get("summon_choice"))
+        if choice_values:
+            if not choice:
+                if summon.get("choice_required") is True:
+                    raise ValueError(f"typed spell summon requires {choice_key} choice")
+                choice = choice_values[0]
+            if choice not in choice_values:
+                raise ValueError(
+                    f"typed spell summon choice must be one of {', '.join(choice_values)}"
+                )
+        variants = template.get("variants")
+        variant: dict[str, Any] = {}
+        if isinstance(variants, Mapping):
+            raw_variant = variants.get(choice) if choice else variants.get("default")
+            if not isinstance(raw_variant, Mapping):
+                raise ValueError("typed spell summon choice has no stat block variant")
+            variant = deepcopy(dict(raw_variant))
+        else:
+            variant = deepcopy(template)
+
+        scaling = summon.get("scaling")
+        scaling = dict(scaling) if isinstance(scaling, Mapping) else {}
+        base_level = int(scaling.get("base_level") or runtime_level)
+        if base_level < 0 or base_level > 9:
+            raise ValueError("typed spell summon base level is invalid")
+        slot_level = int(data.get("slot_level") or 0)
+        if slot_level < runtime_level:
+            raise ValueError("typed spell summon slot level is below spell level")
+        slot_delta = max(0, slot_level - base_level)
+
+        def scaled_int(field: str, *, default: int | None = None) -> int | None:
+            raw = variant.get(field, template.get(field, default))
+            if raw is None:
+                return default
+            if isinstance(raw, bool):
+                raise ValueError(f"typed spell summon {field} must be an integer")
+            if isinstance(raw, int):
+                return raw + slot_delta * int(scaling.get(f"{field}_per_slot") or 0)
+            expression = _text(raw)
+            if expression == "11 + spell_level":
+                return 11 + slot_level
+            match = re.fullmatch(r"(\d+)\s*\+\s*spell_level", expression)
+            if match:
+                return int(match.group(1)) + slot_level
+            raise ValueError(f"typed spell summon {field} is not executable")
+
+        hp = scaled_int("hp")
+        if hp is None:
+            raise ValueError("typed spell summon requires HP")
+        max_hp = hp
+        armor_class = scaled_int("armor_class")
+        speed_ft = scaled_int("speed_ft")
+        ability_scores = variant.get("ability_scores", template.get("ability_scores", {}))
+        if not isinstance(ability_scores, Mapping):
+            raise ValueError("typed spell summon ability_scores must be an object")
+        actions = variant.get("actions", template.get("actions", []))
+        if not isinstance(actions, list) or not actions:
+            raise ValueError("typed spell summon requires structured actions")
+        target = cls._first_parameters(blocks, "target_selection")
+        range_ft = int(target["range_ft"]) if target.get("range_ft") is not None else None
+        if range_ft is None:
+            raise ValueError("typed spell summon requires an explicit range")
+        destination_row = data.get("destination_row")
+        destination_col = data.get("destination_col")
+        if destination_row is None or destination_col is None:
+            raise ValueError("typed spell summon requires a destination position")
+        duration = summon.get("duration")
+        duration_unit = "until_removed"
+        duration_value: int | None = None
+        if isinstance(duration, Mapping):
+            duration_unit = _text(duration.get("unit")) or duration_unit
+            if duration.get("value") is not None:
+                duration_value = int(duration["value"])
+        elif _text(duration).lower() in {"rounds", "minutes"}:
+            duration_unit = _text(duration).lower()
+        if duration_unit in {"rounds", "minutes"} and duration_value is None:
+            raise ValueError("typed spell summon timed duration requires a value")
+        if duration_unit not in {"rounds", "minutes", "until_removed"}:
+            raise ValueError("typed spell summon duration unit is unsupported")
+        require_visible = _text(target.get("visibility")).lower() == "visible"
+        action_economy = _text(summon.get("action_economy")) or "action"
+        if action_economy not in {"action", "bonus_action", "reaction", "none"}:
+            raise ValueError("typed spell summon action economy is unsupported")
+        movement_modes = variant.get("movement_modes", template.get("movement_modes", []))
+        if not isinstance(movement_modes, list) or any(
+            not isinstance(item, Mapping)
+            or not _text(item.get("mode"))
+            or (
+                item.get("speed_ft") is not None
+                and (
+                    isinstance(item.get("speed_ft"), bool)
+                    or not isinstance(item.get("speed_ft"), int)
+                    or item.get("speed_ft") < 0
+                )
+            )
+            for item in movement_modes
+        ):
+            raise ValueError("typed spell summon movement_modes must be structured")
+        default_behavior = summon.get("default_behavior") or {}
+        if not isinstance(default_behavior, Mapping):
+            raise ValueError("typed spell summon default_behavior must be structured")
+        return {
+            "name": _text(summon.get("name")) or runtime_name,
+            "choice_key": choice_key or None,
+            "choice": choice or None,
+            "choice_values": choice_values,
+            "stat_block_id": stat_block_id,
+            "count": int(summon.get("count") or 1),
+            "range_ft": range_ft,
+            "require_visible": require_visible,
+            "requires_unoccupied": target.get("requires_unoccupied") is True,
+            "destination": {
+                "row": int(destination_row),
+                "col": int(destination_col),
+            },
+            "controller": _text(summon.get("controller")) or "player",
+            "disposition": _text(summon.get("disposition")) or "ally",
+            "initiative_mode": _text(summon.get("initiative_mode")) or "shared_with_source",
+            "action_economy": action_economy,
+            "requires_concentration": summon.get("requires_concentration") is True,
+            "default_behavior": deepcopy(dict(default_behavior)),
+            "duration_unit": duration_unit,
+            "duration_value": duration_value,
+            "movement_modes": deepcopy(movement_modes),
+            "template": {
+                **template,
+                "stat_block_id": stat_block_id,
+                "choice": choice,
+                "choice_key": choice_key or None,
+                "variant": variant,
+                "hp": hp,
+                "max_hp": max_hp,
+                "armor_class": armor_class,
+                "speed_ft": speed_ft,
+                "ability_scores": dict(ability_scores),
+                "actions": deepcopy(actions),
+                "movement_modes": deepcopy(movement_modes),
+                "damage_resistances": list(
+                    variant.get("damage_resistances", template.get("damage_resistances", []))
+                    or []
+                ),
+                "damage_vulnerabilities": list(
+                    variant.get(
+                        "damage_vulnerabilities",
+                        template.get("damage_vulnerabilities", []),
+                    )
+                    or []
+                ),
+                "damage_immunities": list(
+                    variant.get("damage_immunities", template.get("damage_immunities", []))
+                    or []
+                ),
+                "condition_immunities": list(
+                    variant.get(
+                        "condition_immunities",
+                        template.get("condition_immunities", []),
+                    )
+                    or []
+                ),
+            },
+            "scaling": {
+                "base_level": base_level,
+                "slot_level": slot_level,
+                "slot_delta": slot_delta,
+                "caster_level": caster_level,
+            },
+        }
+
+    @staticmethod
+    def _spell_summon_command(
+        data: Mapping[str, Any],
+        contract: Mapping[str, Any],
+        *,
+        runtime_id: str,
+        known_spell_id: str,
+        actor_id: str,
+        actor_version: int,
+        character_id: str,
+    ) -> CombatSummonCommand:
+        template = dict(contract["template"])
+        return CombatSummonCommand(
+            count=int(contract["count"]),
+            name=str(contract["name"]),
+            controller=str(contract["controller"]),
+            owner_character_id=character_id,
+            disposition=str(contract["disposition"]),
+            source_combatant_id=actor_id,
+            source_version=actor_version,
+            position=dict(contract["destination"]),
+            range_ft=int(contract["range_ft"]),
+            require_visible=bool(contract["require_visible"]),
+            requires_unoccupied=bool(contract["requires_unoccupied"]),
+            initiative_mode=str(contract["initiative_mode"]),
+            action_cost=str(contract["action_economy"]),
+            duration_unit=str(contract["duration_unit"]),
+            duration_value=(
+                int(contract["duration_value"])
+                if contract.get("duration_value") is not None
+                else None
+            ),
+            requires_concentration=bool(contract["requires_concentration"]),
+            hp=int(template["hp"]),
+            max_hp=int(template["max_hp"]),
+            armor_class=int(template["armor_class"]),
+            speed_ft=int(template["speed_ft"]),
+            ability_scores=dict(template["ability_scores"]),
+            actions=list(template["actions"]),
+            movement_modes=list(contract.get("movement_modes") or []),
+            damage_resistances=list(template.get("damage_resistances") or []),
+            damage_vulnerabilities=list(template.get("damage_vulnerabilities") or []),
+            damage_immunities=list(template.get("damage_immunities") or []),
+            condition_immunities=list(template.get("condition_immunities") or []),
+            template_json={
+                "spell_id": runtime_id,
+                "known_spell_id": known_spell_id,
+                "stat_block_id": contract["stat_block_id"],
+                "choice_key": contract.get("choice_key"),
+                "choice": contract.get("choice"),
+                "default_behavior": deepcopy(contract.get("default_behavior") or {}),
+                "scaling": deepcopy(contract.get("scaling") or {}),
+                "template": template,
+            },
+        )
+
     def _spell_commands(
         self,
         data: Mapping[str, Any],
@@ -1052,6 +1321,9 @@ class ContentIRRuntimeService:
             actor = session.get(Combatant, _text(data.get("actor_combatant_id")))
             if actor is None or actor.combat_id != _text(data.get("combat_id")):
                 raise StateNotFoundError("content runtime spell actor not found")
+            combat = session.get(Combat, _text(data.get("combat_id")))
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("content runtime spell combat not found")
             spell_context = self._spell_context(actor, spell)
             execution_data = {
                 **data,
@@ -1070,9 +1342,34 @@ class ContentIRRuntimeService:
                 runtime_level=int(runtime.get("level") or 0),
                 caster_level=int(character.level or 0),
             )
+            summon_contract = self._spell_summon_contract(
+                execution_data,
+                blocks,
+                runtime_id=_text(runtime.get("spell_id")),
+                runtime_name=_text(runtime.get("name")),
+                runtime_level=int(runtime.get("level") or 0),
+                caster_level=int(character.level or 0),
+            )
+            summon_preview = None
+            if summon_contract is not None:
+                summon_preview = {
+                    **deepcopy(summon_contract),
+                    "geometry": self.combat.validate_summon_position(
+                        session,
+                        combat,
+                        actor,
+                        (
+                            int(summon_contract["destination"]["row"]),
+                            int(summon_contract["destination"]["col"]),
+                        ),
+                        range_ft=int(summon_contract["range_ft"]),
+                        require_visible=bool(summon_contract["require_visible"]),
+                        requires_unoccupied=bool(summon_contract["requires_unoccupied"]),
+                    ),
+                }
             commands = (
                 None
-                if defense_contract is not None
+                if defense_contract is not None or summon_contract is not None
                 else self._spell_commands(execution_data, blocks)
             )
             combat_preview = None
@@ -1127,7 +1424,7 @@ class ContentIRRuntimeService:
                     "content_kind": "spell",
                     "known_spell_id": spell.id,
                     "action_cost": self._action_cost(blocks),
-                    "requires_target": commands is not None,
+                    "requires_target": commands is not None or summon_contract is not None,
                     "requires_resolution_input": commands is not None,
                     "requires_cas": True,
                     "requires_idempotency": True,
@@ -1136,6 +1433,7 @@ class ContentIRRuntimeService:
                     "consumers": [str(item["consumer_id"]) for item in consumers],
                     "area_batch": len(commands or []) > 1,
                     "defense": defense_contract,
+                    "summon": summon_preview,
                 },
             }
             result["preview_token"] = _fingerprint(
@@ -1541,6 +1839,14 @@ class ContentIRRuntimeService:
                 runtime_level=int(runtime.get("level") or 0),
                 caster_level=int(character.level or 0),
             )
+            summon_contract = self._spell_summon_contract(
+                execution_data,
+                blocks,
+                runtime_id=_text(runtime.get("spell_id")),
+                runtime_name=_text(runtime.get("name")),
+                runtime_level=int(runtime.get("level") or 0),
+                caster_level=int(character.level or 0),
+            )
             if defense_contract is not None:
                 if not blocks.get("concentration") or data.get("concentration") is not True:
                     raise ValueError(
@@ -1560,9 +1866,27 @@ class ContentIRRuntimeService:
                     max_target_distance_ft=defense_contract["max_target_distance_ft"],
                     idempotency_key=f"content-ir:{key}:defense",
                 )
+            elif summon_contract is not None:
+                if not summon_contract["requires_concentration"] or data.get("concentration") is not True:
+                    raise ValueError("typed spell summon runtime requires concentration=True")
+                summon_command = self._spell_summon_command(
+                    data,
+                    summon_contract,
+                    runtime_id=_text(runtime.get("spell_id")),
+                    known_spell_id=_text(data.get("known_spell_id")),
+                    actor_id=_text(data.get("actor_combatant_id")),
+                    actor_version=int(data.get("actor_version") or 0),
+                    character_id=_text(data.get("character_id")),
+                )
+                combat_done = self.combat.add_summon(
+                    campaign_id,
+                    _text(data["combat_id"]),
+                    summon_command,
+                    idempotency_key=f"content-ir:{key}:summon",
+                )
             else:
                 commands = self._spell_commands(execution_data, blocks)
-            if defense_contract is not None:
+            if defense_contract is not None or summon_contract is not None:
                 pass
             elif commands is not None:
                 if len(commands) == 1:
@@ -1627,6 +1951,8 @@ class ContentIRRuntimeService:
             "consumer": (
                 "spell.defense.v1"
                 if defense_contract is not None
+                else "spell.summon.v1"
+                if summon_contract is not None
                 else "spell_economy.concentration.v1"
                 if blocks.get("concentration")
                 else "combat_engine.damage_heal.v1"

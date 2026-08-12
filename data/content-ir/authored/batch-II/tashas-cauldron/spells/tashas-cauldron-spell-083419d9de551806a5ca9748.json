@@ -9,18 +9,243 @@
       "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
       "source_excerpt": "egacy* **施法时间：**1 动作 **施法距离：**90 尺 **法术成分：**V, S, M（一个镀金头骨，价值至少 300gp） **持续时间：**专注，至多 1 小时 你唤来一个亡灵灵魄。其在施法距离内你可见的一个未占据位置化为实体。这一实体使用下面的**亡灵灵魄Undead Spirit**的数据。当你施展法术时，当你施展法术时，从幽体Ghostly，腐尸Putrid或骸骨Skeletal中为此生物选择一个外形。此生物的外形为你所选形态的亡灵，其资料表中的部分特性也受此影响。当其生命值降至 0 或法术结束时，生物消失。 该生物在法术持续时间内对你和你的同伴们友好。在战斗中，该生物使用你的先攻，但在你回合结束后立即行动。它遵从于你的口头指令（无需任何动作）。",
       "source_heading": "亡灵召唤术"
+    },
+    "target_selection": {
+      "boundary_rule": "one authored clause maps to the quoted summon destination sentence",
+      "source_excerpt": "其在施法距离内你可见的一个未占据位置化为实体。",
+      "source_heading": "亡灵召唤术"
+    },
+    "summon_or_creation": {
+      "boundary_rule": "one authored clause maps to the quoted spirit stat block and control sentence(s)",
+      "source_excerpt": "你唤来一个亡灵灵魄。当你施展法术时，从幽体、腐尸或骸骨中为此生物选择一个外形。该生物在法术持续时间内对你和你的同伴们友好。在战斗中，该生物使用你的先攻，但在你回合结束后立即行动。它遵从于你的口头指令（无需任何动作）。如果你不发令，它将执行回避动作并远离危险。",
+      "source_heading": "亡灵召唤术"
+    },
+    "upcast": {
+      "boundary_rule": "one authored clause maps to the quoted upcast sentence",
+      "source_excerpt": "使用四环或更高环阶的法术位施展该法术时，该生物数据中使用更高的法术环数。",
+      "source_heading": "亡灵召唤术"
     }
   },
   "clause_identity": [
+    "tashas-cauldron:spell:083419d9de551806a5ca9748:target_selection",
+    "tashas-cauldron:spell:083419d9de551806a5ca9748:summon_or_creation",
+    "tashas-cauldron:spell:083419d9de551806a5ca9748:upcast",
     "tashas-cauldron:spell:083419d9de551806a5ca9748:concentration"
   ],
   "clauses": [
+    {
+      "clause_id": "target_selection",
+      "count": 1,
+      "evidence_ref": "其在施法距离内你可见的一个未占据位置化为实体。",
+      "kind": "one_unoccupied_position",
+      "position_policy": {
+        "requires_unoccupied": true,
+        "visibility": "visible"
+      },
+      "range_ft": 90,
+      "requires_unoccupied": true,
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "choice_key": "form",
+      "choice_required": true,
+      "choice_values": [
+        "ghostly",
+        "putrid",
+        "skeletal"
+      ],
+      "clause_id": "summon_or_creation",
+      "controller": "player",
+      "count": 1,
+      "default_behavior": {
+        "command_mode": "verbal_without_action",
+        "control_boundary": "player",
+        "movement_policy": "move_away_from_danger",
+        "on_no_command": "dodge"
+      },
+      "disposition": "ally",
+      "duration": {
+        "maximum": true,
+        "unit": "minutes",
+        "value": 60
+      },
+      "initiative_mode": "shared_with_source",
+      "kind": "summon",
+      "name": "Undead Spirit",
+      "position_policy": {
+        "requires_unoccupied": true,
+        "visibility": "visible"
+      },
+      "requires_concentration": true,
+      "scaling": {
+        "armor_class_per_slot": 0,
+        "base_level": 3,
+        "hp_per_slot": 10
+      },
+      "stat_block_id": "tashas-cauldron:stat-block:undead-spirit",
+      "template": {
+        "creature_type": "undead",
+        "size": "medium",
+        "damage_immunities": [
+          "necrotic",
+          "poison"
+        ],
+        "condition_immunities": [
+          "exhaustion",
+          "frightened",
+          "paralyzed",
+          "poisoned"
+        ],
+        "variants": {
+          "ghostly": {
+            "ability_scores": {
+              "charisma": 9,
+              "constitution": 15,
+              "dexterity": 16,
+              "intelligence": 4,
+              "strength": 12,
+              "wisdom": 10
+            },
+            "actions": [
+              {
+                "action_type": "action",
+                "attack_type": "multiattack",
+                "attack_count_formula": "floor(spell_level / 2)",
+                "name": "Multiattack"
+              },
+              {
+                "action_type": "action",
+                "damage_expression": "1d8 + 3 + spell_level",
+                "damage_type": "necrotic",
+                "is_weapon_attack": true,
+                "melee_weapon_attack": true,
+                "name": "Deathly Touch",
+                "range_ft": 5,
+                "target": "one_creature"
+              }
+            ],
+            "armor_class": "11 + spell_level",
+            "hp": 30,
+            "movement_modes": [
+              {
+                "mode": "walk",
+                "speed_ft": 40
+              },
+              {
+                "hover": true,
+                "mode": "fly",
+                "speed_ft": 40
+              }
+            ],
+            "speed_ft": 40,
+            "traits": [
+              {
+                "name": "Incorporeal Movement",
+                "rule": "can_move_through_creatures_and_objects"
+              }
+            ]
+          },
+          "putrid": {
+            "ability_scores": {
+              "charisma": 9,
+              "constitution": 15,
+              "dexterity": 16,
+              "intelligence": 4,
+              "strength": 12,
+              "wisdom": 10
+            },
+            "actions": [
+              {
+                "action_type": "action",
+                "attack_type": "multiattack",
+                "attack_count_formula": "floor(spell_level / 2)",
+                "name": "Multiattack"
+              },
+              {
+                "action_type": "action",
+                "damage_expression": "1d6 + 3 + spell_level",
+                "damage_type": "slashing",
+                "is_weapon_attack": true,
+                "melee_weapon_attack": true,
+                "name": "Rotting Claw",
+                "range_ft": 5,
+                "target": "one_creature"
+              }
+            ],
+            "armor_class": "11 + spell_level",
+            "hp": 30,
+            "movement_modes": [
+              {
+                "mode": "walk",
+                "speed_ft": 40
+              }
+            ],
+            "speed_ft": 40,
+            "traits": [
+              {
+                "name": "Festering Aura",
+                "rule": "nearby_creatures_save_or_become_poisoned"
+              }
+            ]
+          },
+          "skeletal": {
+            "ability_scores": {
+              "charisma": 9,
+              "constitution": 15,
+              "dexterity": 16,
+              "intelligence": 4,
+              "strength": 12,
+              "wisdom": 10
+            },
+            "actions": [
+              {
+                "action_type": "action",
+                "attack_type": "multiattack",
+                "attack_count_formula": "floor(spell_level / 2)",
+                "name": "Multiattack"
+              },
+              {
+                "action_type": "action",
+                "attack_type": "ranged_spell_attack",
+                "damage_expression": "2d4 + 3 + spell_level",
+                "damage_type": "necrotic",
+                "is_weapon_attack": true,
+                "name": "Grave Bolt",
+                "range_ft": 150,
+                "target": "one_creature"
+              }
+            ],
+            "armor_class": "11 + spell_level",
+            "hp": 20,
+            "movement_modes": [
+              {
+                "mode": "walk",
+                "speed_ft": 40
+              }
+            ],
+            "speed_ft": 40
+          }
+        }
+      },
+      "type": "summon_or_creation"
+    },
     {
       "clause_id": "concentration",
       "duration": "专注，至多 1 \n小时",
       "evidence_ref": "egacy* **施法时间：**1 动作 **施法距离：**90 尺 **法术成分：**V, S, M（一个镀金头骨，价值至少 300gp） **持续时间：**专注，至多 1 小时 你唤来一个亡灵灵魄。其在施法距离内你可见的一个未占据位置化为实体。这一实体使用下面的**亡灵灵魄Undead Spirit**的数据。当你施展法术时，当你施展法术时，从幽体Ghostly，腐尸Putrid或骸骨Skeletal中为此生物选择一个外形。此生物的外形为你所选形态的亡灵，其资料表中的部分特性也受此影响。当其生命值降至 0 或法术结束时，生物消失。 该生物在法术持续时间内对你和你的同伴们友好。在战斗中，该生物使用你的先攻，但在你回合结束后立即行动。它遵从于你的口头指令（无需任何动作）。",
       "required": true,
       "type": "concentration"
+    },
+    {
+      "applies_to": "summon_stat_block",
+      "clause_id": "upcast",
+      "evidence_ref": "使用四环或更高环阶的法术位施展该法术时，该生物数据中使用更高的法术环数。",
+      "minimum_slot": 4,
+      "per_slot": 10,
+      "text": "每高于三环一个法术位等级，召唤物生命值增加10点。",
+      "type": "upcast"
     }
   ],
   "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
