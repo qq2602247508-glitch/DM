@@ -90,9 +90,9 @@ def test_migration_statuses_are_exhaustive_and_content_id_funnel_is_exact() -> N
     assert migration["source_record_scanned"] == migration["source_record_total"] == 144
     assert migration["source_record_unclassified"] == 0
     assert migration["content_id_funnel"]["relation_holds"] is True
-    # Round XVIII restores one source-declared authored subclause atom, so the
-    # migration report now exposes the 94-item baseline plus Precision Attack.
-    assert migration["content_id_funnel"]["matched_typed_ir"] == 95
+    # Round XXVIII adds three cleric Domain Spells authored features, so the
+    # matched-typed-IR baseline has grown from the earlier 95 to 98.
+    assert migration["content_id_funnel"]["matched_typed_ir"] == 98
     assert migration["production_full"] >= 74
     assert migration["dm_assisted"] == 2
     assert migration["game_usable"] >= 76
