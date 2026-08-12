@@ -3,20 +3,25 @@
 
 from __future__ import annotations
 
-import json
 import re
 from collections import Counter
 from collections.abc import Iterable, Mapping
 from pathlib import Path
 from typing import Any
 
+from dnd_dm_assistant.application.content_ir_production_evidence import (
+    load_production_runtime_evidence,
+)
 from dnd_dm_assistant.application.tashas_whole_pack import (
     PACK_ID,
     _heading_anchors,
     _record_id,
     _text,
 )
-from dnd_dm_assistant.domain.content_ir_status import build_status_layers
+from dnd_dm_assistant.domain.content_ir_status import (
+    build_status_layers,
+    summarize_status_layers,
+)
 from dnd_dm_assistant.domain.item_spec import ItemSpec, compile_item_spec
 
 RECOVERY_DATE = "2026-08-11"
@@ -477,15 +482,18 @@ def apply_isolated_runtime_validation(
         item.get("status_layers", {}).get("registered_production_full") for item in specs
     )
     dm_assisted = sum(item.get("status_layers", {}).get("dm_assisted") for item in specs)
+    status_layers = summarize_status_layers(specs)
     result.update(
         {
             "item_spec_runtime_preview_full": compile_full,
             "isolated_runtime_validated": isolated_full,
             "registered_production_full": registered_full,
             "production_full": registered_full,
-            "game_usable": registered_full + dm_assisted,
+            "dm_assisted": dm_assisted,
+            "game_usable": status_layers["game_usable"],
             "item_spec_compile_full": compile_full,
             "item_spec_compile_only": total - compile_full,
+            "status_layers": status_layers,
             "rates": {
                 "reviewed": (sum(item.get("review_status") == "reviewed" for item in specs) / total) if total else 0.0,
                 "typed": 1.0 if total else 0.0,
@@ -516,32 +524,19 @@ def load_item_production_evidence(repo_root: Path, pack_id: str = PACK_ID) -> se
     registry reload alone may only promote ``isolated_runtime_validated``.
     """
 
-    prefix = f"content.{pack_id}.item."
-    result: set[str] = set()
-    root = repo_root / "data" / "content-ir" / "compiled"
-    for path in sorted(root.glob("production-runtime-results*.json")):
-        try:
-            value = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError, json.JSONDecodeError):
-            continue
-        if value.get("content_kind") != "item":
-            continue
-        checks = value.get("checks")
-        if not isinstance(checks, Mapping) or not all(
-            checks.get(key)
-            for key in (
-                "all_create_preview_confirm_replay",
-                "all_typed_consumers",
-                "all_item_state_persisted",
-                "all_attunement_cas",
-            )
-        ) or checks.get("name_branch_count") != 0:
-            continue
-        for raw_id in value.get("production_runtime_full_ids") or []:
-            item_id = str(raw_id).strip()
-            if item_id.startswith(prefix):
-                result.add(item_id)
-    return result
+    evidence = load_production_runtime_evidence(
+        repo_root,
+        pack_id=pack_id,
+        content_kind="item",
+        required_checks=(
+            "all_create_preview_confirm_replay",
+            "all_typed_consumers",
+            "all_item_state_persisted",
+            "all_attunement_cas",
+        ),
+        require_name_branch_free=True,
+    )
+    return set(evidence)
 
 
 def build_item_spec_catalog(
@@ -593,7 +588,9 @@ def build_item_spec_catalog(
         "isolated_runtime_validated": 0,
         "registered_production_full": 0,
         "production_full": 0,
+        "dm_assisted": 0,
         "game_usable": 0,
+        "status_layers": summarize_status_layers(specs),
         "requires_dm": sum(bool(item.get("manual_review_required")) for item in specs),
         "name_branch_count": 0,
         "thresholds": {

@@ -19,6 +19,9 @@ from collections.abc import Iterable, Mapping
 from pathlib import Path
 from typing import Any
 
+from dnd_dm_assistant.application.content_ir_production_evidence import (
+    load_production_runtime_evidence,
+)
 from dnd_dm_assistant.application.content_ir_workbench import load_records
 from dnd_dm_assistant.domain.content_ir_status import build_status_layers
 from dnd_dm_assistant.domain.content_packs import (
@@ -516,26 +519,11 @@ def _reconcile_typed_provenance(
 
 
 def _production_evidence(repo_root: Path) -> tuple[set[str], dict[str, dict[str, Any]]]:
-    ids: set[str] = set()
-    evidence: dict[str, dict[str, Any]] = {}
-    root = repo_root / "data" / "content-ir" / "compiled"
-    for path in sorted(root.rglob("production-runtime-results*.json")):
-        try:
-            value = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError, json.JSONDecodeError):
-            continue
-        for content_id in value.get("production_runtime_full_ids") or []:
-            content_id = _text(content_id)
-            if "tashas-cauldron" not in content_id:
-                continue
-            ids.add(content_id)
-            item = (value.get("evidence_by_id") or {}).get(content_id)
-            if isinstance(item, Mapping):
-                evidence[content_id] = {
-                    **dict(item),
-                    "evidence_path": str(path.relative_to(repo_root)),
-                }
-    return ids, dict(sorted(evidence.items()))
+    evidence = load_production_runtime_evidence(
+        repo_root,
+        pack_id=PACK_ID,
+    )
+    return set(evidence), evidence
 
 
 def _existing_content_ids(
@@ -1246,15 +1234,11 @@ def _kind_counts(atoms: Iterable[Mapping[str, Any]]) -> dict[str, int]:
 
 
 def existing_project_production_ids(repo_root: Path) -> set[str]:
-    ids: set[str] = set()
-    root = repo_root / "data" / "content-ir" / "compiled"
-    for path in sorted(root.rglob("production-runtime-results*.json")):
-        try:
-            value = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError, json.JSONDecodeError):
-            continue
-        ids.update(_text(item) for item in value.get("production_runtime_full_ids") or [])
-    return {item for item in ids if item}
+    evidence = load_production_runtime_evidence(
+        repo_root,
+        pack_id=None,
+    )
+    return set(evidence)
 
 
 def formal_feature_audit_status(repo_root: Path) -> dict[str, Any]:

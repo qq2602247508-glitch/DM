@@ -364,7 +364,7 @@ def build_reports(migration: dict[str, Any], baseline: dict[str, Any]) -> dict[s
         "compile_only": item_catalog.get("item_spec_compile_only", 0),
         "production_full": item_catalog.get("production_full", 0),
         "game_usable": item_catalog.get("game_usable", 0),
-        "dm_assisted": 0,
+        "dm_assisted": item_catalog.get("dm_assisted", 0),
         "requires_dm": item_catalog.get("requires_dm", 0),
         "status_counts": _status_summary(item_atoms),
         "inventory": [
