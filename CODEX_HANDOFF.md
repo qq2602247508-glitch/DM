@@ -7,7 +7,7 @@
 - Round XXIII actual after：Tasha `525 atoms / 408 player-facing / 408 executable / 95 authored Typed IR / 94 compile / 94 preview / 86 production / 2 DM-assisted / 88 game usable / 6 compile-only / 314 manual / 107 DM reference`；项目 production full `186`、compile-only `35`、unique compiled `111`；ItemSpec `47/40/40/40`；formal 499 `328/110/61`。
 - 全量 backend pytest、Ruff、compileall、diff-check 通过，仅保留既有 Starlette deprecation warning。whole-pack migration 连续三次成功：stdout SHA-256 `e3145aa3e6d84ec68bf2d8884057ada4fb26c40629418ee309359e843d234e74`，关键 report/runtime hashes 三次一致。
 - 保护与正式指纹保持：database `f3abdcf57b0d71888f085ca081511df4f4f23f100066b402d49d769089fa6aad`、formal registry `f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b`、integrations `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`、ollama `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`。
-- 本轮实现提交 `f1d3ae8`、evidence/docs 提交 `6ed1a30` 已推送到 `origin/main`；下一轮继续真实完整 typed contract 的 generic consumer，剩余 summon/entity、communication、maneuver eligibility、vessel、spectral-object 与完整 character-growth seams 保持 fail-closed，不迁移下一本扩展包、不触碰 3D。
+- 本轮实现提交 `f1d3ae8`、evidence/docs 提交 `6ed1a30`、receipt `43781cd` 已推送到 `origin/main`；最终 ledger receipt `b675955` 待网络恢复后 push。下一轮继续真实完整 typed contract 的 generic consumer，剩余 summon/entity、communication、maneuver eligibility、vessel、spectral-object 与完整 character-growth seams 保持 fail-closed，不迁移下一本扩展包、不触碰 3D。
 
 # 2026-08-12 Round 22 检查点：Soulknife Psychic Teleportation Typed Feature Consumer
 
