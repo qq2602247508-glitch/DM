@@ -72,14 +72,14 @@ def test_current_content_and_item_layers_reconcile_without_double_counting() -> 
     } == {
         "content_atom_total": 525,
         "executable_candidate_total": 408,
-        "authored_typed_ir": 104,
-        "compile_full": 103,
-        "runtime_preview_full": 103,
-        "production_full": 99,
+        "authored_typed_ir": 105,
+        "compile_full": 104,
+        "runtime_preview_full": 104,
+        "production_full": 100,
         "dm_assisted": 2,
-        "game_usable": 101,
+        "game_usable": 102,
         "compile_only": 2,
-        "manual_authoring": 305,
+        "manual_authoring": 304,
         "dm_reference": 107,
     }
 
