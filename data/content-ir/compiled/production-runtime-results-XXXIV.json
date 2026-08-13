@@ -1,0 +1,204 @@
+{
+  "all_required_checks_passed": true,
+  "checks": {
+    "character_cas": true,
+    "compile_full": true,
+    "formal_database_written": false,
+    "formal_registry_written": false,
+    "name_branch_count": 0,
+    "operation_transaction": true,
+    "protected_fingerprints_unchanged": true,
+    "runtime_preview_confirm_replay": true,
+    "selection_mode_is_available_to_learn": true,
+    "source_provenance": true,
+    "typed_consumer": true
+  },
+  "compile": {
+    "blockers": [],
+    "clause_results": [
+      {
+        "blockers": [],
+        "capability_ids": [
+          "advancement.spell_list_expansion"
+        ],
+        "clause_id": "expanded-spell-list",
+        "generated_block": {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "advancement.spell_list_expansion",
+          "clause_id": "expanded-spell-list",
+          "contract_version": "1.0",
+          "materializer_id": "advancement.spell_list_expansion",
+          "operator": "configure_spell_list_expansion",
+          "parameters": {
+            "casting_ability": "charisma",
+            "common_spell_ids": [
+              "detect_evil_and_good",
+              "phantasmal_force",
+              "create_food_and_water",
+              "phantasmal_killer",
+              "creation",
+              "wish"
+            ],
+            "selection_key": "genie_type",
+            "selection_options": {
+              "dao": [
+                "sanctuary",
+                "spike_growth",
+                "meld_into_stone",
+                "stone_shape",
+                "wall_of_stone"
+              ],
+              "djinni": [
+                "thunderwave",
+                "gust_of_wind",
+                "wind_wall",
+                "greater_invisibility",
+                "seeming"
+              ],
+              "efreeti": [
+                "burning_hands",
+                "scorching_ray",
+                "fireball",
+                "fire_shield",
+                "flame_strike"
+              ],
+              "marid": [
+                "fog_cloud",
+                "blur",
+                "sleet_storm",
+                "control_of_water",
+                "cone_of_cold"
+              ]
+            },
+            "source_class": "warlock"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "advancement_confirmed"
+        },
+        "status": "full"
+      }
+    ],
+    "compile_status": "full",
+    "dependencies": [],
+    "evidence": [
+      "test_spell_list_expansion_runtime_contract"
+    ],
+    "feature_id": "content.tashas-cauldron.round2.feature.genie-expanded-spell-list",
+    "fingerprint": "b3b3ef84bf5a7256028495722e6a6fd35481b4bcadf255e4dcdd516bf4f06c26",
+    "generated_runtime_blocks": [
+      {
+        "action_economy": "none",
+        "activation": "automatic",
+        "capability_id": "advancement.spell_list_expansion",
+        "clause_id": "expanded-spell-list",
+        "contract_version": "1.0",
+        "materializer_id": "advancement.spell_list_expansion",
+        "operator": "configure_spell_list_expansion",
+        "parameters": {
+          "casting_ability": "charisma",
+          "common_spell_ids": [
+            "detect_evil_and_good",
+            "phantasmal_force",
+            "create_food_and_water",
+            "phantasmal_killer",
+            "creation",
+            "wish"
+          ],
+          "selection_key": "genie_type",
+          "selection_options": {
+            "dao": [
+              "sanctuary",
+              "spike_growth",
+              "meld_into_stone",
+              "stone_shape",
+              "wall_of_stone"
+            ],
+            "djinni": [
+              "thunderwave",
+              "gust_of_wind",
+              "wind_wall",
+              "greater_invisibility",
+              "seeming"
+            ],
+            "efreeti": [
+              "burning_hands",
+              "scorching_ray",
+              "fireball",
+              "fire_shield",
+              "flame_strike"
+            ],
+            "marid": [
+              "fog_cloud",
+              "blur",
+              "sleet_storm",
+              "control_of_water",
+              "cone_of_cold"
+            ]
+          },
+          "source_class": "warlock"
+        },
+        "targeting": {
+          "kind": "self",
+          "parameters": {}
+        },
+        "trigger": "advancement_confirmed"
+      }
+    ],
+    "legacy_adapter_used": false,
+    "manual_boundaries": [],
+    "required_inputs": [],
+    "required_persistence": [
+      "character.features"
+    ],
+    "required_tests": [
+      "test_spell_list_expansion_runtime_contract"
+    ],
+    "required_ui": [],
+    "source_trust": "authored_ir",
+    "status_authority": "compiler",
+    "unsupported_combinations": [],
+    "unsupported_conditions": [],
+    "unsupported_operators": []
+  },
+  "compile_only_ids": [],
+  "evidence_by_id": {
+    "content.tashas-cauldron.round2.feature.genie-expanded-spell-list": {
+      "character_cas": true,
+      "confirm": true,
+      "content_id": "content.tashas-cauldron.round2.feature.genie-expanded-spell-list",
+      "content_kind": "advancement",
+      "execution_mode": "typed",
+      "expansion_persisted": true,
+      "expansion_section_ready": true,
+      "feature_persisted": true,
+      "pack_id": "tashas-cauldron",
+      "preview": true,
+      "production_runtime_full": true,
+      "replay": true,
+      "source": "round-II-reviewed-feature-runtime-through-round-XXXIV-spell-list-expansion",
+      "spell_grants": 0,
+      "transaction": true,
+      "typed_consumer": "advancement_service.character_growth.v1"
+    }
+  },
+  "production_runtime_full_ids": [
+    "content.tashas-cauldron.round2.feature.genie-expanded-spell-list"
+  ],
+  "round_id": "round-XXXIV",
+  "runtime_fingerprint": "0ab18dbe389ea1e2a3154bfa4d4f6030b4ae9e16c1e5b48c712ec2d09f8b8683",
+  "schema_version": "content-ir-production-runtime-results-XXXIV-1",
+  "source": {
+    "feature_id": "content.tashas-cauldron.round2.feature.genie-expanded-spell-list",
+    "source_book": "塔莎的万事坩埚",
+    "source_fingerprint": "e81b718b2ee8728e75cf77c2f00c33312a283a9e12d3654d9bb377a64ec745c7",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/巨灵宗主.html",
+    "source_record_id": "98620543cf94e974361c6567"
+  },
+  "typed_clause_ids": [
+    "expanded-spell-list"
+  ]
+}

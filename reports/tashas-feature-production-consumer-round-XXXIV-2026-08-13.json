@@ -1,0 +1,97 @@
+{
+  "after": {
+    "project": {
+      "compile_only": 35,
+      "production": 201,
+      "unique_compiled": 111
+    },
+    "tasha": {
+      "authored": 106,
+      "compile": 105,
+      "compile_only": 2,
+      "preview": 105,
+      "production": 101
+    }
+  },
+  "baseline": {
+    "project": {
+      "compile_only": 35,
+      "production": 200,
+      "unique_compiled": 111
+    },
+    "tasha": {
+      "authored": 105,
+      "compile": 104,
+      "compile_only": 2,
+      "preview": 104,
+      "production": 100
+    }
+  },
+  "checks": {
+    "character_cas": true,
+    "compile_full": true,
+    "formal_database_written": false,
+    "formal_registry_written": false,
+    "name_branch_count": 0,
+    "operation_transaction": true,
+    "protected_fingerprints_unchanged": true,
+    "runtime_preview_confirm_replay": true,
+    "selection_mode_is_available_to_learn": true,
+    "source_provenance": true,
+    "typed_consumer": true
+  },
+  "compile_only_ids": [
+    "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
+    "content.tashas-cauldron.round2.feature.genie-bottled-respite"
+  ],
+  "delta": {
+    "project": {
+      "compile_only": 0,
+      "production": 1,
+      "unique_compiled": 0
+    },
+    "tasha": {
+      "authored": 1,
+      "compile": 1,
+      "compile_only": 0,
+      "preview": 1,
+      "production": 1
+    }
+  },
+  "evidence_by_id": {
+    "content.tashas-cauldron.round2.feature.genie-expanded-spell-list": {
+      "character_cas": true,
+      "confirm": true,
+      "content_id": "content.tashas-cauldron.round2.feature.genie-expanded-spell-list",
+      "content_kind": "advancement",
+      "execution_mode": "typed",
+      "expansion_persisted": true,
+      "expansion_section_ready": true,
+      "feature_persisted": true,
+      "pack_id": "tashas-cauldron",
+      "preview": true,
+      "production_runtime_full": true,
+      "replay": true,
+      "source": "round-II-reviewed-feature-runtime-through-round-XXXIV-spell-list-expansion",
+      "spell_grants": 0,
+      "transaction": true,
+      "typed_consumer": "advancement_service.character_growth.v1"
+    }
+  },
+  "production_runtime_full_ids": [
+    "content.tashas-cauldron.round2.feature.genie-expanded-spell-list"
+  ],
+  "round_id": "round-XXXIV",
+  "schema_version": "tashas-feature-production-consumer-round-XXXIV-1",
+  "selected_feature_ids": [
+    "content.tashas-cauldron.round2.feature.genie-expanded-spell-list"
+  ],
+  "source_boundary_decision": {
+    "not_selected": {
+      "genie-bottled-respite": "vessel lifecycle, spatial exit and rest semantics remain incomplete",
+      "scribe-manifest-mind": "spectral-object movement, 300-foot expiry and spell-slot reactivation remain incomplete"
+    },
+    "reason": "source-complete and reusable through the existing character-growth consumer",
+    "selected": "genie-expanded-spell-list"
+  }
+}

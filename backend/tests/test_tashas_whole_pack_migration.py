@@ -92,7 +92,7 @@ def test_migration_statuses_are_exhaustive_and_content_id_funnel_is_exact() -> N
     assert migration["content_id_funnel"]["relation_holds"] is True
     # Round XXVIII-XXX add nine always-prepared spell-list authored features,
     # so the matched-typed-IR baseline has grown from the earlier 95 to 105.
-    assert migration["content_id_funnel"]["matched_typed_ir"] == 105
+    assert migration["content_id_funnel"]["matched_typed_ir"] == 106
     assert migration["production_full"] >= 74
     assert migration["dm_assisted"] == 2
     assert migration["game_usable"] >= 76
