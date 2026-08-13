@@ -6,6 +6,36 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round XXXIII：Manifest Mind spectral-object blocker 与 entity sensory-profile seam
+
+当前状态：`compile_only_blocked`；没有把 `scribe-manifest-mind` 或
+`genie-bottled-respite` 升为 production。
+
+- baseline 为 Tasha `105 authored / 104 compile / 104 preview / 100 production /
+  2 DM-assisted / 102 game usable / 2 compile-only / 304 manual / 107 DM reference`；
+  项目 `200 production / 35 compile-only / 111 unique compiled`。
+- `scribe-manifest-mind` 的完整 source boundaries 已补 provenance 对齐，但完整 IR
+  仍因 spectral-object 感官不是角色自身视觉而保持 `incomplete`；新增
+  `configure_entity_senses` → `entity.senses` → `entity_senses` 通用 seam，当前
+  `production_partial`，未知字段/类型/范围/来源指纹 fail-closed。
+- entity lifecycle 与 remote spell origin 继续复用 Round XXXII 的名称无关机制；
+  remote-origin authorization 兼容既有 `{"entity_id","state"}` lifecycle snapshot，
+  正向距离/line-of-effect 与未授权 origin fail-closed 均有证据。
+- actual after 与 delta：计数不变，production delta `0`，compile-only delta `0`。
+- focused Round XXXIII `5 passed`；既有 lifecycle/remote-origin suites `25 passed`；
+  backend 全量 `966 passed`；Ruff、compileall、diff-check 通过。
+- validator 双跑 stdout SHA-256：
+  `da3119fc8bd4788b0b844d16f616174dc15e9fa57f52fed9d139d635c59b379a`；
+  whole-pack 双跑 stdout SHA-256：
+  `e6544f3bb121a2be03ea3dde70adc6974f39a988681a44cf3b53ad0c1064449b`。
+- 证据：`docs/tashas-feature-production-consumer-round-XXXIII-2026-08-13.md`、
+  `scripts/validate-tashas-feature-production-consumer-round-XXXIII.py`、
+  `reports/tashas-feature-production-consumer-round-XXXIII-2026-08-13.json`、
+  `data/content-ir/compiled/production-runtime-results-XXXIII.json`。
+- protected paths、formal database/registry、source corpus、campaign/character 与
+  3D 未写入；下一轮先闭合 entity sensory/movement/expiry/payment，再审查 scribe；
+  vessel 保持独立 blocker。
+
 ## Round XXXII：Entity Lifecycle ContentIRRuntimeService Runtime Evidence
 
 当前状态：`runtime_evidence_complete`；没有把 `genie-bottled-respite` 或

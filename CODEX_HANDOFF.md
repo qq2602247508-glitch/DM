@@ -1,3 +1,30 @@
+## 2026-08-13 Round XXXIII Manifest Mind spectral-object blocker 与 entity senses seam
+
+- 本轮 baseline：Tasha `105 authored / 104 compile / 104 preview / 100 production /
+  2 DM-assisted / 102 game usable / 2 compile-only / 304 manual / 107 DM reference`；
+  项目 `200 production / 35 compile-only / 111 unique compiled`。
+- 选择 `content.tashas-cauldron.round2.feature.scribe-manifest-mind`。完整 source
+  record provenance 为 `ff7049c6a4d0aad0dae4adf5`、fingerprint
+  `dbbdb5b3ca9d86ece43c2f919d8483683f99068a478bccc401906057fccb920a`、路径
+  `塔莎的万事坩埚/玩家选项/职业/法师（TCE）/书士会.html`。但其感官属于
+  spectral object，不是角色自身 darkvision，故 source completeness 仍为
+  `incomplete`，没有生产化。
+- 新增名称无关 `configure_entity_senses` / `entity.senses` / `entity_senses` seam；
+  当前 capability 为 `production_partial`。严格字段为 `hearing`、
+  `darkvision_ft`、`light_radius_ft`，未知字段、错误类型、超范围与缺 provenance
+  均 fail-closed。
+- 修复 remote-origin 从既有 lifecycle wrapper `{"entity_id","state"}` 读取授权实体；
+  provenance、owner、range、line-of-effect、target authorization 边界保持严格。
+- Round XXXIII focused `5 passed`，既有 lifecycle/remote-origin suites `25 passed`，
+  backend 全量 `966 passed`；Ruff、compileall、diff-check 通过。validator 双跑
+  SHA-256 `da3119fc8bd4788b0b844d16f616174dc15e9fa57f52fed9d139d635c59b379a`；
+  whole-pack 双跑 SHA-256 `e6544f3bb121a2be03ea3dde70adc6974f39a988681a44cf3b53ad0c1064449b`。
+- 计数 after/delta 不变：Tasha `105/104/104/100/2/102/2/304/107`，项目
+  `200/35/111`；`production_runtime_full_ids=[]`、`compile_only_ids=[scribe]`。
+- 保护路径、formal database/registry、source corpus、campaign/character 与 3D 未写入。
+  下一步：entity sensory profile producer/consumer、实体移动与 300 ft expiry、长休/
+  spell-slot reactivation payment；vessel 仍不迁移。
+
 ## 2026-08-13 Round XXXII Entity Lifecycle ContentIRRuntimeService Runtime Evidence
 
 - 本轮只建设后续 `genie-bottled-respite` / `scribe-manifest-mind` 共用的名称无关

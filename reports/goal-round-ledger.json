@@ -1,7 +1,108 @@
 {
-  "current_round": "round-31",
+  "current_round": "round-33",
   "goal": "Local AI D&D DM Assistant complete official-content rules platform",
   "rounds": [
+    {
+      "round_id": "round-33",
+      "status": "completed_with_compile_only_boundary",
+      "started_at": "2026-08-13",
+      "accepted_at": "2026-08-13",
+      "objective": "Advance Manifest Mind spectral-object provenance and generic entity sensory-profile infrastructure without promoting source-incomplete content.",
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 200,
+            "unique_compiled": 111
+          },
+          "tashas": {
+            "source_records": 144,
+            "content_atoms": 525,
+            "executable": 408,
+            "authored_typed_ir": 105,
+            "compile_full": 104,
+            "runtime_preview_full": 104,
+            "production_full": 100,
+            "dm_assisted": 2,
+            "game_usable": 102,
+            "compile_only": 2,
+            "manual_authoring": 304,
+            "dm_reference": 107
+          }
+        },
+        "difference": "Round XXXII left both vessel and spectral-object candidates source-incomplete; this round selected the scribe spectral-object blocker and did not change production counts."
+      },
+      "selected_content_ids": [
+        "content.tashas-cauldron.round2.feature.scribe-manifest-mind"
+      ],
+      "selected_clusters": [
+        "entity.lifecycle",
+        "spell.remote_origin",
+        "entity.senses",
+        "content_ir.source_provenance"
+      ],
+      "selected_platforms": [
+        "FeatureCompiler",
+        "FeatureMaterializerRegistry",
+        "ContentIRRuntimeService",
+        "SpatialAuthority"
+      ],
+      "after": {
+        "tashas": {
+          "production_full": 100,
+          "dm_assisted": 2,
+          "game_usable": 102,
+          "compile_only": 2
+        },
+        "project": {
+          "production_full": 200,
+          "compile_only": 35,
+          "unique_compiled": 111
+        },
+        "evidence": {
+          "production_runtime_full_delta": 0,
+          "compile_only_delta": 0,
+          "entity_senses_status": "production_partial"
+        }
+      },
+      "files_changed": [
+        "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+        "backend/src/dnd_dm_assistant/application/feature_compiler.py",
+        "backend/src/dnd_dm_assistant/application/feature_materializers.py",
+        "backend/src/dnd_dm_assistant/domain/feature_capabilities.py",
+        "backend/src/dnd_dm_assistant/domain/feature_operators.py",
+        "backend/tests/test_tashas_feature_production_consumer_round_XXXIII.py",
+        "scripts/validate-tashas-feature-production-consumer-round-XXXIII.py",
+        "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/scribe-manifest-mind.json",
+        "reports/tashas-feature-production-consumer-round-XXXIII-2026-08-13.json",
+        "data/content-ir/compiled/production-runtime-results-XXXIII.json",
+        "docs/tashas-feature-production-consumer-round-XXXIII-2026-08-13.md",
+        "docs/goal-round-ledger.md",
+        "CODEX_HANDOFF.md"
+      ],
+      "compile_full_delta": 0,
+      "production_full_delta": 0,
+      "compile_only_delta": 0,
+      "manual_delta": 0,
+      "tests": [
+        "PYTHONPATH=backend/src backend/.venv/bin/pytest -q backend/tests",
+        "backend/.venv/bin/ruff check backend/src backend/tests scripts/validate-tashas-feature-production-consumer-round-XXXIII.py",
+        "backend/.venv/bin/python -m compileall -q backend/src scripts backend/tests/*.py",
+        "git diff --check",
+        "Round XXXIII validator twice: deterministic stdout and evidence hashes",
+        "whole-pack migration twice: deterministic stdout and report hashes"
+      ],
+      "reports": [
+        "reports/tashas-feature-production-consumer-round-XXXIII-2026-08-13.json",
+        "data/content-ir/compiled/production-runtime-results-XXXIII.json",
+        "docs/tashas-feature-production-consumer-round-XXXIII-2026-08-13.md"
+      ],
+      "status": "completed_with_compile_only_boundary",
+      "push_receipt": {
+        "result": "pending_after_separated_local_commits",
+        "remote": "origin"
+      }
+    },
     {
       "round_id": "round-31",
       "status": "accepted",
