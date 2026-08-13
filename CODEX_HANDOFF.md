@@ -1,3 +1,25 @@
+## 2026-08-13 Round XXXVI Spell-slot reactivation real resource/rest transaction evidence
+
+- Round XXXVI 已把通用 `spell.slot.reactivation.v1` 接入真实
+  `ContentIRRuntimeService` advancement runtime consumer：状态继续嵌入
+  `character.features[].runtime`，资源支付复用既有 `Character.resources` /
+  `ResourcePool` seam，单次支付严格消费任意 `spell_slots_1`–`spell_slots_9`
+  中的一枚。
+- 真实 receipt 测试覆盖 activate/deactivate/reactivate/long-rest、
+  preview→confirm→replay、slot shortage fail-closed、同事务状态/资源原子性、
+  OperationTransaction、character CAS、source provenance 和 actor/entity owner
+  binding；focused suite `10 passed`，全量 backend pytest `987 passed, 1 warning`。
+- long rest 只恢复一次免费 activation availability，不错误回满普通法术位；
+  同一 rest replay 不重复恢复。由于 entity sensory、移动和 300 尺过期仍缺真实
+  source-complete evidence，`scribe-manifest-mind` 继续保持 `compile_only`，
+  `production_runtime_full_ids=[]`，未升级 production。
+- Round XXXVI validator 全部检查通过且双跑 byte-identical；whole-pack migration
+  双跑 byte-identical，projection SHA-256 保持
+  `071cd15163381c68d0888a4f849d2edc80bf79450955ff8c73498a2212d123a7`。
+- 本轮未修改正式 database/registry/source corpus/campaign/character/3D，
+  保护路径 `backend/tests/integrations/`、`backend/tests/ollama.py` 保持用户原有
+  未跟踪状态，未暂存、未提交。
+
 ## 2026-08-13 Round XXXIII Manifest Mind spectral-object blocker 与 entity senses seam
 
 - 本轮 baseline：Tasha `105 authored / 104 compile / 104 preview / 100 production /

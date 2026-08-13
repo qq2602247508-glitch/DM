@@ -18,16 +18,25 @@
   `production_partial`，未接入正式 production runtime/registry。
 - authored IR 只增加该 source-complete boundary 的 typed clause；feature
   `source_completeness=incomplete` 保持不变，`scribe-manifest-mind` 不升 production。
-- 复用语义边界，不新增 Resource/Rest/OperationTransaction 平行系统；真实持久化支付
-  transaction 留待现有 Resource/Rest/OperationTransaction seam 完成后接入。
+- 真实接入仍复用既有 Resource/Rest/OperationTransaction seam：状态嵌入
+  `Character.features[*].runtime`，支付从 `Character.resources` 的
+  `spell_slots_1`–`spell_slots_9` 中严格扣一枚，并由同一 character CAS /
+  OperationTransaction 事务提交；不存在平行资源存储或 API。
 
 ## 证据
 
 - `backend/tests/test_spell_slot_reactivation.py`：source provenance、materializer
   partial、法术位不足/严格一枚、重复激活、长休恢复、rollback、CAS/replay。
+- `backend/tests/test_content_ir_spell_slot_reactivation_runtime.py`：真实 API
+  preview/confirm/replay、任意环位支付、slot shortage、长休免费 availability、
+  character CAS、provenance/entity binding 与 OperationTransaction receipt。
 - `scripts/validate-tashas-feature-production-consumer-round-XXXVI.py`：同一 contract
   的 deterministic validator 双跑通过。
-- backend 全量 pytest、Ruff、compileall、`git diff --check` 通过。
+- backend 全量 pytest `987 passed, 1 warning`，Ruff、compileall、
+  `git diff --check` 通过。
+- Round XXXVI validator 全部检查通过且双跑 byte-identical；whole-pack migration
+  双跑 byte-identical，projection SHA-256 保持
+  `071cd15163381c68d0888a4f849d2edc80bf79450955ff8c73498a2212d123a7`。
 - Tasha/project production 计数保持：`106 authored / 105 compile / 105 preview /
   101 production / 2 compile-only`；项目 `201 production / 35 compile-only /
   111 unique compiled`；全部 delta 为 0。
@@ -36,6 +45,6 @@
 
 ## 剩余风险
 
-法术位支付尚未通过真实角色资源持久化、RestService/SpellEconomyService、
-OperationTransaction 的端到端 transaction evidence；实体感官/空间 runtime 也仍是
-partial。因此本轮只交付可独立验证的 domain + IR/materializer contract。
+实体感官/空间 runtime、移动与 300 尺过期仍未闭合；因此
+`scribe-manifest-mind` 继续保持 `compile_only`，`production_runtime_full_ids=[]`，
+整体仍按 `production_partial` 记录，未升级 production。
