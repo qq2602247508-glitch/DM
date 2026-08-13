@@ -295,6 +295,11 @@ class ContentIRRuntimeService:
                     source_fingerprint=source_fingerprint,
                     max_entries=block.get("max_entries"),
                     expires_on_owner_death=bool(block.get("expires_on_owner_death", False)),
+                    initial_placement=(
+                        block.get("initial_placement")
+                        if isinstance(block.get("initial_placement"), Mapping)
+                        else None
+                    ),
                 )
                 prior_state: Mapping[str, Any] | None = None
                 records: object = None
@@ -410,6 +415,7 @@ class ContentIRRuntimeService:
                     "entity_binding": "entity_lifecycle",
                     "source_provenance": dict(provenance),
                     "senses": dict(block.get("senses") or {}),
+                    "form": dict(block.get("form") or {}),
                     "spatial_contract": dict(block.get("spatial_contract") or {}),
                     "lifecycle_record": lifecycle_record or prior,
                 })

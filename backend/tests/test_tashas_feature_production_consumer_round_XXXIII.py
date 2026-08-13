@@ -82,6 +82,7 @@ def test_manifest_mind_is_source_complete_and_schema_strict() -> None:
         "termination-events",
         "remote-spell-origin",
         "mind-sight",
+        "spectral-object-form",
         "shared-information",
         "spell-slot-reactivation",
     ]

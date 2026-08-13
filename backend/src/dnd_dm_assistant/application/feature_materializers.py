@@ -551,6 +551,35 @@ def _materialize_entity_senses(context: MaterializerContext) -> MaterializedBloc
             },
         }
     )
+    form = params.get("form")
+    if form is not None:
+        if not isinstance(form, Mapping):
+            raise MaterializerError("entity senses form contract must be an object")
+        allowed_form = {"intangible", "occupies_space", "appearance"}
+        unknown_form = set(form) - allowed_form
+        if unknown_form:
+            raise MaterializerError(
+                f"entity senses form field is unsupported: {sorted(unknown_form)}"
+            )
+        if not isinstance(form.get("intangible"), bool) or not isinstance(
+            form.get("occupies_space"), bool
+        ):
+            raise MaterializerError(
+                "entity senses form requires boolean intangible and occupies_space"
+            )
+        appearance = form.get("appearance")
+        if not isinstance(appearance, list) or not appearance or any(
+            not isinstance(item, str) or not item.strip() for item in appearance
+        ):
+            raise MaterializerError(
+                "entity senses form appearance must be a non-empty string array"
+            )
+        entry["form"] = {
+            "schema": "entity.form.v1",
+            "intangible": form["intangible"],
+            "occupies_space": form["occupies_space"],
+            "appearance": list(appearance),
+        }
     spatial = params.get("spatial")
     if spatial is not None:
         if not isinstance(spatial, Mapping):
@@ -809,7 +838,7 @@ def _materialize_entity_lifecycle(context: MaterializerContext) -> MaterializedB
             },
         }
     )
-    for key in ("max_entries", "expires_on_owner_death"):
+    for key in ("max_entries", "expires_on_owner_death", "initial_placement"):
         if key in params:
             entry[key] = params[key]
     if "termination_reasons" in params:

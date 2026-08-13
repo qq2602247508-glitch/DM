@@ -59,6 +59,7 @@ class EntityLifecycleSpec:
     source_fingerprint: str
     max_entries: int | None = None
     expires_on_owner_death: bool = False
+    initial_placement: Mapping[str, Any] | None = None
 
     def __post_init__(self) -> None:
         if not _text(self.entity_type):
@@ -71,6 +72,16 @@ class EntityLifecycleSpec:
             isinstance(self.max_entries, bool) or self.max_entries < 1
         ):
             raise ValueError("entity lifecycle max_entries must be a positive integer")
+        if self.initial_placement is not None:
+            if not isinstance(self.initial_placement, Mapping):
+                raise ValueError("entity lifecycle initial_placement must be an object")
+            max_distance = self.initial_placement.get("max_distance_ft")
+            if (
+                not isinstance(max_distance, int)
+                or isinstance(max_distance, bool)
+                or max_distance < 1
+            ):
+                raise ValueError("entity lifecycle initial_placement max_distance_ft is invalid")
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -80,6 +91,9 @@ class EntityLifecycleSpec:
             "source_fingerprint": self.source_fingerprint,
             "max_entries": self.max_entries,
             "expires_on_owner_death": self.expires_on_owner_death,
+            "initial_placement": (
+                dict(self.initial_placement) if self.initial_placement is not None else None
+            ),
         }
 
 
@@ -177,6 +191,22 @@ def transition_entity_lifecycle(
             raise ValueError("entity lifecycle can only create from an empty state")
         if expected_version not in (None, 0):
             raise ValueError("entity lifecycle create expected_version must be empty or zero")
+        if spec.initial_placement is not None:
+            placement = normalized_metadata.get("initial_placement")
+            if not isinstance(placement, Mapping):
+                raise ValueError("entity lifecycle initial placement facts are required")
+            max_distance = int(spec.initial_placement["max_distance_ft"])
+            distance = placement.get("distance_from_owner_ft")
+            if (
+                not isinstance(distance, int)
+                or isinstance(distance, bool)
+                or distance < 0
+                or distance > max_distance
+            ):
+                raise ValueError("entity lifecycle initial placement exceeds range")
+            for fact in ("destination_unoccupied", "source_object_held"):
+                if spec.initial_placement.get(fact, False) and placement.get(fact) is not True:
+                    raise ValueError(f"entity lifecycle initial placement requires {fact}")
         return EntityLifecycleResult(
             state={
                 "schema": ENTITY_LIFECYCLE_SCHEMA,

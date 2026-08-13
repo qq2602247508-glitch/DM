@@ -34,6 +34,12 @@ def _runtime() -> dict[str, Any]:
                 "resolution_kind": "entity_senses",
                 "entity_binding": "entity_lifecycle",
                 "senses": {"hearing": True, "darkvision_ft": 60, "light_radius_ft": 10},
+                "form": {
+                    "schema": "entity.form.v1",
+                    "intangible": True,
+                    "occupies_space": False,
+                    "appearance": ["spectral dossier", "stack of writing"],
+                },
                 "source_provenance": {
                     "source_record_id": SOURCE_ID,
                     "source_fingerprint": SOURCE_FINGERPRINT,
@@ -221,6 +227,21 @@ def test_entity_senses_real_consumer_receipt_and_replay(campaign_client: TestCli
     )
     assert replay.status_code == 200, replay.text
     assert replay.json()["already_applied"] is True
+
+
+def test_entity_senses_persists_typed_spectral_form_contract(campaign_client: TestClient) -> None:
+    base, _combat_id, actor, _target, _spectral = _setup(campaign_client)
+    character = campaign_client.get(f"{base}/characters/{actor['entity_id']}").json()
+    feature = next(
+        item for item in character["features"] if item["feature_id"] == FEATURE_ID
+    )
+    senses = feature["runtime"]["entity_senses"][0]
+    assert senses["form"] == {
+        "schema": "entity.form.v1",
+        "intangible": True,
+        "occupies_space": False,
+        "appearance": ["spectral dossier", "stack of writing"],
+    }
 
 
 def test_entity_senses_fails_closed_for_inactive_unauthorized_and_missing_space(

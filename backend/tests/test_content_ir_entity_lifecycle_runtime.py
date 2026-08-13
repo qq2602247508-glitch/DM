@@ -43,6 +43,16 @@ def _contract(*, provenance: bool = True) -> dict[str, Any]:
     }
 
 
+def _placement_contract() -> dict[str, Any]:
+    contract = _contract()
+    contract["entity_lifecycles"][0]["initial_placement"] = {
+        "max_distance_ft": 60,
+        "destination_unoccupied": True,
+        "source_object_held": True,
+    }
+    return contract
+
+
 def _setup(client: TestClient) -> tuple[str, dict[str, Any]]:
     campaign = client.post("/api/v1/campaigns", json={"name": "Lifecycle runtime"}).json()
     base = f"/api/v1/campaigns/{campaign['id']}"
@@ -252,3 +262,62 @@ def test_entity_lifecycle_real_service_requires_provenance(
     )
     assert response.status_code == 400
     assert "source provenance" in response.text
+
+
+def test_entity_lifecycle_initial_placement_receipt_requires_authoritative_facts(
+    campaign_client: TestClient,
+) -> None:
+    base, character = _setup(campaign_client)
+    body = _body(
+        character,
+        event="create",
+        operation_id="placement-create",
+        key="placement-create-key",
+        expected_lifecycle_version=None,
+        contract=_placement_contract(),
+    )
+    body["entity_lifecycle_metadata"] = {
+        "owner_character_id": character["id"],
+        "initial_placement": {
+            "distance_from_owner_ft": 60,
+            "destination_unoccupied": True,
+            "source_object_held": True,
+        },
+    }
+    preview = campaign_client.post(f"{base}/content-ir/runtime/preview", json=body)
+    assert preview.status_code == 200, preview.text
+    assert preview.json()["entity_lifecycle"]["state"]["metadata"]["initial_placement"] == {
+        "distance_from_owner_ft": 60,
+        "destination_unoccupied": True,
+        "source_object_held": True,
+    }
+    confirmed = campaign_client.post(
+        f"{base}/content-ir/runtime/confirm",
+        json={**body, "preview_token": preview.json()["preview_token"]},
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    assert confirmed.json()["entity_lifecycle"]["state"]["status"] == "created"
+    assert confirmed.json()["production_runtime_full"] is True
+
+    missing_fact = {
+        **body,
+        "character_version": campaign_client.get(
+            f"{base}/characters/{character['id']}"
+        ).json()["version"],
+        "entity_id": "entity-fixture-002",
+        "operation_id": "placement-missing-fact",
+        "idempotency_key": "placement-missing-fact-key",
+        "entity_lifecycle_metadata": {
+            "owner_character_id": character["id"],
+            "initial_placement": {
+                "distance_from_owner_ft": 61,
+                "destination_unoccupied": True,
+                "source_object_held": True,
+            },
+        },
+    }
+    rejected = campaign_client.post(
+        f"{base}/content-ir/runtime/preview", json=missing_fact
+    )
+    assert rejected.status_code == 400
+    assert "exceeds range" in rejected.text

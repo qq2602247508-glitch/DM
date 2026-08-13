@@ -32,6 +32,11 @@
             "source_binding": "feature_source",
             "max_entries": 1,
             "expires_on_owner_death": true,
+            "initial_placement": {
+              "max_distance_ft": 60,
+              "destination_unoccupied": true,
+              "source_object_held": true
+            },
             "termination_reasons": [
               "dispel_magic",
               "source_object_destroyed",
@@ -203,6 +208,15 @@
               "darkvision_ft": 60,
               "light_radius_ft": 10
             },
+            "form": {
+              "intangible": true,
+              "occupies_space": false,
+              "appearance": [
+                "spectral dossier",
+                "stack of writing",
+                "historical scholar"
+              ]
+            },
             "spatial": {
               "max_move_ft": 30,
               "expiry_distance_ft": 300,
@@ -210,6 +224,53 @@
               "requires_owner_visibility": true,
               "requires_unoccupied_destination": true,
               "cannot_cross_objects": true
+            }
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "explicit_activation",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-source-clause-audit-2026-08-13",
+        "source": "authoritative_source_html",
+        "source_boundary": "spectral-object-form",
+        "source_excerpt": "这一灵体意识是无形的，不会占据其空间，并会在其周围半径10尺范围内发出微光光照。它看上去如同一本灵体卷宗、一摞文字、或是一位历史中的学者（由你选择）。",
+        "decision": "Typed entity form is persisted alongside the sensory profile; production promotion remains gated by the entity.senses capability status."
+      },
+      "clause_id": "spectral-object-form",
+      "conditions": [],
+      "duration": "ten_minutes",
+      "effects": [
+        {
+          "operator": "configure_entity_senses",
+          "parameters": {
+            "entity_binding": "entity_lifecycle",
+            "senses": {
+              "light_radius_ft": 10
+            },
+            "form": {
+              "intangible": true,
+              "occupies_space": false,
+              "appearance": [
+                "spectral dossier",
+                "stack of writing",
+                "historical scholar"
+              ]
             }
           }
         }
