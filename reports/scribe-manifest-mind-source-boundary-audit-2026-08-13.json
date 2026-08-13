@@ -1,0 +1,282 @@
+{
+  "audit_date": "2026-08-13",
+  "authored_ir": {
+    "clause_ids": [
+      "spectral-object-lifecycle",
+      "remote-spell-origin",
+      "mind-sight",
+      "shared-information",
+      "spell-slot-reactivation"
+    ],
+    "path": "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/scribe-manifest-mind.json",
+    "sha256": "c92677607bc48784c066c7c5c32d764e230e5928895073059850d93dc244c7a3",
+    "source_completeness": "incomplete",
+    "unmodeled_source_terms": [
+      "entity sensory profile consumer",
+      "entity movement and 300-foot separation expiry"
+    ]
+  },
+  "baseline": {
+    "project": {
+      "compile_only": 35,
+      "production": 201,
+      "unique_compiled": 111
+    },
+    "tasha": {
+      "authored": 106,
+      "compile": 105,
+      "compile_only": 2,
+      "preview": 105,
+      "production": 101
+    }
+  },
+  "clause_matrix": [
+    {
+      "authored_ir": "spectral-object-lifecycle",
+      "blocker": "The generic lifecycle stores lifecycle state but does not author/consume the 60-ft placement and unoccupied-space facts as this source clause.",
+      "cas_replay": "OperationTransaction + character version CAS + operation replay",
+      "clause_id": "activation-source-and-initial-placement",
+      "consumer": "ContentIRRuntimeService advancement lifecycle consumer",
+      "evidence": [
+        "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/scribe-manifest-mind.json",
+        "backend/src/dnd_dm_assistant/domain/entity_lifecycle.py",
+        "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+        "backend/tests/test_content_ir_entity_lifecycle_runtime.py"
+      ],
+      "persistence": "Character.features[*].runtime.entity_lifecycles",
+      "producer": "configure_entity_lifecycle",
+      "source_rule": "Bonus action while holding the awakened spellbook; manifest as a Tiny spectral object in a chosen unoccupied space within 60 ft.",
+      "status": "partial"
+    },
+    {
+      "authored_ir": "mind-sight (light_radius_ft only)",
+      "blocker": "Intangible/non-occupying form and appearance choice have no typed producer, consumer, or persisted state; only light_radius_ft is represented.",
+      "cas_replay": "Generic feature runtime transaction boundary",
+      "clause_id": "spectral-object-form",
+      "consumer": "entity.senses materializer / sensory resolver",
+      "evidence": [
+        "data/sources/dnd5e_chm/塔莎的万事坩埚/玩家选项/职业/法师（TCE）/书士会.html",
+        "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/scribe-manifest-mind.json",
+        "backend/src/dnd_dm_assistant/application/feature_materializers.py"
+      ],
+      "persistence": "entity_senses runtime block",
+      "producer": "configure_entity_senses",
+      "source_rule": "The manifestation is intangible, does not occupy its space, emits dim light in a 10-ft radius, and has a chosen appearance.",
+      "status": "partial"
+    },
+    {
+      "authored_ir": "mind-sight",
+      "blocker": "The capability and runtime consumer are explicitly production_partial; no production registry closure.",
+      "cas_replay": "Real runtime receipt has OperationTransaction + actor CAS + replay",
+      "clause_id": "entity-senses",
+      "consumer": "entity_sensory_profile_service / resolve_entity_senses",
+      "evidence": [
+        "backend/src/dnd_dm_assistant/domain/entity_senses.py",
+        "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+        "backend/tests/test_content_ir_entity_senses_runtime.py",
+        "scripts/validate-tashas-feature-production-consumer-round-XXXIII.py"
+      ],
+      "persistence": "Character.features[*].runtime.entity_senses",
+      "producer": "configure_entity_senses",
+      "source_rule": "While manifested it can hear and see and has 60-ft darkvision.",
+      "status": "partial"
+    },
+    {
+      "authored_ir": "shared-information",
+      "blocker": "Information resolution depends on the partial entity.senses capability; source-level no-action telepathy and complete channel semantics are not production-closed.",
+      "cas_replay": "Preview/confirm/replay and actor CAS evidence exists",
+      "clause_id": "telepathic-sharing",
+      "consumer": "manifest-mind sensory information runtime path",
+      "evidence": [
+        "backend/src/dnd_dm_assistant/application/feature_materializers.py",
+        "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+        "backend/tests/test_content_ir_entity_senses_runtime.py",
+        "backend/tests/test_tashas_feature_production_consumer_round_XXXIII.py"
+      ],
+      "persistence": "Source-bound entity_senses/lifecycle snapshot",
+      "producer": "expose_authorized_target_information",
+      "source_rule": "It shares what it sees and hears with the owner telepathically without an action.",
+      "status": "partial"
+    },
+    {
+      "authored_ir": "remote-spell-origin",
+      "blocker": "Origin geometry is closed, but the source's owner-turn/wizard-spell gating and dependency on a production-closed sensory profile are not fully closed.",
+      "cas_replay": "Preview/confirm/replay, target authorization, CAS and OperationTransaction",
+      "clause_id": "remote-spell-origin",
+      "consumer": "remote.spell.origin.v1 spell runtime",
+      "evidence": [
+        "backend/src/dnd_dm_assistant/domain/remote_spell_origin.py",
+        "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+        "backend/tests/test_content_ir_entity_senses_runtime.py",
+        "docs/entity-lifecycle-contract-round-XXXII-2026-08-13.md"
+      ],
+      "persistence": "Character feature runtime origin/lifecycle snapshot",
+      "producer": "configure_remote_spell_origin",
+      "source_rule": "On the owner's turn, when casting a wizard spell, the owner may cast as if in the spectral object's space using its senses.",
+      "status": "partial"
+    },
+    {
+      "authored_ir": "missing",
+      "blocker": "No typed resource clause, producer, consumer, long-rest recovery, transaction, CAS, or replay evidence exists for the PB-per-day limit.",
+      "cas_replay": "missing",
+      "clause_id": "proficiency-bonus-uses",
+      "consumer": "missing",
+      "evidence": [
+        "data/sources/dnd5e_chm/塔莎的万事坩埚/玩家选项/职业/法师（TCE）/书士会.html",
+        "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/scribe-manifest-mind.json"
+      ],
+      "persistence": "missing",
+      "producer": "missing",
+      "source_rule": "The remote sensory casting permission can be used a number of times per day equal to proficiency bonus and all uses return after a long rest.",
+      "status": "missing"
+    },
+    {
+      "authored_ir": "mind-sight.spatial",
+      "blocker": "The generic spatial seam is tested, but the authored feature remains partial and the source clause is nested under a senses operator rather than independently typed.",
+      "cas_replay": "Expected-version CAS + operation replay + rollback evidence",
+      "clause_id": "movement",
+      "consumer": "entity spatial runtime",
+      "evidence": [
+        "backend/src/dnd_dm_assistant/domain/entity_spatial.py",
+        "backend/tests/test_entity_spatial.py",
+        "scripts/validate-tashas-feature-production-consumer-round-XXXV.py"
+      ],
+      "persistence": "entity lifecycle spatial state",
+      "producer": "entity.spatial.v1 movement producer",
+      "source_rule": "Bonus action movement up to 30 ft to a space the owner or object can see, unoccupied; it passes through creatures but not objects.",
+      "status": "partial"
+    },
+    {
+      "authored_ir": "mind-sight.spatial.expiry_distance_ft=300",
+      "blocker": "Generic expiry is implemented, but the feature cannot promote while the complete sensory/runtime boundary remains partial.",
+      "cas_replay": "CAS/replay evidence exists",
+      "clause_id": "distance-expiry",
+      "consumer": "entity lifecycle expiry transition",
+      "evidence": [
+        "backend/src/dnd_dm_assistant/domain/entity_spatial.py",
+        "backend/src/dnd_dm_assistant/domain/entity_lifecycle.py",
+        "backend/tests/test_entity_spatial.py",
+        "scripts/validate-tashas-feature-production-consumer-round-XXXV.py"
+      ],
+      "persistence": "entity lifecycle status",
+      "producer": "entity.spatial.v1 expiry producer",
+      "source_rule": "Manifestation stops when distance from the owner exceeds 300 ft.",
+      "status": "partial"
+    },
+    {
+      "authored_ir": "missing",
+      "blocker": "No typed dispel event, authorization/effect resolution, persistence, CAS, or replay evidence is present.",
+      "cas_replay": "missing",
+      "clause_id": "dispel-magic-expiry",
+      "consumer": "missing",
+      "evidence": [
+        "data/sources/dnd5e_chm/塔莎的万事坩埚/玩家选项/职业/法师（TCE）/书士会.html",
+        "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/scribe-manifest-mind.json"
+      ],
+      "persistence": "missing",
+      "producer": "missing",
+      "source_rule": "Manifestation stops when someone casts Dispel Magic on it.",
+      "status": "missing"
+    },
+    {
+      "authored_ir": "missing",
+      "blocker": "No spellbook entity/effect destruction event or lifecycle consumer is authored.",
+      "cas_replay": "missing",
+      "clause_id": "spellbook-destruction-expiry",
+      "consumer": "missing",
+      "evidence": [
+        "data/sources/dnd5e_chm/塔莎的万事坩埚/玩家选项/职业/法师（TCE）/书士会.html",
+        "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/scribe-manifest-mind.json"
+      ],
+      "persistence": "missing",
+      "producer": "missing",
+      "source_rule": "Manifestation stops if the awakened spellbook is destroyed.",
+      "status": "missing"
+    },
+    {
+      "authored_ir": "spectral-object-lifecycle.expires_on_owner_death=true",
+      "blocker": "",
+      "cas_replay": "Lifecycle CAS/replay evidence",
+      "clause_id": "owner-death-expiry",
+      "consumer": "entity lifecycle expiry transition",
+      "evidence": [
+        "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/scribe-manifest-mind.json",
+        "backend/src/dnd_dm_assistant/domain/entity_lifecycle.py",
+        "backend/tests/test_content_ir_entity_lifecycle_runtime.py"
+      ],
+      "persistence": "entity lifecycle state",
+      "producer": "configure_entity_lifecycle",
+      "source_rule": "Manifestation stops when the owner dies.",
+      "status": "covered"
+    },
+    {
+      "authored_ir": "missing",
+      "blocker": "No authored dismiss event/action or runtime receipt is present.",
+      "cas_replay": "missing",
+      "clause_id": "owner-dismissal-expiry",
+      "consumer": "missing",
+      "evidence": [
+        "data/sources/dnd5e_chm/塔莎的万事坩埚/玩家选项/职业/法师（TCE）/书士会.html",
+        "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/scribe-manifest-mind.json"
+      ],
+      "persistence": "missing",
+      "producer": "missing",
+      "source_rule": "The owner can dismiss it as a bonus action.",
+      "status": "missing"
+    },
+    {
+      "authored_ir": "spell-slot-reactivation",
+      "blocker": "The real receipt seam exists, but the materializer/capability is explicitly production_partial and not in the production registry.",
+      "cas_replay": "OperationTransaction + character CAS + replay/rollback",
+      "clause_id": "long-rest-reactivation",
+      "consumer": "spell.slot.reactivation.v1",
+      "evidence": [
+        "backend/src/dnd_dm_assistant/domain/spell_slot_reactivation.py",
+        "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+        "backend/tests/test_content_ir_spell_slot_reactivation_runtime.py",
+        "scripts/validate-tashas-feature-production-consumer-round-XXXVI.py"
+      ],
+      "persistence": "Character feature runtime + Character.resources",
+      "producer": "configure_spell_slot_reactivation",
+      "source_rule": "After manifesting, another manifestation requires a long rest or one spell slot of any level.",
+      "status": "partial"
+    }
+  ],
+  "compiler": {
+    "blockers": [
+      "source is incomplete"
+    ],
+    "compile_status": "partial",
+    "typed_clause_count": 5
+  },
+  "counts": {
+    "covered": 1,
+    "missing": 4,
+    "partial": 8,
+    "total": 13
+  },
+  "feature_id": "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
+  "production_decision": {
+    "compile_only_ids": [
+      "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
+      "content.tashas-cauldron.round2.feature.genie-bottled-respite"
+    ],
+    "production_runtime_full_ids": [],
+    "promote": false,
+    "reason": "source clause matrix contains missing/partial runtime boundaries"
+  },
+  "protected_paths": [
+    "backend/tests/integrations/",
+    "backend/tests/ollama.py"
+  ],
+  "schema_version": "scribe-manifest-mind-source-boundary-audit-1",
+  "source": {
+    "encoding": "gbk",
+    "excerpt": "神识显现 Manifest Mind第6级书士会特性你能将你觉醒法术书中的意识召唤出来。当你持有该法术书时，你可以以一个附赠动作令书中的意识显现为一个微型的灵体物件，使其悬浮于距离你60尺以内且未被占据的、由你选择的空间中。这一灵体意识是无形的，不会占据其空间，并会在其周围半径10尺范围内发出微光光照。它看上去如同一本灵体卷宗、一摞文字、或是一位历史中的学者（由你选择）。显现时，该灵体意识能够听音视物，并具有60尺的黑暗视觉。它能用心灵感应将它所看见和听到的信息分享给你（无需动作）。每当你在自己的回合内施放法师法术时，你可以使用灵体意识的感官、如同身处它所在的空间一样释放该法术。你每天能如此施法的次数等于你的熟练加值次，完成一次长休后，你恢复所有已消耗的使用次数。以一个附赠动作，你可以令灵体意识飘浮到其周围30尺内、你或它可见且未占据空间。灵体意识可以穿过生物但不能穿过物件。若遇到以下情况之一，灵体意识的显现将会停止：与你的距离超过300 尺、被某人施展了解除魔法Dispel Magic 、觉醒魔法书被摧毁、你死亡时、或是你以一个附赠动作将其驱散。显现过灵体意识后，你必须完成一次长休、或是消耗一枚任意环位的法术位，才能再次显现它。",
+    "path": "data/sources/dnd5e_chm/塔莎的万事坩埚/玩家选项/职业/法师（TCE）/书士会.html",
+    "sha256": "56ea28aa46e3f85bda92f7f8487578337c7e0664c6a199d346e81539faf866b2",
+    "source_fingerprint": "dbbdb5b3ca9d86ece43c2f919d8483683f99068a478bccc401906057fccb920a",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/法师（TCE）/书士会.html",
+    "source_record_id": "ff7049c6a4d0aad0dae4adf5"
+  }
+}
