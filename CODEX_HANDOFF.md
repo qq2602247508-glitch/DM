@@ -3150,3 +3150,23 @@ git diff --check
 - after：Tasha `106/105/105/101/2`；项目 `201/35/111`。production delta `+1`，compile-only 与 unique compiled 不变。
 - `genie-bottled-respite` 仍缺 vessel 空间/离开/摧毁/休息边界；`scribe-manifest-mind` 仍缺 spectral-object 移动、300 尺过期和 spell-slot reactivation；二者不可升 production。
 - evidence：`docs/tashas-feature-production-consumer-round-XXXIV-2026-08-13.md`、`scripts/validate-tashas-feature-production-consumer-round-XXXIV.py`、`backend/tests/test_tashas_feature_production_consumer_round_XXXIV.py`、`reports/tashas-feature-production-consumer-round-XXXIV-2026-08-13.json`、`data/content-ir/compiled/production-runtime-results-XXXIV.json`。
+
+## 2026-08-13 Round XXXV Entity Spatial Evidence
+
+- 本轮先执行可靠 push helper；GitHub smart HTTP 端到端检测失败，helper 报告
+  listener 可达但 smart HTTP 未健康，因此没有盲目重放 push。待推送仍是本地相对
+  `origin/main` 领先的 `9b2aa2d`、`d672c52`、`a0fdaef`。
+- 选择 `scribe-manifest-mind` 的 entity spatial boundary，新增名称无关
+  `entity.spatial.v1`：30 尺移动上限、超过持有者 300 尺 expiry、空间事实
+  fail-closed、source provenance、replay/CAS。
+- scribe 仍 `source_completeness=incomplete`、`entity.senses=production_partial`；
+  `spell-slot reactivation payment consumer` 仍未完成，genie vessel 仍独立阻塞。
+  Tasha/project 计数保持 `106/105/105/101/2` 与 `201/35/111`。
+- 证据：`docs/tashas-feature-production-consumer-round-XXXV-2026-08-13.md`、
+  `scripts/validate-tashas-feature-production-consumer-round-XXXV.py`、
+  `reports/tashas-feature-production-consumer-round-XXXV-2026-08-13.json`、
+  `data/content-ir/compiled/production-runtime-results-XXXV.json`；
+  validator SHA `53c059905454488fd541a499243092df5f8203d74d664cf1549251b96a8dd423`，
+  whole-pack SHA `071cd15163381c68d0888a4f849d2edc80bf79450955ff8c73498a2212d123a7`。
+- 下一轮可继续建设通用 spell-slot payment/reactivation；在其真实 consumer、CAS、
+  replay、rest/slot boundary 完成前，不得把 scribe 升为 production。

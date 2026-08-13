@@ -1,0 +1,38 @@
+{
+  "all_required_checks_passed": true,
+  "checks": {
+    "cas": true,
+    "distance_300ft_expiry": true,
+    "fail_closed_spatial_facts": true,
+    "formal_database_written": false,
+    "formal_registry_written": false,
+    "movement_30ft": true,
+    "name_branch_count": 0,
+    "production_counts_changed": false,
+    "production_partial_boundary_remains": true,
+    "protected_paths_unchanged": true,
+    "replay": true,
+    "source_completeness_remains_incomplete": true,
+    "source_provenance": true,
+    "spatial_schema": true
+  },
+  "compile_only_ids": [
+    "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
+    "content.tashas-cauldron.round2.feature.genie-bottled-respite"
+  ],
+  "production_runtime_full_ids": [],
+  "round_id": "round-XXXV",
+  "schema_version": "content-ir-production-runtime-results-XXXV-1",
+  "selected_boundary": {
+    "expiry_distance_ft": 300,
+    "max_move_ft": 30,
+    "remaining_blocker": "spell-slot reactivation payment consumer",
+    "schema": "entity.spatial.v1"
+  },
+  "source": {
+    "feature_id": "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
+    "source_fingerprint": "dbbdb5b3ca9d86ece43c2f919d8483683f99068a478bccc401906057fccb920a",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/法师（TCE）/书士会.html",
+    "source_record_id": "ff7049c6a4d0aad0dae4adf5"
+  }
+}

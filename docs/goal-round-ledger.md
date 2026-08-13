@@ -6,6 +6,35 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round XXXV：Manifest Mind entity spatial seam
+
+当前状态：`compile_only_blocked`；本轮只闭合通用 spatial movement/expiry 机制，
+没有把 `scribe-manifest-mind` 或 `genie-bottled-respite` 升为 production。
+
+- baseline/after：Tasha `106 authored / 105 compile / 105 preview / 101 production /
+  2 compile-only`；项目 `201 production / 35 compile-only / 111 unique compiled`；
+  所有计数 delta 为 `0`。
+- 新增名称无关 `entity.spatial.v1` domain contract：每次最多 30 尺移动，超过持有者
+  300 尺进入 `expired`；移动要求 owner visibility、destination unoccupied、path clear
+  of objects 三项空间事实。
+- source record/fingerprint 绑定；正向、缺空间事实 fail-closed、300 尺 expiry、
+  operation replay、payload drift、stale CAS 均有 focused/validator 证据。
+- `configure_entity_senses` 的 spatial 参数严格接受并 materialize 为 typed
+  `spatial_contract`；`entity.senses` 继续 `production_partial`，source completeness
+  继续 `incomplete`。
+- validator 双跑 stdout SHA-256：
+  `53c059905454488fd541a499243092df5f8203d74d664cf1549251b96a8dd423`；
+  whole-pack 双跑 stdout SHA-256：
+  `071cd15163381c68d0888a4f849d2edc80bf79450955ff8c73498a2212d123a7`。
+- backend 全量 pytest、Ruff、compileall、diff-check 通过；formal database/registry、
+  source corpus、campaign/character、3D 与保护路径未写入。
+- 剩余 blocker：spell-slot reactivation payment consumer；genie vessel 的进入/离开、
+  摧毁、空间与休息边界保持独立。
+- 证据：`docs/tashas-feature-production-consumer-round-XXXV-2026-08-13.md`、
+  `scripts/validate-tashas-feature-production-consumer-round-XXXV.py`、
+  `reports/tashas-feature-production-consumer-round-XXXV-2026-08-13.json`、
+  `data/content-ir/compiled/production-runtime-results-XXXV.json`。
+
 ## Round XXXIII：Manifest Mind spectral-object blocker 与 entity sensory-profile seam
 
 当前状态：`compile_only_blocked`；没有把 `scribe-manifest-mind` 或
