@@ -14,6 +14,10 @@ from dnd_dm_assistant.application.feature_compiler import (
     FeatureCompiler,
     materialize_runtime_definition,
 )
+from dnd_dm_assistant.application.feature_materializers import (
+    default_materializer_registry,
+)
+from dnd_dm_assistant.domain.feature_capabilities import default_capability_catalog
 from dnd_dm_assistant.domain.feature_ir import FeatureIRValidationError, FeatureSpec
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -165,6 +169,46 @@ def test_entity_senses_materializer_is_strict_and_provenance_bound() -> None:
     )
 
     assert spec.source_fingerprint == SOURCE_FINGERPRINT
+
+
+def test_manifest_mind_materializes_generic_spatial_boundary_without_promotion() -> None:
+    value = json.loads(FEATURE.read_text(encoding="utf-8"))
+    value["source_completeness"] = "complete"
+    value["manual_decisions"] = {"unmodeled_source_terms": []}
+    value["clauses"] = [
+        clause for clause in value["clauses"] if clause["clause_id"] == "mind-sight"
+    ]
+    spec = FeatureSpec.from_dict(
+        {key: item for key, item in value.items() if key in FeatureSpec._FIELDS},
+        path=str(FEATURE),
+    )
+    compiled = FeatureCompiler(status_authority="compiler").compile(spec)
+    assert compiled.compile_status == "partial"
+    clause = spec.clauses[0]
+    descriptor = default_capability_catalog().get("entity.senses")
+    assert descriptor is not None
+    materialized = default_materializer_registry().materialize(
+        spec=spec,
+        clause=clause,
+        operator="configure_entity_senses",
+        parameters=clause.effects[0].parameters,
+        descriptor=descriptor,
+        index=0,
+    )
+    assert materialized.section == "entity_senses"
+    assert materialized.entry["spatial_contract"] == {
+        "schema": "entity.spatial.v1",
+        "entity_binding": "entity_lifecycle",
+        "max_move_ft": 30,
+        "expiry_distance_ft": 300,
+        "cell_size_ft": 5,
+        "movement_requirements": {
+            "owner_visibility": True,
+            "unoccupied_destination": True,
+            "cannot_cross_objects": True,
+        },
+        "expiry_event": "distance_from_owner_exceeded",
+    }
 
 
 def test_manifest_mind_typed_ir_rejects_unknown_top_level_fields() -> None:

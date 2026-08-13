@@ -551,6 +551,42 @@ def _materialize_entity_senses(context: MaterializerContext) -> MaterializedBloc
             },
         }
     )
+    spatial = params.get("spatial")
+    if spatial is not None:
+        if not isinstance(spatial, Mapping):
+            raise MaterializerError("entity senses spatial contract must be an object")
+        allowed = {
+            "max_move_ft",
+            "expiry_distance_ft",
+            "cell_size_ft",
+            "requires_owner_visibility",
+            "requires_unoccupied_destination",
+            "cannot_cross_objects",
+        }
+        unknown = set(spatial) - allowed
+        if unknown:
+            raise MaterializerError(
+                f"entity senses spatial field is unsupported: {sorted(unknown)}"
+            )
+        if spatial.get("max_move_ft") != 30 or spatial.get("expiry_distance_ft") != 300:
+            raise MaterializerError(
+                "entity senses spatial contract must use 30/300 foot boundaries"
+            )
+        entry["spatial_contract"] = {
+            "schema": "entity.spatial.v1",
+            "entity_binding": str(params["entity_binding"]),
+            "max_move_ft": 30,
+            "expiry_distance_ft": 300,
+            "cell_size_ft": int(spatial.get("cell_size_ft", 5)),
+            "movement_requirements": {
+                "owner_visibility": bool(spatial.get("requires_owner_visibility", True)),
+                "unoccupied_destination": bool(
+                    spatial.get("requires_unoccupied_destination", True)
+                ),
+                "cannot_cross_objects": bool(spatial.get("cannot_cross_objects", True)),
+            },
+            "expiry_event": "distance_from_owner_exceeded",
+        }
     if not entry["source_provenance"]["source_fingerprint"]:
         raise MaterializerError(
             "entity senses requires a source fingerprint for provenance binding"

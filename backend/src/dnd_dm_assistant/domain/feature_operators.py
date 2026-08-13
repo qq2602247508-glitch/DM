@@ -757,11 +757,12 @@ def default_operator_contracts() -> dict[str, OperatorContract]:
         _contract(
             "configure_entity_senses",
             required=("entity_binding", "senses"),
-            optional=("id",),
+            optional=("id", "spatial"),
             types={
                 "entity_binding": "string",
                 "senses": "object",
                 "id": "string",
+                "spatial": "object",
             },
             enums={"entity_binding": {"entity_lifecycle"}},
             triggers=frozenset({"advancement_confirmed", "explicit_activation"}),
