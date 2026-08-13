@@ -5,7 +5,7 @@
 - 当前实际 Tasha：`144 source records / 525 atoms / 408 executable / 104 authored Typed IR / 103 compile / 103 preview / 99 production / 2 DM-assisted / 101 game usable / 2 compile-only / 305 manual / 107 DM reference`；content-ID funnel `104 = 100 + 2 + 2`。
 - 当前 project：`199 production / 35 compile-only / 111 unique compiled`；Tasha evidence union `142`，project union `199`；ItemSpec 保持 `47/40/40/40`。
 - Round XXX validator 3/3 production_runtime_full；focused receipt suite 3 passed；backend 全量 pytest 938 passed（仅既有 Starlette/httpx deprecation warning）；Ruff、compileall、diff-check 通过；whole-pack migration 双跑 projection SHA-256 `89be2f5ea62eeefe27f1cf26ea95d77cfc25e7e05569e9eb9138f280daa63756`。
-- 分离提交 `8f9a136`（authored spell-list IR + author 工具）、`5bdce80`（validator + test + evidence + 计数调和）、`31ad202`（docs closeout）已推送到 `origin/main`（2026-08-13）。push receipt 已写入 ledger。
+- 分离提交 `8f9a136`（authored spell-list IR + author 工具）、`5bdce80`（validator + test + evidence + 计数调和）、`31ad202`（docs closeout）、`e437277`（ledger/handoff checkpoint）已推送到 `origin/main`（`352c915..e437277`，2026-08-13）。push receipt 已写入 ledger。
 - 证据入口：`docs/tashas-feature-production-consumer-round-XXX-2026-08-13.md`、`scripts/author-round-XXX-spell-lists.py`、`scripts/validate-tashas-feature-production-consumer-round-XXX.py`、`backend/tests/test_tashas_feature_production_consumer_round_XXX.py`、`reports/tashas-feature-production-consumer-round-XXX-2026-08-13.json`、`data/content-ir/compiled/production-runtime-results-XXXI.json`。
 - 下一轮继续孢子结社（含戏法颤栗之触的混合列表）、巨灵宗主扩展法术（warlock 列表扩展语义），或转向单一抗性/移动/视觉类特性；仍剩 vessel（genie-bottled-respite）与 spectral-object（scribe-manifest-mind）两个 compile-only；不迁移下一本扩展包、不触碰 3D。
 

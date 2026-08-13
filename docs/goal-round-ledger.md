@@ -17,7 +17,7 @@
 - 证据入口：`docs/tashas-feature-production-consumer-round-XXX-2026-08-13.md`、`scripts/author-round-XXX-spell-lists.py`、`scripts/validate-tashas-feature-production-consumer-round-XXX.py`、`backend/tests/test_tashas_feature_production_consumer_round_XXX.py`、`reports/tashas-feature-production-consumer-round-XXX-2026-08-13.json`、`data/content-ir/compiled/production-runtime-results-XXXI.json`。
 - 保护路径、正式 database、formal registry、source corpus、campaign/character 与 3D 未写入；`name_branch_count=0`。下一轮继续孢子结社（含戏法）、巨灵宗主扩展法术或单一抗性/移动/视觉类特性，不迁移下一本扩展包。
 - 保护指纹保持 database `f3abdcf57b0d71888f085ca081511df4f4e23f100066b402d49d769089fa6aad`、formal registry `f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b`、integrations manifest `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`、ollama `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`。
-- Push receipt：`8f9a136`、`5bdce80`、`31ad202` 已推送到 `origin/main`（2026-08-13）。
+- Push receipt：`8f9a136`、`5bdce80`、`31ad202`、`e437277` 已推送到 `origin/main`（2026-08-13）。
 
 ## Round 29：野火/守望/荣耀三张恒备法术表 Character-Growth Consumer
 
