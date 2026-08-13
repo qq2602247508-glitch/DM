@@ -1,3 +1,26 @@
+## 2026-08-13 Round XXXVII corrected Manifest Mind termination producer evidence
+
+- 主控审查发现 Round XXXVII 原 matrix 把三条没有真实 producer API/event 的 focused
+  synthetic `OperationTransaction` fixture 当成 covered；本修正不改写历史提交，只新增
+  correction commits，并把动态 gate 改为：必须有真实 endpoint/event producer marker，
+  synthetic transaction 不能单独计入 covered。
+- 真实 producer receipts：Dispel Magic 走 effect-end API → `combat_end_effect`；
+  spellbook destruction 保持 equipment API → `equipment_destroy`；owner death 走真实
+  combat damage/death transition → `combat_damage`；owner bonus-action dismissal 走
+  summon-end API → `combat_end_summon`，并原子消费 owner `bonus_action`。
+- corrected matrix：`7 covered / 6 partial / 0 missing`，production、compile-only、
+  unique-compiled 与 whole-pack/item 计数均无变化；scribe 仍 `compile_only_blocked`，
+  未升 production。
+- evidence：focused lifecycle/audit `22 passed`；backend full `1015 passed, 1 warning`；
+  Ruff、compileall、diff-check 通过；whole-pack 双跑 stdout SHA-256
+  `071cd15163381c68d0888a4f849d2edc80bf79450955ff8c73498a2212d123a7`；保护路径
+  `backend/tests/integrations/`、`backend/tests/ollama.py` 仍保持用户原有未跟踪状态。
+- 证据入口：`scripts/audit-scribe-manifest-mind-source-boundary.py`、
+  `backend/tests/test_content_ir_entity_lifecycle_runtime.py`、
+  `backend/tests/test_manifest_mind_resource_contract.py`、
+  `docs/scribe-manifest-mind-source-boundary-audit-2026-08-13.md`、
+  `reports/scribe-manifest-mind-source-boundary-audit-2026-08-13.json`。
+
 ## 2026-08-13 Round XXXVI Spell-slot reactivation real resource/rest transaction evidence
 
 - Round XXXVI 已把通用 `spell.slot.reactivation.v1` 接入真实

@@ -348,6 +348,16 @@
     "total": 13
   },
   "feature_id": "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
+  "producer_evidence_standard": {
+    "requires_real_api_or_event_producer": true,
+    "synthetic_operation_transaction_fixture_counts_as_covered": false,
+    "termination_receipts": {
+      "dispel_magic": "combat_end_effect via effect-end API",
+      "owner_died": "combat_damage via combat damage/death transition",
+      "owner_dismissed": "combat_end_summon via summon-end API with bonus_action",
+      "source_object_destroyed": "equipment_destroy via equipment API"
+    }
+  },
   "production_decision": {
     "compile_only_ids": [
       "content.tashas-cauldron.round2.feature.scribe-manifest-mind",

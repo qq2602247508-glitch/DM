@@ -104,16 +104,35 @@ def _termination_receipt_probe(clause_id: str, reason: str) -> bool:
     producer = producer_path.read_text(encoding="utf-8", errors="ignore")
     equipment = equipment_path.read_text(encoding="utf-8", errors="ignore")
     reason_markers = {
-        "dispel_magic": ("combat_end_effect", "entity_ids", "failed"),
-        "source_object_destroyed": ("equipment_destroy", "state", "destroyed"),
-        "owner_died": ("combat_confirm_death", "owner_character_id", "dead"),
-        "owner_dismissed": ("combat_end_summon", "entity_id", "reason"),
+        "dispel_magic": (
+            "/effects/",
+            "producer-dispel-end",
+            "combat_end_effect",
+        ),
+        "source_object_destroyed": (
+            "equipment/confirm",
+            "producer-spellbook-destroy",
+            "equipment_destroy",
+        ),
+        "owner_died": (
+            "actions/confirm",
+            "producer-owner-damage",
+            "combat_damage",
+        ),
+        "owner_dismissed": (
+            "/summons/",
+            "producer-dismiss-end",
+            "action_cost",
+            "bonus_action",
+            "combat_end_summon",
+        ),
     }
     markers = reason_markers[reason]
     producer_ok = all(
         marker in producer or marker in equipment or marker in test
         for marker in markers
     )
+    synthetic_transaction_fixture = "OperationTransaction(" in test
     consumer_ok = all(
         marker in runtime
         for marker in (
@@ -131,7 +150,7 @@ def _termination_receipt_probe(clause_id: str, reason: str) -> bool:
             reason,
         )
     )
-    return producer_ok and consumer_ok and focused_ok
+    return producer_ok and consumer_ok and focused_ok and not synthetic_transaction_fixture
 
 
 def _matrix(
@@ -462,9 +481,9 @@ def _markdown(report: dict[str, Any]) -> str:
         "",
         (
             "结论：未升 production。source-completeness 保持 `incomplete`，compile status 保持 `partial`，"
-            "`unmodeled_source_terms` 不清空。原因是 source clauses 仍存在 missing/partial producer、consumer、"
-            "persistence、CAS/replay 链路，尤其是 PB-per-day uses、Dispel Magic、spellbook destruction、"
-            "owner dismissal，以及 `entity.senses`/reactivation 的 production-partial gate。"
+            "`unmodeled_source_terms` 不清空。原因是 source clauses 仍存在 partial producer、consumer、"
+            "persistence、CAS/replay 链路，尤其是 PB-per-day uses、entity senses/spatial binding、"
+            "telepathic sharing，以及 `entity.senses`/reactivation 的 production-partial gate。"
         ),
         "",
         f"- feature: `{FEATURE_ID}`",
@@ -501,14 +520,16 @@ def _markdown(report: dict[str, Any]) -> str:
             "- Round XXXIII entity senses real receipts pass, but the capability remains `production_partial`.",
             "- Round XXXV entity spatial movement/300-ft expiry real domain evidence passes, but feature promotion remains blocked.",
             "- Round XXXVI spell-slot reactivation real resource/rest transaction evidence passes, but the capability/materializer remains `production_partial`.",
+            "- Round XXXVII requires real producer API/event receipts: Dispel Magic effect-end, spellbook destruction equipment destroy, owner death combat damage/death transition, and owner dismissal summon-end with bonus-action consumption.",
+            "- Synthetic-only `OperationTransaction` fixtures are rejected by the dynamic audit gate and regression.",
             "- The production gate therefore remains fail-closed: no `production_runtime_full_ids`, no whole-pack production migration delta.",
             "",
             "## Required next work",
             "",
             "1. Add a generic PB-per-day feature resource consumer with long-rest recovery, Character resource persistence, CAS, replay, rollback, and real API receipts.",
-            "2. Add generic lifecycle termination events for Dispel Magic, bound source-object destruction, and owner bonus-action dismissal.",
+            "2. Close authored entity senses/spatial binding and source-level telepathic sharing.",
             "3. Close `entity.senses` and `spell.slot.reactivation` from `production_partial` to a production registry consumer only after all negative boundaries pass.",
-            "4. Split the authored IR into independently auditable typed clauses for placement/form, sensory sharing, owner-turn wizard-spell gating, and termination events; only then reassess `source_completeness`.",
+            "4. Reassess `source_completeness` only after the remaining independently auditable typed clauses are closed.",
             "",
             "Protected paths were not read for content changes, modified, staged, or committed by this audit.",
         ]
@@ -559,6 +580,16 @@ def main() -> int:
         },
         "clause_matrix": matrix,
         "counts": counts,
+        "producer_evidence_standard": {
+            "requires_real_api_or_event_producer": True,
+            "synthetic_operation_transaction_fixture_counts_as_covered": False,
+            "termination_receipts": {
+                "dispel_magic": "combat_end_effect via effect-end API",
+                "source_object_destroyed": "equipment_destroy via equipment API",
+                "owner_died": "combat_damage via combat damage/death transition",
+                "owner_dismissed": "combat_end_summon via summon-end API with bonus_action",
+            },
+        },
         "production_decision": {
             "promote": False,
             "production_runtime_full_ids": [],

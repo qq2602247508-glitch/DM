@@ -65,28 +65,32 @@ IR/materializer 边界，没有把 `scribe-manifest-mind` 升为 production。
 但 `scribe-manifest-mind` 仍未升为 production，因为 entity senses、spatial
 feature binding 与 spell-slot reactivation 仍保持 partial。
 
-- 动态 scribe matrix：`3 covered / 10 partial / 0 missing` →
+- corrected dynamic scribe matrix：`3 covered / 10 partial / 0 missing` →
   `7 covered / 6 partial / 0 missing`；production、compile-only、unique-compiled
-  计数 delta 均为 `0`。
+  计数 delta 均为 `0`。原先把 synthetic transaction fixture 当作 producer evidence
+  的过度宣称已修正；本轮没有把缺少真实 API/event producer 的条目伪升为 covered。
 - `ContentIRRuntimeService` 的 lifecycle termination 现在强制消费真实、
   source-bound `OperationTransaction` producer receipt：成功 `combat_end_effect`
- （Dispel）、`equipment_destroy`（绑定 spellbook）、`combat_confirm_death`
-  （权威 owner death）和 `combat_end_summon`/effect dismissal；失败 producer、
-  未绑定 producer、stale lifecycle CAS、重复 replay 均 fail-closed/idempotent。
+ （Dispel effect-end API）、`equipment_destroy`（绑定 spellbook equipment API）、
+ `combat_damage`（真实 combat damage/death transition）和 `combat_end_summon`
+ （真实 summon-end API，owner bonus action 消费）；失败 producer、未绑定 producer、
+ stale lifecycle CAS、重复 replay 均 fail-closed/idempotent。
 - lifecycle receipt 持久化 producer receipt、typed termination reason 与终态；
   终止后的 senses/spatial/reactivation 继续由既有 fail-closed boundary 拒绝。
-- focused runtime tests 覆盖四事件成功、失败、replay、stale CAS 与无 mutation
-  negative boundary；audit regression 验证移除任一 focused receipt 即从 covered
-  降回 partial。
-- audit 双跑与 whole-pack 双跑 stdout byte-identical；backend 全量 pytest 通过；
-  变更范围 Ruff、compileall、`git diff --check` 通过。全仓 `ruff check
-  backend/src backend/tests scripts` 仍命中仓库既有 scripts lint，不修改历史脚本。
+- focused runtime tests 覆盖四事件成功、失败、replay、stale CAS、rollback/action
+  economy 与无 mutation negative boundary；audit regression 明确证明 synthetic
+  `OperationTransaction` 不能单独满足 covered gate。
+- focused `22 passed`；受影响 combat/summon/lifecycle suite 通过；backend 全量
+  `1015 passed, 1 warning`；Ruff、compileall、`git diff --check` 通过。
+- audit 双跑与 whole-pack 双跑 stdout byte-identical；whole-pack projection SHA-256
+  `071cd15163381c68d0888a4f849d2edc80bf79450955ff8c73498a2212d123a7`。
 - formal database/registry、source corpus、campaign/character、3D 与保护路径未写入；
   scribe 未升 production。
 - 证据：`docs/scribe-manifest-mind-source-boundary-audit-2026-08-13.md`、
   `reports/scribe-manifest-mind-source-boundary-audit-2026-08-13.json`、
   `scripts/audit-scribe-manifest-mind-source-boundary.py`、
-  `backend/tests/test_content_ir_entity_lifecycle_runtime.py`。
+  `backend/tests/test_content_ir_entity_lifecycle_runtime.py`、
+  `backend/tests/test_manifest_mind_resource_contract.py`。
 
 ## Round XXXIII：Manifest Mind spectral-object blocker 与 entity sensory-profile seam
 
