@@ -2547,10 +2547,20 @@ class ContentIRRuntimeRequest(BaseModel):
     condition_to_remove: Literal["charmed", "frightened", "poisoned"] | None = None
     advancement_choices: dict[str, list[str]] = Field(default_factory=dict, max_length=50)
     entity_id: str | None = Field(default=None, min_length=1, max_length=200)
-    entity_lifecycle_event: Literal["create", "enter", "exit", "expire"] | None = None
+    entity_lifecycle_event: Literal[
+        "create",
+        "enter",
+        "exit",
+        "expire",
+        "activate",
+        "deactivate",
+        "reactivate",
+        "long_rest",
+    ] | None = None
     entity_lifecycle_expected_version: int | None = Field(default=None, ge=0)
     entity_lifecycle_metadata: dict[str, Any] = Field(default_factory=dict, max_length=20)
     operation_id: str | None = Field(default=None, min_length=1, max_length=200)
+    reactivation_payment: dict[str, Any] | None = None
     runtime_contract: dict[str, Any] | None = None
     preview_token: str | None = None
     idempotency_key: str | None = Field(default=None, min_length=8, max_length=120)

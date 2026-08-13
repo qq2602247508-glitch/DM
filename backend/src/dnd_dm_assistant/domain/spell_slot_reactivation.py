@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any, Literal
@@ -186,7 +187,8 @@ def transition_spell_slot_reactivation(
         if status != "inactive" or not next_available or count >= spec.activation_limit:
             raise ValueError("spell slot reactivation activation is unavailable")
         next_status, next_available = "active", False
-        next_count += 1
+        # A paid reactivation reuses the once-per-rest activation allowance;
+        # it does not create a second activation within the same rest window.
     elif event == "deactivate":
         if status != "active":
             raise ValueError("spell slot reactivation entity is not active")
@@ -202,7 +204,11 @@ def transition_spell_slot_reactivation(
         if payment_kind != "spell_slot_any_level":
             raise ValueError("reactivation requires a spell_slot_any_level payment")
         resource_key = _text(payment.get("resource_key"))
-        if not resource_key.startswith(spec.spell_slot_resource_prefix):
+        match = re.fullmatch(
+            rf"{re.escape(spec.spell_slot_resource_prefix)}([1-9])",
+            resource_key,
+        )
+        if match is None:
             raise ValueError("reactivation payment must identify a spell slot resource")
         if payment.get("amount") != 1:
             raise ValueError("reactivation consumes exactly one spell slot")
@@ -213,8 +219,9 @@ def transition_spell_slot_reactivation(
             or not 1 <= slot_level <= 9
         ):
             raise ValueError("reactivation spell slot level must be between 1 and 9")
+        if int(match.group(1)) != slot_level:
+            raise ValueError("reactivation payment slot level does not match resource key")
         next_status, next_available = "active", False
-        next_count += 1
         applied_payment = {
             "kind": payment_kind,
             "resource_key": resource_key,

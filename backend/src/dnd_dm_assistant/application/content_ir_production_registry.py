@@ -506,6 +506,7 @@ def resolve_production_consumers(
             "prepared_spell_list",
             "resources",
             "entity_lifecycles",
+            "spell_slot_reactivations",
             "spell_list_expansions",
         }
         unknown = set(blocks) - allowed

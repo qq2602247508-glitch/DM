@@ -27,6 +27,10 @@ from dnd_dm_assistant.domain.rests import (
     resolve_long_rest,
     resolve_short_rest,
 )
+from dnd_dm_assistant.domain.spell_slot_reactivation import (
+    SpellSlotReactivationSpec,
+    transition_spell_slot_reactivation,
+)
 from dnd_dm_assistant.domain.zero_hp_intervention import (
     adapt_legacy_zero_hp_intervention,
     reset_zero_hp_intervention_states,
@@ -126,6 +130,73 @@ class RestService:
         if character is None or character.campaign_id != campaign_id:
             raise StateNotFoundError("character not found in campaign")
         return character
+
+    @staticmethod
+    def _reset_spell_slot_reactivations(
+        character: Character,
+        *,
+        operation_id: str,
+    ) -> list[dict[str, Any]]:
+        """Reset embedded reactivation state without restoring ordinary slots."""
+
+        updated_features: list[dict[str, Any]] = []
+        receipts: list[dict[str, Any]] = []
+        for raw_feature in character.features or []:
+            if not isinstance(raw_feature, dict):
+                updated_features.append(raw_feature)
+                continue
+            runtime = raw_feature.get("runtime")
+            records = runtime.get("spell_slot_reactivations") if isinstance(runtime, dict) else None
+            if not isinstance(records, list):
+                updated_features.append(raw_feature)
+                continue
+            next_feature = dict(raw_feature)
+            next_runtime = dict(runtime)
+            next_records: list[dict[str, Any]] = []
+            for index, raw_record in enumerate(records):
+                if not isinstance(raw_record, dict) or not isinstance(
+                    raw_record.get("state"), dict
+                ):
+                    next_records.append(raw_record)
+                    continue
+                state = dict(raw_record["state"])
+                provenance = dict(raw_record.get("source_provenance") or {})
+                spec = SpellSlotReactivationSpec(
+                    entity_binding=str(
+                        state.get("entity_binding")
+                        or provenance.get("entity_binding")
+                        or "entity_lifecycle"
+                    ),
+                    source_id=str(
+                        state.get("source_id") or provenance.get("source_record_id") or ""
+                    ),
+                    source_fingerprint=str(
+                        state.get("source_fingerprint")
+                        or provenance.get("source_fingerprint")
+                        or ""
+                    ),
+                )
+                transition = transition_spell_slot_reactivation(
+                    spec,
+                    state,
+                    event="long_rest",
+                    operation_id=f"{operation_id}:reactivation:{index}",
+                    expected_version=int(state["version"]),
+                    metadata={"rest_operation_id": operation_id},
+                )
+                next_records.append({**raw_record, "state": transition.state})
+                receipts.append(
+                    {
+                        "entity_id": raw_record.get("entity_id"),
+                        "state": transition.state,
+                        "source_provenance": provenance,
+                    }
+                )
+            next_runtime["spell_slot_reactivations"] = next_records
+            next_feature["runtime"] = next_runtime
+            updated_features.append(next_feature)
+        character.features = updated_features
+        return receipts
 
     @staticmethod
     def _reset_combat_feature_states(
@@ -1506,6 +1577,14 @@ class RestService:
                 equipment.charges = int(item_change["after"])
                 equipment.version += 1
             character.resources = resources_json
+            reactivation_receipts: list[dict[str, Any]] = []
+            if participant.get("completed") and str(
+                request_data.get("rest_type") or ""
+            ) == "long" and not request_data.get("fallback_to_short_rest"):
+                reactivation_receipts = self._reset_spell_slot_reactivations(
+                    character,
+                    operation_id=idempotency_key,
+                )
             if participant.get("completed") and str(request_data.get("rest_type") or "") == "long":
                 if "portent_dice" in resources_json:
                     pool = dict(resources_json.get("portent_dice") or {})
@@ -1595,6 +1674,8 @@ class RestService:
                 )
             if feature_runtime_resets:
                 participant["feature_runtime_resets"] = feature_runtime_resets
+            if reactivation_receipts:
+                participant["spell_slot_reactivations"] = reactivation_receipts
             before_fatigue = int(participant["before"]["fatigue"])
             after_fatigue = int(participant["after"]["fatigue"])
             if after_fatigue != before_fatigue:

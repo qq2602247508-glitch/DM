@@ -40,6 +40,10 @@ from dnd_dm_assistant.domain.remote_spell_origin import (
     resolve_remote_spell_origin,
 )
 from dnd_dm_assistant.domain.spatial_authority import SceneGridSpatialAuthority
+from dnd_dm_assistant.domain.spell_slot_reactivation import (
+    SpellSlotReactivationSpec,
+    transition_spell_slot_reactivation,
+)
 from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngineService
 from dnd_dm_assistant.infrastructure.database.models import (
     Character,
@@ -167,6 +171,11 @@ class ContentIRRuntimeService:
             blocks["entity_lifecycles"] = [
                 dict(item) for item in entity_lifecycles if isinstance(item, Mapping)
             ]
+        reactivations = runtime.get("spell_slot_reactivations")
+        if isinstance(reactivations, list) and reactivations:
+            blocks["spell_slot_reactivations"] = [
+                dict(item) for item in reactivations if isinstance(item, Mapping)
+            ]
         proficiencies = runtime.get("proficiencies")
         if isinstance(proficiencies, list) and proficiencies:
             blocks["proficiencies"] = [dict(item) for item in proficiencies if isinstance(item, Mapping)]
@@ -182,7 +191,12 @@ class ContentIRRuntimeService:
             if block_feature_id and block_feature_id != runtime_id:
                 raise ValueError("advancement runtime id does not match the typed feature contract")
             execution = block.get("runtime_execution")
-            if not isinstance(execution, Mapping) or _text(execution.get("status")) != "ready":
+            allowed_execution_statuses = {"ready"}
+            if _text(block.get("resolution_kind")) == "spell_slot_reactivation":
+                allowed_execution_statuses.add("production_partial")
+            if not isinstance(execution, Mapping) or _text(
+                execution.get("status")
+            ) not in allowed_execution_statuses:
                 raise ValueError("advancement runtime block is not execution-ready")
         expansion_blocks = blocks.get("spell_list_expansions", [])
         for block in expansion_blocks:
@@ -322,6 +336,122 @@ class ContentIRRuntimeService:
                     "operation_id": operation_id,
                     "replayed": transition.replayed,
                     "state": transition.state,
+                }
+            reactivation_receipt: dict[str, Any] | None = None
+            reactivation_record: dict[str, Any] | None = None
+            reactivation_blocks = blocks.get("spell_slot_reactivations", [])
+            if reactivation_blocks:
+                if len(reactivation_blocks) != 1:
+                    raise ValueError(
+                        "spell slot reactivation runtime requires exactly one block"
+                    )
+                block = reactivation_blocks[0]
+                provenance = block.get("source_provenance")
+                if not isinstance(provenance, Mapping):
+                    raise ValueError("spell slot reactivation source provenance is required")
+                source_id = _text(provenance.get("source_record_id"))
+                source_fingerprint = _text(provenance.get("source_fingerprint"))
+                if not source_id or not source_fingerprint:
+                    raise ValueError("spell slot reactivation source provenance is required")
+                if source_id != _text(runtime.get("source_record_id")) or (
+                    _text(runtime.get("source_fingerprint"))
+                    and source_fingerprint != _text(runtime.get("source_fingerprint"))
+                ):
+                    raise ValueError(
+                        "spell slot reactivation source provenance does not match runtime"
+                    )
+                entity_id = _text(data.get("entity_id"))
+                event = _text(data.get("entity_lifecycle_event")).casefold()
+                operation_id = _text(data.get("operation_id"))
+                if not entity_id or not event or not operation_id:
+                    raise ValueError(
+                        "spell slot reactivation requires entity, event, and operation_id"
+                    )
+                metadata = (
+                    data.get("entity_lifecycle_metadata")
+                    if isinstance(data.get("entity_lifecycle_metadata"), Mapping)
+                    else {}
+                )
+                owner_character_id = _text(metadata.get("owner_character_id"))
+                if owner_character_id and owner_character_id != character.id:
+                    raise ValueError(
+                        "spell slot reactivation entity owner does not match character"
+                    )
+                binding = _text(block.get("entity_binding"))
+                if not binding:
+                    raise ValueError("spell slot reactivation entity binding is required")
+                spec = SpellSlotReactivationSpec(
+                    entity_binding=binding,
+                    source_id=source_id,
+                    source_fingerprint=source_fingerprint,
+                    spell_slot_resource_prefix=_text(
+                        block.get("spell_slot_resource_prefix")
+                    )
+                    or "spell_slots_",
+                )
+                prior_state: Mapping[str, Any] | None = None
+                for existing_feature in before["features"]:
+                    if not isinstance(existing_feature, Mapping):
+                        continue
+                    if _text(existing_feature.get("feature_id")) != feature_id:
+                        continue
+                    existing_runtime = existing_feature.get("runtime")
+                    records = (
+                        existing_runtime.get("spell_slot_reactivations")
+                        if isinstance(existing_runtime, Mapping)
+                        else None
+                    )
+                    if isinstance(records, list):
+                        for record in records:
+                            if (
+                                isinstance(record, Mapping)
+                                and _text(record.get("entity_id")) == entity_id
+                                and isinstance(record.get("state"), Mapping)
+                            ):
+                                prior_state = record["state"]
+                                break
+                initial_state = block.get("initial_state")
+                if prior_state is None and isinstance(initial_state, Mapping):
+                    prior_state = dict(initial_state)
+                payment = data.get("reactivation_payment")
+                transition = transition_spell_slot_reactivation(
+                    spec,
+                    prior_state,
+                    event=event,
+                    operation_id=operation_id,
+                    expected_version=(
+                        None
+                        if data.get("entity_lifecycle_expected_version") is None
+                        else int(data["entity_lifecycle_expected_version"])
+                    ),
+                    payment=payment if isinstance(payment, Mapping) else None,
+                    metadata=(
+                        data.get("entity_lifecycle_metadata")
+                        if isinstance(data.get("entity_lifecycle_metadata"), Mapping)
+                        else None
+                    ),
+                )
+                if transition.payment is not None:
+                    resource_key = _text(transition.payment.get("resource_key"))
+                    slots = dict(after["resources"].get(resource_key) or {})
+                    current = int(slots.get("current") or 0)
+                    if current < 1:
+                        raise ValueError("reactivation spell slot unavailable")
+                    slots["current"] = current - 1
+                    after["resources"][resource_key] = slots
+                reactivation_record = {
+                    "entity_id": entity_id,
+                    "state": transition.state,
+                    "source_provenance": dict(provenance),
+                }
+                reactivation_receipt = {
+                    "schema": "spell.slot.reactivation.v1",
+                    "entity_id": entity_id,
+                    "event": event,
+                    "operation_id": operation_id,
+                    "replayed": transition.replayed,
+                    "state": transition.state,
+                    "payment": transition.payment,
                 }
             proficiencies: list[dict[str, Any]] = []
             skills = dict(after["skills"])
@@ -472,6 +602,32 @@ class ContentIRRuntimeService:
                 prior_records.append(lifecycle_record)
                 feature_runtime["entity_lifecycles"] = prior_records
                 feature_entry["runtime"] = feature_runtime
+            if reactivation_record is not None:
+                feature_runtime = dict(feature_entry["runtime"])
+                prior_records: list[dict[str, Any]] = []
+                for existing_feature in before["features"]:
+                    if (
+                        isinstance(existing_feature, Mapping)
+                        and _text(existing_feature.get("feature_id")) == feature_id
+                    ):
+                        existing_runtime = existing_feature.get("runtime")
+                        records = (
+                            existing_runtime.get("spell_slot_reactivations")
+                            if isinstance(existing_runtime, Mapping)
+                            else None
+                        )
+                        if isinstance(records, list):
+                            prior_records = [
+                                dict(record) for record in records if isinstance(record, Mapping)
+                            ]
+                prior_records = [
+                    record
+                    for record in prior_records
+                    if _text(record.get("entity_id")) != _text(entity_id)
+                ]
+                prior_records.append(reactivation_record)
+                feature_runtime["spell_slot_reactivations"] = prior_records
+                feature_entry["runtime"] = feature_runtime
             if blocks.get("spell_list_expansions"):
                 feature_runtime = dict(feature_entry["runtime"])
                 feature_runtime["spell_list_expansions"] = [
@@ -522,6 +678,15 @@ class ContentIRRuntimeService:
                     "requires_expected_version": True,
                     "requires_operation_id": True,
                     "replayed": lifecycle_receipt["replayed"],
+                }
+            if reactivation_receipt is not None:
+                result["spell_slot_reactivation"] = reactivation_receipt
+                result["production_contract"]["spell_slot_reactivation"] = {
+                    "schema": "spell.slot.reactivation.v1",
+                    "requires_provenance": True,
+                    "requires_character_cas": True,
+                    "requires_operation_transaction": True,
+                    "payment": reactivation_receipt["payment"],
                 }
             result["preview_token"] = _fingerprint(
                 {"data": _stable_request_data(data), "result": result}
@@ -1913,7 +2078,23 @@ class ContentIRRuntimeService:
                     ):
                         raise ValueError("entity lifecycle operation replay payload does not match")
                 if _text(previous.get("preview_token")) != _text(data.get("preview_token")):
-                    raise ValueError("entity lifecycle operation replay payload does not match")
+                        raise ValueError("entity lifecycle operation replay payload does not match")
+            previous_reactivation = previous.get("spell_slot_reactivation")
+            if previous_reactivation is not None:
+                for field in ("entity_id", "event", "operation_id"):
+                    submitted_key = {
+                        "entity_id": "entity_id",
+                        "event": "entity_lifecycle_event",
+                        "operation_id": "operation_id",
+                    }[field]
+                    if _text(previous_reactivation.get(field)) != _text(
+                        data.get(submitted_key)
+                    ):
+                        raise ValueError(
+                            "spell slot reactivation replay payload does not match"
+                        )
+                if _text(previous.get("preview_token")) != _text(data.get("preview_token")):
+                    raise ValueError("spell slot reactivation replay payload does not match")
             return {**previous, "already_applied": True}
 
         with Session(self.engine) as session:
@@ -2004,6 +2185,8 @@ class ContentIRRuntimeService:
             }
             if "entity_lifecycle" in preview:
                 output["entity_lifecycle"] = preview["entity_lifecycle"]
+            if "spell_slot_reactivation" in preview:
+                output["spell_slot_reactivation"] = preview["spell_slot_reactivation"]
             operation.after_snapshot = output
             session.flush()
             return output
