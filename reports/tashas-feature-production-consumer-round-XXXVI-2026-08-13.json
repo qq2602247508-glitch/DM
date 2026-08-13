@@ -1,0 +1,117 @@
+{
+  "after": {
+    "project": {
+      "compile_only": 35,
+      "production": 201,
+      "unique_compiled": 111
+    },
+    "tasha": {
+      "authored": 106,
+      "compile": 105,
+      "compile_only": 2,
+      "preview": 105,
+      "production": 101
+    }
+  },
+  "baseline": {
+    "project": {
+      "compile_only": 35,
+      "production": 201,
+      "unique_compiled": 111
+    },
+    "tasha": {
+      "authored": 106,
+      "compile": 105,
+      "compile_only": 2,
+      "preview": 105,
+      "production": 101
+    }
+  },
+  "checks": {
+    "compile_remains_partial": true,
+    "duplicate_activation_rejected": true,
+    "first_activation_active": true,
+    "long_rest_recovery": true,
+    "materializer_partial": true,
+    "production_counts_changed": false,
+    "protected_paths_unchanged": true,
+    "replay": true,
+    "rollback": true,
+    "source_completeness_remains_incomplete": true,
+    "source_provenance": true,
+    "spell_slot_insufficient_boundary": true,
+    "spell_slot_payment_one_any_level": true,
+    "stale_cas": true
+  },
+  "compile_only_ids": [
+    "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
+    "content.tashas-cauldron.round2.feature.genie-bottled-respite"
+  ],
+  "delta": {
+    "project": {
+      "compile_only": 0,
+      "production": 0,
+      "unique_compiled": 0
+    },
+    "tasha": {
+      "authored": 0,
+      "compile": 0,
+      "compile_only": 0,
+      "preview": 0,
+      "production": 0
+    }
+  },
+  "evidence_by_id": {
+    "content.tashas-cauldron.round2.feature.scribe-manifest-mind": {
+      "all_required_checks_passed": true,
+      "checks": {
+        "compile_remains_partial": true,
+        "duplicate_activation_rejected": true,
+        "first_activation_active": true,
+        "long_rest_recovery": true,
+        "materializer_partial": true,
+        "production_counts_changed": false,
+        "protected_paths_unchanged": true,
+        "replay": true,
+        "rollback": true,
+        "source_completeness_remains_incomplete": true,
+        "source_provenance": true,
+        "spell_slot_insufficient_boundary": true,
+        "spell_slot_payment_one_any_level": true,
+        "stale_cas": true
+      },
+      "compile_only_ids": [
+        "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
+        "content.tashas-cauldron.round2.feature.genie-bottled-respite"
+      ],
+      "production_runtime_full_ids": [],
+      "round_id": "round-XXXVI",
+      "schema_version": "content-ir-production-runtime-results-XXXVI-1",
+      "selected_boundary": {
+        "activation_limit": 1,
+        "payments": [
+          "long_rest",
+          "spell_slot_any_level"
+        ],
+        "remaining_boundary": "production resource transaction and sensory runtime are partial",
+        "schema": "spell.slot.reactivation.v1"
+      },
+      "source": {
+        "feature_id": "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
+        "source_fingerprint": "dbbdb5b3ca9d86ece43c2f919d8483683f99068a478bccc401906057fccb920a",
+        "source_path": "塔莎的万事坩埚/玩家选项/职业/法师（TCE）/书士会.html",
+        "source_record_id": "ff7049c6a4d0aad0dae4adf5"
+      }
+    }
+  },
+  "production_runtime_full_ids": [],
+  "round_id": "round-XXXVI",
+  "schema_version": "tashas-feature-production-consumer-round-XXXVI-1",
+  "source_boundary_decision": {
+    "not_selected": {
+      "genie-bottled-respite": "vessel and rest boundary remains independent"
+    },
+    "reason": "source explicitly permits one long-rest or one any-level slot reactivation",
+    "selected": "scribe-manifest-mind.spell-slot-reactivation"
+  }
+}

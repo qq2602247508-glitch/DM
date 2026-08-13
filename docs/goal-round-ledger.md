@@ -35,6 +35,30 @@
   `reports/tashas-feature-production-consumer-round-XXXV-2026-08-13.json`、
   `data/content-ir/compiled/production-runtime-results-XXXV.json`。
 
+## Round XXXVI：Manifest Mind spell-slot reactivation seam
+
+当前状态：`compile_only_blocked`；本轮闭合通用 reactivation domain contract 与
+IR/materializer 边界，没有把 `scribe-manifest-mind` 升为 production。
+
+- 真实 source 语义：首次显现后，下一次显现只能由一次长休或一枚任意环阶法术位重新
+  激活；法术位支付恰一枚，长休重置 activation count/availability。
+- 新增名称无关 `spell.slot.reactivation.v1`，覆盖 `inactive/active`、activation
+  limit=1、source provenance、法术位不足/错误支付 fail-closed、长休恢复、重复激活、
+  rollback、expected-version CAS、operation-id/request-fingerprint replay。
+- 新增 `configure_spell_slot_reactivation` → `spell.slot.reactivation` →
+  `spell_slot_reactivations`；capability 为 `production_partial`，runtime section
+  明确 partial，不进入 production registry。
+- baseline/after：Tasha `106 authored / 105 compile / 105 preview / 101 production /
+  2 compile-only`；项目 `201 production / 35 compile-only / 111 unique compiled`；
+  production/compile-only/unique compiled delta 均为 `0`。
+- focused、validator 双跑、backend 全量 pytest、Ruff、compileall、diff-check 均通过；
+  protected paths 保持用户原有未跟踪状态。
+- 证据：`docs/tashas-feature-production-consumer-round-XXXVI-2026-08-13.md`、
+  `scripts/validate-tashas-feature-production-consumer-round-XXXVI.py`、
+  `backend/tests/test_spell_slot_reactivation.py`、
+  `reports/tashas-feature-production-consumer-round-XXXVI-2026-08-13.json`、
+  `data/content-ir/compiled/production-runtime-results-XXXVI.json`。
+
 ## Round XXXIII：Manifest Mind spectral-object blocker 与 entity sensory-profile seam
 
 当前状态：`compile_only_blocked`；没有把 `scribe-manifest-mind` 或
