@@ -47,8 +47,10 @@
   `backend/src/dnd_dm_assistant/domain/entity_lifecycle.py`、
   `backend/src/dnd_dm_assistant/domain/remote_spell_origin.py`、
   `backend/tests/test_entity_lifecycle.py`。
-- 本轮未提交或推送；具体 vessel/spectral-object typed IR 仍是后续工作。两个
-  source-incomplete feature 继续保持非 production。
+- 本轮已分离提交源码/测试与文档证据，当前本地 HEAD 为
+  `b66cdad833329bd13b0dde39e55d5f3525c20236`；外部 push 因安全审查阻塞。具体
+  vessel/spectral-object typed IR 仍是后续工作，两个 source-incomplete feature
+  继续保持非 production。
 
 ## Round 31：孢子结社法术（已知戏法 + 八条恒备法术）Character-Growth Consumer
 

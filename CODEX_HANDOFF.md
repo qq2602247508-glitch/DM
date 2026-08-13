@@ -36,8 +36,10 @@
   database/registry、source corpus、campaign/character 与 3D 未写入；production/
   compile-only 计数不变。`genie-bottled-respite` 与 `scribe-manifest-mind` 仍
   source-incomplete，未升 production；具体 vessel/spectral-object typed IR 仍留作后续工作。
-- 本轮未提交、未推送。下一轮继续具体 vessel/spectral-object typed IR 与
-  feature-specific evidence，但不得把 source-incomplete feature 升 production。
+- 本轮已分离提交源码/测试与文档证据，当前本地 HEAD 为
+  `b66cdad833329bd13b0dde39e55d5f3525c20236`；外部 push 因安全审查阻塞。
+  下一轮继续具体 vessel/spectral-object typed IR 与 feature-specific evidence，
+  但不得把 source-incomplete feature 升 production。
 
 # 2026-08-13 Round 31 检查点：孢子结社法术（已知戏法 + 八条恒备法术）Character-Growth Consumer
 
