@@ -3192,3 +3192,29 @@ git diff --check
   whole-pack SHA `071cd15163381c68d0888a4f849d2edc80bf79450955ff8c73498a2212d123a7`。
 - 下一轮可继续建设通用 spell-slot payment/reactivation；在其真实 consumer、CAS、
   replay、rest/slot boundary 完成前，不得把 scribe 升为 production。
+## 2026-08-13 Dynamic Manifest Mind source-boundary audit and placement/form closure
+
+- 修复 `scripts/audit-scribe-manifest-mind-source-boundary.py`：matrix 现在从 authored
+  Feature IR、operator/capability catalog、materializer/runtime registry、focused receipt
+  probes 和 source provenance 动态判定；每条都检查 producer、consumer、persistence、
+  CAS/replay 与 receipt，不再以文件存在冒充 covered。
+- audit regression 覆盖移除 focused receipt 或 source provenance 后从 `covered` 降级；
+  当前真实矩阵从旧硬编码 `1 covered / 8 partial / 4 missing` 变为
+  `3 covered / 10 partial / 0 missing / 13 total`：covered 为 initial placement、
+  remote spell origin、PB-per-day resource；spectral form、entity senses、telepathy、
+  movement/expiry、四个 termination receipt 和 reactivation 仍 partial。
+- 通用 runtime 机制：`entity.lifecycle` 新增可选 typed initial placement（60 ft、
+  destination unoccupied、source object held），真实 preview/confirm/replay、character
+  CAS、source provenance 和 fail-closed range receipt；`entity.senses` 持久化
+  `entity.form.v1`（intangible、occupies_space、appearance choices），但 capability
+  仍 production_partial，未升 production。
+- PB resource 修复 `set_resource_profile` operator 的 resource compatibility，使
+  `proficiency_bonus` maximum、Character.resources persistence 与 long-rest recovery
+  编译为真实 closed contract；没有修改 formal database/registry。
+- 验证：focused 55 passed；全量 backend `1008 passed, 1 warning`；变更范围 Ruff、
+  compileall、diff-check 通过；audit 双跑 SHA-256
+  `640869ee615bebc582cb71d8d7e3079b8341d0035568b99a1f70af310a47ee07`；whole-pack 双跑
+  stdout SHA-256 `071cd15163381c68d0888a4f849d2edc80bf79450955ff8c73498a2212d123a7`。
+- `production_runtime_full_ids=[]`、`source_completeness=incomplete`；仍不允许 scribe
+  升 production。保护路径 `backend/tests/integrations/`、`backend/tests/ollama.py`
+  保持用户原有未跟踪状态，未暂存、未提交。
