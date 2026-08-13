@@ -1,0 +1,239 @@
+{
+  "all_required_checks_passed": true,
+  "checks": {
+    "entity_lifecycle_materializer_available": true,
+    "entity_senses_fail_closed": true,
+    "feature_compile_partial": true,
+    "formal_database_unchanged": true,
+    "formal_registry_unchanged": true,
+    "generic_feature_consumer": true,
+    "information_clause_compiles": true,
+    "name_branch_free": true,
+    "remote_origin_fail_closed": true,
+    "remote_origin_geometry": true,
+    "remote_origin_materializer_available": true,
+    "source_blocker_explicit": true,
+    "source_provenance": true,
+    "typed_clause_count": true
+  },
+  "compile": {
+    "blockers": [
+      "source is incomplete"
+    ],
+    "clause_results": [
+      {
+        "blockers": [],
+        "capability_ids": [
+          "entity.lifecycle"
+        ],
+        "clause_id": "spectral-object-lifecycle",
+        "generated_block": {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "entity.lifecycle",
+          "clause_id": "spectral-object-lifecycle",
+          "contract_version": "1.0",
+          "materializer_id": "entity.lifecycle",
+          "operator": "configure_entity_lifecycle",
+          "parameters": {
+            "entity_type": "spectral_object",
+            "expires_on_owner_death": true,
+            "max_entries": 1,
+            "source_binding": "feature_source"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "advancement_confirmed"
+        },
+        "status": "full"
+      },
+      {
+        "blockers": [],
+        "capability_ids": [
+          "spell.remote_origin"
+        ],
+        "clause_id": "remote-spell-origin",
+        "generated_block": {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "spell.remote_origin",
+          "clause_id": "remote-spell-origin",
+          "contract_version": "1.0",
+          "materializer_id": "spell.remote_origin",
+          "operator": "configure_remote_spell_origin",
+          "parameters": {
+            "origin_binding": "entity_lifecycle",
+            "origin_kind": "entity",
+            "require_line_of_effect": true,
+            "target_kind": "one_creature"
+          },
+          "targeting": {
+            "kind": "one_creature",
+            "parameters": {}
+          },
+          "trigger": "spell_cast"
+        },
+        "status": "full"
+      },
+      {
+        "blockers": [
+          "capability entity.senses is production_partial"
+        ],
+        "capability_ids": [],
+        "clause_id": "mind-sight",
+        "generated_block": null,
+        "status": "partial"
+      },
+      {
+        "blockers": [],
+        "capability_ids": [
+          "target.authorized_information"
+        ],
+        "clause_id": "shared-information",
+        "generated_block": {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "target.authorized_information",
+          "clause_id": "shared-information",
+          "contract_version": "1.0",
+          "materializer_id": "target.authorized_information",
+          "operator": "expose_authorized_target_information",
+          "parameters": {
+            "information_kind": "manifest_mind_senses",
+            "range_ft": 60,
+            "visibility": "owner"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "explicit_activation"
+        },
+        "status": "full"
+      }
+    ],
+    "compile_status": "partial",
+    "dependencies": [],
+    "evidence": [
+      "test_entity_lifecycle_runtime_contract",
+      "test_remote_spell_origin_runtime_contract",
+      "test_hunters_lore_target_defense_inspection"
+    ],
+    "feature_id": "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
+    "fingerprint": "afac1c2f60ce434ba7d9ec15da7945a28741bc1d5d703ce462eae5e5c1c638e6",
+    "generated_runtime_blocks": [
+      {
+        "action_economy": "none",
+        "activation": "automatic",
+        "capability_id": "entity.lifecycle",
+        "clause_id": "spectral-object-lifecycle",
+        "contract_version": "1.0",
+        "materializer_id": "entity.lifecycle",
+        "operator": "configure_entity_lifecycle",
+        "parameters": {
+          "entity_type": "spectral_object",
+          "expires_on_owner_death": true,
+          "max_entries": 1,
+          "source_binding": "feature_source"
+        },
+        "targeting": {
+          "kind": "self",
+          "parameters": {}
+        },
+        "trigger": "advancement_confirmed"
+      },
+      {
+        "action_economy": "none",
+        "activation": "automatic",
+        "capability_id": "spell.remote_origin",
+        "clause_id": "remote-spell-origin",
+        "contract_version": "1.0",
+        "materializer_id": "spell.remote_origin",
+        "operator": "configure_remote_spell_origin",
+        "parameters": {
+          "origin_binding": "entity_lifecycle",
+          "origin_kind": "entity",
+          "require_line_of_effect": true,
+          "target_kind": "one_creature"
+        },
+        "targeting": {
+          "kind": "one_creature",
+          "parameters": {}
+        },
+        "trigger": "spell_cast"
+      },
+      {
+        "action_economy": "none",
+        "activation": "automatic",
+        "capability_id": "target.authorized_information",
+        "clause_id": "shared-information",
+        "contract_version": "1.0",
+        "materializer_id": "target.authorized_information",
+        "operator": "expose_authorized_target_information",
+        "parameters": {
+          "information_kind": "manifest_mind_senses",
+          "range_ft": 60,
+          "visibility": "owner"
+        },
+        "targeting": {
+          "kind": "self",
+          "parameters": {}
+        },
+        "trigger": "explicit_activation"
+      }
+    ],
+    "legacy_adapter_used": false,
+    "manual_boundaries": [],
+    "required_inputs": [],
+    "required_persistence": [
+      "entity.lifecycle.state",
+      "combat_action.spell_origin_resolution",
+      "combat_action.result_json"
+    ],
+    "required_tests": [
+      "test_entity_lifecycle_runtime_contract",
+      "test_remote_spell_origin_runtime_contract",
+      "test_hunters_lore_target_defense_inspection"
+    ],
+    "required_ui": [],
+    "source_trust": "authored_ir",
+    "status_authority": "compiler",
+    "unsupported_combinations": [],
+    "unsupported_conditions": [],
+    "unsupported_operators": []
+  },
+  "compile_only_ids": [
+    "content.tashas-cauldron.round2.feature.scribe-manifest-mind"
+  ],
+  "production_runtime_full_ids": [],
+  "remote_origin_receipt": {
+    "distances_ft": {
+      "target-1": 20
+    },
+    "line_of_effect": {
+      "target-1": true
+    },
+    "origin_id": "spectral-object-1",
+    "target_ids": [
+      "target-1"
+    ]
+  },
+  "round_id": "round-XXXIII",
+  "runtime_fingerprint": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "schema_version": "content-ir-production-runtime-results-XXXIII-1",
+  "source": {
+    "feature_id": "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
+    "source_book": "塔莎的万事坩埚",
+    "source_fingerprint": "dbbdb5b3ca9d86ece43c2f919d8483683f99068a478bccc401906057fccb920a",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/法师（TCE）/书士会.html",
+    "source_record_id": "ff7049c6a4d0aad0dae4adf5"
+  },
+  "typed_clause_ids": [
+    "spectral-object-lifecycle",
+    "remote-spell-origin",
+    "mind-sight",
+    "shared-information"
+  ]
+}

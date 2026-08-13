@@ -12,6 +12,82 @@
   },
   "clauses": [
     {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-13-round-XXXIII",
+        "source": "authored_ir",
+        "source_boundary": "spectral-object-lifecycle",
+        "source_excerpt": "*第6级书士会**特性*\n你能将你觉醒法术书中的意识召唤出来。当你持有该法术书时，你可以以一个附赠动作令书中的意识显现为一个微型的灵体物件，使其悬浮于距离你60尺以内且未被占据的、由你选择的空间中。",
+        "decision": "The spectral object is represented by the generic entity.lifecycle.v1 contract; its sensory profile remains blocked until the generic entity sensory consumer is production-closed."
+      },
+      "clause_id": "spectral-object-lifecycle",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "configure_entity_lifecycle",
+          "parameters": {
+            "entity_type": "spectral_object",
+            "source_binding": "feature_source",
+            "max_entries": 1,
+            "expires_on_owner_death": true
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-13-round-XXXIII",
+        "source": "authored_ir",
+        "source_boundary": "remote-spell-origin",
+        "source_excerpt": "*第6级书士会**特性*\n每当你在自己的回合内施放法师法术时，你可以使用灵体意识的感官、如同身处它所在的空间一样释放该法术。",
+        "decision": "The remote cast origin is represented by generic remote.spell.origin.v1 and is authorized only by the feature-owned lifecycle snapshot; spell economy and entity sensory state remain separate blockers."
+      },
+      "clause_id": "remote-spell-origin",
+      "conditions": [],
+      "duration": "current_turn",
+      "effects": [
+        {
+          "operator": "configure_remote_spell_origin",
+          "parameters": {
+            "origin_kind": "entity",
+            "origin_binding": "entity_lifecycle",
+            "target_kind": "one_creature",
+            "require_line_of_effect": true
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "one_creature",
+        "parameters": {}
+      },
+      "trigger": "spell_cast",
+      "visibility": "owner"
+    },
+    {
       "action_economy": "bonus_action",
       "activation": "automatic",
       "audit": {
@@ -25,10 +101,14 @@
       "duration": "ten_minutes",
       "effects": [
         {
-          "operator": "grant_sight_mode",
+          "operator": "configure_entity_senses",
           "parameters": {
-            "mode": "darkvision",
-            "range_ft": 60
+            "entity_binding": "entity_lifecycle",
+            "senses": {
+              "hearing": true,
+              "darkvision_ft": 60,
+              "light_radius_ft": 10
+            }
           }
         }
       ],
@@ -100,9 +180,11 @@
   },
   "manual_decisions": {
     "isolated_runtime_only": true,
-    "operator_mapping": "explicit_atom_mapping",
+    "operator_mapping": "generic_entity_lifecycle_and_remote_origin_consumers",
     "unmodeled_source_terms": [
-      "summoned spectral object entity lifecycle and remote spell origin need an entity consumer"
+      "entity sensory profile consumer",
+      "entity movement and 300-foot separation expiry",
+      "spell-slot reactivation payment"
     ]
   },
   "namespace": "content.tashas-cauldron",
