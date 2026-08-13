@@ -2524,6 +2524,7 @@ class ContentIRRuntimeRequest(BaseModel):
     target_version: int | None = Field(default=None, ge=1)
     target_combatant_ids: list[str] = Field(default_factory=list, max_length=20)
     target_versions: dict[str, int] = Field(default_factory=dict, max_length=20)
+    origin_id: str | None = Field(default=None, min_length=1, max_length=36)
     summon_choice: str | None = Field(default=None, min_length=1, max_length=80)
     area_shape: Literal["cone", "line", "cube", "sphere", "cylinder"] | None = None
     area_size_ft: int | None = Field(default=None, ge=5, le=1_000)
@@ -2545,6 +2546,11 @@ class ContentIRRuntimeRequest(BaseModel):
     reset_spell_slot_level: int | None = Field(default=None, ge=1, le=9)
     condition_to_remove: Literal["charmed", "frightened", "poisoned"] | None = None
     advancement_choices: dict[str, list[str]] = Field(default_factory=dict, max_length=50)
+    entity_id: str | None = Field(default=None, min_length=1, max_length=200)
+    entity_lifecycle_event: Literal["create", "enter", "exit", "expire"] | None = None
+    entity_lifecycle_expected_version: int | None = Field(default=None, ge=0)
+    entity_lifecycle_metadata: dict[str, Any] = Field(default_factory=dict, max_length=20)
+    operation_id: str | None = Field(default=None, min_length=1, max_length=200)
     runtime_contract: dict[str, Any] | None = None
     preview_token: str | None = None
     idempotency_key: str | None = Field(default=None, min_length=8, max_length=120)

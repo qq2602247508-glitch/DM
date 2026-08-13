@@ -14,6 +14,23 @@ from typing import Any
 PRODUCTION_REGISTRY_VERSION = "content-ir-production-registry-1"
 
 _CONSUMERS: dict[str, dict[str, Any]] = {
+    "spell.remote_origin.v1": {
+        "content_kind": "spell",
+        "runtime_schema_version": "spell-runtime-1",
+        "clause_types": ("spell_origins", "target_selection"),
+        "required_fields": (
+            "origin_id",
+            "target_combatant_id",
+            "target_version",
+            "actor_combatant_id",
+            "actor_version",
+        ),
+        "required_services": ("content_ir_runtime.remote_spell_origin", "combat_engine.geometry"),
+        "transaction_boundary": "spell_cast_with_origin_resolution_and_rollback_boundary",
+        "cas_entities": ("character", "actor_combatant", "target_combatants"),
+        "idempotency_scope": "campaign_content_ir_and_spell_cast",
+        "snapshot_effects": ("origin_id", "distances_ft", "line_of_effect", "audit"),
+    },
     "combat_engine.damage_heal.v1": {
         "content_kind": "spell_or_feature",
         "runtime_schema_version": "spell-runtime-1|feature-runtime-1",
@@ -284,6 +301,7 @@ _ALLOWED_SPELL_BLOCKS = {
     "temporary_hp",
     "upcast",
     "area",
+    "spell_origins",
 }
 
 _ALLOWED_ITEM_CLAUSES = {
@@ -374,6 +392,13 @@ def resolve_production_consumers(
             resolved.append("spell.summon.v1")
         if blocks.get("apply_condition"):
             resolved.append("combat_engine.condition_lifecycle.v1")
+        if blocks.get("spell_origins"):
+            if len(blocks["spell_origins"]) != 1:
+                raise ValueError("spell runtime requires exactly one remote origin contract")
+            origin = blocks["spell_origins"][0]
+            if origin.get("resolution_kind") != "remote_spell_origin":
+                raise ValueError("unsupported spell origin resolution")
+            resolved.append("spell.remote_origin.v1")
         if not resolved:
             raise ValueError("spell runtime has no registered executable consumer")
         return tuple(dict(_CONSUMERS[item], consumer_id=item) for item in sorted(set(resolved)))
@@ -470,7 +495,13 @@ def resolve_production_consumers(
     if content_kind == "advancement":
         if runtime_schema_version != "feature-runtime-1":
             raise ValueError("unsupported Content IR advancement runtime schema")
-        allowed = {"advancement", "proficiencies", "prepared_spell_list", "resources"}
+        allowed = {
+            "advancement",
+            "proficiencies",
+            "prepared_spell_list",
+            "resources",
+            "entity_lifecycles",
+        }
         unknown = set(blocks) - allowed
         if unknown:
             raise ValueError("unknown advancement runtime sections: " + ",".join(sorted(unknown)))

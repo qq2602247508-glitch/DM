@@ -578,6 +578,8 @@ def materialize_runtime_definition(
         "proficiencies": [],
         "advancement": None,
         "prepared_spell_list": None,
+        "entity_lifecycles": [],
+        "spell_origins": [],
     }
     for index, block in enumerate(result.generated_runtime_blocks):
         operator = str(block.get("operator") or "")
@@ -773,6 +775,10 @@ def materialize_runtime_definition(
                 target.append(entry)
         elif section == "resources":
             definition["resources"][str(entry.get("key") or entry["id"])] = entry
+        elif section == "entity_lifecycles":
+            definition["entity_lifecycles"].append(entry)
+        elif section == "spell_origins":
+            definition["spell_origins"].append(entry)
         elif section == "advancement":
             existing = definition["advancement"]
             if existing is None:

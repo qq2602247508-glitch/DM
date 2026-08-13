@@ -660,6 +660,29 @@ def default_capability_catalog() -> CapabilityCatalog:
             evidence=("test_fathomless_underwater_mutual_comprehension",),
         ),
         _descriptor(
+            "entity.lifecycle",
+            "configure_entity_lifecycle",
+            consumer="entity_lifecycle_service",
+            producer="feature_runtime_compiler",
+            persisted_state="entity.lifecycle.state",
+            targets=frozenset({"self"}),
+            durations=frozenset({"permanent", "advancement_persistent"}),
+            evidence=("test_entity_lifecycle_runtime_contract",),
+        ),
+        _descriptor(
+            "spell.remote_origin",
+            "configure_remote_spell_origin",
+            consumer="remote_spell_origin_resolver",
+            producer="feature_runtime_compiler",
+            persisted_state="combat_action.spell_origin_resolution",
+            targets=frozenset({"one_creature", "multiple_creatures"}),
+            durations=frozenset({"current_turn", "permanent", "advancement_persistent"}),
+            actions=frozenset(
+                {"none", "action", "bonus_action", "reaction", "explicit_player_choice"}
+            ),
+            evidence=("test_remote_spell_origin_runtime_contract",),
+        ),
+        _descriptor(
             "spell.context",
             "override_spell_components",
             consumer="spell_economy_service",

@@ -648,6 +648,82 @@ def _materialize_communication(context: MaterializerContext) -> MaterializedBloc
     return MaterializedBlock("actions", entry)
 
 
+def _materialize_entity_lifecycle(context: MaterializerContext) -> MaterializedBlock:
+    params = context.parameters
+    source_fingerprint = str(context.spec.source_fingerprint or "").strip()
+    if not source_fingerprint:
+        raise MaterializerError(
+            "entity lifecycle requires a source fingerprint for provenance binding"
+        )
+    entry = context.base(kind="entity_lifecycle")
+    entry.update(
+        {
+            "resolution_kind": "entity_lifecycle",
+            "entity_type": str(params["entity_type"]),
+            "source_binding": str(params["source_binding"]),
+            "source_provenance": {
+                "source_record_id": context.spec.source_record_id,
+                "source_fingerprint": source_fingerprint,
+                "source_book": context.spec.source_book,
+                "source_path": context.spec.source_path,
+            },
+            "lifecycle_schema": "entity.lifecycle.v1",
+            "lifecycle_states": ["created", "entered", "exited", "expired"],
+            "lifecycle_events": ["create", "enter", "exit", "expire"],
+            "cas": {"version_field": "version", "expected_version_required": True},
+            "idempotency": {
+                "operation_id_field": "operation_id",
+                "request_fingerprint_field": "last_operation_fingerprint",
+            },
+        }
+    )
+    for key in ("max_entries", "expires_on_owner_death"):
+        if key in params:
+            entry[key] = params[key]
+    return MaterializedBlock("entity_lifecycles", entry)
+
+
+def _materialize_remote_spell_origin(context: MaterializerContext) -> MaterializedBlock:
+    source_fingerprint = str(context.spec.source_fingerprint or "").strip()
+    if not source_fingerprint:
+        raise MaterializerError(
+            "remote spell origin requires a source fingerprint for provenance binding"
+        )
+    params = context.parameters
+    entry = context.base(kind="remote_spell_origin")
+    entry.update(
+        {
+            "resolution_kind": "remote_spell_origin",
+            "origin_contract": {
+                "schema": "remote.spell.origin.v1",
+                "origin_kind": str(params["origin_kind"]),
+                "origin_binding": str(params["origin_binding"]),
+                "target_kind": str(params["target_kind"]),
+                "max_range_ft": params.get("max_range_ft"),
+                "require_line_of_effect": bool(params.get("require_line_of_effect", True)),
+            },
+            "source_provenance": {
+                "source_record_id": context.spec.source_record_id,
+                "source_fingerprint": source_fingerprint,
+                "source_book": context.spec.source_book,
+                "source_path": context.spec.source_path,
+            },
+            "authorization": {
+                "actor_id_required": True,
+                "authorized_origin_ids_source": "entity_lifecycle",
+            },
+            "target_resolution": {
+                "target_ids_required": True,
+                "target_versions_required": True,
+                "spatial_authority": "required",
+            },
+            "cas": {"expected_version_required": True},
+            "idempotency": {"operation_id_field": "operation_id"},
+        }
+    )
+    return MaterializedBlock("spell_origins", entry)
+
+
 def _materialize_defense(context: MaterializerContext) -> MaterializedBlock:
     kind = {
         "grant_resistance": "damage_resistance",
@@ -786,6 +862,21 @@ class MaterializerRegistry:
         elif block.section == "prepared_spell_list":
             if not entry.get("spells") or not entry.get("source_class"):
                 raise MaterializerError("prepared spell block lacks spell or class")
+        elif block.section == "entity_lifecycles":
+            if entry.get("resolution_kind") != "entity_lifecycle":
+                raise MaterializerError("entity lifecycle block has invalid resolution kind")
+            provenance = entry.get("source_provenance")
+            if not entry.get("entity_type") or not isinstance(provenance, Mapping):
+                raise MaterializerError("entity lifecycle block lacks typed provenance")
+        elif block.section == "spell_origins":
+            if entry.get("resolution_kind") != "remote_spell_origin":
+                raise MaterializerError("remote spell origin block has invalid resolution kind")
+            if not isinstance(entry.get("source_provenance"), Mapping):
+                raise MaterializerError("remote spell origin block lacks source provenance")
+            if not isinstance(entry.get("authorization"), Mapping):
+                raise MaterializerError("remote spell origin block lacks authorization contract")
+            if not isinstance(entry.get("target_resolution"), Mapping):
+                raise MaterializerError("remote spell origin block lacks target resolution")
 
     def to_dict(self) -> list[str]:
         return sorted(self._materializers)
@@ -825,6 +916,8 @@ def default_materializer_registry() -> MaterializerRegistry:
         "attack.roll.intervention": _materialize_attack_roll_intervention,
         "target.authorized_information": _materialize_authorized_information,
         "communication.channel": _materialize_communication,
+        "entity.lifecycle": _materialize_entity_lifecycle,
+        "spell.remote_origin": _materialize_remote_spell_origin,
         "zero_hp.intervention": _materialize_zero_hp,
         "spell.healing_modifier": _materialize_spell_modifier,
         "spell.damage_modifier": _materialize_spell_modifier,

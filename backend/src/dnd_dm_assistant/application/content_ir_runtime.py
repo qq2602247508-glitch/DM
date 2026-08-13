@@ -30,6 +30,16 @@ from dnd_dm_assistant.application.content_ir_production_registry import (
     resolve_production_consumers,
 )
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
+from dnd_dm_assistant.domain.entity_lifecycle import (
+    EntityLifecycleSpec,
+    transition_entity_lifecycle,
+)
+from dnd_dm_assistant.domain.remote_spell_origin import (
+    RemoteSpellOriginContract,
+    RemoteSpellOriginResolution,
+    resolve_remote_spell_origin,
+)
+from dnd_dm_assistant.domain.spatial_authority import SceneGridSpatialAuthority
 from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngineService
 from dnd_dm_assistant.infrastructure.database.models import (
     Character,
@@ -147,6 +157,11 @@ class ContentIRRuntimeService:
             value = runtime.get(section)
             if isinstance(value, Mapping):
                 blocks[section] = [dict(value)]
+        entity_lifecycles = runtime.get("entity_lifecycles")
+        if isinstance(entity_lifecycles, list) and entity_lifecycles:
+            blocks["entity_lifecycles"] = [
+                dict(item) for item in entity_lifecycles if isinstance(item, Mapping)
+            ]
         proficiencies = runtime.get("proficiencies")
         if isinstance(proficiencies, list) and proficiencies:
             blocks["proficiencies"] = [dict(item) for item in proficiencies if isinstance(item, Mapping)]
@@ -188,6 +203,95 @@ class ContentIRRuntimeService:
             }
             feature_id = _text(data.get("runtime_id"))
             feature_name = _text(runtime.get("feature_name")) or feature_id
+            lifecycle_receipt: dict[str, Any] | None = None
+            lifecycle_record: dict[str, Any] | None = None
+            lifecycle_blocks = blocks.get("entity_lifecycles", [])
+            if lifecycle_blocks:
+                if len(lifecycle_blocks) != 1:
+                    raise ValueError("entity lifecycle runtime requires exactly one lifecycle block")
+                entity_id = _text(
+                    data.get("entity_id") or data.get("entity_lifecycle_entity_id")
+                )
+                event = _text(data.get("entity_lifecycle_event")).casefold()
+                operation_id = _text(data.get("operation_id"))
+                if not entity_id:
+                    raise ValueError("entity lifecycle entity_id is required")
+                if not event:
+                    raise ValueError("entity lifecycle event is required")
+                if not operation_id:
+                    raise ValueError("entity lifecycle operation_id is required")
+                block = lifecycle_blocks[0]
+                provenance = block.get("source_provenance")
+                if not isinstance(provenance, Mapping):
+                    raise ValueError("entity lifecycle source provenance is required")
+                source_id = _text(provenance.get("source_record_id"))
+                source_fingerprint = _text(provenance.get("source_fingerprint"))
+                if not source_id or not source_fingerprint:
+                    raise ValueError("entity lifecycle source provenance is required")
+                if source_id != _text(runtime.get("source_record_id")):
+                    raise ValueError("entity lifecycle source provenance does not match runtime")
+                runtime_fingerprint = _text(runtime.get("source_fingerprint"))
+                if runtime_fingerprint and source_fingerprint != runtime_fingerprint:
+                    raise ValueError("entity lifecycle source provenance does not match runtime")
+                spec = EntityLifecycleSpec(
+                    entity_type=_text(block.get("entity_type")),
+                    source_id=source_id,
+                    source_fingerprint=source_fingerprint,
+                    max_entries=block.get("max_entries"),
+                    expires_on_owner_death=bool(block.get("expires_on_owner_death", False)),
+                )
+                prior_state: Mapping[str, Any] | None = None
+                for existing_feature in before["features"]:
+                    if not isinstance(existing_feature, Mapping):
+                        continue
+                    if _text(existing_feature.get("feature_id")) != feature_id:
+                        continue
+                    existing_runtime = existing_feature.get("runtime")
+                    records = (
+                        existing_runtime.get("entity_lifecycles")
+                        if isinstance(existing_runtime, Mapping)
+                        else None
+                    )
+                    if isinstance(records, list):
+                        for record in records:
+                            if (
+                                isinstance(record, Mapping)
+                                and _text(record.get("entity_id")) == entity_id
+                                and isinstance(record.get("state"), Mapping)
+                            ):
+                                prior_state = record["state"]
+                                break
+                expected_lifecycle_version = data.get("entity_lifecycle_expected_version")
+                transition = transition_entity_lifecycle(
+                    spec,
+                    prior_state,
+                    event=event,
+                    operation_id=operation_id,
+                    expected_version=(
+                        None
+                        if expected_lifecycle_version is None
+                        else int(expected_lifecycle_version)
+                    ),
+                    metadata=(
+                        data.get("entity_lifecycle_metadata")
+                        if isinstance(data.get("entity_lifecycle_metadata"), Mapping)
+                        else None
+                    ),
+                )
+                lifecycle_record = {
+                    "entity_id": entity_id,
+                    "entity_type": spec.entity_type,
+                    "source_provenance": dict(provenance),
+                    "state": transition.state,
+                }
+                lifecycle_receipt = {
+                    "schema": "entity.lifecycle.v1",
+                    "entity_id": entity_id,
+                    "event": event,
+                    "operation_id": operation_id,
+                    "replayed": transition.replayed,
+                    "state": transition.state,
+                }
             proficiencies: list[dict[str, Any]] = []
             skills = dict(after["skills"])
             sheet_proficiencies = list(after["proficiencies"])
@@ -309,6 +413,34 @@ class ContentIRRuntimeService:
                 "source_record_id": _text(runtime.get("source_record_id")),
                 "runtime": {"registry": runtime, "source": "content_ir"},
             }
+            if lifecycle_record is not None:
+                feature_runtime = dict(feature_entry["runtime"])
+                prior_records: list[dict[str, Any]] = []
+                for existing_feature in before["features"]:
+                    if (
+                        isinstance(existing_feature, Mapping)
+                        and _text(existing_feature.get("feature_id")) == feature_id
+                    ):
+                        existing_runtime = existing_feature.get("runtime")
+                        records = (
+                            existing_runtime.get("entity_lifecycles")
+                            if isinstance(existing_runtime, Mapping)
+                            else None
+                        )
+                        if isinstance(records, list):
+                            prior_records = [
+                                dict(record)
+                                for record in records
+                                if isinstance(record, Mapping)
+                            ]
+                prior_records = [
+                    record
+                    for record in prior_records
+                    if _text(record.get("entity_id")) != _text(lifecycle_record["entity_id"])
+                ]
+                prior_records.append(lifecycle_record)
+                feature_runtime["entity_lifecycles"] = prior_records
+                feature_entry["runtime"] = feature_runtime
             features = [
                 item
                 for item in after["features"]
@@ -345,6 +477,15 @@ class ContentIRRuntimeService:
                     "typed_sections": sorted(blocks),
                 },
             }
+            if lifecycle_receipt is not None:
+                result["entity_lifecycle"] = lifecycle_receipt
+                result["production_contract"]["entity_lifecycle"] = {
+                    "schema": "entity.lifecycle.v1",
+                    "requires_provenance": True,
+                    "requires_expected_version": True,
+                    "requires_operation_id": True,
+                    "replayed": lifecycle_receipt["replayed"],
+                }
             result["preview_token"] = _fingerprint(
                 {"data": _stable_request_data(data), "result": result}
             )
@@ -411,6 +552,120 @@ class ContentIRRuntimeService:
         if runtime.get("execution_status") != "ready":
             raise ValueError("spell runtime is not ready")
         return spell, character, runtime, self._runtime_blocks(runtime)
+
+    @staticmethod
+    def _remote_origin_blocks(
+        blocks: Mapping[str, list[dict[str, Any]]],
+    ) -> list[dict[str, Any]]:
+        return [
+            block
+            for block in blocks.get("spell_origins", [])
+            if _text(block.get("resolution_kind")) == "remote_spell_origin"
+        ]
+
+    @staticmethod
+    def _authorized_remote_origin_ids(
+        actor: Combatant,
+        block: Mapping[str, Any],
+    ) -> tuple[str, ...]:
+        provenance = block.get("source_provenance")
+        if not isinstance(provenance, Mapping):
+            raise ValueError("remote spell origin source provenance is required")
+        runtime = (actor.snapshot_json or {}).get("feature_runtime")
+        lifecycle = runtime.get("entity_lifecycle") if isinstance(runtime, Mapping) else None
+        records = lifecycle if isinstance(lifecycle, list) else [lifecycle]
+        actor_keys = {actor.id}
+        owner_id = (actor.snapshot_json or {}).get("owner_character_id")
+        if isinstance(owner_id, str) and owner_id.strip():
+            actor_keys.add(owner_id.strip())
+        authorized: list[str] = []
+        for record in records:
+            if not isinstance(record, Mapping):
+                continue
+            if _text(record.get("source_id")) != _text(provenance.get("source_record_id")):
+                continue
+            if _text(record.get("source_fingerprint")) != _text(provenance.get("source_fingerprint")):
+                continue
+            if _text(record.get("status")) == "expired":
+                continue
+            metadata = record.get("metadata")
+            metadata = metadata if isinstance(metadata, Mapping) else {}
+            owners = {
+                _text(metadata.get(key))
+                for key in ("owner_id", "owner_character_id", "actor_id", "actor_combatant_id")
+                if _text(metadata.get(key))
+            }
+            if owners and not owners.intersection(actor_keys):
+                continue
+            raw_ids = record.get("authorized_origin_ids") or record.get("origin_ids")
+            if isinstance(raw_ids, list):
+                authorized.extend(_text(item) for item in raw_ids if _text(item))
+        return tuple(dict.fromkeys(authorized))
+
+    def _resolve_remote_spell_origin(
+        self,
+        session: Session,
+        combat: Combat,
+        actor: Combatant,
+        blocks: Mapping[str, list[dict[str, Any]]],
+        data: Mapping[str, Any],
+    ) -> RemoteSpellOriginResolution | None:
+        origins = self._remote_origin_blocks(blocks)
+        if not origins:
+            return None
+        if len(origins) != 1:
+            raise ValueError("spell runtime has multiple remote origin contracts")
+        block = origins[0]
+        contract_data = block.get("origin_contract")
+        provenance = block.get("source_provenance")
+        if not isinstance(contract_data, Mapping) or not isinstance(provenance, Mapping):
+            raise ValueError("remote spell origin contract is incomplete")
+        origin_id = _text(data.get("origin_id"))
+        if not origin_id:
+            raise ValueError("remote spell origin requires origin_id")
+        target_ids = [
+            _text(item)
+            for item in [data.get("target_combatant_id"), *(data.get("target_combatant_ids") or [])]
+            if _text(item)
+        ]
+        scene_id = combat.scene_id
+        if not scene_id:
+            raise ValueError("remote spell origin requires an authoritative combat scene")
+        spatial = SceneGridSpatialAuthority(session, scene_id, combat_id=combat.id)
+        contract = RemoteSpellOriginContract(
+            source_record_id=_text(provenance.get("source_record_id")),
+            source_fingerprint=_text(provenance.get("source_fingerprint")),
+            actor_id=actor.id,
+            origin_id=origin_id,
+            max_range_ft=(
+                int(contract_data["max_range_ft"])
+                if contract_data.get("max_range_ft") is not None
+                else None
+            ),
+            require_line_of_effect=bool(contract_data.get("require_line_of_effect", True)),
+            target_kind=_text(contract_data.get("target_kind")) or "one_creature",
+        )
+        return resolve_remote_spell_origin(
+            contract,
+            actor_id=actor.id,
+            authorized_origin_ids=self._authorized_remote_origin_ids(actor, block),
+            target_ids=target_ids,
+            spatial=spatial,
+        )
+
+    @staticmethod
+    def _remote_origin_receipt(
+        resolution: RemoteSpellOriginResolution | None,
+    ) -> dict[str, Any] | None:
+        if resolution is None:
+            return None
+        return {
+            "origin_id": resolution.origin_id,
+            "target_ids": list(resolution.target_ids),
+            "distances_ft": dict(resolution.distances_ft),
+            "line_of_effect": dict(resolution.line_of_effect),
+            "validated_by": "SceneGridSpatialAuthority",
+        }
 
     @staticmethod
     def _spell_context(
@@ -1325,6 +1580,9 @@ class ContentIRRuntimeService:
             if combat is None or combat.campaign_id != campaign_id:
                 raise StateNotFoundError("content runtime spell combat not found")
             spell_context = self._spell_context(actor, spell)
+            remote_origin = self._resolve_remote_spell_origin(
+                session, combat, actor, blocks, data
+            )
             execution_data = {
                 **data,
                 "runtime_level": runtime.get("level"),
@@ -1434,8 +1692,11 @@ class ContentIRRuntimeService:
                     "area_batch": len(commands or []) > 1,
                     "defense": defense_contract,
                     "summon": summon_preview,
+                    "remote_spell_origin": self._remote_origin_receipt(remote_origin),
                 },
             }
+            if remote_origin is not None:
+                result["remote_spell_origin"] = self._remote_origin_receipt(remote_origin)
             result["preview_token"] = _fingerprint(
                 {"data": _stable_request_data(data), "result": result}
             )
@@ -1581,6 +1842,28 @@ class ContentIRRuntimeService:
         if len(key) < 8:
             raise ValueError("content runtime idempotency_key is required")
         operation_key = f"content-ir:{key}"
+
+        def replay_or_none(existing: OperationTransaction | None) -> dict[str, Any] | None:
+            if existing is None:
+                return None
+            previous = dict(existing.after_snapshot or {})
+            previous_lifecycle = previous.get("entity_lifecycle")
+            if previous_lifecycle is not None:
+                for field in ("entity_id", "event", "operation_id"):
+                    if _text(previous_lifecycle.get(field)) != _text(
+                        data.get(
+                            {
+                                "entity_id": "entity_id",
+                                "event": "entity_lifecycle_event",
+                                "operation_id": "operation_id",
+                            }[field]
+                        )
+                    ):
+                        raise ValueError("entity lifecycle operation replay payload does not match")
+                if _text(previous.get("preview_token")) != _text(data.get("preview_token")):
+                    raise ValueError("entity lifecycle operation replay payload does not match")
+            return {**previous, "already_applied": True}
+
         with Session(self.engine) as session:
             existing = session.scalar(
                 select(OperationTransaction).where(
@@ -1588,8 +1871,9 @@ class ContentIRRuntimeService:
                     OperationTransaction.idempotency_key == operation_key,
                 )
             )
-            if existing is not None:
-                return {**dict(existing.after_snapshot or {}), "already_applied": True}
+            replay = replay_or_none(existing)
+            if replay is not None:
+                return replay
         preview = self._preview_advancement(campaign_id, data)
         token = _text(data.get("preview_token"))
         if token != _text(preview.get("preview_token")):
@@ -1604,8 +1888,9 @@ class ContentIRRuntimeService:
                     OperationTransaction.idempotency_key == operation_key,
                 )
             )
-            if existing is not None:
-                return {**dict(existing.after_snapshot or {}), "already_applied": True}
+            replay = replay_or_none(existing)
+            if replay is not None:
+                return replay
             operation = OperationTransaction(
                 campaign_id=campaign_id,
                 operation_type="content_ir_advancement",
@@ -1665,6 +1950,8 @@ class ContentIRRuntimeService:
                 "spell_grants": preview["spell_grants"],
                 "resource_grants": preview["resource_grants"],
             }
+            if "entity_lifecycle" in preview:
+                output["entity_lifecycle"] = preview["entity_lifecycle"]
             operation.after_snapshot = output
             session.flush()
             return output
@@ -1887,6 +2174,12 @@ class ContentIRRuntimeService:
             if actor is None or actor.combat_id != _text(data.get("combat_id")):
                 raise StateNotFoundError("content runtime spell actor not found")
             spell_context = self._spell_context(actor, _spell)
+            combat = session.get(Combat, _text(data.get("combat_id")))
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("content runtime spell combat not found")
+            remote_origin = self._resolve_remote_spell_origin(
+                session, combat, actor, blocks, data
+            )
         spell_key = f"{key}:spell"
         cast_data = {
             "character_id": data["character_id"],
@@ -2040,5 +2333,7 @@ class ContentIRRuntimeService:
             "upcast": {"slot_level": data.get("slot_level")},
             "concentration": bool(data.get("concentration")),
         }
+        if remote_origin is not None:
+            output["remote_spell_origin"] = self._remote_origin_receipt(remote_origin)
         self._record_operation(campaign_id, key, output)
         return output
