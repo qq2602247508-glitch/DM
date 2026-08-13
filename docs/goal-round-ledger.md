@@ -88,6 +88,39 @@ feature binding 与 spell-slot reactivation 仍保持 partial。
   scribe 未升 production。
 - 证据：`docs/scribe-manifest-mind-source-boundary-audit-2026-08-13.md`、
   `reports/scribe-manifest-mind-source-boundary-audit-2026-08-13.json`、
+
+## Round XXXVIII：Generic entity senses and spell-slot reactivation closure
+
+当前状态：通用 `entity.senses` 与 `spell.slot.reactivation` 均由
+`production_partial` 升为 `production_closed`，并注册独立 production consumers；
+`scribe-manifest-mind` 仍 `compile_only_blocked`，没有被自动升为 production。
+
+- capability delta：`production_closed +2`、`production_partial -2`；feature/content
+  production counts delta `0`，整包仍 Tasha `101 production / 2 compile-only`、
+  project `201 production / 35 compile-only / 111 unique compiled`。
+- `entity.senses` 注册 `entity.senses.v1`，证明 typed source provenance、
+  owner/entity binding、active lifecycle、hearing/vision/darkvision、range/LOS、
+  preview→confirm→replay、CAS、OperationTransaction，以及 inactive/expired/
+  terminated/no-scene/out-of-range/forged-owner fail-closed。
+- `spell.slot.reactivation` 注册 `spell.slot.reactivation.v1`，证明 source/entity
+  binding、active/inactive state、任意 1–9 环位恰一、slot shortage、长休免费恢复、
+  重复激活、rollback、stale CAS、replay、owner/resource 防伪和 terminated entity reject；
+  真实 `ContentIRRuntimeService`、`RestService`、资源扣减与 `OperationTransaction`
+  receipt 均通过。
+- telepathic sharing 明确不属于 `entity.senses` capability closure；scribe source
+  matrix 仍 `11 covered / 2 partial / 0 missing`，剩余 partial 为 telepathic
+  sharing 与 feature-specific 300-ft binding，不把通用能力 closure 误计为 feature closure。
+- focused closure/negative suite、全量 backend pytest、变更源 Ruff、compileall、
+  diff-check、audit 双跑和 whole-pack 双跑通过。audit stdout SHA-256：
+  `df55b481a27923002e7c16b465d8ca29110b373d6832dc93fc6839ee7c05c19a`；
+  whole-pack stdout SHA-256：
+  `071cd15163381c68d0888a4f849d2edc80bf79450955ff8c73498a2212d123a7`。
+- formal database/registry、source corpus、campaign/character、3D 与
+  `backend/tests/integrations/`、`backend/tests/ollama.py` 未修改、未暂存、未提交。
+- 证据：`docs/generic-capability-production-closure-2026-08-13.md`、
+  `reports/generic-capability-production-closure-2026-08-13.json`、
+  `backend/tests/test_content_ir_production_closure.py`、
+  `scripts/validate-generic-capability-production-closure.py`。
   `scripts/audit-scribe-manifest-mind-source-boundary.py`、
   `backend/tests/test_content_ir_entity_lifecycle_runtime.py`、
   `backend/tests/test_manifest_mind_resource_contract.py`。

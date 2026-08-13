@@ -14,8 +14,8 @@
   operation-id + request fingerprint replay；payload drift、stale CAS 和非相邻
   rollback fail closed。
 - 新增 `configure_spell_slot_reactivation` operator、`spell.slot.reactivation`
-  capability 与 `spell_slot_reactivations` materializer section；明确
-  `production_partial`，未接入正式 production runtime/registry。
+  capability 与 `spell_slot_reactivations` materializer section；通用 capability
+  已升级为 `production_closed`，并注册 `spell.slot.reactivation.v1` consumer。
 - authored IR 只增加该 source-complete boundary 的 typed clause；feature
   `source_completeness=incomplete` 保持不变，`scribe-manifest-mind` 不升 production。
 - 真实接入仍复用既有 Resource/Rest/OperationTransaction seam：状态嵌入
@@ -26,7 +26,7 @@
 ## 证据
 
 - `backend/tests/test_spell_slot_reactivation.py`：source provenance、materializer
-  partial、法术位不足/严格一枚、重复激活、长休恢复、rollback、CAS/replay。
+  closure、法术位不足/严格一枚、重复激活、长休恢复、rollback、CAS/replay。
 - `backend/tests/test_content_ir_spell_slot_reactivation_runtime.py`：真实 API
   preview/confirm/replay、任意环位支付、slot shortage、长休免费 availability、
   character CAS、provenance/entity binding 与 OperationTransaction receipt。
@@ -45,6 +45,7 @@
 
 ## 剩余风险
 
-实体感官/空间 runtime、移动与 300 尺过期仍未闭合；因此
-`scribe-manifest-mind` 继续保持 `compile_only`，`production_runtime_full_ids=[]`，
-整体仍按 `production_partial` 记录，未升级 production。
+实体感官/空间 runtime、移动与 300 尺过期、telepathic sharing 和 PB-per-day
+uses 仍未闭合；因此 `scribe-manifest-mind` 继续保持 `compile_only`，
+`production_runtime_full_ids=[]`。本轮只关闭通用 reactivation capability，
+没有升级该 feature production。

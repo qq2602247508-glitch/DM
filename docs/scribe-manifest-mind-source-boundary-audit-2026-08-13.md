@@ -19,18 +19,18 @@ Round XXXVI baseline/after remains Tasha `106 authored / 105 compile / 105 previ
 | clause | status | producer | consumer | persistence | CAS/replay | blocker |
 |---|---|---|---|---|---|---|
 | `activation-source-and-initial-placement` | `covered` | `feature_runtime_compiler` | `entity_lifecycle_service` | `entity.lifecycle.state` | `closed` |  |
-| `spectral-object-form` | `partial` | `feature_runtime_compiler` | `entity_sensory_profile_service` | `entity.lifecycle.sensory_profile` | `closed` | The typed form contract and receipt exist, but entity.senses remains production_partial. |
-| `entity-senses` | `partial` | `feature_runtime_compiler` | `entity_sensory_profile_service` | `entity.lifecycle.sensory_profile` | `closed` | The current entity.senses capability is production_partial. |
+| `spectral-object-form` | `covered` | `feature_runtime_compiler` | `entity_sensory_profile_service` | `entity.lifecycle.sensory_profile` | `closed` |  |
+| `entity-senses` | `covered` | `feature_runtime_compiler` | `entity_sensory_profile_service` | `entity.lifecycle.sensory_profile` | `closed` |  |
 | `telepathic-sharing` | `partial` | `feature_action` | `combat_feature_action_target_defense_inspection` | `combat_action.result_json` | `closed` | The focused sensory receipt exists, but source-level telepathic no-action channel semantics are not separately closed. |
 | `remote-spell-origin` | `covered` | `feature_runtime_compiler` | `remote_spell_origin_resolver` | `combat_action.spell_origin_resolution` | `closed` |  |
 | `proficiency-bonus-uses` | `covered` | `advancement_service` | `character_resource_store` | `character.resources` | `closed` |  |
-| `movement` | `partial` | `feature_runtime_compiler` | `entity_sensory_profile_service` | `entity.lifecycle.sensory_profile` | `closed` | Spatial seam is tested, but not yet independently bound to the authored activation contract. |
+| `movement` | `covered` | `feature_runtime_compiler` | `entity_sensory_profile_service` | `entity.lifecycle.sensory_profile` | `closed` |  |
 | `distance-expiry` | `partial` | `feature_runtime_compiler` | `entity_sensory_profile_service` | `entity.lifecycle.sensory_profile` | `closed` | Generic expiry exists, but authored feature binding remains partial. |
 | `dispel-magic-expiry` | `covered` | `feature_runtime_compiler` | `entity_lifecycle_service` | `entity.lifecycle.state` | `closed` |  |
 | `spellbook-destruction-expiry` | `covered` | `feature_runtime_compiler` | `entity_lifecycle_service` | `entity.lifecycle.state` | `closed` |  |
 | `owner-dismissal-expiry` | `covered` | `feature_runtime_compiler` | `entity_lifecycle_service` | `entity.lifecycle.state` | `closed` |  |
 | `owner-death-expiry` | `covered` | `feature_runtime_compiler` | `entity_lifecycle_service` | `entity.lifecycle.state` | `closed` |  |
-| `long-rest-reactivation` | `partial` | `feature_runtime_compiler` | `spell_slot_reactivation_service` | `entity.lifecycle.reactivation_state` | `closed` | The reactivation capability remains production_partial. |
+| `long-rest-reactivation` | `covered` | `feature_runtime_compiler` | `spell_slot_reactivation_service` | `entity.lifecycle.reactivation_state` | `closed` |  |
 
 ## Evidence and gate
 

@@ -54,15 +54,17 @@ def _activated() -> dict[str, object]:
     ).state
 
 
-def test_source_bound_ir_materializes_partial_reactivation_contract() -> None:
+def test_source_bound_ir_materializes_closed_reactivation_contract() -> None:
     spec = _spec()
     compiler = FeatureCompiler(status_authority="compiler")
     compiled = compiler.compile(spec)
     assert compiled.compile_status == "partial"
-    assert any(
-        "spell.slot.reactivation" in blocker
+    assert all(
+        not (
+            result.clause_id == "spell-slot-reactivation"
+            and result.blockers
+        )
         for result in compiled.clause_results
-        for blocker in result.blockers
     )
 
     clause = next(item for item in spec.clauses if item.clause_id == "spell-slot-reactivation")
@@ -77,7 +79,7 @@ def test_source_bound_ir_materializes_partial_reactivation_contract() -> None:
         index=0,
     )
     assert materialized.section == "spell_slot_reactivations"
-    assert materialized.entry["automation_status"] == "production_partial"
+    assert materialized.entry["automation_status"] == "full"
     assert materialized.entry["source_provenance"] == {
         "source_record_id": SOURCE_ID,
         "source_fingerprint": SOURCE_FP,

@@ -693,12 +693,11 @@ def default_capability_catalog() -> CapabilityCatalog:
             durations=frozenset({"permanent", "advancement_persistent", "ten_minutes"}),
             actions=frozenset({"none", "bonus_action", "action"}),
             inputs=frozenset(),
-            status="production_partial",
-            limitations=(
-                "Entity sensory profile has a real inspection consumer, but source "
-                "completeness and remote spell payment remain open."
+            status="production_closed",
+            evidence=(
+                "test_content_ir_entity_senses_runtime",
+                "test_content_ir_production_closure",
             ),
-            evidence=("test_entity_senses_runtime_consumer",),
         ),
         _descriptor(
             "spell.remote_origin",
@@ -724,13 +723,11 @@ def default_capability_catalog() -> CapabilityCatalog:
             durations=frozenset({"permanent", "advancement_persistent"}),
             actions=frozenset({"none", "bonus_action"}),
             resources=frozenset({"long_rest", "consume"}),
-            status="production_partial",
-            limitations=(
-                "Typed contract and materializer are closed; production payment/rest "
-                "consumer is intentionally compile-only until entity sensory/runtime "
-                "transaction evidence is complete."
+            status="production_closed",
+            evidence=(
+                "test_content_ir_spell_slot_reactivation_runtime",
+                "test_content_ir_production_closure",
             ),
-            evidence=("test_spell_slot_reactivation_contract",),
         ),
         _descriptor(
             "spell.context",

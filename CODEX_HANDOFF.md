@@ -3241,3 +3241,34 @@ git diff --check
 - `production_runtime_full_ids=[]`、`source_completeness=incomplete`；仍不允许 scribe
   升 production。保护路径 `backend/tests/integrations/`、`backend/tests/ollama.py`
   保持用户原有未跟踪状态，未暂存、未提交。
+## 2026-08-13 Round XXXVIII generic capability production closure
+
+- 通用 `entity.senses` 与 `spell.slot.reactivation` 已通过严格 production-closure
+  audit：capability status 从 `production_partial` 升为 `production_closed`，分别注册
+  `entity.senses.v1` 与 `spell.slot.reactivation.v1`；没有新增 feature-name dispatch。
+- `entity.senses` 证据覆盖 typed provenance、owner/entity binding、active/not
+  terminated lifecycle、hearing/vision/darkvision、range/LOS、请求方不可伪造授权、
+  preview/confirm/replay、CAS/OperationTransaction，以及 inactive/expired/terminated/
+  no-scene/out-of-range/forged-owner fail-closed。
+- reactivation 证据覆盖 source/entity binding、active/inactive、任意 1–9 环位恰一、
+  slot shortage、long-rest 免费恢复、重复激活、rollback、stale CAS、replay、owner/
+  resource 防伪和 terminated entity reject；真实 `ContentIRRuntimeService`、
+  `RestService`、资源事务与 `OperationTransaction` receipt 通过。
+- telepathic sharing 不属于 `entity.senses` 通用合同，未混入 capability closure。
+  动态 scribe source matrix 现为 `11 covered / 2 partial / 0 missing`；剩余 partial
+  仅 telepathic sharing 与 feature-specific 300-ft binding。因此
+  `scribe-manifest-mind` 仍 `compile_only_blocked`，`production_runtime_full_ids=[]`，
+  未自动升级 production。
+- Tasha/project counts 无变化：Tasha `101 production / 2 compile-only`，project
+  `201 production / 35 compile-only / 111 unique compiled`。whole-pack stdout 双跑
+  SHA-256 `071cd15163381c68d0888a4f849d2edc80bf79450955ff8c73498a2212d123a7`；
+  audit stdout 双跑 SHA-256 `df55b481a27923002e7c16b465d8ca29110b373d6832dc93fc6839ee7c05c19a`。
+- focused closure/negative suite、backend 全量 pytest、变更源 Ruff、compileall、
+  diff-check 均通过；全仓 Ruff 仅报告既有 migration E501，未修改 migration。
+- 保护路径 `backend/tests/integrations/`、`backend/tests/ollama.py` 保持用户原有
+  未跟踪状态，未暂存、未提交；formal database/registry、source corpus、
+  campaign/character、3D 未写入。
+- 证据入口：`docs/generic-capability-production-closure-2026-08-13.md`、
+  `reports/generic-capability-production-closure-2026-08-13.json`、
+  `scripts/validate-generic-capability-production-closure.py`、
+  `backend/tests/test_content_ir_production_closure.py`。

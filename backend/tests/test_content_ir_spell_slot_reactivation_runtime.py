@@ -275,3 +275,64 @@ def test_reactivation_fails_closed_for_slot_shortage_and_stale_cas(
     assert failed.status_code == 409
     unchanged = campaign_client.get(f"{base}/characters/{current['id']}").json()
     assert unchanged["resources"]["spell_slots_1"]["current"] == 0
+
+
+def test_reactivation_requires_owner_and_rejects_terminated_entity(
+    campaign_client: TestClient,
+) -> None:
+    base, character = _setup(campaign_client)
+    body = _body(
+        character,
+        event="activate",
+        operation_id="activate-forged-owner",
+        key="reactivation-forged-owner",
+        expected_version=None,
+    )
+    forged = campaign_client.post(
+        f"{base}/content-ir/runtime/preview",
+        json={**body, "entity_lifecycle_metadata": {"owner_character_id": "forged"}},
+    )
+    assert forged.status_code == 400
+    assert "owner" in forged.text
+
+    activated = _apply(
+        campaign_client,
+        base,
+        character,
+        event="activate",
+        operation_id="activate-real",
+        key="reactivation-real-owner",
+        expected_version=None,
+    )[2]
+    assert activated["spell_slot_reactivation"]["state"]["status"] == "active"
+    current = campaign_client.get(f"{base}/characters/{character['id']}").json()
+    for feature in current["features"]:
+        if feature["feature_id"] == FEATURE_ID:
+            feature["runtime"]["entity_lifecycles"] = [
+                {
+                    "entity_id": "manifest-mind-fixture",
+                    "source_provenance": {
+                        "source_record_id": SOURCE_ID,
+                        "source_fingerprint": SOURCE_FP,
+                    },
+                    "state": {"status": "terminated"},
+                }
+            ]
+    patched = campaign_client.patch(
+        f"{base}/characters/{character['id']}",
+        json={"features": current["features"], "version": current["version"]},
+    )
+    assert patched.status_code == 200, patched.text
+    latest = campaign_client.get(f"{base}/characters/{character['id']}").json()
+    rejected = campaign_client.post(
+        f"{base}/content-ir/runtime/preview",
+        json=_body(
+            latest,
+            event="deactivate",
+            operation_id="deactivate-terminated",
+            key="reactivation-terminated",
+            expected_version=1,
+        ),
+    )
+    assert rejected.status_code == 400
+    assert "terminated" in rejected.text

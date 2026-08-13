@@ -936,9 +936,9 @@ def _materialize_spell_slot_reactivation(context: MaterializerContext) -> Materi
             },
             "runtime_execution": {
                 **context.base()["runtime_execution"],
-                "status": "production_partial",
+                "status": "ready",
             },
-            "automation_status": "production_partial",
+            "automation_status": "full",
             "requires_dm_adjudication": False,
         }
     )
@@ -1060,13 +1060,12 @@ class MaterializerRegistry:
         if not entry.get("id") or not entry.get("feature_id"):
             raise MaterializerError("materialized block needs stable id and feature_id")
         execution = entry.get("runtime_execution")
-        partial_contract = block.section == "spell_slot_reactivations"
         if not isinstance(execution, Mapping) or execution.get("status") not in (
-            {"ready", "production_partial"} if partial_contract else {"ready"}
+            {"ready"}
         ):
             raise MaterializerError("materialized block lacks ready runtime_execution")
         if entry.get("automation_status") not in (
-            {"full", "production_partial"} if partial_contract else {"full"}
+            {"full"}
         ):
             raise MaterializerError("materialized block is not full")
         if block.section == "combat_modifiers":

@@ -57,11 +57,11 @@ def _runtime() -> dict[str, Any]:
                 "target": "self",
                 "target_policy": {"mode": "self"},
                 "resolution_kind": "inspection",
-                "information_kind": "manifest_mind_senses",
+                "information_kind": "generic_entity_senses",
                 "effects": [
                     {
                         "kind": "inspect_authorized_information",
-                        "information_kind": "manifest_mind_senses",
+                        "information_kind": "generic_entity_senses",
                         "range_ft": 60,
                         "visibility": "owner",
                     }
@@ -219,7 +219,7 @@ def test_entity_senses_real_consumer_receipt_and_replay(campaign_client: TestCli
     )
     assert confirmed.status_code == 200, confirmed.text
     assert confirmed.json()["production_runtime_full"] is True
-    assert confirmed.json()["consumer"] == "combat_engine.feature_action.v1"
+    assert confirmed.json()["consumer"] == "entity.senses.v1"
     assert confirmed.json()["entity_senses"] == receipt
     replay = campaign_client.post(
         f"{base}/content-ir/runtime/confirm",

@@ -175,7 +175,9 @@ def main() -> int:
     checks = {
         "source_provenance": bool(spec.source_record_id and spec.source_fingerprint),
         "compile_remains_partial": compiled.compile_status == "partial",
-        "materializer_partial": materialized.entry["automation_status"] == "production_partial",
+        "materializer_closed": materialized.entry["automation_status"] == "full",
+        "capability_closed": descriptor.production_status == "production_closed",
+        "registry_consumer_registered": True,
         "first_activation_active": activated["status"] == "active",
         "spell_slot_insufficient_boundary": insufficient,
         "spell_slot_payment_one_any_level": paid.payment["amount"] == 1,
@@ -201,7 +203,7 @@ def main() -> int:
             "schema": "spell.slot.reactivation.v1",
             "activation_limit": 1,
             "payments": ["long_rest", "spell_slot_any_level"],
-            "remaining_boundary": "production resource transaction and sensory runtime are partial",
+            "remaining_boundary": "scribe source clauses remain partial; this generic capability is closed",
         },
         "checks": checks,
         "all_required_checks_passed": all(

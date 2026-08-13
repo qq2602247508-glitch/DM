@@ -150,6 +150,47 @@ _CONSUMERS: dict[str, dict[str, Any]] = {
         "idempotency_scope": "campaign_content_ir_and_combat_action",
         "snapshot_effects": ("feature_state", "resources", "timed_modifiers", "audit"),
     },
+    "entity.senses.v1": {
+        "content_kind": "feature_or_advancement",
+        "runtime_schema_version": "feature-runtime-1",
+        "clause_types": ("entity_senses", "inspection"),
+        "required_fields": (
+            "entity_id",
+            "actor_combatant_id",
+            "actor_version",
+            "target_combatant_id",
+            "target_version",
+        ),
+        "required_services": (
+            "content_ir_runtime.entity_senses",
+            "combat_engine.geometry",
+        ),
+        "transaction_boundary": "entity_senses_preview_confirm_operation_transaction",
+        "cas_entities": ("character", "actor_combatant", "target_combatant"),
+        "idempotency_scope": "campaign_content_ir_and_entity_senses",
+        "snapshot_effects": ("senses_receipt", "distance_ft", "line_of_sight", "audit"),
+    },
+    "spell.slot.reactivation.v1": {
+        "content_kind": "advancement",
+        "runtime_schema_version": "feature-runtime-1",
+        "clause_types": ("spell_slot_reactivations",),
+        "required_fields": (
+            "character_id",
+            "character_version",
+            "entity_id",
+            "entity_lifecycle_event",
+            "operation_id",
+        ),
+        "required_services": (
+            "content_ir_runtime.spell_slot_reactivation",
+            "rest_service",
+            "operation_transaction",
+        ),
+        "transaction_boundary": "character_resource_lifecycle_and_operation_transaction",
+        "cas_entities": ("character", "entity_lifecycle", "spell_slot_resource"),
+        "idempotency_scope": "campaign_content_ir_and_reactivation",
+        "snapshot_effects": ("entity_state", "spell_slots", "resource_receipt", "audit"),
+    },
     "combat_engine.roll_intervention.v1": {
         "content_kind": "feature",
         "runtime_schema_version": "feature-runtime-1",
@@ -439,6 +480,10 @@ def resolve_production_consumers(
                     consumer_id="communication.mutual_comprehension.v1",
                 ),
             )
+        if blocks.get("entity_senses"):
+            return (
+                dict(_CONSUMERS["entity.senses.v1"], consumer_id="entity.senses.v1"),
+            )
         if blocks.get("attack_rider") or blocks.get("feature_action"):
             key = (
                 "combat_engine.damage_heal.v1"
@@ -515,7 +560,28 @@ def resolve_production_consumers(
             raise ValueError("unknown advancement runtime sections: " + ",".join(sorted(unknown)))
         if not any(blocks.get(section) for section in allowed):
             raise ValueError("advancement runtime has no registered executable consumer")
-        consumer = "advancement_service.character_growth.v1"
-        return (dict(_CONSUMERS[consumer], consumer_id=consumer),)
+        resolved: list[str] = []
+        if blocks.get("entity_senses"):
+            resolved.append("entity.senses.v1")
+        if blocks.get("spell_slot_reactivations"):
+            resolved.append("spell.slot.reactivation.v1")
+        if any(
+            blocks.get(section)
+            for section in (
+                "advancement",
+                "proficiencies",
+                "prepared_spell_list",
+                "resources",
+                "entity_lifecycles",
+                "spell_list_expansions",
+            )
+        ):
+            resolved.append("advancement_service.character_growth.v1")
+        if not resolved:
+            raise ValueError("advancement runtime has no registered executable consumer")
+        return tuple(
+            dict(_CONSUMERS[item], consumer_id=item)
+            for item in sorted(set(resolved))
+        )
 
     raise ValueError("content_kind must be spell, feature, item, or advancement")

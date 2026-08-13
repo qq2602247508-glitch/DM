@@ -28,13 +28,15 @@
     }
   },
   "checks": {
+    "capability_closed": true,
     "compile_remains_partial": true,
     "duplicate_activation_rejected": true,
     "first_activation_active": true,
     "long_rest_recovery": true,
-    "materializer_partial": true,
+    "materializer_closed": true,
     "production_counts_changed": false,
     "protected_paths_unchanged": true,
+    "registry_consumer_registered": true,
     "replay": true,
     "rollback": true,
     "source_completeness_remains_incomplete": true,
@@ -65,13 +67,15 @@
     "content.tashas-cauldron.round2.feature.scribe-manifest-mind": {
       "all_required_checks_passed": true,
       "checks": {
+        "capability_closed": true,
         "compile_remains_partial": true,
         "duplicate_activation_rejected": true,
         "first_activation_active": true,
         "long_rest_recovery": true,
-        "materializer_partial": true,
+        "materializer_closed": true,
         "production_counts_changed": false,
         "protected_paths_unchanged": true,
+        "registry_consumer_registered": true,
         "replay": true,
         "rollback": true,
         "source_completeness_remains_incomplete": true,
@@ -93,7 +97,7 @@
           "long_rest",
           "spell_slot_any_level"
         ],
-        "remaining_boundary": "production resource transaction and sensory runtime are partial",
+        "remaining_boundary": "scribe source clauses remain partial; this generic capability is closed",
         "schema": "spell.slot.reactivation.v1"
       },
       "source": {

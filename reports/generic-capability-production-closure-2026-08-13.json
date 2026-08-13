@@ -1,0 +1,62 @@
+{
+  "all_required_checks_passed": true,
+  "capabilities": {
+    "entity.senses": {
+      "after": "production_closed",
+      "before": "production_partial",
+      "consumer": "entity.senses.v1",
+      "gates": {
+        "active_lifecycle": true,
+        "forged_owner": true,
+        "hearing_vision_darkvision": true,
+        "inactive": true,
+        "out_of_range": true,
+        "owner_entity_binding": true,
+        "preview_confirm_replay_cas_transaction": true,
+        "range_and_los": true,
+        "terminated": true,
+        "typed_source_provenance": true
+      }
+    },
+    "spell.slot.reactivation": {
+      "after": "production_closed",
+      "before": "production_partial",
+      "consumer": "spell.slot.reactivation.v1",
+      "gates": {
+        "active_inactive_state": true,
+        "any_slot_1_to_9_exactly_one": true,
+        "duplicate_activation": true,
+        "entity_binding": true,
+        "long_rest_free_recovery": true,
+        "requester_cannot_forge_resource": true,
+        "rollback_stale_cas_replay": true,
+        "slot_shortage": true,
+        "source_provenance": true,
+        "terminated_entity_rejected": true
+      }
+    }
+  },
+  "checks": {
+    "entity_senses_materializer_present": true,
+    "entity_senses_negative_boundaries": true,
+    "entity_senses_provenance_binding": true,
+    "entity_senses_registry_consumer": true,
+    "entity_senses_status_closed": true,
+    "reactivation_any_level_exactly_one": true,
+    "reactivation_materializer_present": true,
+    "reactivation_negative_boundaries": true,
+    "reactivation_registry_consumer": true,
+    "reactivation_status_closed": true,
+    "telepathic_sharing_not_in_scope": true
+  },
+  "date": "2026-08-13",
+  "matrix_delta": {
+    "capabilities_closed": 2,
+    "feature_counts_changed": false,
+    "production_closed": 2,
+    "production_partial": -2,
+    "production_runtime_full_ids": []
+  },
+  "schema_version": "generic-capability-production-closure-1",
+  "telepathic_sharing_in_scope": false
+}

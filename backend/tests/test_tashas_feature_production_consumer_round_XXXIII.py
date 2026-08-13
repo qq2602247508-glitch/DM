@@ -167,15 +167,13 @@ def test_entity_senses_materializer_is_strict_and_provenance_bound() -> None:
     )
     compiler = FeatureCompiler(status_authority="compiler")
     compiled = compiler.compile(spec)
-    assert compiled.compile_status == "partial"
+    assert compiled.compile_status == "full"
     mind_sight_result = next(
         result
         for result in compiled.clause_results
         if result.clause_id == "mind-sight"
     )
-    assert mind_sight_result.blockers == (
-        "capability entity.senses is production_partial",
-    )
+    assert mind_sight_result.blockers == ()
 
     assert spec.source_fingerprint == SOURCE_FINGERPRINT
 
@@ -192,7 +190,7 @@ def test_manifest_mind_materializes_generic_spatial_boundary_without_promotion()
         path=str(FEATURE),
     )
     compiled = FeatureCompiler(status_authority="compiler").compile(spec)
-    assert compiled.compile_status == "partial"
+    assert compiled.compile_status == "full"
     clause = spec.clauses[0]
     descriptor = default_capability_catalog().get("entity.senses")
     assert descriptor is not None

@@ -480,7 +480,7 @@ class ContentIRRuntimeService:
                     else {}
                 )
                 owner_character_id = _text(metadata.get("owner_character_id"))
-                if owner_character_id and owner_character_id != character.id:
+                if owner_character_id != character.id:
                     raise ValueError(
                         "spell slot reactivation entity owner does not match character"
                     )
@@ -497,12 +497,27 @@ class ContentIRRuntimeService:
                     or "spell_slots_",
                 )
                 prior_state: Mapping[str, Any] | None = None
+                lifecycle_state: Mapping[str, Any] | None = None
                 for existing_feature in before["features"]:
                     if not isinstance(existing_feature, Mapping):
                         continue
                     if _text(existing_feature.get("feature_id")) != feature_id:
                         continue
                     existing_runtime = existing_feature.get("runtime")
+                    lifecycle_records = (
+                        existing_runtime.get("entity_lifecycles")
+                        if isinstance(existing_runtime, Mapping)
+                        else None
+                    )
+                    if isinstance(lifecycle_records, list):
+                        for record in lifecycle_records:
+                            if (
+                                isinstance(record, Mapping)
+                                and _text(record.get("entity_id")) == entity_id
+                                and isinstance(record.get("state"), Mapping)
+                            ):
+                                lifecycle_state = record["state"]
+                                break
                     records = (
                         existing_runtime.get("spell_slot_reactivations")
                         if isinstance(existing_runtime, Mapping)
@@ -520,6 +535,20 @@ class ContentIRRuntimeService:
                 initial_state = block.get("initial_state")
                 if prior_state is None and isinstance(initial_state, Mapping):
                     prior_state = dict(initial_state)
+                if lifecycle_state is not None and _text(lifecycle_state.get("status")) in {
+                    "expired",
+                    "terminated",
+                }:
+                    raise ValueError(
+                        "spell slot reactivation rejects an expired or terminated entity"
+                    )
+                if prior_state is not None and _text(prior_state.get("status")) in {
+                    "expired",
+                    "terminated",
+                }:
+                    raise ValueError(
+                        "spell slot reactivation rejects an expired or terminated entity"
+                    )
                 payment = data.get("reactivation_payment")
                 transition = transition_spell_slot_reactivation(
                     spec,
@@ -1382,8 +1411,6 @@ class ContentIRRuntimeService:
         action: Mapping[str, Any],
         data: Mapping[str, Any],
     ) -> dict[str, Any] | None:
-        if _text(action.get("information_kind")) != "manifest_mind_senses":
-            return None
         character_id = _text(actor.entity_id)
         character = session.get(Character, character_id)
         if character is None or character.campaign_id != _text(data.get("_campaign_id")):
@@ -1391,6 +1418,8 @@ class ContentIRRuntimeService:
         senses_records, lifecycle_records = self._entity_senses_records(
             character, _text(data.get("runtime_id"))
         )
+        if not senses_records:
+            return None
         entity_id = _text(data.get("entity_id"))
         if not entity_id:
             raise ValueError("entity senses requires entity_id")
@@ -2247,7 +2276,7 @@ class ContentIRRuntimeService:
             if (
                 action.get("target") == "self"
                 and target.id != actor.id
-                and _text(action.get("information_kind")) != "manifest_mind_senses"
+                and _text(action.get("resolution_kind")) != "inspection"
             ):
                 raise ValueError("feature runtime target policy requires self")
             feature_kind = _text(action.get("kind"))
@@ -2291,11 +2320,15 @@ class ContentIRRuntimeService:
                 feature_blocks = {"communication": [action]}
                 combat_preview = None
             elif _text(action.get("resolution_kind")) == "inspection":
-                feature_blocks = {"passive_registry": [action.get("passive_block") or action]}
-                combat_preview = None
                 entity_senses_preview = self._preview_entity_senses(
                     session, actor, target, action, data
                 )
+                feature_blocks = (
+                    {"entity_senses": [action]}
+                    if entity_senses_preview is not None
+                    else {"passive_registry": [action.get("passive_block") or action]}
+                )
+                combat_preview = None
             elif _text(action.get("resolution_kind")) in {
                 "reaction_window",
                 "triggered_attack_window",
@@ -2505,7 +2538,11 @@ class ContentIRRuntimeService:
                 "runtime_id": data.get("runtime_id"),
                 "production_runtime_full": True,
                 "preview_token": token,
-                "consumer": "advancement_service.character_growth.v1",
+                "consumer": str(
+                    (preview.get("production_contract", {}).get("consumers") or [
+                        "advancement_service.character_growth.v1"
+                    ])[0]
+                ),
                 "operation_transaction_id": operation.id,
                 "character_id": data.get("character_id"),
                 "character_version_after": expected_version + 1,

@@ -59,7 +59,7 @@
     },
     {
       "authored_ir": "spectral-object-form",
-      "blocker": "The typed form contract and receipt exist, but entity.senses remains production_partial.",
+      "blocker": "",
       "cas_replay": "closed",
       "clause_id": "spectral-object-form",
       "consumer": "entity_sensory_profile_service",
@@ -70,19 +70,19 @@
         "authored_ir": true,
         "cas_replay": true,
         "focused_receipt": true,
-        "materializer": false,
-        "operator_capability": false,
-        "runtime_registry": false,
+        "materializer": true,
+        "operator_capability": true,
+        "runtime_registry": true,
         "source_provenance": true
       },
       "persistence": "entity.lifecycle.sensory_profile",
       "producer": "feature_runtime_compiler",
       "source_rule": "The manifestation is intangible, does not occupy its space, emits dim light in a 10-ft radius, and has a chosen appearance.",
-      "status": "partial"
+      "status": "covered"
     },
     {
       "authored_ir": "mind-sight",
-      "blocker": "The current entity.senses capability is production_partial.",
+      "blocker": "",
       "cas_replay": "closed",
       "clause_id": "entity-senses",
       "consumer": "entity_sensory_profile_service",
@@ -93,15 +93,15 @@
         "authored_ir": true,
         "cas_replay": true,
         "focused_receipt": true,
-        "materializer": false,
-        "operator_capability": false,
-        "runtime_registry": false,
+        "materializer": true,
+        "operator_capability": true,
+        "runtime_registry": true,
         "source_provenance": true
       },
       "persistence": "entity.lifecycle.sensory_profile",
       "producer": "feature_runtime_compiler",
       "source_rule": "While manifested it can hear and see and has 60-ft darkvision.",
-      "status": "partial"
+      "status": "covered"
     },
     {
       "authored_ir": "shared-information",
@@ -174,7 +174,7 @@
     },
     {
       "authored_ir": "mind-sight",
-      "blocker": "Spatial seam is tested, but not yet independently bound to the authored activation contract.",
+      "blocker": "",
       "cas_replay": "closed",
       "clause_id": "movement",
       "consumer": "entity_sensory_profile_service",
@@ -185,15 +185,15 @@
         "authored_ir": true,
         "cas_replay": true,
         "focused_receipt": true,
-        "materializer": false,
-        "operator_capability": false,
-        "runtime_registry": false,
+        "materializer": true,
+        "operator_capability": true,
+        "runtime_registry": true,
         "source_provenance": true
       },
       "persistence": "entity.lifecycle.sensory_profile",
       "producer": "feature_runtime_compiler",
       "source_rule": "Bonus action movement up to 30 ft to a visible unoccupied space; through creatures but not objects.",
-      "status": "partial"
+      "status": "covered"
     },
     {
       "authored_ir": "mind-sight",
@@ -208,9 +208,9 @@
         "authored_ir": true,
         "cas_replay": true,
         "focused_receipt": false,
-        "materializer": false,
-        "operator_capability": false,
-        "runtime_registry": false,
+        "materializer": true,
+        "operator_capability": true,
+        "runtime_registry": true,
         "source_provenance": true
       },
       "persistence": "entity.lifecycle.sensory_profile",
@@ -312,7 +312,7 @@
     },
     {
       "authored_ir": "spell-slot-reactivation",
-      "blocker": "The reactivation capability remains production_partial.",
+      "blocker": "",
       "cas_replay": "closed",
       "clause_id": "long-rest-reactivation",
       "consumer": "spell_slot_reactivation_service",
@@ -323,15 +323,15 @@
         "authored_ir": true,
         "cas_replay": true,
         "focused_receipt": true,
-        "materializer": false,
-        "operator_capability": false,
-        "runtime_registry": false,
+        "materializer": true,
+        "operator_capability": true,
+        "runtime_registry": true,
         "source_provenance": true
       },
       "persistence": "entity.lifecycle.reactivation_state",
       "producer": "feature_runtime_compiler",
       "source_rule": "After manifesting, another manifestation requires a long rest or one spell slot.",
-      "status": "partial"
+      "status": "covered"
     }
   ],
   "compiler": {
@@ -342,9 +342,9 @@
     "typed_clause_count": 8
   },
   "counts": {
-    "covered": 7,
+    "covered": 11,
     "missing": 0,
-    "partial": 6,
+    "partial": 2,
     "total": 13
   },
   "feature_id": "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
