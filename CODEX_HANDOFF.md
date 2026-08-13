@@ -1,3 +1,38 @@
+## 2026-08-13 Round XLII Genie Bottled Respite production closeout
+
+- Decision：`content.tashas-cauldron.round2.feature.genie-bottled-respite` is
+  accepted as `registered_production_full` / game usable, with status
+  `accepted/local-uncommitted`. No commit or push is claimed.
+- Tasha counts：`106 authored / 105 compile / 105 preview / 102 production /
+  2 DM-assisted / 104 game usable / 1 compile-only / 303 manual` →
+  `106/105/105/103/2/105/0/303`; project `202/35/111` → `203/35/111`.
+- Typed runtime closure：`vessel.space.v1` and `vessel.external_sound.v1`; real
+  vessel lifecycle, external hearing producer binding, CAS/transactions/replay,
+  and fail-closed negative gates passed. `name_branch_count=0`.
+- Formal boundary：the working tree includes
+  `backend/migrations/versions/20260813_0003_formal_vessel_persistence.py` and
+  `backend/src/dnd_dm_assistant/domain/vessel_external_sound.py`, but
+  `formal_database_written=false` and `formal_registry_written=false`; no formal
+  DB/registry receipt is asserted.
+- Verification: backend `1053 passed, 1 warning`; expanded Tasha `89 passed`,
+  including the dedicated Round XLII regression `2 passed` with degradation
+  proof fail-closed; focused vessel `22 passed`; validator/audit/whole-pack
+  double-run hashes are stable; Ruff, compileall and diff-check passed.
+- Deterministic hashes：validator
+  `2fc288c752bb689bb310b3e6c6fc99b47b66d51b8f705a98d1222e3ca9ff5766`；
+  whole-pack `ba01efbd8c89a92fb59de6da854064c5e2b1366fd493efe61e716a78b954caf5`；
+  runtime `430572cbea12360a75e98935626a6d82635a767504ee4957341844b674f8314d`；
+  report `1ac0d3e2ebd52bf44df33d075e0194105d228d28e88bb69a21849adc6ecdcfe5`；
+  audit `256b91d2fb2f315e7c4153aca05025691de7f58b2a7a9b4268f4be63540512ce`.
+- Versioning repair：added narrow `.gitignore` exceptions for exactly
+  `reports/tashas-feature-production-consumer-round-XLII-2026-08-13.json` and
+  `data/content-ir/compiled/production-runtime-results-XLII.json`.
+- Reproducibility：an isolated `git archive HEAD` plus explicit intended-change
+  manifest was tested; it included all required XLII source/evidence artifacts and
+  excluded `backend/tests/integrations/` and `backend/tests/ollama.py`.
+- Evidence entrance：Round XLII doc, validator, audit, report and runtime result
+  under the canonical paths above.
+
 ## 2026-08-13 Round XXXVII corrected Manifest Mind termination producer evidence
 
 - 主控审查发现 Round XXXVII 原 matrix 把三条没有真实 producer API/event 的 focused

@@ -1,7 +1,121 @@
 {
-  "current_round": "round-33",
+  "current_round": "round-XLII",
   "goal": "Local AI D&D DM Assistant complete official-content rules platform",
   "rounds": [
+    {
+      "round_id": "round-XLII",
+      "status": "accepted/local-uncommitted",
+      "started_at": "2026-08-13",
+      "accepted_at": "2026-08-13",
+      "objective": "Promote Genie Bottled Respite through the typed vessel-space and external-sound production consumers, preserving the formal persistence boundary.",
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 202,
+            "unique_compiled": 111
+          },
+          "tashas": {
+            "authored_typed_ir": 106,
+            "compile_full": 105,
+            "runtime_preview_full": 105,
+            "production_full": 102,
+            "dm_assisted": 2,
+            "game_usable": 104,
+            "compile_only": 1,
+            "manual_authoring": 303
+          }
+        },
+        "artifact": {
+          "path": "reports/tashas-production-reconciliation-round-XXV-2026-08-12.json",
+          "sha256": "1ca123067fedbcf6e8592afc8272f1e6f935280d475658c45613e4545094f8c7"
+        }
+      },
+      "selected_content_ids": [
+        "content.tashas-cauldron.round2.feature.genie-bottled-respite"
+      ],
+      "selected_clusters": [
+        "vessel.space",
+        "vessel.external_sound",
+        "formal_vessel_persistence"
+      ],
+      "after": {
+        "tashas": {
+          "authored_typed_ir": 106,
+          "compile_full": 105,
+          "runtime_preview_full": 105,
+          "production_full": 103,
+          "dm_assisted": 2,
+          "game_usable": 105,
+          "compile_only": 0,
+          "manual_authoring": 303
+        },
+        "project": {
+          "production_full": 203,
+          "compile_only": 35,
+          "unique_compiled": 111
+        },
+        "evidence": {
+          "production_runtime_full_delta": 1,
+          "compile_only_delta": -1
+        }
+      },
+      "delta": {
+        "tasha_production_full": 1,
+        "tasha_game_usable": 1,
+        "tasha_compile_only": -1,
+        "project_production_full": 1,
+        "project_compile_only": 0,
+        "project_unique_compiled": 0
+      },
+      "files_changed": [
+        ".gitignore",
+        "backend/migrations/versions/20260813_0003_formal_vessel_persistence.py",
+        "backend/src/dnd_dm_assistant/domain/vessel_external_sound.py",
+        "backend/tests/test_content_ir_vessel_runtime.py",
+        "scripts/audit-tashas-genie-vessel.py",
+        "scripts/validate-tashas-feature-production-consumer-round-XLII.py",
+        "backend/tests/test_tashas_feature_production_consumer_round_XLII.py",
+        "reports/tashas-feature-production-consumer-round-XLII-2026-08-13.json",
+        "data/content-ir/compiled/production-runtime-results-XLII.json",
+        "docs/tashas-feature-production-consumer-round-XLII-2026-08-13.md",
+        "docs/round-XLII-intended-change-manifest-2026-08-13.txt",
+        "docs/goal-round-ledger.md",
+        "CODEX_HANDOFF.md"
+      ],
+      "checks": [
+        "backend full pytest: 1053 passed, 1 warning",
+        "expanded Tasha gate: 89 passed",
+        "dedicated Round XLII regression: 2 passed; degradation proof fail-closed",
+        "focused vessel gate: 22 passed",
+        "validator/audit/whole-pack double-run hashes byte-identical",
+        "Ruff, compileall, and git diff --check passed",
+        "formal_database_written=false",
+        "formal_registry_written=false",
+        "protected paths unchanged",
+        "isolated git archive reproduction passed"
+      ],
+      "tests": [
+        "backend full pytest: 1053 passed, 1 warning",
+        "expanded Tasha gate: 89 passed",
+        "dedicated Round XLII regression: 2 passed; degradation proof fail-closed",
+        "focused vessel gate: 22 passed",
+        "validator stdout SHA-256: 2fc288c752bb689bb310b3e6c6fc99b47b66d51b8f705a98d1222e3ca9ff5766",
+        "whole-pack stdout SHA-256: ba01efbd8c89a92fb59de6da854064c5e2b1366fd493efe61e716a78b954caf5",
+        "runtime result SHA-256: 430572cbea12360a75e98935626a6d82635a767504ee4957341844b674f8314d",
+        "round report SHA-256: 1ac0d3e2ebd52bf44df33d075e0194105d228d28e88bb69a21849adc6ecdcfe5",
+        "vessel audit SHA-256: 256b91d2fb2f315e7c4153aca05025691de7f58b2a7a9b4268f4be63540512ce"
+      ],
+      "reports": [
+        "reports/tashas-feature-production-consumer-round-XLII-2026-08-13.json",
+        "data/content-ir/compiled/production-runtime-results-XLII.json",
+        "docs/tashas-feature-production-consumer-round-XLII-2026-08-13.md"
+      ],
+      "formal_registry_written": false,
+      "formal_database_written": false,
+      "protected_paths_untouched": true,
+      "next_round_reason": "Continue only after the local Round XLII evidence is intentionally committed; do not claim a push receipt from this closeout."
+    },
     {
       "round_id": "round-33",
       "status": "completed_with_compile_only_boundary",

@@ -1,0 +1,43 @@
+Round XLII intended-change manifest
+Date: 2026-08-13
+Status: accepted/local-uncommitted
+
+Required promotion artifacts:
+- backend/migrations/versions/20260813_0003_formal_vessel_persistence.py
+- backend/src/dnd_dm_assistant/domain/vessel_external_sound.py
+- backend/tests/test_content_ir_vessel_runtime.py
+- scripts/audit-tashas-genie-vessel.py
+- scripts/validate-tashas-feature-production-consumer-round-XLII.py
+- backend/tests/test_tashas_feature_production_consumer_round_XLII.py
+- data/content-ir/compiled/production-runtime-results-XLII.json
+- reports/tashas-feature-production-consumer-round-XLII-2026-08-13.json
+- reports/tashas-genie-vessel-source-boundary-2026-08-13.json
+- docs/tashas-feature-production-consumer-round-XLII-2026-08-13.md
+- docs/goal-round-ledger.md
+- CODEX_HANDOFF.md
+- .gitignore
+
+Required local reproducibility input (not versioned by this round):
+- data/generated-content/dnd5e_chm/json/ (8,127 JSON files, about 80 MB;
+  existing ignored source corpus required by build_migration)
+
+Required supporting source/runtime changes are the current tracked worktree
+changes consumed by build_migration and the Round XLII focused tests. The
+isolated reproduction overlays all current modified and non-protected
+untracked paths from the worktree onto git archive HEAD, so no supporting
+source change is silently omitted.
+
+Protected exclusions:
+- backend/tests/integrations/
+- backend/tests/ollama.py
+
+Also excluded from this closeout manifest:
+- backend/data/ (local database/vector runtime artifacts)
+- unrelated ignored caches, generated outputs, and private exports
+
+Versioning rule:
+- Only the exact Round XLII runtime result and Round XLII report receive
+  .gitignore negations. Other data/ and reports/ paths remain ignored unless
+  already tracked.
+
+No commit, staging, or push receipt is part of this manifest.

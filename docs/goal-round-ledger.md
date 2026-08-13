@@ -6,6 +6,42 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round XLII：Genie Bottled Respite vessel production consumer
+
+当前状态：`accepted/local-uncommitted`；`genie-bottled-respite` 已从
+compile-only promotion 为 registered production full。此状态表示本地证据已验收，
+但尚未提交或推送。
+
+- 本轮完成 `vessel.space.v1` 与 `vessel.external_sound.v1` 的真实 typed
+  producer/consumer 闭环：create、进入、正常离开、长休重置、摧毁迁移、持有者死亡
+  迁移、外部听觉 producer receipt、CAS/transaction/replay 与 tamper fail-closed。
+- Tasha baseline→after：`106/105/105/102/2/104/1/303` →
+  `106/105/105/103/2/105/0/303`；按 authored/compile/preview/production/
+  DM-assisted/game usable/compile-only/manual 记录，delta `0/0/0/+1/0/+1/-1/0`。
+- Project baseline→after：`202/35/111` → `203/35/111`；delta `+1/0/0`。
+- 正式边界：新增 formal vessel persistence migration source，但
+  `formal_database_written=false`、`formal_registry_written=false`；没有正式
+  campaign/character、source corpus、3D 或推送 receipt。
+- Gate receipts：backend full `1053 passed, 1 warning`；expanded Tasha `89 passed`；
+  focused vessel `22 passed`；validator、audit、whole-pack projection 均双跑
+  byte-identical；Ruff、compileall、`git diff --check` 通过。
+- Deterministic hashes：validator
+  `2fc288c752bb689bb310b3e6c6fc99b47b66d51b8f705a98d1222e3ca9ff5766`；
+  whole-pack `ba01efbd8c89a92fb59de6da854064c5e2b1366fd493efe61e716a78b954caf5`；
+  runtime result `430572cbea12360a75e98935626a6d82635a767504ee4957341844b674f8314d`；
+  report `1ac0d3e2ebd52bf44df33d075e0194105d228d28e88bb69a21849adc6ecdcfe5`；
+  vessel audit `256b91d2fb2f315e7c4153aca05025691de7f58b2a7a9b4268f4be63540512ce`。
+- Fresh-checkout proof used an isolated `git archive HEAD` plus an explicit changed-file
+  manifest, including both formerly ignored XLII evidence files and excluding the
+  protected untracked paths. The isolated representation passed the canonical validator
+  and migration projection checks.
+- Evidence：`docs/tashas-feature-production-consumer-round-XLII-2026-08-13.md`、
+  `scripts/validate-tashas-feature-production-consumer-round-XLII.py`、
+  `backend/tests/test_tashas_feature_production_consumer_round_XLII.py`、
+  `scripts/audit-tashas-genie-vessel.py`、
+  `reports/tashas-feature-production-consumer-round-XLII-2026-08-13.json`、
+  `data/content-ir/compiled/production-runtime-results-XLII.json`。
+
 ## Round XL：Manifest Mind production promotion audit
 
 当前状态：`accepted`；`scribe-manifest-mind` 已从 compile-only promotion 为
