@@ -53,6 +53,7 @@ def _contract() -> tuple[FeatureSpec, dict[str, object]]:
                 if clause["clause_id"] in {
                     "spectral-object-lifecycle",
                     "remote-spell-origin",
+                    "mind-sight",
                     "shared-information",
                 }
             ],
@@ -118,9 +119,18 @@ def test_manifest_mind_preserves_existing_typed_seams_but_does_not_promote() -> 
         "require_line_of_effect": True,
     }
     assert modifiers == []
-    assert len(actions) == 1
-    assert actions[0]["information_kind"] == "manifest_mind_senses"
-    assert actions[0]["resolution_kind"] == "inspection"
+    assert len(actions) == 2
+    telepathic = next(
+        item for item in actions if item["resolution_kind"] == "telepathic_information"
+    )
+    spatial = next(item for item in actions if item["resolution_kind"] == "entity_spatial")
+    assert telepathic["information_kind"] == "authorized_entity_senses"
+    assert telepathic["action_cost"] == "none"
+    assert telepathic["visibility"] == "owner"
+    assert telepathic["language_required"] is False
+    assert telepathic["response_required"] is False
+    assert spatial["resolution_kind"] == "entity_spatial"
+    assert spatial["action_cost"] == "bonus_action"
 
 
 def test_manifest_mind_resolves_existing_generic_consumers_without_name_dispatch() -> None:
@@ -129,19 +139,24 @@ def test_manifest_mind_resolves_existing_generic_consumers_without_name_dispatch
         item
         for item in runtime["actions"].values()
         if item["feature_id"] == FEATURE_ID
+        and item["resolution_kind"] == "telepathic_information"
     )
     consumers = resolve_production_consumers(
         content_kind="feature",
         runtime_schema_version="feature-runtime-1",
-        blocks={"feature_action": [action]},
+        blocks={"telepathic_information": [action]},
     )
     assert [item["consumer_id"] for item in consumers] == [
-        "combat_engine.feature_action.v1"
+        "telepathic.information.v1"
     ]
     assert spec.source_completeness == "incomplete"
     assert all(
         item["runtime_execution"]["status"] == "ready"
-        for item in [*runtime["entity_lifecycles"], *runtime["spell_origins"], action]
+        for item in [
+            *runtime["entity_lifecycles"],
+            *runtime["spell_origins"],
+            *runtime["actions"].values(),
+        ]
     )
 
 
@@ -192,29 +207,30 @@ def test_manifest_mind_materializes_generic_spatial_boundary_without_promotion()
     compiled = FeatureCompiler(status_authority="compiler").compile(spec)
     assert compiled.compile_status == "full"
     clause = spec.clauses[0]
-    descriptor = default_capability_catalog().get("entity.senses")
+    descriptor = default_capability_catalog().get("entity.spatial")
     assert descriptor is not None
+    spatial_effect = next(
+        effect
+        for effect in clause.effects
+        if effect.operator == "configure_entity_spatial"
+    )
     materialized = default_materializer_registry().materialize(
         spec=spec,
         clause=clause,
-        operator="configure_entity_senses",
-        parameters=clause.effects[0].parameters,
+        operator="configure_entity_spatial",
+        parameters=spatial_effect.parameters,
         descriptor=descriptor,
         index=0,
     )
-    assert materialized.section == "entity_senses"
+    assert materialized.section == "entity_spatial"
     assert materialized.entry["spatial_contract"] == {
         "schema": "entity.spatial.v1",
-        "entity_binding": "entity_lifecycle",
         "max_move_ft": 30,
         "expiry_distance_ft": 300,
         "cell_size_ft": 5,
-        "movement_requirements": {
-            "owner_visibility": True,
-            "unoccupied_destination": True,
-            "cannot_cross_objects": True,
-        },
-        "expiry_event": "distance_from_owner_exceeded",
+        "requires_owner_visibility": True,
+        "requires_unoccupied_destination": True,
+        "cannot_cross_objects": True,
     }
 
 

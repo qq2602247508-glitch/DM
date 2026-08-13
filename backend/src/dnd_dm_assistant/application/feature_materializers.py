@@ -623,6 +623,62 @@ def _materialize_entity_senses(context: MaterializerContext) -> MaterializedBloc
     return MaterializedBlock("entity_senses", entry)
 
 
+def _materialize_telepathic_information(context: MaterializerContext) -> MaterializedBlock:
+    params = context.parameters
+    if params.get("visibility") != "owner":
+        raise MaterializerError("telepathic information must be owner-only")
+    if params.get("language_required") is not False or params.get("response_required") is not False:
+        raise MaterializerError("telepathic information must not require language or response")
+    entry = context.base(kind="telepathic_information")
+    entry.update(
+        {
+            "resolution_kind": "telepathic_information",
+            "entity_binding": str(params["entity_binding"]),
+            "information_kind": str(params["information_kind"]),
+            "range_ft": int(params.get("range_ft", 300)),
+            "visibility": "owner",
+            "action_cost": "none",
+            "language_required": False,
+            "response_required": False,
+            "source_provenance": {
+                "source_record_id": context.spec.source_record_id,
+                "source_fingerprint": str(context.spec.source_fingerprint or ""),
+            },
+        }
+    )
+    return MaterializedBlock("telepathic_information", entry)
+
+
+def _materialize_entity_spatial(context: MaterializerContext) -> MaterializedBlock:
+    params = context.parameters
+    if int(params["max_move_ft"]) != 30 or int(params["expiry_distance_ft"]) != 300:
+        raise MaterializerError("entity spatial contract must use 30/300 foot boundaries")
+    entry = context.base(kind="entity_spatial")
+    entry.update(
+        {
+            "resolution_kind": "entity_spatial",
+            "entity_binding": str(params["entity_binding"]),
+            "action_cost": context.clause.action_economy,
+            "spatial_contract": {
+                "schema": "entity.spatial.v1",
+                "max_move_ft": 30,
+                "expiry_distance_ft": 300,
+                "cell_size_ft": int(params.get("cell_size_ft", 5)),
+                "requires_owner_visibility": bool(params.get("requires_owner_visibility", True)),
+                "requires_unoccupied_destination": bool(
+                    params.get("requires_unoccupied_destination", True)
+                ),
+                "cannot_cross_objects": bool(params.get("cannot_cross_objects", True)),
+            },
+            "source_provenance": {
+                "source_record_id": context.spec.source_record_id,
+                "source_fingerprint": str(context.spec.source_fingerprint or ""),
+            },
+        }
+    )
+    return MaterializedBlock("entity_spatial", entry)
+
+
 def _materialize_action(context: MaterializerContext) -> MaterializedBlock:
     if context.operator == "teleport":
         params = context.parameters
@@ -1102,6 +1158,31 @@ class MaterializerRegistry:
                 raise MaterializerError("entity senses block lacks typed senses")
             if not isinstance(entry.get("source_provenance"), Mapping):
                 raise MaterializerError("entity senses block lacks source provenance")
+        elif block.section == "telepathic_information":
+            if entry.get("resolution_kind") != "telepathic_information":
+                raise MaterializerError("telepathic information block has invalid resolution kind")
+            if entry.get("action_cost") != "none" or entry.get("visibility") != "owner":
+                raise MaterializerError("telepathic information block is not owner-only/no-action")
+            if (
+                entry.get("language_required") is not False
+                or entry.get("response_required") is not False
+            ):
+                raise MaterializerError(
+                    "telepathic information block has an interaction requirement"
+                )
+            if not isinstance(entry.get("source_provenance"), Mapping):
+                raise MaterializerError("telepathic information block lacks source provenance")
+        elif block.section == "entity_spatial":
+            contract = entry.get("spatial_contract")
+            if (
+                entry.get("resolution_kind") != "entity_spatial"
+                or not isinstance(contract, Mapping)
+            ):
+                raise MaterializerError("entity spatial block lacks typed contract")
+            if contract.get("schema") != "entity.spatial.v1":
+                raise MaterializerError("entity spatial block has invalid schema")
+            if contract.get("max_move_ft") != 30 or contract.get("expiry_distance_ft") != 300:
+                raise MaterializerError("entity spatial block has invalid boundaries")
         elif block.section == "spell_origins":
             if entry.get("resolution_kind") != "remote_spell_origin":
                 raise MaterializerError("remote spell origin block has invalid resolution kind")
@@ -1153,6 +1234,8 @@ def default_materializer_registry() -> MaterializerRegistry:
         "communication.channel": _materialize_communication,
         "entity.lifecycle": _materialize_entity_lifecycle,
         "entity.senses": _materialize_entity_senses,
+        "telepathic.information": _materialize_telepathic_information,
+        "entity.spatial": _materialize_entity_spatial,
         "spell.remote_origin": _materialize_remote_spell_origin,
         "spell.slot.reactivation": _materialize_spell_slot_reactivation,
         "zero_hp.intervention": _materialize_zero_hp,

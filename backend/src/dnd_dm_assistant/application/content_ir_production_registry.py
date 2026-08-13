@@ -170,6 +170,48 @@ _CONSUMERS: dict[str, dict[str, Any]] = {
         "idempotency_scope": "campaign_content_ir_and_entity_senses",
         "snapshot_effects": ("senses_receipt", "distance_ft", "line_of_sight", "audit"),
     },
+    "telepathic.information.v1": {
+        "content_kind": "feature",
+        "runtime_schema_version": "feature-runtime-1",
+        "clause_types": ("telepathic_information",),
+        "required_fields": (
+            "entity_id",
+            "actor_combatant_id",
+            "actor_version",
+            "target_combatant_id",
+            "target_version",
+        ),
+        "required_services": (
+            "content_ir_runtime.telepathic_information",
+            "content_ir_runtime.entity_senses",
+            "combat_engine.geometry",
+        ),
+        "transaction_boundary": "telepathic_information_preview_confirm_operation_transaction",
+        "cas_entities": ("character", "actor_combatant", "target_combatant"),
+        "idempotency_scope": "campaign_content_ir_and_telepathic_information",
+        "snapshot_effects": ("telepathic_receipt", "channels", "action_economy", "audit"),
+    },
+    "entity.spatial.v1": {
+        "content_kind": "feature",
+        "runtime_schema_version": "feature-runtime-1",
+        "clause_types": ("entity_spatial",),
+        "required_fields": (
+            "entity_id",
+            "actor_combatant_id",
+            "actor_version",
+            "destination_row",
+            "destination_col",
+        ),
+        "required_services": (
+            "content_ir_runtime.entity_spatial",
+            "combat_engine.action_economy",
+            "combat_engine.geometry",
+        ),
+        "transaction_boundary": "entity_spatial_preview_confirm_operation_transaction",
+        "cas_entities": ("actor_combatant", "entity_spatial"),
+        "idempotency_scope": "campaign_content_ir_and_entity_spatial",
+        "snapshot_effects": ("entity_spatial_receipt", "position", "action_economy", "audit"),
+    },
     "spell.slot.reactivation.v1": {
         "content_kind": "advancement",
         "runtime_schema_version": "feature-runtime-1",
@@ -479,6 +521,17 @@ def resolve_production_consumers(
                     _CONSUMERS["communication.mutual_comprehension.v1"],
                     consumer_id="communication.mutual_comprehension.v1",
                 ),
+            )
+        if blocks.get("telepathic_information"):
+            return (
+                dict(
+                    _CONSUMERS["telepathic.information.v1"],
+                    consumer_id="telepathic.information.v1",
+                ),
+            )
+        if blocks.get("entity_spatial"):
+            return (
+                dict(_CONSUMERS["entity.spatial.v1"], consumer_id="entity.spatial.v1"),
             )
         if blocks.get("entity_senses"):
             return (

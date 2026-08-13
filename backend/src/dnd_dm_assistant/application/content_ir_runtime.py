@@ -46,6 +46,9 @@ from dnd_dm_assistant.domain.spell_slot_reactivation import (
     SpellSlotReactivationSpec,
     transition_spell_slot_reactivation,
 )
+from dnd_dm_assistant.domain.telepathic_information import (
+    share_authorized_sensory_information,
+)
 from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngineService
 from dnd_dm_assistant.infrastructure.database.models import (
     Character,
@@ -1466,7 +1469,8 @@ class ContentIRRuntimeService:
                         effect.get("range_ft")
                         for effect in action.get("effects", [])
                         if isinstance(effect, Mapping)
-                        and effect.get("kind") == "inspect_authorized_information"
+                        and effect.get("kind")
+                        in {"inspect_authorized_information", "share_authorized_sensory_information"}
                     ),
                     60,
                 )
@@ -2276,7 +2280,8 @@ class ContentIRRuntimeService:
             if (
                 action.get("target") == "self"
                 and target.id != actor.id
-                and _text(action.get("resolution_kind")) != "inspection"
+                and _text(action.get("resolution_kind"))
+                not in {"inspection", "telepathic_information"}
             ):
                 raise ValueError("feature runtime target policy requires self")
             feature_kind = _text(action.get("kind"))
@@ -2329,6 +2334,58 @@ class ContentIRRuntimeService:
                     else {"passive_registry": [action.get("passive_block") or action]}
                 )
                 combat_preview = None
+            elif _text(action.get("resolution_kind")) == "telepathic_information":
+                entity_senses_preview = self._preview_entity_senses(
+                    session, actor, target, action, data
+                )
+                if entity_senses_preview is None:
+                    raise ValueError("telepathic information requires an authorized entity senses feed")
+                channel = {
+                    **dict(action),
+                    "action_economy": "none",
+                    "visibility": "owner",
+                    "language_required": False,
+                    "response_required": False,
+                }
+                lifecycle = {
+                    "entity_id": entity_senses_preview["entity_id"],
+                    "state": {
+                        "status": entity_senses_preview["lifecycle_status"],
+                        "metadata": {"owner_character_id": actor.entity_id},
+                    },
+                    "source_provenance": entity_senses_preview["source_provenance"],
+                }
+                combat = session.get(Combat, _text(data.get("combat_id")))
+                if combat is None or not combat.scene_id:
+                    raise ValueError("telepathic information requires an authoritative combat scene")
+                spatial = SceneGridSpatialAuthority(
+                    session,
+                    combat.scene_id,
+                    combat_id=combat.id,
+                )
+                telepathic = share_authorized_sensory_information(
+                    channel,
+                    {
+                        "entity_binding": "entity_lifecycle",
+                        "senses": {
+                            "hearing": "hearing" in entity_senses_preview["channels"],
+                            "darkvision_ft": 60 if "vision" in entity_senses_preview["channels"] else 0,
+                        },
+                        "source_provenance": entity_senses_preview["source_provenance"],
+                    },
+                    lifecycle,
+                    owner_id=str(actor.entity_id),
+                    target_id=target.id,
+                    spatial=spatial,
+                )
+                feature_blocks = {"telepathic_information": [action]}
+                combat_preview = None
+                entity_senses_preview = telepathic.as_dict()
+            elif _text(action.get("resolution_kind")) == "entity_spatial":
+                raise ValueError(
+                    "entity.spatial requires its dedicated movement consumer; "
+                    "generic feature actions are not allowed"
+                )
             elif _text(action.get("resolution_kind")) in {
                 "reaction_window",
                 "triggered_attack_window",
@@ -2413,6 +2470,8 @@ class ContentIRRuntimeService:
                     "consumer": "entity_sensory_profile_service",
                     "authoritative": True,
                 }
+            if _text(action.get("resolution_kind")) == "telepathic_information":
+                result["telepathic_information"] = entity_senses_preview
             result["preview_token"] = _fingerprint(
                 {"data": _stable_request_data(data), "result": result}
             )
@@ -2684,6 +2743,21 @@ class ContentIRRuntimeService:
                 return self._confirm_communication(
                     campaign_id, data, runtime_action, key, token
                 )
+            if runtime_action.get("resolution_kind") == "telepathic_information":
+                output = {
+                    "schema_version": PRODUCTION_SCHEMA,
+                    "content_kind": "feature",
+                    "runtime_id": _text(data.get("runtime_id")),
+                    "production_runtime_full": True,
+                    "preview_token": token,
+                    "consumer": "telepathic.information.v1",
+                    "telepathic_information": preview.get("telepathic_information"),
+                    "actor_combatant_id": _text(data.get("actor_combatant_id")),
+                    "target_combatant_id": _text(data.get("target_combatant_id")),
+                    "action_economy": "none",
+                }
+                self._record_operation(campaign_id, key, output)
+                return output
             if runtime_action.get("kind") == "attack_rider":
                 target_id = _text(data.get("target_combatant_id"))
                 with Session(self.engine) as session:

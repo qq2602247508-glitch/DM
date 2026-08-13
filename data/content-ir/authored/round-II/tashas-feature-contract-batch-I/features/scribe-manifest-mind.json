@@ -216,15 +216,19 @@
                 "stack of writing",
                 "historical scholar"
               ]
-            },
-            "spatial": {
-              "max_move_ft": 30,
-              "expiry_distance_ft": 300,
-              "cell_size_ft": 5,
-              "requires_owner_visibility": true,
-              "requires_unoccupied_destination": true,
-              "cannot_cross_objects": true
             }
+          }
+        },
+        {
+          "operator": "configure_entity_spatial",
+          "parameters": {
+            "entity_binding": "entity_lifecycle",
+            "max_move_ft": 30,
+            "expiry_distance_ft": 300,
+            "cell_size_ft": 5,
+            "requires_owner_visibility": true,
+            "requires_unoccupied_destination": true,
+            "cannot_cross_objects": true
           }
         }
       ],
@@ -303,11 +307,14 @@
       "duration": "ten_minutes",
       "effects": [
         {
-          "operator": "expose_authorized_target_information",
+          "operator": "share_authorized_sensory_information",
           "parameters": {
-            "information_kind": "manifest_mind_senses",
-            "range_ft": 60,
-            "visibility": "owner"
+            "entity_binding": "entity_lifecycle",
+            "information_kind": "authorized_entity_senses",
+            "range_ft": 300,
+            "visibility": "owner",
+            "language_required": false,
+            "response_required": false
           }
         }
       ],

@@ -526,6 +526,8 @@ _RUNTIME_SECTION_BY_OPERATOR = {
     "teleport": "actions",
     "grant_sight_mode": "combat_modifiers",
     "configure_entity_senses": "entity_senses",
+    "share_authorized_sensory_information": "telepathic_information",
+    "configure_entity_spatial": "entity_spatial",
     "configure_spell_slot_reactivation": "spell_slot_reactivations",
     "heal": "actions",
     "grant_temporary_hp": "triggers",
@@ -588,6 +590,8 @@ def materialize_runtime_definition(
         "prepared_spell_list": None,
         "entity_lifecycles": [],
         "entity_senses": [],
+        "telepathic_information": [],
+        "entity_spatial": [],
         "spell_origins": [],
         "spell_slot_reactivations": [],
     }
@@ -789,6 +793,10 @@ def materialize_runtime_definition(
             definition["entity_lifecycles"].append(entry)
         elif section == "entity_senses":
             definition["entity_senses"].append(entry)
+        elif section == "telepathic_information":
+            definition["telepathic_information"].append(entry)
+        elif section == "entity_spatial":
+            definition["entity_spatial"].append(entry)
         elif section == "spell_origins":
             definition["spell_origins"].append(entry)
         elif section == "spell_slot_reactivations":
@@ -982,6 +990,38 @@ def materialize_runtime_definition(
                 },
             }
             definition["actions"][spec.feature_id] = action
+
+    for entry in definition["telepathic_information"]:
+        action = dict(entry)
+        action.update(
+            {
+                "kind": "feature_action",
+                "feature_id": spec.feature_id,
+                "name": spec.source_name,
+                "target": "self",
+                "target_policy": {"mode": "self"},
+                "availability": "any_time_readonly",
+                "resolution_kind": "telepathic_information",
+                "effects": [{"kind": "share_authorized_sensory_information"}],
+            }
+        )
+        definition["actions"][f"{spec.feature_id}:telepathic_information"] = action
+
+    for entry in definition["entity_spatial"]:
+        action = dict(entry)
+        action.update(
+            {
+                "kind": "feature_action",
+                "feature_id": spec.feature_id,
+                "name": spec.source_name,
+                "target": "self",
+                "target_policy": {"mode": "self"},
+                "resolution_kind": "entity_spatial",
+                "effects": [{"kind": "move_entity_spatial"}],
+            }
+        )
+        definition["actions"][f"{spec.feature_id}:entity_spatial"] = action
+
     definition.setdefault("automation_status", "full")
     definition.setdefault("requires_dm_adjudication", False)
     return definition
