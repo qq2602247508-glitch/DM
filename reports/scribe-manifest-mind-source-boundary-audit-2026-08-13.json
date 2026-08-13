@@ -12,7 +12,7 @@
       "spell-slot-reactivation"
     ],
     "path": "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/scribe-manifest-mind.json",
-    "sha256": "f1f546ec0d2febb94a517a2855873e5a76283f927581566efa5918e734871088",
+    "sha256": "bf25b30c758451497600edae6c7c1739deaab97ce00f45556a29055022ec48b9",
     "source_completeness": "incomplete",
     "unmodeled_source_terms": [
       "entity sensory profile consumer",
@@ -105,26 +105,26 @@
     },
     {
       "authored_ir": "shared-information",
-      "blocker": "The focused sensory receipt exists, but source-level telepathic no-action channel semantics are not separately closed.",
+      "blocker": "",
       "cas_replay": "closed",
       "clause_id": "telepathic-sharing",
-      "consumer": "combat_feature_action_target_defense_inspection",
+      "consumer": "content_ir_runtime.telepathic_information",
       "evidence": [
-        "real sensory receipt CAS/replay"
+        "telepathic preview/confirm/replay receipt"
       ],
       "evidence_checks": {
         "authored_ir": true,
         "cas_replay": true,
-        "focused_receipt": false,
+        "focused_receipt": true,
         "materializer": true,
         "operator_capability": true,
         "runtime_registry": true,
         "source_provenance": true
       },
       "persistence": "combat_action.result_json",
-      "producer": "feature_action",
+      "producer": "feature_runtime_compiler",
       "source_rule": "It shares what it sees and hears with the owner telepathically without an action.",
-      "status": "partial"
+      "status": "covered"
     },
     {
       "authored_ir": "remote-spell-origin",
@@ -174,35 +174,12 @@
     },
     {
       "authored_ir": "mind-sight",
-      "blocker": "",
+      "blocker": "Spatial movement requires an authored feature-bound bonus-action receipt, not only a generic spatial seam.",
       "cas_replay": "closed",
       "clause_id": "movement",
-      "consumer": "entity_sensory_profile_service",
+      "consumer": "content_ir_runtime.entity_spatial",
       "evidence": [
-        "spatial CAS/replay receipt"
-      ],
-      "evidence_checks": {
-        "authored_ir": true,
-        "cas_replay": true,
-        "focused_receipt": true,
-        "materializer": true,
-        "operator_capability": true,
-        "runtime_registry": true,
-        "source_provenance": true
-      },
-      "persistence": "entity.lifecycle.sensory_profile",
-      "producer": "feature_runtime_compiler",
-      "source_rule": "Bonus action movement up to 30 ft to a visible unoccupied space; through creatures but not objects.",
-      "status": "covered"
-    },
-    {
-      "authored_ir": "mind-sight",
-      "blocker": "Generic expiry exists, but authored feature binding remains partial.",
-      "cas_replay": "closed",
-      "clause_id": "distance-expiry",
-      "consumer": "entity_sensory_profile_service",
-      "evidence": [
-        "spatial expiry CAS/replay receipt"
+        "entity.spatial preview/confirm/replay receipt"
       ],
       "evidence_checks": {
         "authored_ir": true,
@@ -213,7 +190,30 @@
         "runtime_registry": true,
         "source_provenance": true
       },
-      "persistence": "entity.lifecycle.sensory_profile",
+      "persistence": "combatant.snapshot_json.feature_runtime.entity_spatial",
+      "producer": "feature_runtime_compiler",
+      "source_rule": "Bonus action movement up to 30 ft to a visible unoccupied space; through creatures but not objects.",
+      "status": "partial"
+    },
+    {
+      "authored_ir": "mind-sight",
+      "blocker": "Distance expiry requires the authored entity.spatial binding and a real runtime receipt.",
+      "cas_replay": "closed",
+      "clause_id": "distance-expiry",
+      "consumer": "content_ir_runtime.entity_spatial",
+      "evidence": [
+        "entity.spatial expiry CAS/replay receipt"
+      ],
+      "evidence_checks": {
+        "authored_ir": true,
+        "cas_replay": true,
+        "focused_receipt": false,
+        "materializer": true,
+        "operator_capability": true,
+        "runtime_registry": true,
+        "source_provenance": true
+      },
+      "persistence": "combatant.snapshot_json.feature_runtime.entity_spatial",
       "producer": "feature_runtime_compiler",
       "source_rule": "Manifestation stops when distance from the owner exceeds 300 ft.",
       "status": "partial"
