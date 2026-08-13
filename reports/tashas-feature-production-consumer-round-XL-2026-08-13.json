@@ -1,0 +1,152 @@
+{
+  "checks": {
+    "all_clause_compile_full": true,
+    "authored_clause_count_13": true,
+    "compile_full": true,
+    "focused_receipt_markers": true,
+    "formal_database_written": false,
+    "formal_registry_written": false,
+    "materializer_full": true,
+    "name_branch_count": true,
+    "protected_paths_unchanged": true,
+    "registry_consumers_complete": true,
+    "source_complete": true,
+    "source_matrix_13_of_13": true,
+    "unmodeled_terms_empty": true
+  },
+  "evidence_by_id": {
+    "content.tashas-cauldron.round2.feature.scribe-manifest-mind": {
+      "audit_report": "reports/scribe-manifest-mind-source-boundary-audit-2026-08-13.json",
+      "clause_ids": [
+        "activation-source-and-initial-placement",
+        "spectral-object-form",
+        "entity-senses",
+        "telepathic-sharing",
+        "remote-spell-origin",
+        "proficiency-bonus-uses",
+        "movement",
+        "distance-expiry",
+        "dispel-magic-expiry",
+        "spellbook-destruction-expiry",
+        "owner-death-expiry",
+        "owner-dismissal-expiry",
+        "long-rest-reactivation"
+      ],
+      "consumer_ids": [
+        "advancement_service.character_growth.v1",
+        "entity.senses.v1",
+        "entity.spatial.v1",
+        "spell.remote_origin.v1",
+        "spell.slot.reactivation.v1",
+        "telepathic.information.v1"
+      ],
+      "content_id": "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
+      "feature_ir": "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/scribe-manifest-mind.json",
+      "protected_fingerprints": {
+        "backend/tests/integrations/": [
+          {
+            "path": "backend/tests/integrations/__init__.py",
+            "sha256": "6ce04916a68d2104f8bce9b463cdcfa2e2587d7c539066b53900e21f44c2c107"
+          },
+          {
+            "path": "backend/tests/integrations/__pycache__/__init__.cpython-312.pyc",
+            "sha256": "ad7447a8930adc1be4b1c13b724fd24be491899c2f718a552c716d9f2c69b02c"
+          },
+          {
+            "path": "backend/tests/integrations/__pycache__/ollama.cpython-312.pyc",
+            "sha256": "97b0036c435bfa0d406c1e2ebf107bb8b128fb693ebfb04260933aa6209ecea7"
+          },
+          {
+            "path": "backend/tests/integrations/__pycache__/qdrant_store.cpython-312.pyc",
+            "sha256": "6bc14222a74f728c3069c7e94a0dcde5f88138306318c162bc8b43e8a8aba433"
+          },
+          {
+            "path": "backend/tests/integrations/__pycache__/runtime.cpython-312.pyc",
+            "sha256": "804a278d962979486c80c271dc3cf8c5407d9352baf61be76d91eede6b7867f4"
+          },
+          {
+            "path": "backend/tests/integrations/content/__init__.py",
+            "sha256": "01af14c2dcdc051f7a8f9ef6d549614f7fa6a9d564042063a5562898163de799"
+          },
+          {
+            "path": "backend/tests/integrations/content/__pycache__/__init__.cpython-312.pyc",
+            "sha256": "05ad7fbb6c225f78e2e41d980d66a396f1bf060f830e2607dd707b71db686d84"
+          },
+          {
+            "path": "backend/tests/integrations/content/__pycache__/classification.cpython-312.pyc",
+            "sha256": "625f6a3615f44079f2818f76bfcb6d2ceb6a0b22b1a7279902111e58dcdd4ba6"
+          },
+          {
+            "path": "backend/tests/integrations/content/__pycache__/fetcher.cpython-312.pyc",
+            "sha256": "55dcf13f7e4cfd762775a8bb66cdb441064c6c7929ad71a912c25e85033eb26d"
+          },
+          {
+            "path": "backend/tests/integrations/content/__pycache__/navigation.cpython-312.pyc",
+            "sha256": "2a9a0e97e7a8399d89cc9d75fea6fabae70190c0b9633f4254f5bba8617f536b"
+          },
+          {
+            "path": "backend/tests/integrations/content/__pycache__/parser.cpython-312.pyc",
+            "sha256": "384bc064102187c3c9bceda2f92af804e71e367aa4fc470e7297461470e18ca4"
+          },
+          {
+            "path": "backend/tests/integrations/content/__pycache__/repository.cpython-312.pyc",
+            "sha256": "c256d2fce1ea6a4fca43f68b381c9dd50f7e5c27eeef660e23433cc3a4a0d2d7"
+          },
+          {
+            "path": "backend/tests/integrations/content/__pycache__/url_policy.cpython-312.pyc",
+            "sha256": "ee61a4f32ef76aa65a7b12f0a3993e442edfbc10f2f4f28950224271f84f6b2e"
+          },
+          {
+            "path": "backend/tests/integrations/content/classification.py",
+            "sha256": "5c7413be2e4545ebeebdabf57d36c5ebebd092a8c62cda244686e5ae318ac165"
+          },
+          {
+            "path": "backend/tests/integrations/content/fetcher.py",
+            "sha256": "23e46c451b6ccb28d3522f6217d47a2c11c8c8e9107fa4749ebe527fd695285c"
+          },
+          {
+            "path": "backend/tests/integrations/content/navigation.py",
+            "sha256": "8531449d1d6629914152f01629879c876f735f060a0076f88bdea25bc49d6109"
+          },
+          {
+            "path": "backend/tests/integrations/content/parser.py",
+            "sha256": "aed06d5a1eaff01047f799407f77e2d1b38861b9ddb1da914daf7b1e5fbc88d7"
+          },
+          {
+            "path": "backend/tests/integrations/content/repository.py",
+            "sha256": "bd2fbfbd50c0d20d25408c8e6ca13854e7a686ce0821c0998bca4e841c499c8b"
+          },
+          {
+            "path": "backend/tests/integrations/content/url_policy.py",
+            "sha256": "7237c187158aac82078cb11266b755b3329f66c87c584a10bba29e9c8ab1c48e"
+          },
+          {
+            "path": "backend/tests/integrations/ollama.py",
+            "sha256": "945069ad06b2f6248bc5e5874c4563caa59f301e681087bc4b07ac7bf78c2857"
+          },
+          {
+            "path": "backend/tests/integrations/qdrant_store.py",
+            "sha256": "89fe68687c968dfa0677ab69b3e56314531aff80a295a7ca4c8093cb83950955"
+          },
+          {
+            "path": "backend/tests/integrations/runtime.py",
+            "sha256": "82d92d313c0399faa28230bb81ade3ce2912d46eaa7c671d2c27b8f44734c41e"
+          }
+        ],
+        "backend/tests/ollama.py": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+      },
+      "source_fingerprint": "dbbdb5b3ca9d86ece43c2f919d8483683f99068a478bccc401906057fccb920a",
+      "source_record_id": "ff7049c6a4d0aad0dae4adf5"
+    }
+  },
+  "formal_database_written": false,
+  "formal_registry_written": false,
+  "production_runtime_full_ids": [
+    "content.tashas-cauldron.round2.feature.scribe-manifest-mind"
+  ],
+  "round_id": "round-XL",
+  "schema_version": "tashas-feature-production-consumer-round-XL-1",
+  "selected_feature_ids": [
+    "content.tashas-cauldron.round2.feature.scribe-manifest-mind"
+  ]
+}
