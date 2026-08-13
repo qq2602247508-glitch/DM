@@ -34,6 +34,7 @@ from dnd_dm_assistant.domain.entity_lifecycle import (
     EntityLifecycleSpec,
     transition_entity_lifecycle,
 )
+from dnd_dm_assistant.domain.entity_senses import resolve_entity_senses
 from dnd_dm_assistant.domain.remote_spell_origin import (
     RemoteSpellOriginContract,
     RemoteSpellOriginResolution,
@@ -170,6 +171,11 @@ class ContentIRRuntimeService:
         if isinstance(entity_lifecycles, list) and entity_lifecycles:
             blocks["entity_lifecycles"] = [
                 dict(item) for item in entity_lifecycles if isinstance(item, Mapping)
+            ]
+        entity_senses = runtime.get("entity_senses")
+        if isinstance(entity_senses, list) and entity_senses:
+            blocks["entity_senses"] = [
+                dict(item) for item in entity_senses if isinstance(item, Mapping)
             ]
         reactivations = runtime.get("spell_slot_reactivations")
         if isinstance(reactivations, list) and reactivations:
@@ -337,6 +343,44 @@ class ContentIRRuntimeService:
                     "replayed": transition.replayed,
                     "state": transition.state,
                 }
+            senses_blocks = blocks.get("entity_senses", [])
+            senses_records: list[dict[str, Any]] = []
+            for block in senses_blocks:
+                if _text(block.get("entity_binding")) != "entity_lifecycle":
+                    raise ValueError("entity senses entity binding is required")
+                provenance = block.get("source_provenance")
+                if not isinstance(provenance, Mapping):
+                    raise ValueError("entity senses source provenance is required")
+                if _text(provenance.get("source_record_id")) != _text(runtime.get("source_record_id")):
+                    raise ValueError("entity senses source provenance does not match runtime")
+                if _text(provenance.get("source_fingerprint")) != _text(runtime.get("source_fingerprint")):
+                    raise ValueError("entity senses source provenance does not match runtime")
+                entity_id = _text(data.get("entity_id"))
+                if not entity_id:
+                    raise ValueError("entity senses requires entity_id")
+                prior = None
+                for existing_feature in before["features"]:
+                    if not isinstance(existing_feature, Mapping) or _text(existing_feature.get("feature_id")) != feature_id:
+                        continue
+                    existing_runtime = existing_feature.get("runtime")
+                    records = existing_runtime.get("entity_senses") if isinstance(existing_runtime, Mapping) else None
+                    if isinstance(records, list):
+                        prior = next(
+                            (dict(record) for record in records if _text(record.get("entity_id")) == entity_id),
+                            None,
+                        )
+                senses_records = [
+                    record for record in senses_records
+                    if _text(record.get("entity_id")) != entity_id
+                ]
+                senses_records.append({
+                    "entity_id": entity_id,
+                    "entity_binding": "entity_lifecycle",
+                    "source_provenance": dict(provenance),
+                    "senses": dict(block.get("senses") or {}),
+                    "spatial_contract": dict(block.get("spatial_contract") or {}),
+                    "lifecycle_record": lifecycle_record or prior,
+                })
             reactivation_receipt: dict[str, Any] | None = None
             reactivation_record: dict[str, Any] | None = None
             reactivation_blocks = blocks.get("spell_slot_reactivations", [])
@@ -601,6 +645,10 @@ class ContentIRRuntimeService:
                 ]
                 prior_records.append(lifecycle_record)
                 feature_runtime["entity_lifecycles"] = prior_records
+                feature_entry["runtime"] = feature_runtime
+            if senses_records:
+                feature_runtime = dict(feature_entry["runtime"])
+                feature_runtime["entity_senses"] = senses_records
                 feature_entry["runtime"] = feature_runtime
             if reactivation_record is not None:
                 feature_runtime = dict(feature_entry["runtime"])
@@ -1130,6 +1178,100 @@ class ContentIRRuntimeService:
         if action.get("automation_status") != "full":
             raise ValueError("feature runtime action is not full")
         return actor, action
+
+    @staticmethod
+    def _entity_senses_records(
+        character: Character,
+        feature_id: str,
+    ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+        records: list[dict[str, Any]] = []
+        lifecycles: list[dict[str, Any]] = []
+        for feature in character.features or []:
+            if not isinstance(feature, Mapping) or _text(feature.get("feature_id")) != feature_id:
+                continue
+            runtime = feature.get("runtime")
+            if not isinstance(runtime, Mapping):
+                continue
+            records.extend(
+                dict(item) for item in runtime.get("entity_senses", [])
+                if isinstance(item, Mapping)
+            )
+            lifecycles.extend(
+                dict(item) for item in runtime.get("entity_lifecycles", [])
+                if isinstance(item, Mapping)
+            )
+        return records, lifecycles
+
+    def _preview_entity_senses(
+        self,
+        session: Session,
+        actor: Combatant,
+        target: Combatant,
+        action: Mapping[str, Any],
+        data: Mapping[str, Any],
+    ) -> dict[str, Any] | None:
+        if _text(action.get("information_kind")) != "manifest_mind_senses":
+            return None
+        character_id = _text(actor.entity_id)
+        character = session.get(Character, character_id)
+        if character is None or character.campaign_id != _text(data.get("_campaign_id")):
+            raise StateNotFoundError("entity senses owner character not found")
+        senses_records, lifecycle_records = self._entity_senses_records(
+            character, _text(data.get("runtime_id"))
+        )
+        entity_id = _text(data.get("entity_id"))
+        if not entity_id:
+            raise ValueError("entity senses requires entity_id")
+        senses = next(
+            (item for item in senses_records if _text(item.get("entity_id")) == entity_id),
+            None,
+        )
+        lifecycle = next(
+            (item for item in lifecycle_records if _text(item.get("entity_id")) == entity_id),
+            None,
+        )
+        if senses is None or lifecycle is None:
+            raise ValueError("entity senses is not authorized for the requested entity")
+        combat = session.get(Combat, _text(data.get("combat_id")))
+        if combat is None or combat.campaign_id != _text(data.get("_campaign_id")):
+            raise StateNotFoundError("content runtime feature combat not found")
+        if not combat.scene_id:
+            raise ValueError("entity senses requires an authoritative combat scene")
+        spatial_entity_id = entity_id
+        bound_entity = session.scalar(
+            select(Combatant).where(
+                Combatant.combat_id == combat.id,
+                Combatant.entity_id == entity_id,
+                Combatant.is_active.is_(True),
+            )
+        )
+        if bound_entity is not None:
+            spatial_entity_id = bound_entity.id
+        spatial = SceneGridSpatialAuthority(session, combat.scene_id, combat_id=combat.id)
+        if spatial_entity_id != entity_id:
+            lifecycle = {
+                **dict(lifecycle),
+                "entity_id": spatial_entity_id,
+            }
+        resolution = resolve_entity_senses(
+            senses,
+            lifecycle,
+            owner_id=character.id,
+            target_id=target.id,
+            spatial=spatial,
+            maximum_information_range_ft=int(
+                next(
+                    (
+                        effect.get("range_ft")
+                        for effect in action.get("effects", [])
+                        if isinstance(effect, Mapping)
+                        and effect.get("kind") == "inspect_authorized_information"
+                    ),
+                    60,
+                )
+            ),
+        )
+        return resolution.as_dict()
 
     @staticmethod
     def _parameters(block: Mapping[str, Any]) -> dict[str, Any]:
@@ -1920,6 +2062,7 @@ class ContentIRRuntimeService:
             return result
 
     def _preview_feature(self, campaign_id: str, data: dict[str, Any]) -> dict[str, Any]:
+        data = {**data, "_campaign_id": campaign_id}
         with Session(self.engine) as session:
             actor, action = self._feature_runtime(session, campaign_id, data)
             target_id = _text(data.get("target_combatant_id")) or actor.id
@@ -1929,10 +2072,15 @@ class ContentIRRuntimeService:
             target_version = int(data.get("target_version") or target.version)
             if target.version != target_version:
                 raise VersionConflict("combatant", target.id, target_version, target.version)
-            if action.get("target") == "self" and target.id != actor.id:
+            if (
+                action.get("target") == "self"
+                and target.id != actor.id
+                and _text(action.get("information_kind")) != "manifest_mind_senses"
+            ):
                 raise ValueError("feature runtime target policy requires self")
             feature_kind = _text(action.get("kind"))
             teleport_preview = None
+            entity_senses_preview = None
             if feature_kind == "attack_rider":
                 if data.get("attack_hit") is not True:
                     raise ValueError("attack rider runtime requires an authoritative parent attack hit")
@@ -1973,6 +2121,9 @@ class ContentIRRuntimeService:
             elif _text(action.get("resolution_kind")) == "inspection":
                 feature_blocks = {"passive_registry": [action.get("passive_block") or action]}
                 combat_preview = None
+                entity_senses_preview = self._preview_entity_senses(
+                    session, actor, target, action, data
+                )
             elif _text(action.get("resolution_kind")) in {
                 "reaction_window",
                 "triggered_attack_window",
@@ -1981,6 +2132,7 @@ class ContentIRRuntimeService:
                 feature_blocks = {"feature_event_window": [action]}
                 combat_preview = None
             else:
+                entity_senses_preview = None
                 if _text(action.get("resolution_kind")) == "teleport":
                     raw_roll = data.get("movement_roll_total")
                     if (
@@ -2048,6 +2200,13 @@ class ContentIRRuntimeService:
                     "direction": _text(action.get("direction")),
                     "required_condition": _text(action.get("required_condition")),
                     "mutual_comprehension": True,
+                }
+            if entity_senses_preview is not None:
+                result["entity_senses"] = entity_senses_preview
+                result["production_contract"]["entity_senses"] = {
+                    "schema": "entity.senses.v1",
+                    "consumer": "entity_sensory_profile_service",
+                    "authoritative": True,
                 }
             result["preview_token"] = _fingerprint(
                 {"data": _stable_request_data(data), "result": result}
@@ -2397,6 +2556,8 @@ class ContentIRRuntimeService:
                 ),
                 "result": result,
             }
+            if "entity_senses" in preview:
+                output["entity_senses"] = preview["entity_senses"]
             self._record_operation(campaign_id, key, output)
             return output
 

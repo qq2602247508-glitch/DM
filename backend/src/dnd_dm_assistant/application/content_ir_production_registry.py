@@ -506,6 +506,7 @@ def resolve_production_consumers(
             "prepared_spell_list",
             "resources",
             "entity_lifecycles",
+            "entity_senses",
             "spell_slot_reactivations",
             "spell_list_expansions",
         }

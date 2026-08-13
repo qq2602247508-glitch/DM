@@ -695,10 +695,10 @@ def default_capability_catalog() -> CapabilityCatalog:
             inputs=frozenset(),
             status="production_partial",
             limitations=(
-                "Entity sensory profile is typed and provenance-bound, but movement, "
-                "distance expiry, and remote spell payment consumers are not closed."
+                "Entity sensory profile has a real inspection consumer, but source "
+                "completeness and remote spell payment remain open."
             ),
-            evidence=("test_manifest_mind_entity_senses_contract",),
+            evidence=("test_entity_senses_runtime_consumer",),
         ),
         _descriptor(
             "spell.remote_origin",
