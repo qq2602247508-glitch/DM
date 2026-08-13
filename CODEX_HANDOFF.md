@@ -3272,3 +3272,31 @@ git diff --check
   `reports/generic-capability-production-closure-2026-08-13.json`、
   `scripts/validate-generic-capability-production-closure.py`、
   `backend/tests/test_content_ir_production_closure.py`。
+## 2026-08-13 Round XL：Manifest Mind production promotion audit
+
+- Objective 已完成：`scribe-manifest-mind` source-boundary completion 与 production
+  promotion audit 通过。
+- authored IR 已从历史 8 条聚合 clause 拆为 13 条独立 typed clauses；每条有独立
+  `source_fragment/source_excerpt`，authoring script 重跑不会恢复旧 incomplete。
+- `source_completeness=complete`、`unmodeled_source_terms=[]`；dynamic audit
+  `13 covered / 0 partial / 0 missing`。
+- compiler/materializer/registry full；6 个聚合 consumers 全部解析；真实 focused
+  receipts 覆盖 lifecycle、initial placement、senses、telepathy、remote origin、
+  PB resource、movement/300-ft expiry、四种 termination、reactivation。
+- promotion result：`production_runtime_full_ids=[content.tashas-cauldron.round2.feature.scribe-manifest-mind]`；
+  `name_branch_count=0`；formal DB/registry 未写入。
+- 精确结果：Tasha `106/105/105/101/2/103/2/303` →
+  `106/105/105/102/2/104/1/303`；project `201/35/111` →
+  `202/35/111`。顺序为 authored/compile/preview/production/DM-assisted/game usable/
+  compile-only/manual。
+- Tasha evidence union `145`，project evidence union `202`。本轮 authored/compile/preview
+  不增加，因为 authored IR 已存在；真实增量为 production `+1`、game usable `+1`、
+  compile-only `-1`。
+- reconciliation gate 已改为动态 whole-pack metrics/evidence union + baseline/delta
+  relation；错误计数 regression 已补，旧 `132/189/89` 常数不再作为 gate。
+- verification：focused `31 passed`；backend full pytest `1018 passed`，仅既有
+  Starlette/httpx deprecation warning；changed-file Ruff、compileall、diff-check
+  通过；audit/validator/reconciliation/whole-pack 双跑 byte-identical。
+- 保护路径 `backend/tests/integrations/`、`backend/tests/ollama.py` 未修改、未暂存。
+- push：本轮开始时安全 push helper 因 GitHub smart HTTP 未健康而失败；尚未重试，
+  本地提交待分离提交后再安全 push。

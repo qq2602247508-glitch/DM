@@ -2,22 +2,24 @@
   "audit_date": "2026-08-13",
   "authored_ir": {
     "clause_ids": [
-      "spectral-object-lifecycle",
-      "proficiency-bonus-uses",
-      "termination-events",
-      "remote-spell-origin",
-      "mind-sight",
+      "activation-source-and-initial-placement",
       "spectral-object-form",
-      "shared-information",
-      "spell-slot-reactivation"
+      "entity-senses",
+      "telepathic-sharing",
+      "remote-spell-origin",
+      "proficiency-bonus-uses",
+      "movement",
+      "distance-expiry",
+      "dispel-magic-expiry",
+      "spellbook-destruction-expiry",
+      "owner-death-expiry",
+      "owner-dismissal-expiry",
+      "long-rest-reactivation"
     ],
     "path": "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/scribe-manifest-mind.json",
-    "sha256": "bf25b30c758451497600edae6c7c1739deaab97ce00f45556a29055022ec48b9",
-    "source_completeness": "incomplete",
-    "unmodeled_source_terms": [
-      "entity sensory profile consumer",
-      "entity movement and 300-foot separation expiry"
-    ]
+    "sha256": "0b880b9b6f95a08c0841eca16250f978c6e2c07a961ae59c06dc33e6ff3ee9e6",
+    "source_completeness": "complete",
+    "unmodeled_source_terms": []
   },
   "baseline": {
     "project": {
@@ -35,7 +37,7 @@
   },
   "clause_matrix": [
     {
-      "authored_ir": "spectral-object-lifecycle",
+      "authored_ir": "activation-source-and-initial-placement",
       "blocker": "",
       "cas_replay": "closed",
       "clause_id": "activation-source-and-initial-placement",
@@ -81,7 +83,7 @@
       "status": "covered"
     },
     {
-      "authored_ir": "mind-sight",
+      "authored_ir": "entity-senses",
       "blocker": "",
       "cas_replay": "closed",
       "clause_id": "entity-senses",
@@ -104,7 +106,7 @@
       "status": "covered"
     },
     {
-      "authored_ir": "shared-information",
+      "authored_ir": "telepathic-sharing",
       "blocker": "",
       "cas_replay": "closed",
       "clause_id": "telepathic-sharing",
@@ -173,7 +175,7 @@
       "status": "covered"
     },
     {
-      "authored_ir": "mind-sight",
+      "authored_ir": "movement",
       "blocker": "",
       "cas_replay": "closed",
       "clause_id": "movement",
@@ -196,7 +198,7 @@
       "status": "covered"
     },
     {
-      "authored_ir": "mind-sight",
+      "authored_ir": "distance-expiry",
       "blocker": "",
       "cas_replay": "closed",
       "clause_id": "distance-expiry",
@@ -219,7 +221,7 @@
       "status": "covered"
     },
     {
-      "authored_ir": "spectral-object-lifecycle",
+      "authored_ir": "dispel-magic-expiry",
       "blocker": "",
       "cas_replay": "closed",
       "clause_id": "dispel-magic-expiry",
@@ -242,7 +244,7 @@
       "status": "covered"
     },
     {
-      "authored_ir": "spectral-object-lifecycle",
+      "authored_ir": "spellbook-destruction-expiry",
       "blocker": "",
       "cas_replay": "closed",
       "clause_id": "spellbook-destruction-expiry",
@@ -265,7 +267,7 @@
       "status": "covered"
     },
     {
-      "authored_ir": "spectral-object-lifecycle",
+      "authored_ir": "owner-dismissal-expiry",
       "blocker": "",
       "cas_replay": "closed",
       "clause_id": "owner-dismissal-expiry",
@@ -288,7 +290,7 @@
       "status": "covered"
     },
     {
-      "authored_ir": "spectral-object-lifecycle",
+      "authored_ir": "owner-death-expiry",
       "blocker": "",
       "cas_replay": "closed",
       "clause_id": "owner-death-expiry",
@@ -311,7 +313,7 @@
       "status": "covered"
     },
     {
-      "authored_ir": "spell-slot-reactivation",
+      "authored_ir": "long-rest-reactivation",
       "blocker": "",
       "cas_replay": "closed",
       "clause_id": "long-rest-reactivation",
@@ -335,11 +337,9 @@
     }
   ],
   "compiler": {
-    "blockers": [
-      "source is incomplete"
-    ],
-    "compile_status": "partial",
-    "typed_clause_count": 8
+    "blockers": [],
+    "compile_status": "full",
+    "typed_clause_count": 13
   },
   "counts": {
     "covered": 13,
@@ -359,13 +359,12 @@
     }
   },
   "production_decision": {
-    "compile_only_ids": [
-      "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
-      "content.tashas-cauldron.round2.feature.genie-bottled-respite"
+    "compile_only_ids": [],
+    "production_runtime_full_ids": [
+      "content.tashas-cauldron.round2.feature.scribe-manifest-mind"
     ],
-    "production_runtime_full_ids": [],
-    "promote": false,
-    "reason": "source clause matrix contains missing/partial runtime boundaries"
+    "promote": true,
+    "reason": "all source boundaries and compile gates passed"
   },
   "protected_paths": [
     "backend/tests/integrations/",

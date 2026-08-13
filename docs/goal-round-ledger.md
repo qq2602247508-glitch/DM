@@ -6,6 +6,30 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round XL：Manifest Mind production promotion audit
+
+当前状态：`accepted`；`scribe-manifest-mind` 已从 compile-only promotion 为
+registered production full。
+
+- source matrix `13/13 covered`；authored IR 为 13 个独立 clauses，13 个独立
+  source boundary fragments；`source_completeness=complete`，
+  `unmodeled_source_terms=[]`。
+- compile/materialize/registry 全部 full；6 个聚合 production consumers：
+  `advancement_service.character_growth.v1`、`entity.senses.v1`、
+  `entity.spatial.v1`、`spell.remote_origin.v1`、`spell.slot.reactivation.v1`、
+  `telepathic.information.v1`。
+- Tasha baseline→after：`106/105/105/101/2/103/2/303` →
+  `106/105/105/102/2/104/1/303`；delta `0/0/0/+1/0/+1/-1/0`。
+- Project baseline→after：`201/35/111` → `202/35/111`；delta `+1/0/0`。
+- Tasha receipts `145`，project receipts `202`；promotion receipt id 为
+  `content.tashas-cauldron.round2.feature.scribe-manifest-mind`。
+- `name_branch_count=0`；formal DB/registry writes false；保护路径保持用户原有
+  未跟踪状态。
+- backend full pytest `1018 passed`；changed-file Ruff、compileall、diff-check 通过；
+  audit、promotion validator、reconciliation、whole-pack 双跑均 byte-identical。
+- Evidence：Round XL doc/report/result、source audit report/doc、dynamic
+  reconciliation report；`genie-bottled-respite` 仍为独立未推广风险。
+
 ## Round XXXIX：Manifest Mind dedicated entity spatial runtime
 
 当前状态：`compile_only_blocked`；movement 与 distance-expiry 的名称无关

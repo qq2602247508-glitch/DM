@@ -8,11 +8,11 @@
 - source path: `塔莎的万事坩埚/玩家选项/职业/法师（TCE）/书士会.html`
 - source HTML SHA-256: `56ea28aa46e3f85bda92f7f8487578337c7e0664c6a199d346e81539faf866b2`
 - authored IR: `data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/scribe-manifest-mind.json`
-- compiler status: `partial`
+- compiler status: `full`
 
 ## Baseline
 
-Round XXXVI baseline/after remains Tasha `106 authored / 105 compile / 105 preview / 101 production / 2 compile-only`; project `201 production / 35 compile-only / 111 unique compiled`. This audit changes no production count.
+Current authoritative reconciliation: Tasha baseline `106/105/105/101/2/103/2/303` → after `106/105/105/102/2/104/1/303`; project `201/35/111` → `202/35/111`. The real delta is production +1, game usable +1, compile-only -1.
 
 ## Source clause matrix
 
@@ -35,18 +35,16 @@ Round XXXVI baseline/after remains Tasha `106 authored / 105 compile / 105 previ
 ## Evidence and gate
 
 - Round XXXII lifecycle and remote-origin real runtime evidence passes focused/API transaction boundaries.
-- Round XXXIII entity senses real receipts pass, but the capability remains `production_partial`.
-- Round XXXV entity spatial movement/300-ft expiry real domain evidence passes, but feature promotion remains blocked.
-- Round XXXVI spell-slot reactivation real resource/rest transaction evidence passes, but the capability/materializer remains `production_partial`.
+- Round XXXIII entity senses real receipts pass.
+- Round XXXV entity spatial movement/300-ft expiry real API receipts pass.
+- Round XXXVI spell-slot reactivation real resource/rest transaction receipts pass.
 - Round XXXVII requires real producer API/event receipts: Dispel Magic effect-end, spellbook destruction equipment destroy, owner death combat damage/death transition, and owner dismissal summon-end with bonus-action consumption.
 - Synthetic-only `OperationTransaction` fixtures are rejected by the dynamic audit gate and regression.
-- The production gate therefore remains fail-closed: no `production_runtime_full_ids`, no whole-pack production migration delta.
+- Round XL promotion receipt passes with `production_runtime_full_ids=[content.tashas-cauldron.round2.feature.scribe-manifest-mind]`; `name_branch_count=0`; formal DB/registry writes are false.
 
 ## Required next work
 
-1. Add a generic PB-per-day feature resource consumer with long-rest recovery, Character resource persistence, CAS, replay, rollback, and real API receipts.
-2. Close authored entity senses/spatial binding and source-level telepathic sharing.
-3. Close `entity.senses` and `spell.slot.reactivation` from `production_partial` to a production registry consumer only after all negative boundaries pass.
-4. Reassess `source_completeness` only after the remaining independently auditable typed clauses are closed.
+1. Keep the promotion receipt and reconciliation regression green when future whole-pack counts change.
+2. Continue the independent `genie-bottled-respite` vessel audit; it was not promoted by this round.
 
 Protected paths were not read for content changes, modified, staged, or committed by this audit.
