@@ -90,6 +90,50 @@ def _json_probe(relative_path: str, *checks: tuple[str, object]) -> bool:
     return True
 
 
+def _termination_receipt_probe(clause_id: str, reason: str) -> bool:
+    """Require the focused runtime receipt chain for a source termination clause."""
+
+    test_path = ROOT / "backend/tests/test_content_ir_entity_lifecycle_runtime.py"
+    runtime_path = ROOT / "backend/src/dnd_dm_assistant/application/content_ir_runtime.py"
+    producer_path = ROOT / "backend/src/dnd_dm_assistant/infrastructure/database/combat_service.py"
+    equipment_path = ROOT / "backend/src/dnd_dm_assistant/infrastructure/database/spell_economy_service.py"
+    if not all(path.is_file() for path in (test_path, runtime_path, producer_path)):
+        return False
+    test = test_path.read_text(encoding="utf-8", errors="ignore")
+    runtime = runtime_path.read_text(encoding="utf-8", errors="ignore")
+    producer = producer_path.read_text(encoding="utf-8", errors="ignore")
+    equipment = equipment_path.read_text(encoding="utf-8", errors="ignore")
+    reason_markers = {
+        "dispel_magic": ("combat_end_effect", "entity_ids", "failed"),
+        "source_object_destroyed": ("equipment_destroy", "state", "destroyed"),
+        "owner_died": ("combat_confirm_death", "owner_character_id", "dead"),
+        "owner_dismissed": ("combat_end_summon", "entity_id", "reason"),
+    }
+    markers = reason_markers[reason]
+    producer_ok = all(
+        marker in producer or marker in equipment or marker in test
+        for marker in markers
+    )
+    consumer_ok = all(
+        marker in runtime
+        for marker in (
+            "_validate_lifecycle_producer",
+            "producer_operation_id",
+            "OperationTransaction",
+            "VersionConflict",
+        )
+    )
+    focused_ok = all(
+        marker in test
+        for marker in (
+            "test_termination_runtime_requires_real_producer_receipt_and_is_idempotent",
+            "test_termination_runtime_rejects_failed_or_unbound_producer_without_mutation",
+            reason,
+        )
+    )
+    return producer_ok and consumer_ok and focused_ok
+
+
 def _matrix(
     spec: FeatureSpec,
     compiled: Any,
@@ -361,11 +405,16 @@ def _matrix(
                 authored_clause="spectral-object-lifecycle" if clause_id in {"dispel-magic-expiry", "spellbook-destruction-expiry", "owner-dismissal-expiry"} else None,
                 operator="configure_entity_lifecycle" if clause_id != "owner-dismissal-expiry" else None,
                 consumer_id=None,
-                receipt=False,
-                source_paths=("backend/src/dnd_dm_assistant/domain/entity_lifecycle.py",),
-                source_needles=(reason,),
-                blocker="Typed lifecycle termination reason exists, but no focused production receipt proves this event through the runtime consumer.",
-                evidence=("typed termination reason and lifecycle CAS/replay",),
+                receipt=_termination_receipt_probe(clause_id, reason),
+                source_paths=(
+                    "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+                    "backend/src/dnd_dm_assistant/infrastructure/database/combat_service.py",
+                    "backend/src/dnd_dm_assistant/infrastructure/database/spell_economy_service.py",
+                    "backend/tests/test_content_ir_entity_lifecycle_runtime.py",
+                ),
+                source_needles=(reason, "producer_operation_id", "OperationTransaction"),
+                blocker="Termination requires a real source-bound producer receipt, lifecycle consumer persistence, CAS, replay, and fail-closed negative boundary.",
+                evidence=("producer receipt, runtime consumer, lifecycle persistence, CAS/replay, failed-event rejection",),
                 cas_replay=True,
             )
             for clause_id, source_rule, reason in (
@@ -380,11 +429,15 @@ def _matrix(
             authored_clause="spectral-object-lifecycle",
             operator="configure_entity_lifecycle",
             consumer_id=None,
-            receipt=False,
-            source_paths=("backend/src/dnd_dm_assistant/domain/entity_lifecycle.py",),
-            source_needles=("owner_died",),
-            blocker="Owner death lifecycle receipt is incomplete.",
-            evidence=("lifecycle CAS/replay evidence",),
+            receipt=_termination_receipt_probe("owner-death-expiry", "owner_died"),
+            source_paths=(
+                "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+                "backend/src/dnd_dm_assistant/infrastructure/database/combat_service.py",
+                "backend/tests/test_content_ir_entity_lifecycle_runtime.py",
+            ),
+            source_needles=("owner_died", "owner_character_id", "producer_operation_id"),
+            blocker="Owner death requires the authoritative combat death receipt and a source-bound lifecycle consumer transition.",
+            evidence=("authoritative death producer receipt, lifecycle persistence, CAS/replay, failed-event rejection",),
             cas_replay=True,
         ),
         row(

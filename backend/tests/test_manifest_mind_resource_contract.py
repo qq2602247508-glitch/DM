@@ -89,3 +89,28 @@ def test_manifest_mind_audit_matrix_requires_all_runtime_dimensions() -> None:
     row = next(item for item in degraded if item["clause_id"] == "proficiency-bonus-uses")
     assert row["status"] == "partial"
     assert row["evidence_checks"]["source_provenance"] is False
+
+
+def test_manifest_mind_termination_rows_degrade_when_focused_receipt_is_removed() -> None:
+    audit = _audit_module()
+    raw = audit.json.loads(audit.IR_PATH.read_text(encoding="utf-8"))
+    feature = audit._feature_spec(raw)
+    compiled = audit.FeatureCompiler(status_authority="compiler").compile(feature)
+    baseline = {
+        row["clause_id"]: row for row in audit._matrix(feature, compiled)
+    }
+    for clause_id in (
+        "dispel-magic-expiry",
+        "spellbook-destruction-expiry",
+        "owner-death-expiry",
+        "owner-dismissal-expiry",
+    ):
+        assert baseline[clause_id]["status"] == "covered"
+        degraded = audit._matrix(
+            feature,
+            compiled,
+            evidence_overrides={(clause_id, "focused_receipt"): False},
+        )
+        row = next(item for item in degraded if item["clause_id"] == clause_id)
+        assert row["status"] == "partial"
+        assert row["evidence_checks"]["focused_receipt"] is False

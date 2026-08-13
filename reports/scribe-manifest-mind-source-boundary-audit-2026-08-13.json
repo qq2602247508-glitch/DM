@@ -220,17 +220,17 @@
     },
     {
       "authored_ir": "spectral-object-lifecycle",
-      "blocker": "Typed lifecycle termination reason exists, but no focused production receipt proves this event through the runtime consumer.",
+      "blocker": "",
       "cas_replay": "closed",
       "clause_id": "dispel-magic-expiry",
       "consumer": "entity_lifecycle_service",
       "evidence": [
-        "typed termination reason and lifecycle CAS/replay"
+        "producer receipt, runtime consumer, lifecycle persistence, CAS/replay, failed-event rejection"
       ],
       "evidence_checks": {
         "authored_ir": true,
         "cas_replay": true,
-        "focused_receipt": false,
+        "focused_receipt": true,
         "materializer": true,
         "operator_capability": true,
         "runtime_registry": true,
@@ -239,21 +239,21 @@
       "persistence": "entity.lifecycle.state",
       "producer": "feature_runtime_compiler",
       "source_rule": "Manifestation stops when Dispel Magic is cast on it.",
-      "status": "partial"
+      "status": "covered"
     },
     {
       "authored_ir": "spectral-object-lifecycle",
-      "blocker": "Typed lifecycle termination reason exists, but no focused production receipt proves this event through the runtime consumer.",
+      "blocker": "",
       "cas_replay": "closed",
       "clause_id": "spellbook-destruction-expiry",
       "consumer": "entity_lifecycle_service",
       "evidence": [
-        "typed termination reason and lifecycle CAS/replay"
+        "producer receipt, runtime consumer, lifecycle persistence, CAS/replay, failed-event rejection"
       ],
       "evidence_checks": {
         "authored_ir": true,
         "cas_replay": true,
-        "focused_receipt": false,
+        "focused_receipt": true,
         "materializer": true,
         "operator_capability": true,
         "runtime_registry": true,
@@ -262,21 +262,21 @@
       "persistence": "entity.lifecycle.state",
       "producer": "feature_runtime_compiler",
       "source_rule": "Manifestation stops if the awakened spellbook is destroyed.",
-      "status": "partial"
+      "status": "covered"
     },
     {
       "authored_ir": "spectral-object-lifecycle",
-      "blocker": "Typed lifecycle termination reason exists, but no focused production receipt proves this event through the runtime consumer.",
+      "blocker": "",
       "cas_replay": "closed",
       "clause_id": "owner-dismissal-expiry",
       "consumer": "entity_lifecycle_service",
       "evidence": [
-        "typed termination reason and lifecycle CAS/replay"
+        "producer receipt, runtime consumer, lifecycle persistence, CAS/replay, failed-event rejection"
       ],
       "evidence_checks": {
         "authored_ir": true,
         "cas_replay": true,
-        "focused_receipt": false,
+        "focused_receipt": true,
         "materializer": true,
         "operator_capability": true,
         "runtime_registry": true,
@@ -285,21 +285,21 @@
       "persistence": "entity.lifecycle.state",
       "producer": "feature_runtime_compiler",
       "source_rule": "The owner can dismiss it as a bonus action.",
-      "status": "partial"
+      "status": "covered"
     },
     {
       "authored_ir": "spectral-object-lifecycle",
-      "blocker": "Owner death lifecycle receipt is incomplete.",
+      "blocker": "",
       "cas_replay": "closed",
       "clause_id": "owner-death-expiry",
       "consumer": "entity_lifecycle_service",
       "evidence": [
-        "lifecycle CAS/replay evidence"
+        "authoritative death producer receipt, lifecycle persistence, CAS/replay, failed-event rejection"
       ],
       "evidence_checks": {
         "authored_ir": true,
         "cas_replay": true,
-        "focused_receipt": false,
+        "focused_receipt": true,
         "materializer": true,
         "operator_capability": true,
         "runtime_registry": true,
@@ -308,7 +308,7 @@
       "persistence": "entity.lifecycle.state",
       "producer": "feature_runtime_compiler",
       "source_rule": "Manifestation stops when the owner dies.",
-      "status": "partial"
+      "status": "covered"
     },
     {
       "authored_ir": "spell-slot-reactivation",
@@ -342,9 +342,9 @@
     "typed_clause_count": 8
   },
   "counts": {
-    "covered": 3,
+    "covered": 7,
     "missing": 0,
-    "partial": 10,
+    "partial": 6,
     "total": 13
   },
   "feature_id": "content.tashas-cauldron.round2.feature.scribe-manifest-mind",

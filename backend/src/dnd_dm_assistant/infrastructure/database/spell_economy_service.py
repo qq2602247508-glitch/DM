@@ -977,6 +977,9 @@ class SpellEconomyService:
                     raise ValueError("只有消耗品可以使用或消耗。")
                 if e.quantity < data["amount"]:
                     raise ValueError("insufficient consumable quantity")
+            if op == "destroy":
+                if e.quantity < 1:
+                    raise ValueError("equipment is already destroyed")
             if op == "use_charge" and (e.charges is None or e.charges < data["amount"]):
                 raise ValueError("insufficient charges")
             item_spec = e.metadata_json.get("item_spec")
@@ -1164,6 +1167,13 @@ class SpellEconomyService:
                 c.armor_class = int(preview["after"]["armor_class"])
             elif op == "consume":
                 e.quantity -= amount
+            elif op == "destroy":
+                e.quantity = 0
+                e.equipped = False
+                e.metadata_json = {
+                    **e.metadata_json,
+                    "state": "destroyed",
+                }
             elif op == "use_charge":
                 assert e.charges is not None
                 e.charges -= amount
@@ -1223,6 +1233,13 @@ class SpellEconomyService:
                 "confirmed": True,
                 "after": {**preview.get("after", {}), "armor_class": c.armor_class},
             }
+            if op == "destroy":
+                out["after"] = {
+                    **out["after"],
+                    "state": "destroyed",
+                    "equipment_id": e.id,
+                    "entity_id": str(e.metadata_json.get("entity_id") or ""),
+                }
             s.add(
                 OperationTransaction(
                     campaign_id=cid,

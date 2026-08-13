@@ -350,6 +350,29 @@ class ContentIRRuntimeService:
                             "spell slot reactivation rejects an expired or terminated entity"
                         )
                 expected_lifecycle_version = data.get("entity_lifecycle_expected_version")
+                producer_receipt = None
+                if event == "terminate":
+                    producer_operation_id = _text(
+                        (data.get("entity_lifecycle_metadata") or {}).get(
+                            "producer_operation_id"
+                        )
+                    )
+                    if not producer_operation_id:
+                        raise ValueError(
+                            "entity lifecycle termination requires a producer operation receipt"
+                        )
+                    producer_receipt = self._validate_lifecycle_producer(
+                        session,
+                        campaign_id,
+                        entity_id=entity_id,
+                        reason=_text(
+                            (data.get("entity_lifecycle_metadata") or {}).get(
+                                "termination_reason"
+                            )
+                        ),
+                        producer_operation_id=producer_operation_id,
+                        owner_character_id=character.id,
+                    )
                 transition = transition_entity_lifecycle(
                     spec,
                     prior_state,
@@ -380,6 +403,8 @@ class ContentIRRuntimeService:
                     "replayed": transition.replayed,
                     "state": transition.state,
                 }
+                if producer_receipt is not None:
+                    lifecycle_receipt["producer_receipt"] = producer_receipt
             senses_blocks = blocks.get("entity_senses", [])
             senses_records: list[dict[str, Any]] = []
             for block in senses_blocks:
@@ -800,6 +825,88 @@ class ContentIRRuntimeService:
                 {"data": _stable_request_data(data), "result": result}
             )
             return result
+
+    @staticmethod
+    def _validate_lifecycle_producer(
+        session: Session,
+        campaign_id: str,
+        *,
+        entity_id: str,
+        reason: str,
+        producer_operation_id: str,
+        owner_character_id: str,
+    ) -> dict[str, Any]:
+        allowed_reasons = {
+            "dispel_magic",
+            "source_object_destroyed",
+            "owner_died",
+            "owner_dismissed",
+        }
+        if reason not in allowed_reasons:
+            raise ValueError("entity lifecycle termination reason is not producer-bound")
+        operation = session.scalar(
+            select(OperationTransaction).where(
+                OperationTransaction.id == producer_operation_id,
+                OperationTransaction.campaign_id == campaign_id,
+                OperationTransaction.status == "applied",
+            )
+        )
+        if operation is None:
+            raise StateNotFoundError("entity lifecycle producer receipt not found")
+        after = dict(operation.after_snapshot or {})
+        nested_after = after.get("after")
+        if isinstance(nested_after, Mapping):
+            after = {**after, **dict(nested_after)}
+        before = dict(operation.before_snapshot or {})
+        operation_type = _text(operation.operation_type)
+        if reason == "dispel_magic":
+            if operation_type != "combat_end_effect":
+                raise ValueError("dispel termination requires a successful effect-end producer")
+            if not after.get("effect_id") or _text(after.get("end_reason")) == "":
+                raise ValueError("dispel producer receipt is incomplete")
+            if after.get("status") not in {"ended", "terminated"}:
+                raise ValueError("failed dispel cannot terminate an entity")
+            if entity_id not in {
+                str(value)
+                for value in after.get("entity_ids", [])
+                if isinstance(value, str)
+            }:
+                raise ValueError("dispel producer receipt is not bound to the entity")
+        elif reason == "source_object_destroyed":
+            if operation_type != "equipment_destroy":
+                raise ValueError("source-object termination requires equipment destroy producer")
+            if after.get("state") != "destroyed":
+                raise ValueError("source object producer receipt is not destroyed")
+            if _text(after.get("entity_id")) != entity_id:
+                raise ValueError("source object producer is not bound to the entity")
+        elif reason == "owner_died":
+            if operation_type != "combat_confirm_death":
+                raise ValueError("owner death termination requires authoritative death producer")
+            if after.get("dead") is not True or _text(after.get("owner_character_id")) != owner_character_id:
+                raise ValueError("owner death producer receipt is not authoritative")
+        elif reason == "owner_dismissed":
+            if operation_type not in {"combat_end_summon", "combat_end_effect"}:
+                raise ValueError("dismissal termination requires an owner dismissal producer")
+            if operation_type == "combat_end_summon" and _text(after.get("reason")) == "":
+                raise ValueError("dismissal producer receipt is incomplete")
+            if operation_type == "combat_end_effect" and _text(after.get("end_reason")) == "":
+                raise ValueError("dismissal producer receipt is incomplete")
+            if operation_type == "combat_end_summon" and _text(after.get("entity_id")) != entity_id:
+                raise ValueError("dismissal producer receipt is not bound to the entity")
+            if operation_type == "combat_end_effect" and entity_id not in {
+                str(value)
+                for value in after.get("entity_ids", [])
+                if isinstance(value, str)
+            }:
+                raise ValueError("dismissal producer receipt is not bound to the entity")
+        return {
+            "operation_transaction_id": operation.id,
+            "operation_type": operation_type,
+            "idempotency_key": operation.idempotency_key,
+            "status": operation.status,
+            "before_snapshot": before,
+            "after_snapshot": after,
+        }
 
     @staticmethod
     def _runtime_blocks(runtime: Mapping[str, Any]) -> dict[str, list[dict[str, Any]]]:

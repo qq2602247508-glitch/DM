@@ -59,6 +59,35 @@ IR/materializer 边界，没有把 `scribe-manifest-mind` 升为 production。
   `reports/tashas-feature-production-consumer-round-XXXVI-2026-08-13.json`、
   `data/content-ir/compiled/production-runtime-results-XXXVI.json`。
 
+## Round XXXVII：Manifest Mind source-bound termination receipts
+
+当前状态：`compile_only_blocked`；四条 termination partial 已关闭为 covered，
+但 `scribe-manifest-mind` 仍未升为 production，因为 entity senses、spatial
+feature binding 与 spell-slot reactivation 仍保持 partial。
+
+- 动态 scribe matrix：`3 covered / 10 partial / 0 missing` →
+  `7 covered / 6 partial / 0 missing`；production、compile-only、unique-compiled
+  计数 delta 均为 `0`。
+- `ContentIRRuntimeService` 的 lifecycle termination 现在强制消费真实、
+  source-bound `OperationTransaction` producer receipt：成功 `combat_end_effect`
+ （Dispel）、`equipment_destroy`（绑定 spellbook）、`combat_confirm_death`
+  （权威 owner death）和 `combat_end_summon`/effect dismissal；失败 producer、
+  未绑定 producer、stale lifecycle CAS、重复 replay 均 fail-closed/idempotent。
+- lifecycle receipt 持久化 producer receipt、typed termination reason 与终态；
+  终止后的 senses/spatial/reactivation 继续由既有 fail-closed boundary 拒绝。
+- focused runtime tests 覆盖四事件成功、失败、replay、stale CAS 与无 mutation
+  negative boundary；audit regression 验证移除任一 focused receipt 即从 covered
+  降回 partial。
+- audit 双跑与 whole-pack 双跑 stdout byte-identical；backend 全量 pytest 通过；
+  变更范围 Ruff、compileall、`git diff --check` 通过。全仓 `ruff check
+  backend/src backend/tests scripts` 仍命中仓库既有 scripts lint，不修改历史脚本。
+- formal database/registry、source corpus、campaign/character、3D 与保护路径未写入；
+  scribe 未升 production。
+- 证据：`docs/scribe-manifest-mind-source-boundary-audit-2026-08-13.md`、
+  `reports/scribe-manifest-mind-source-boundary-audit-2026-08-13.json`、
+  `scripts/audit-scribe-manifest-mind-source-boundary.py`、
+  `backend/tests/test_content_ir_entity_lifecycle_runtime.py`。
+
 ## Round XXXIII：Manifest Mind spectral-object blocker 与 entity sensory-profile seam
 
 当前状态：`compile_only_blocked`；没有把 `scribe-manifest-mind` 或

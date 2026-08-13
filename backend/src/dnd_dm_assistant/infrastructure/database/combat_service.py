@@ -2207,6 +2207,7 @@ class CombatEngineService:
             )
             result = {
                 "combatant_id": summon.id,
+                "entity_id": str(summon.entity_id or ""),
                 "ended_effect_ids": [effect.id for effect in linked_effects],
                 "current_turn_index": combat.current_turn_index,
                 "active_combatant_id": active.id if active is not None else None,
@@ -20112,6 +20113,7 @@ class CombatEngineService:
                 before_snapshot={"death_save": before},
                 after_snapshot={
                     "combatant_id": target.id,
+                    "owner_character_id": str(target.entity_id or ""),
                     "dead": True,
                 },
                 reason=command.reason,
@@ -22841,6 +22843,19 @@ class CombatEngineService:
                     "effect_ids": [row.id for row in effects_to_end],
                     "status": effect.status,
                     "end_reason": effect.end_reason,
+                    "entity_ids": sorted(
+                        {
+                            entity_id
+                            for effect_row in effects_to_end
+                            for entity_id in (
+                                dict(effect_row.details_json or {}).get("entity_id"),
+                                dict(effect_row.details_json or {}).get(
+                                    "entity_lifecycle_entity_id"
+                                ),
+                            )
+                            if isinstance(entity_id, str) and entity_id
+                        }
+                    ),
                     "ended_summon_ids": [row.id for row in ended_summons],
                 },
                 reason=command.reason,

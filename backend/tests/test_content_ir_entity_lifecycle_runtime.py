@@ -264,6 +264,222 @@ def test_entity_lifecycle_real_service_requires_provenance(
     assert "source provenance" in response.text
 
 
+@pytest.mark.parametrize(
+    ("reason", "operation_type", "after"),
+    [
+        (
+            "dispel_magic",
+            "combat_end_effect",
+            {
+                "effect_id": "effect-1",
+                "entity_ids": ["entity-fixture-001"],
+                "status": "ended",
+                "end_reason": "Dispel Magic",
+            },
+        ),
+        (
+            "source_object_destroyed",
+            "equipment_destroy",
+            {
+                "state": "destroyed",
+                "equipment_id": "equipment-1",
+                "entity_id": "entity-fixture-001",
+            },
+        ),
+        (
+            "owner_died",
+            "combat_confirm_death",
+            {
+                "owner_character_id": "owner-placeholder",
+                "dead": True,
+            },
+        ),
+        (
+            "owner_dismissed",
+            "combat_end_summon",
+            {
+                "entity_id": "entity-fixture-001",
+                "reason": "owner bonus action dismissal",
+            },
+        ),
+    ],
+)
+def test_termination_runtime_requires_real_producer_receipt_and_is_idempotent(
+    campaign_client: TestClient,
+    reason: str,
+    operation_type: str,
+    after: dict[str, Any],
+) -> None:
+    base, character = _setup(campaign_client)
+    current = character
+    for index, event in enumerate(("create", "enter", "exit"), start=1):
+        _, _ = _apply(
+            campaign_client,
+            base,
+            current,
+            event=event,
+            operation_id=f"termination-setup-{index}",
+            key=f"termination-setup-{index}",
+            expected_lifecycle_version=None if index == 1 else index - 1,
+        )
+        current = campaign_client.get(f"{base}/characters/{character['id']}").json()
+
+    engine = create_database_engine(campaign_client.database_url)  # type: ignore[attr-defined]
+    if reason == "source_object_destroyed":
+        created_equipment = campaign_client.post(
+            f"{base}/characters/assets/equipment",
+            json={
+                "character_id": character["id"],
+                "character_version": current["version"],
+                "name": "Awakened spellbook",
+                "category": "gear",
+                "metadata_json": {"entity_id": "entity-fixture-001"},
+            },
+        )
+        assert created_equipment.status_code == 201, created_equipment.text
+        equipment = created_equipment.json()
+        current = campaign_client.get(f"{base}/characters/{character['id']}").json()
+        destroy_body = {
+            "character_id": character["id"],
+            "character_version": current["version"],
+            "equipment_id": equipment["id"],
+            "operation": "destroy",
+            "amount": 1,
+        }
+        destroy_preview = campaign_client.post(
+            f"{base}/equipment/preview", json=destroy_body
+        )
+        assert destroy_preview.status_code == 200, destroy_preview.text
+        destroy = campaign_client.post(
+            f"{base}/equipment/confirm",
+            json={
+                **destroy_body,
+                "preview_token": destroy_preview.json()["preview_token"],
+                "idempotency_key": "producer-spellbook-destroy",
+            },
+        )
+        assert destroy.status_code == 200, destroy.text
+        with Session(engine) as session:
+            producer = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == base.rsplit("/", 1)[-1],
+                    OperationTransaction.idempotency_key == "equipment:producer-spellbook-destroy",
+                )
+            )
+            assert producer is not None
+            producer_id = producer.id
+        current = campaign_client.get(f"{base}/characters/{character['id']}").json()
+    elif reason == "owner_died":
+        after = {**after, "owner_character_id": character["id"]}
+    if reason != "source_object_destroyed":
+        with Session(engine) as session, session.begin():
+            producer = OperationTransaction(
+                campaign_id=base.rsplit("/", 1)[-1],
+                operation_type=operation_type,
+                idempotency_key=f"producer-{reason}",
+                status="applied",
+                before_snapshot={},
+                after_snapshot=after,
+                source="combat" if operation_type.startswith("combat_") else "dm",
+            )
+            session.add(producer)
+            session.flush()
+            producer_id = producer.id
+
+    body = _body(
+        current,
+        event="terminate",
+        operation_id=f"termination-{reason}",
+        key=f"termination-{reason}",
+        expected_lifecycle_version=3,
+    )
+    body["entity_lifecycle_metadata"] = {
+        "owner_character_id": character["id"],
+        "termination_reason": reason,
+        "producer_operation_id": producer_id,
+    }
+    preview = campaign_client.post(f"{base}/content-ir/runtime/preview", json=body)
+    assert preview.status_code == 200, preview.text
+    assert preview.json()["entity_lifecycle"]["state"]["status"] == "terminated"
+    confirmed = campaign_client.post(
+        f"{base}/content-ir/runtime/confirm",
+        json={**body, "preview_token": preview.json()["preview_token"]},
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    assert confirmed.json()["entity_lifecycle"]["state"]["termination_reason"] == reason
+    assert (
+        confirmed.json()["entity_lifecycle"]["producer_receipt"]["operation_type"]
+        == operation_type
+    )
+
+    replay = campaign_client.post(
+        f"{base}/content-ir/runtime/confirm",
+        json={**body, "preview_token": preview.json()["preview_token"]},
+    )
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["already_applied"] is True
+
+    stale = dict(body)
+    stale["idempotency_key"] = f"stale-{reason}"
+    stale["operation_id"] = f"stale-{reason}"
+    stale["entity_lifecycle_expected_version"] = 3
+    stale["preview_token"] = preview.json()["preview_token"]
+    stale_response = campaign_client.post(f"{base}/content-ir/runtime/confirm", json=stale)
+    assert stale_response.status_code == 409, stale_response.text
+
+
+def test_termination_runtime_rejects_failed_or_unbound_producer_without_mutation(
+    campaign_client: TestClient,
+) -> None:
+    base, character = _setup(campaign_client)
+    _, created = _apply(
+        campaign_client,
+        base,
+        character,
+        event="create",
+        operation_id="termination-negative-create",
+        key="termination-negative-create",
+        expected_lifecycle_version=None,
+    )
+    current = campaign_client.get(f"{base}/characters/{character['id']}").json()
+    engine = create_database_engine(campaign_client.database_url)  # type: ignore[attr-defined]
+    with Session(engine) as session, session.begin():
+        producer = OperationTransaction(
+            campaign_id=base.rsplit("/", 1)[-1],
+            operation_type="combat_end_effect",
+            idempotency_key="failed-dispel",
+            status="failed",
+            before_snapshot={},
+            after_snapshot={
+                "effect_id": "effect-1",
+                "entity_ids": ["entity-fixture-001"],
+                "status": "ended",
+                "end_reason": "failed dispel",
+            },
+            source="combat",
+        )
+        session.add(producer)
+        session.flush()
+        producer_id = producer.id
+    body = _body(
+        current,
+        event="terminate",
+        operation_id="termination-negative",
+        key="termination-negative",
+        expected_lifecycle_version=1,
+    )
+    body["entity_lifecycle_metadata"] = {
+        "owner_character_id": character["id"],
+        "termination_reason": "dispel_magic",
+        "producer_operation_id": producer_id,
+    }
+    response = campaign_client.post(f"{base}/content-ir/runtime/preview", json=body)
+    assert response.status_code == 404
+    unchanged = campaign_client.get(f"{base}/characters/{character['id']}").json()
+    assert unchanged["version"] == current["version"]
+    assert unchanged["features"] == current["features"]
+
+
 def test_entity_lifecycle_initial_placement_receipt_requires_authoritative_facts(
     campaign_client: TestClient,
 ) -> None:

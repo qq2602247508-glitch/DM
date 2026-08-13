@@ -2611,7 +2611,14 @@ class EquipmentOperationRequest(BaseModel):
     character_version: int = Field(ge=1)
     equipment_id: str
     operation: Literal[
-        "equip", "unequip", "consume", "use_charge", "use_action", "attune", "unattune"
+        "equip",
+        "unequip",
+        "consume",
+        "use_charge",
+        "use_action",
+        "attune",
+        "unattune",
+        "destroy",
     ]
     slot: Literal["armor", "main_hand", "off_hand", "focus", "worn"] | None = None
     amount: int = Field(default=1, ge=1)
