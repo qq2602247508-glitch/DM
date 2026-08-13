@@ -94,6 +94,20 @@ class SpatialAuthority(Protocol):
         maximum_distance_ft: int | None = None,
     ) -> SpatialPathResult: ...
 
+    def validate_intangible_entity_path(
+        self,
+        entity_id: str,
+        path: Sequence[KernelPosition],
+        *,
+        maximum_distance_ft: int | None = None,
+    ) -> SpatialPathResult: ...
+
+    def shortest_path(
+        self,
+        entity_id: str,
+        destination: KernelPosition,
+    ) -> tuple[KernelPosition, ...]: ...
+
     def validate_forced_movement(
         self,
         entity_id: str,
@@ -329,6 +343,88 @@ class DeterministicTestSpatialAuthority:
         if maximum_distance_ft is not None and cost > maximum_distance_ft:
             return SpatialPathResult(False, cost, "path exceeds the movement budget")
         return SpatialPathResult(True, cost)
+
+    def validate_intangible_entity_path(
+        self,
+        entity_id: str,
+        path: Sequence[KernelPosition],
+        *,
+        maximum_distance_ft: int | None = None,
+    ) -> SpatialPathResult:
+        """Validate a spectral entity path: objects block, creatures do not."""
+
+        entity = self._entity(entity_id)
+        if not path:
+            return SpatialPathResult(True, 0)
+        if path[0] != entity.position:
+            return SpatialPathResult(False, 0, "path must start at the current position")
+        try:
+            self._validate_position(path[-1], size_cells=entity.size_cells)
+        except ValueError as exc:
+            return SpatialPathResult(False, 0, str(exc))
+        cost = movement_cost_ft(
+            [(position.row, position.col) for position in path],
+            self.blocked,
+            cell_size_ft=self.cell_size_ft,
+        )
+        if maximum_distance_ft is not None and cost > maximum_distance_ft:
+            return SpatialPathResult(False, cost, "path exceeds the movement budget")
+        return SpatialPathResult(True, cost)
+
+    def shortest_path(
+        self,
+        entity_id: str,
+        destination: KernelPosition,
+    ) -> tuple[KernelPosition, ...]:
+        """Return a deterministic object-clear path; creatures are traversable."""
+
+        entity = self._entity(entity_id)
+        self._validate_position(destination, size_cells=entity.size_cells)
+        start = (entity.position.row, entity.position.col)
+        goal = (destination.row, destination.col)
+        queue: deque[tuple[int, int]] = deque([start])
+        previous: dict[tuple[int, int], tuple[int, int] | None] = {start: None}
+        while queue:
+            row, col = queue.popleft()
+            if (row, col) == goal:
+                points: list[KernelPosition] = []
+                current: tuple[int, int] | None = goal
+                while current is not None:
+                    points.append(
+                        KernelPosition(
+                            row=current[0],
+                            col=current[1],
+                            elevation_ft=destination.elevation_ft
+                            if current == goal
+                            else entity.position.elevation_ft,
+                        )
+                    )
+                    current = previous[current]
+                return tuple(reversed(points))
+            for next_row, next_col in (
+                (row - 1, col),
+                (row, col - 1),
+                (row, col + 1),
+                (row + 1, col),
+            ):
+                point = (next_row, next_col)
+                if point in previous:
+                    continue
+                if not (
+                    1 <= next_row <= self.height - entity.size_cells + 1
+                    and 1 <= next_col <= self.width - entity.size_cells + 1
+                ):
+                    continue
+                footprint = {
+                    (next_row + r, next_col + c)
+                    for r in range(entity.size_cells)
+                    for c in range(entity.size_cells)
+                }
+                if footprint & self.blocked:
+                    continue
+                previous[point] = (row, col)
+                queue.append(point)
+        raise ValueError("no object-clear path exists in the authoritative scene")
 
     def validate_forced_movement(
         self,

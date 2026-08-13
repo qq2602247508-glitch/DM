@@ -36,11 +36,17 @@ from dnd_dm_assistant.domain.entity_lifecycle import (
     transition_entity_lifecycle,
 )
 from dnd_dm_assistant.domain.entity_senses import resolve_entity_senses
+from dnd_dm_assistant.domain.entity_spatial import (
+    EntitySpatialSpec,
+    transition_entity_spatial,
+)
+from dnd_dm_assistant.domain.exploration import line_of_sight
 from dnd_dm_assistant.domain.remote_spell_origin import (
     RemoteSpellOriginContract,
     RemoteSpellOriginResolution,
     resolve_remote_spell_origin,
 )
+from dnd_dm_assistant.domain.rules_kernel_protocol import KernelPosition
 from dnd_dm_assistant.domain.spatial_authority import SceneGridSpatialAuthority
 from dnd_dm_assistant.domain.spell_slot_reactivation import (
     SpellSlotReactivationSpec,
@@ -81,6 +87,15 @@ def _stable_request_data(data: Mapping[str, Any]) -> dict[str, Any]:
         for key, value in data.items()
         if str(key) not in {"preview_token", "idempotency_key"}
     }
+
+
+def _jsonable_entity_spatial_state(state: Mapping[str, Any]) -> dict[str, Any]:
+    result = dict(state)
+    for field in ("position", "owner_position"):
+        value = result.get(field)
+        if isinstance(value, KernelPosition):
+            result[field] = value.model_dump(mode="json")
+    return result
 
 
 class ContentIRRuntimeService:
@@ -1045,6 +1060,11 @@ class ContentIRRuntimeService:
                 continue
             state = record.get("state")
             state = state if isinstance(state, Mapping) else record
+            spatial_state = state.get("entity_spatial")
+            if isinstance(spatial_state, Mapping) and _text(
+                spatial_state.get("status")
+            ) in {"expired", "terminated"}:
+                continue
             if _text(state.get("source_id")) != _text(provenance.get("source_record_id")):
                 continue
             if _text(state.get("source_fingerprint")) != _text(
@@ -1451,6 +1471,11 @@ class ContentIRRuntimeService:
         )
         if bound_entity is not None:
             spatial_entity_id = bound_entity.id
+            spatial_state = (bound_entity.snapshot_json or {}).get("entity_spatial")
+            if isinstance(spatial_state, Mapping) and _text(
+                spatial_state.get("status")
+            ) in {"expired", "terminated"}:
+                raise ValueError("entity senses are unavailable after spatial termination")
         spatial = SceneGridSpatialAuthority(session, combat.scene_id, combat_id=combat.id)
         if spatial_entity_id != entity_id:
             lifecycle = {
@@ -2287,6 +2312,10 @@ class ContentIRRuntimeService:
             feature_kind = _text(action.get("kind"))
             teleport_preview = None
             entity_senses_preview = None
+            if _text(action.get("resolution_kind")) == "entity_spatial":
+                return self._preview_entity_spatial(
+                    session, campaign_id, actor, action, data
+                )
             if feature_kind == "attack_rider":
                 if data.get("attack_hit") is not True:
                     raise ValueError("attack rider runtime requires an authoritative parent attack hit")
@@ -2381,11 +2410,6 @@ class ContentIRRuntimeService:
                 feature_blocks = {"telepathic_information": [action]}
                 combat_preview = None
                 entity_senses_preview = telepathic.as_dict()
-            elif _text(action.get("resolution_kind")) == "entity_spatial":
-                raise ValueError(
-                    "entity.spatial requires its dedicated movement consumer; "
-                    "generic feature actions are not allowed"
-                )
             elif _text(action.get("resolution_kind")) in {
                 "reaction_window",
                 "triggered_attack_window",
@@ -2476,6 +2500,289 @@ class ContentIRRuntimeService:
                 {"data": _stable_request_data(data), "result": result}
             )
             return result
+
+    @staticmethod
+    def _combatant_position(combatant: Combatant) -> Any:
+        raw = (combatant.snapshot_json or {}).get("grid_position")
+        if not isinstance(raw, Mapping):
+            raise ValueError("entity spatial requires an authoritative grid position")
+        from dnd_dm_assistant.domain.rules_kernel_protocol import KernelPosition
+
+        try:
+            return KernelPosition(
+                row=int(raw["row"]),
+                col=int(raw["col"]),
+                elevation_ft=int(raw.get("elevation_ft", 0)),
+            )
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError("entity spatial grid position is invalid") from exc
+
+    @staticmethod
+    def _entity_spatial_state(entity: Combatant) -> Mapping[str, Any] | None:
+        raw = (entity.snapshot_json or {}).get("entity_spatial")
+        return raw if isinstance(raw, Mapping) else None
+
+    def _entity_spatial_context(
+        self,
+        session: Session,
+        campaign_id: str,
+        actor: Combatant,
+        data: Mapping[str, Any],
+    ) -> tuple[Combat, Combatant, EntitySpatialSpec, SceneGridSpatialAuthority]:
+        combat = session.get(Combat, _text(data.get("combat_id")))
+        if combat is None or combat.campaign_id != campaign_id or not combat.scene_id:
+            raise StateNotFoundError("entity spatial requires an authoritative combat scene")
+        entity_id = _text(data.get("entity_id"))
+        entity = next(
+            (
+                row
+                for row in session.scalars(
+                    select(Combatant).where(
+                        Combatant.combat_id == combat.id,
+                        Combatant.is_active.is_(True),
+                    )
+                ).all()
+                if row.id == entity_id or _text(row.entity_id) == entity_id
+            ),
+            None,
+        )
+        if entity is None:
+            raise StateNotFoundError("entity spatial entity not found in combat")
+        owner_id = _text((entity.snapshot_json or {}).get("owner_combatant_id"))
+        if owner_id != actor.id:
+            raise ValueError("entity spatial actor is not the entity owner")
+        if entity.id == actor.id:
+            raise ValueError("entity spatial entity must differ from its owner")
+        ordered = CombatEngineService._ordered_combatants(session, combat.id)
+        active = ordered[combat.current_turn_index] if ordered and 0 <= combat.current_turn_index < len(ordered) else None
+        if active is None or active.id != actor.id:
+            raise ValueError("entity spatial movement requires the owner's turn")
+        if not actor.bonus_action_available:
+            raise ValueError("entity spatial movement requires an available bonus action")
+        runtime = actor.snapshot_json.get("feature_runtime") if isinstance(actor.snapshot_json, dict) else {}
+        action = next(
+            (
+                item
+                for item in (runtime.get("actions", {}).values() if isinstance(runtime, Mapping) and isinstance(runtime.get("actions"), Mapping) else [])
+                if isinstance(item, Mapping) and _text(item.get("resolution_kind")) == "entity_spatial"
+            ),
+            None,
+        )
+        if not isinstance(action, Mapping):
+            raise ValueError("entity spatial runtime contract is missing")
+        provenance = action.get("source_provenance") or {}
+        spec = EntitySpatialSpec(
+            entity_id=entity.id,
+            source_id=_text(provenance.get("source_record_id") or runtime.get("source_record_id")),
+            source_fingerprint=_text(provenance.get("source_fingerprint") or runtime.get("source_fingerprint")),
+            max_move_ft=int((action.get("spatial_contract") or {}).get("max_move_ft", 30)),
+            expiry_distance_ft=int((action.get("spatial_contract") or {}).get("expiry_distance_ft", 300)),
+            cell_size_ft=int((action.get("spatial_contract") or {}).get("cell_size_ft", 5)),
+        )
+        return combat, entity, spec, SceneGridSpatialAuthority(session, combat.scene_id, combat_id=combat.id)
+
+    def _preview_entity_spatial(
+        self,
+        session: Session,
+        campaign_id: str,
+        actor: Combatant,
+        action: Mapping[str, Any],
+        data: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        combat, entity, spec, spatial = self._entity_spatial_context(session, campaign_id, actor, data)
+        if data.get("destination_row") is None or data.get("destination_col") is None:
+            raise ValueError("entity spatial movement requires a destination")
+        current = spatial.get_entity_position(entity.id)
+        owner = spatial.get_entity_position(actor.id)
+        destination = KernelPosition(
+            row=int(data["destination_row"]),
+            col=int(data["destination_col"]),
+            elevation_ft=int(
+                data["destination_elevation_ft"]
+                if data.get("destination_elevation_ft") is not None
+                else current.elevation_ft
+            ),
+        )
+        try:
+            spatial._validate_position(destination)
+        except ValueError as exc:
+            raise ValueError("entity spatial destination is outside the authoritative grid") from exc
+        if spatial.is_space_occupied(destination, ignore_entity_id=entity.id):
+            raise ValueError("entity spatial destination is occupied")
+        visible = line_of_sight((owner.row, owner.col), (destination.row, destination.col), spatial.blocked) or line_of_sight(
+            (current.row, current.col), (destination.row, destination.col), spatial.blocked
+        )
+        if not visible:
+            raise ValueError("entity spatial destination is not visible to owner or entity")
+        path = spatial.shortest_path(entity.id, destination)
+        path_result = spatial.validate_intangible_entity_path(
+            entity.id, path, maximum_distance_ft=spec.max_move_ft
+        )
+        if not path_result.legal:
+            raise ValueError(path_result.reason or "entity spatial path is invalid")
+        prior = self._entity_spatial_state(entity)
+        supplied_version = data.get("entity_spatial_version")
+        if supplied_version is not None and (
+            prior is None or int(prior.get("version") or 0) != int(supplied_version)
+        ):
+            raise VersionConflict(
+                "entity spatial",
+                entity.id,
+                int(supplied_version),
+                int(prior.get("version") or 0) if isinstance(prior, Mapping) else 0,
+            )
+        transition = transition_entity_spatial(
+            spec,
+            prior,
+            event="move",
+            operation_id=_text(data.get("operation_id") or data.get("idempotency_key")),
+            expected_version=(
+                int(supplied_version)
+                if supplied_version is not None
+                else (
+                    int(prior.get("version"))
+                    if isinstance(prior, Mapping) and prior.get("version") is not None
+                    else None
+                )
+            ),
+            entity_position=current,
+            owner_position=owner,
+            destination=destination,
+            spatial_facts={
+                "visible_to_owner": True,
+                "destination_unoccupied": True,
+                "path_clear_of_objects": True,
+                "action_economy": "bonus_action",
+            },
+        )
+        result = {
+            "schema_version": RUNTIME_PREVIEW_SCHEMA,
+            "runtime_id": _text(data.get("runtime_id")),
+            "runtime_preview_full": True,
+            "feature_action": dict(action),
+            "entity_spatial": {
+                "schema": "entity.spatial.v1",
+                "entity_id": entity.id,
+                "owner_combatant_id": actor.id,
+                "from": current.model_dump(mode="json"),
+                "to": destination.model_dump(mode="json"),
+                "path": [item.model_dump(mode="json") for item in path],
+                "movement_cost_ft": path_result.cost_ft,
+                "distance_to_owner_ft": transition.distance_ft,
+                "status": transition.state["status"],
+                "source_provenance": {
+                    "source_record_id": spec.source_id,
+                    "source_fingerprint": spec.source_fingerprint,
+                },
+            },
+            "production_contract": {
+                "content_kind": "feature",
+                "consumers": ["entity.spatial.v1"],
+                "action_cost": "bonus_action",
+                "requires_actor_target_cas": True,
+                "requires_idempotency": True,
+                "requires_authoritative_grid": True,
+            },
+        }
+        result["preview_token"] = _fingerprint({"data": _stable_request_data(data), "result": result})
+        return result
+
+    def _confirm_entity_spatial(
+        self,
+        campaign_id: str,
+        data: dict[str, Any],
+        *,
+        key: str,
+        token: str,
+        preview: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        with Session(self.engine) as session, session.begin():
+            actor = session.get(Combatant, _text(data.get("actor_combatant_id")))
+            if actor is None:
+                raise StateNotFoundError("entity spatial actor not found")
+            if actor.version != int(data.get("actor_version") or 0):
+                raise VersionConflict("combatant", actor.id, int(data.get("actor_version") or 0), actor.version)
+            if token != _text(preview["preview_token"]):
+                raise VersionConflict("content runtime preview", key, 1, 2)
+            entity_id = preview["entity_spatial"]["entity_id"]
+            entity = session.get(Combatant, entity_id)
+            if entity is None:
+                raise StateNotFoundError("entity spatial entity not found")
+            expected_entity_version = data.get("entity_spatial_version")
+            current_spatial = self._entity_spatial_state(entity)
+            if expected_entity_version is not None and (
+                not isinstance(current_spatial, Mapping)
+                or int(current_spatial.get("version") or 0) != int(expected_entity_version)
+            ):
+                raise VersionConflict(
+                    "entity spatial",
+                    entity.id,
+                    int(expected_entity_version),
+                    int(current_spatial.get("version") or 0)
+                    if isinstance(current_spatial, Mapping)
+                    else 0,
+                )
+            before = {
+                "actor": {"version": actor.version, "bonus_action_available": actor.bonus_action_available},
+                "entity": {"version": entity.version, "snapshot_json": deepcopy(entity.snapshot_json or {})},
+            }
+            operation = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="content_ir_entity_spatial",
+                idempotency_key=f"content-ir:{key}",
+                status="applied",
+                before_snapshot=before,
+                after_snapshot={},
+                reason="typed entity.spatial movement confirmed",
+                source="combat",
+                confirmed_at=datetime.now(UTC),
+            )
+            session.add(operation)
+            actor.bonus_action_available = False
+            actor.version += 1
+            entity_snapshot = dict(entity.snapshot_json or {})
+            entity_snapshot["entity_spatial"] = _jsonable_entity_spatial_state(
+                transition_entity_spatial(
+                EntitySpatialSpec(
+                    entity_id=entity.id,
+                    source_id=preview["entity_spatial"]["source_provenance"]["source_record_id"],
+                    source_fingerprint=preview["entity_spatial"]["source_provenance"]["source_fingerprint"],
+                ),
+                self._entity_spatial_state(entity),
+                event="move",
+                operation_id=_text(data.get("operation_id") or key),
+                expected_version=(int(data["entity_spatial_version"]) if data.get("entity_spatial_version") is not None else (int(self._entity_spatial_state(entity)["version"]) if self._entity_spatial_state(entity) else None)),
+                entity_position=self._combatant_position(entity),
+                owner_position=self._combatant_position(actor),
+                destination=KernelPosition(
+                    row=int(data["destination_row"]),
+                    col=int(data["destination_col"]),
+                    elevation_ft=int(data.get("destination_elevation_ft") or 0),
+                ),
+                spatial_facts={"visible_to_owner": True, "destination_unoccupied": True, "path_clear_of_objects": True},
+                ).state
+            )
+            entity.snapshot_json = entity_snapshot
+            entity.version += 1
+            entity.snapshot_json["grid_position"] = dict(preview["entity_spatial"]["to"])
+            output = {
+                "schema_version": PRODUCTION_SCHEMA,
+                "content_kind": "feature",
+                "runtime_id": _text(data.get("runtime_id")),
+                "production_runtime_full": True,
+                "preview_token": token,
+                "consumer": "entity.spatial.v1",
+                "operation_transaction_id": operation.id,
+                "actor_combatant_id": actor.id,
+                "actor_version_after": actor.version,
+                "entity_id": entity.id,
+                "entity_version_after": entity.version,
+                "entity_spatial": preview["entity_spatial"],
+                "action_economy": {"cost": "bonus_action", "consumed": True},
+            }
+            operation.after_snapshot = output
+            session.flush()
+            return output
 
     def _confirm_advancement(self, campaign_id: str, data: dict[str, Any]) -> dict[str, Any]:
         key = _text(data.get("idempotency_key"))
@@ -2742,6 +3049,14 @@ class ContentIRRuntimeService:
             if runtime_action.get("resolution_kind") == "communication":
                 return self._confirm_communication(
                     campaign_id, data, runtime_action, key, token
+                )
+            if runtime_action.get("resolution_kind") == "entity_spatial":
+                return self._confirm_entity_spatial(
+                    campaign_id,
+                    data,
+                    key=key,
+                    token=token,
+                    preview=preview,
                 )
             if runtime_action.get("resolution_kind") == "telepathic_information":
                 output = {

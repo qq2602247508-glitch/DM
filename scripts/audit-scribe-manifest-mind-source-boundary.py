@@ -408,12 +408,13 @@ def _matrix(
             operator="configure_entity_spatial",
             consumer_id=None,
             receipt=_path_probe(
-                "backend/tests/test_content_ir_entity_spatial_runtime.py",
+                "backend/tests/test_content_ir_entity_spatial_api.py",
                 "preview",
                 "confirm",
                 "replay",
                 "bonus_action",
-                "dedicated movement consumer",
+                "campaign_client",
+                "entity.spatial.v1",
             ),
             source_paths=(
                 "backend/src/dnd_dm_assistant/domain/entity_spatial.py",
@@ -431,10 +432,10 @@ def _matrix(
             operator="configure_entity_spatial",
             consumer_id=None,
             receipt=_path_probe(
-                "backend/tests/test_content_ir_entity_spatial_runtime.py",
-                "distance_expired",
-                "version conflict",
-                "dedicated movement consumer",
+                "backend/tests/test_content_ir_entity_spatial_api.py",
+                "entity_spatial_version",
+                "distance",
+                "entity.spatial.v1",
             ),
             source_paths=(
                 "backend/src/dnd_dm_assistant/domain/entity_spatial.py",

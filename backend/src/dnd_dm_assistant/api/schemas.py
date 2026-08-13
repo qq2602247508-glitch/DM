@@ -1216,6 +1216,7 @@ class CombatFeatureActionCommand(BaseModel):
     target_version: int | None = Field(default=None, ge=1)
     destination_row: int | None = Field(default=None, ge=1, le=10_000)
     destination_col: int | None = Field(default=None, ge=1, le=10_000)
+    destination_elevation_ft: int | None = Field(default=None, ge=-10_000, le=10_000)
     movement_roll_total: int | None = Field(default=None, ge=1, le=1_000)
     reset_spell_slot_level: int | None = Field(default=None, ge=1, le=9)
     dm_override: bool = False
@@ -2560,6 +2561,7 @@ class ContentIRRuntimeRequest(BaseModel):
         "long_rest",
     ] | None = None
     entity_lifecycle_expected_version: int | None = Field(default=None, ge=0)
+    entity_spatial_version: int | None = Field(default=None, ge=0)
     entity_lifecycle_metadata: dict[str, Any] = Field(default_factory=dict, max_length=20)
     resource_key: str | None = Field(default=None, min_length=1, max_length=120)
     resource_cost: int = Field(default=0, ge=0, le=100)

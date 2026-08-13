@@ -6,6 +6,37 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round XXXIX：Manifest Mind dedicated entity spatial runtime
+
+当前状态：`compile_only_blocked`；movement 与 distance-expiry 的名称无关
+`entity.spatial.v1` dedicated consumer/API/service 已闭合，但
+`scribe-manifest-mind` 未升 production。
+
+- source boundary matrix：`13 covered / 0 partial / 0 missing`。
+- 真实 API receipts 覆盖合法 30 ft、31 ft 拒绝、不可见、占用、object path、
+  creature path、300 ft 内保持、超过 300 ft typed expiry、非 owner、非 owner 回合、
+  bonus action 已用、stale actor/entity CAS、replay、failed-confirm rollback。
+- 服务端 authoritative grid/visibility/occupancy/path/distance 重算；请求方不能伪造
+  owner、位置、可见、占用、距离。actor/entity position/state 持久化，bonus action
+  原子消费，`OperationTransaction` 与 preview → confirm → replay 闭合。
+- expired/terminated entity 对 senses、telepathy、remote-origin fail-closed；无
+  feature-name branch。
+- baseline/after 不变：Tasha `106 authored / 105 compile / 105 preview / 101 production /
+  2 compile-only`；项目 `201 production / 35 compile-only / 111 unique compiled`；
+  全部 delta 为 `0`。
+- 全量 pytest、Ruff、compileall、diff-check、dynamic audit 双跑、Round XXXV
+  validator 双跑、whole-pack 双跑通过。audit stdout SHA-256：
+  `f619e20e7c756077adefcefaf866ddd39b74c13229585acb0ae438fdbf99594c`；
+  validator：`53c059905454488fd541a499243092df5f8203d74d664cf1549251b96a8dd423`；
+  whole-pack：`071cd15163381c68d0888a4f849d2edc80bf79450955ff8c73498a2212d123a7`。
+- production gate 保持关闭：`source_completeness=incomplete`，无
+  `production_runtime_full_ids`，formal DB/registry 未写入。旧 Round XXV reconciliation
+  因历史 receipts 期待 `132/189/89` 而当前真实状态为 `144/201/101` 失败；formal
+  DB/registry 与 protected fingerprints 仍通过。
+- 证据：`docs/tashas-feature-production-consumer-round-XXXIX-2026-08-13.md`、
+  `reports/scribe-manifest-mind-source-boundary-audit-2026-08-13.json`、
+  `backend/tests/test_content_ir_entity_spatial_api.py`。
+
 ## Round XXXV：Manifest Mind entity spatial seam
 
 当前状态：`compile_only_blocked`；本轮只闭合通用 spatial movement/expiry 机制，

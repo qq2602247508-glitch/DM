@@ -24,8 +24,8 @@ Round XXXVI baseline/after remains Tasha `106 authored / 105 compile / 105 previ
 | `telepathic-sharing` | `covered` | `feature_runtime_compiler` | `content_ir_runtime.telepathic_information` | `combat_action.result_json` | `closed` |  |
 | `remote-spell-origin` | `covered` | `feature_runtime_compiler` | `remote_spell_origin_resolver` | `combat_action.spell_origin_resolution` | `closed` |  |
 | `proficiency-bonus-uses` | `covered` | `advancement_service` | `character_resource_store` | `character.resources` | `closed` |  |
-| `movement` | `partial` | `feature_runtime_compiler` | `content_ir_runtime.entity_spatial` | `combatant.snapshot_json.feature_runtime.entity_spatial` | `closed` | Spatial movement requires an authored feature-bound bonus-action receipt, not only a generic spatial seam. |
-| `distance-expiry` | `partial` | `feature_runtime_compiler` | `content_ir_runtime.entity_spatial` | `combatant.snapshot_json.feature_runtime.entity_spatial` | `closed` | Distance expiry requires the authored entity.spatial binding and a real runtime receipt. |
+| `movement` | `covered` | `feature_runtime_compiler` | `content_ir_runtime.entity_spatial` | `combatant.snapshot_json.feature_runtime.entity_spatial` | `closed` |  |
+| `distance-expiry` | `covered` | `feature_runtime_compiler` | `content_ir_runtime.entity_spatial` | `combatant.snapshot_json.feature_runtime.entity_spatial` | `closed` |  |
 | `dispel-magic-expiry` | `covered` | `feature_runtime_compiler` | `entity_lifecycle_service` | `entity.lifecycle.state` | `closed` |  |
 | `spellbook-destruction-expiry` | `covered` | `feature_runtime_compiler` | `entity_lifecycle_service` | `entity.lifecycle.state` | `closed` |  |
 | `owner-dismissal-expiry` | `covered` | `feature_runtime_compiler` | `entity_lifecycle_service` | `entity.lifecycle.state` | `closed` |  |

@@ -174,7 +174,7 @@
     },
     {
       "authored_ir": "mind-sight",
-      "blocker": "Spatial movement requires an authored feature-bound bonus-action receipt, not only a generic spatial seam.",
+      "blocker": "",
       "cas_replay": "closed",
       "clause_id": "movement",
       "consumer": "content_ir_runtime.entity_spatial",
@@ -184,7 +184,7 @@
       "evidence_checks": {
         "authored_ir": true,
         "cas_replay": true,
-        "focused_receipt": false,
+        "focused_receipt": true,
         "materializer": true,
         "operator_capability": true,
         "runtime_registry": true,
@@ -193,11 +193,11 @@
       "persistence": "combatant.snapshot_json.feature_runtime.entity_spatial",
       "producer": "feature_runtime_compiler",
       "source_rule": "Bonus action movement up to 30 ft to a visible unoccupied space; through creatures but not objects.",
-      "status": "partial"
+      "status": "covered"
     },
     {
       "authored_ir": "mind-sight",
-      "blocker": "Distance expiry requires the authored entity.spatial binding and a real runtime receipt.",
+      "blocker": "",
       "cas_replay": "closed",
       "clause_id": "distance-expiry",
       "consumer": "content_ir_runtime.entity_spatial",
@@ -207,7 +207,7 @@
       "evidence_checks": {
         "authored_ir": true,
         "cas_replay": true,
-        "focused_receipt": false,
+        "focused_receipt": true,
         "materializer": true,
         "operator_capability": true,
         "runtime_registry": true,
@@ -216,7 +216,7 @@
       "persistence": "combatant.snapshot_json.feature_runtime.entity_spatial",
       "producer": "feature_runtime_compiler",
       "source_rule": "Manifestation stops when distance from the owner exceeds 300 ft.",
-      "status": "partial"
+      "status": "covered"
     },
     {
       "authored_ir": "spectral-object-lifecycle",
@@ -342,9 +342,9 @@
     "typed_clause_count": 8
   },
   "counts": {
-    "covered": 11,
+    "covered": 13,
     "missing": 0,
-    "partial": 2,
+    "partial": 0,
     "total": 13
   },
   "feature_id": "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
