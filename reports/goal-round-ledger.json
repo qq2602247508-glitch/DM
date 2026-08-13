@@ -1,7 +1,135 @@
 {
-  "current_round": "round-30",
+  "current_round": "round-31",
   "goal": "Local AI D&D DM Assistant complete official-content rules platform",
   "rounds": [
+    {
+      "round_id": "round-31",
+      "status": "accepted",
+      "started_at": "2026-08-13",
+      "accepted_at": "2026-08-13",
+      "objective": "Close the source-complete Spores druid circle-spells feature (known cantrip chill touch + eight always-prepared circle spells) through the existing name-agnostic advancement_service.character_growth.v1 + spell_registry consumer.",
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 199,
+            "unique_compiled": 111
+          },
+          "formal_499": {
+            "dm_only": 61,
+            "full": 328,
+            "partial": 110,
+            "total": 499
+          },
+          "protected_fingerprints": {
+            "database": "f3abdcf57b0d71888f085ca081511df4f4e23f100066b402d49d769089fa6aad",
+            "formal_registry": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+            "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+            "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+          },
+          "tashas": {
+            "source_records": 144,
+            "content_atoms": 525,
+            "executable": 408,
+            "authored_typed_ir": 104,
+            "compile_full": 103,
+            "runtime_preview_full": 103,
+            "production_full": 99,
+            "dm_assisted": 2,
+            "game_usable": 101,
+            "compile_only": 2,
+            "manual_authoring": 305,
+            "dm_reference": 107,
+            "item_spec_total": 47,
+            "item_spec_compile_full": 40,
+            "item_spec_isolated_runtime_validated": 40,
+            "item_spec_registered_production_full": 40,
+            "item_spec_dm_assisted": 0,
+            "item_spec_game_usable": 40
+          }
+        }
+      },
+      "selected_content_ids": [
+        "content.tashas-cauldron.round2.feature.spores-druid-circle-spells"
+      ],
+      "selected_clusters": [
+        "advancement.fixed_spell_grant",
+        "feature.clause.known_cantrip",
+        "feature.clause.always_prepared",
+        "content_ir.source_complete_provenance"
+      ],
+      "selected_platforms": [
+        "advancement_service.character_growth.v1",
+        "advancement_service.spell_registry",
+        "ContentIRRuntimeService"
+      ],
+      "after": {
+        "tashas": {
+          "production_full": 100,
+          "dm_assisted": 2,
+          "game_usable": 102,
+          "compile_only": 2
+        },
+        "project": {
+          "production_full": 200,
+          "compile_only": 35,
+          "unique_compiled": 111
+        },
+        "evidence": {
+          "tasha_receipt_ids": 143,
+          "project_receipt_ids": 200
+        }
+      },
+      "delta": {
+        "tasha_production_full": 1,
+        "tasha_game_usable": 1,
+        "tasha_compile_only": 0,
+        "tasha_manual_authoring": -1,
+        "project_production_full": 1,
+        "project_receipt_ids": 1
+      },
+      "reports": [
+        "docs/tashas-feature-production-consumer-round-XXXI-2026-08-13.md",
+        "reports/tashas-feature-production-consumer-round-XXXI-2026-08-13.json",
+        "data/content-ir/compiled/production-runtime-results-XXXII.json",
+        "reports/tashas-whole-pack-report-2026-08-11.json"
+      ],
+      "checks": [
+        "Round XXXI validator: all required checks passed",
+        "focused Round XXXI receipt suite: 3 passed",
+        "whole-pack migration twice: projection SHA-256 2a852d31959daa884731c6ce51c0d4083c6c7c5375ee996615c2bccc2c554904",
+        "formal database and registry unchanged",
+        "protected paths unchanged",
+        "name branch count 0"
+      ],
+      "tests": [
+        "backend/.venv/bin/pytest -q backend/tests: 941 passed, 1 warning (existing Starlette/httpx deprecation)",
+        "focused Round XXXI receipt suite: 3 passed",
+        "backend/src and backend/tests Ruff: passed",
+        "backend/src and backend/tests compileall: passed",
+        "git diff --check: passed",
+        "Round XXXI validator: 1/1 production_runtime_full",
+        "whole-pack migration twice: projection SHA-256 2a852d31959daa884731c6ce51c0d4083c6c7c5375ee996615c2bccc2c554904"
+      ],
+      "protected_paths_untouched": true,
+      "formal_registry_written": false,
+      "formal_database_written": false,
+      "name_branch_count": 0,
+      "next_round_reason": "Always-prepared spell-list seam is now batch-closed. Remaining spell-list candidate: genie expanded list (warlock selection semantics, not always-prepared). Compile-only vessel (genie-bottled-respite) and spectral-object (scribe-manifest-mind) remain; or single resistance/movement/sight features.",
+      "commits": [
+        "ab78e85",
+        "387fd67",
+        "1f31727"
+      ],
+      "push_receipt": {
+        "branch": "main",
+        "commit_hash": "1f31727",
+        "pushed_at": "2026-08-13",
+        "remote": "origin",
+        "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
+        "result": "pending"
+      }
+    },
     {
       "round_id": "round-30",
       "status": "accepted",

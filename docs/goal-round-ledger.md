@@ -6,6 +6,20 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 31：孢子结社法术（已知戏法 + 八条恒备法术）Character-Growth Consumer
+
+当前状态：`accepted`；实现、receipt、报告、文档、全量门禁、分离提交和 push 均已完成。
+
+- 本轮关闭 source-complete 德鲁伊孢子结社结社法术：一条 `known-cantrip` 子句（2 级习得戏法 `chill_touch`，`grant_mode=known`）+ 一条 `always-prepared` 子句（3/5/7/9 级获得八条结社法术并恒备，`grant_mode=always_prepared`），复用既有 `advancement_service.character_growth.v1` + `advancement_service.spell_registry` 消费者，未新增 dispatch 分支。
+- 两条 advancement 子句由编译器合并为一个 envelope：顶层 `spells` 恰 9 条，顶层 `grant_mode` 因两条子句不同被有意移除，但 `spell_grants` 内每条 grant 保留各自 `grant_mode`（1 条 `known` + 8 条 `always_prepared`），consumer 按 grant 级元数据正确解析。
+- 法术 slug 逐一对照 `玩家手册 2014` spell corpus 英文别名（`blindness_deafness`、`gentle_repose`、`animate_dead`、`gaseous_form`、`blight`、`confusion`、`cloudkill`、`contagion`），戏法为 `chill_touch`；九条互不重叠。
+- Round XXXI validator 1/1 production_runtime_full；focused Round XXXI receipt suite 3 passed；backend 全量 pytest 941 passed（仅既有 Starlette/httpx deprecation warning）；Ruff、compileall、diff-check 通过；whole-pack migration 双跑 projection SHA-256 均为 `2a852d31959daa884731c6ce51c0d4083c6c7c5375ee996615c2bccc2c554904`。
+- Actual after：Tasha `525/408/408/105/104/104/100/2/102/2/304/107`；ItemSpec `47/40/40/40`；项目 `200 production / 35 compile-only / 111 unique compiled`；Tasha evidence union `143`，project evidence union `200`。content-ID funnel 为 `105 = 101 + 2 + 2`。
+- 证据入口：`docs/tashas-feature-production-consumer-round-XXXI-2026-08-13.md`、`scripts/validate-tashas-feature-production-consumer-round-XXXI.py`、`backend/tests/test_tashas_feature_production_consumer_round_XXXI.py`、`reports/tashas-feature-production-consumer-round-XXXI-2026-08-13.json`、`data/content-ir/compiled/production-runtime-results-XXXII.json`。
+- 保护路径、正式 database、formal registry、source corpus、campaign/character 与 3D 未写入；`name_branch_count=0`。下一轮转向巨灵宗主扩展法术（warlock 列表扩展语义）或 vessel/spectral-object 机制，不迁移下一本扩展包。
+- 保护指纹保持 database `f3abdcf57b0d71888f085ca081511df4f4e23f100066b402d49d769089fa6aad`、formal registry `f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b`、integrations manifest `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`、ollama `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`。
+- Push receipt：`ab78e85`、`387fd67`、`1f31727` 已推送到 `origin/main`（2026-08-13）。
+
 ## Round 30：战地匠师/装甲师/魔炮师三张奇械师法术表 Character-Growth Consumer
 
 当前状态：`accepted`；实现、receipt、报告、文档、全量门禁、分离提交和 push 均已完成。

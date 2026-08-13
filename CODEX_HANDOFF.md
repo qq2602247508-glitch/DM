@@ -1,3 +1,15 @@
+# 2026-08-13 Round 31 检查点：孢子结社法术（已知戏法 + 八条恒备法术）Character-Growth Consumer
+
+- 本轮关闭 source-complete 德鲁伊孢子结社结社法术（2 级）：一条 `known-cantrip` 子句（习得戏法 `chill_touch`，`grant_mode=known`）+ 一条 `always-prepared` 子句（3/5/7/9 级获得八条结社法术并恒备，`grant_mode=always_prepared`）。复用既有名称无关 `advancement_service.character_growth.v1` + `advancement_service.spell_registry` 消费者，未新增任何 dispatch 分支或底层 capability。
+- 两条 advancement 子句由 `materialize_runtime_definition` 合并为一个 envelope：顶层 `spells` 恰 9 条；顶层 `grant_mode` 因两条子句不同被有意移除，但 `spell_grants` 内每条 grant 保留各自 `grant_mode`（1 条 `known` + 8 条 `always_prepared`），consumer 按 grant 级元数据解析，`spell_grant_count=9` 全通过。
+- 法术 slug 逐一对照 `玩家手册 2014` spell corpus 英文别名（`blindness_deafness`、`gentle_repose`、`animate_dead`、`gaseous_form`、`blight`、`confusion`、`cloudkill`、`contagion`），戏法 `chill_touch`；九条互不重叠。
+- 当前实际 Tasha：`144 source records / 525 atoms / 408 executable / 105 authored Typed IR / 104 compile / 104 preview / 100 production / 2 DM-assisted / 102 game usable / 2 compile-only / 304 manual / 107 DM reference`；content-ID funnel `105 = 101 + 2 + 2`。
+- 当前 project：`200 production / 35 compile-only / 111 unique compiled`；Tasha evidence union `143`，project union `200`；ItemSpec 保持 `47/40/40/40`。
+- Round XXXI validator 1/1 production_runtime_full；focused receipt suite 3 passed；backend 全量 pytest 941 passed（仅既有 Starlette/httpx deprecation warning）；Ruff、compileall、diff-check 通过；whole-pack migration 双跑 projection SHA-256 `2a852d31959daa884731c6ce51c0d4083c6c7c5375ee996615c2bccc2c554904`。
+- 分离提交 `ab78e85`（authored Spores circle-spells IR）、`387fd67`（validator + test + evidence + 计数调和）、`1f31727`（docs closeout）已推送到 `origin/main`（2026-08-13）。push receipt 已写入 ledger。
+- 证据入口：`docs/tashas-feature-production-consumer-round-XXXI-2026-08-13.md`、`scripts/validate-tashas-feature-production-consumer-round-XXXI.py`、`backend/tests/test_tashas_feature_production_consumer_round_XXXI.py`、`reports/tashas-feature-production-consumer-round-XXXI-2026-08-13.json`、`data/content-ir/compiled/production-runtime-results-XXXII.json`。
+- 下一轮继续巨灵宗主扩展法术（warlock「扩展列表」选择语义，非恒备，需先复核 corpus/contract）或转向单一抗性/移动/视觉类特性；仍剩 vessel（genie-bottled-respite）与 spectral-object（scribe-manifest-mind）两个 compile-only；不迁移下一本扩展包、不触碰 3D。
+
 # 2026-08-13 Round 30 检查点：战地匠师/装甲师/魔炮师三张奇械师法术表 Character-Growth Consumer
 
 - 本轮关闭三个 source-complete 奇械师恒备法术表：`battle-smith-spell-list`（战地匠师）、`armorer-spell-list`（装甲师）、`artillerist-spell-list`（魔炮师），各 3 级。每个特性是单条 `always-prepared` 子句，效果为 10 个 `grant_spell`（`source_class=artificer`、`casting_ability=intelligence`、`grant_mode=always_prepared`），复用既有名称无关 `advancement_service.character_growth.v1` + `advancement_service.spell_registry` 消费者，未新增任何 dispatch 分支或底层 capability。
