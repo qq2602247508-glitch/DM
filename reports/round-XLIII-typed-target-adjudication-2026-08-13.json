@@ -1,0 +1,285 @@
+{
+  "after": {
+    "canonical_projection_counts": {
+      "compile_only": 35,
+      "production": 203,
+      "unique_compiled": 111
+    },
+    "promoted_ids": [],
+    "retained_compile_only_ids": [
+      "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb",
+      "core-phb-2024:spell:83b7d94b77f332dd71310bbe",
+      "core-phb-2024:spell:b9db026fa1853bca5b6f1c13",
+      "core-phb-2024:spell:d82624a42cf6c33ccec927b8",
+      "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c"
+    ]
+  },
+  "all_candidates_promoted": false,
+  "artifact_date": "2026-08-13",
+  "baseline": {
+    "counts": {
+      "compile_only": 35,
+      "production": 203,
+      "unique_compiled": 111
+    },
+    "path": "reports/content-ir-runtime-level-audit-IV-2026-08-11.json",
+    "sha256": "c45ff3805aea6fdbc25ec5f833143cdffed09bd450d76e19bb6ca6cac481b55e"
+  },
+  "behavioral_gates": {
+    "campaign_actor_scene_target_mismatch": {
+      "command": [
+        "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "backend/tests/test_rules_kernel.py::test_typed_adjudication_rejects_wrong_source_and_target_bindings"
+      ],
+      "node": "backend/tests/test_rules_kernel.py::test_typed_adjudication_rejects_wrong_source_and_target_bindings",
+      "passed": true,
+      "returncode": 0
+    },
+    "immutable_contract": {
+      "command": [
+        "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "backend/tests/test_round_XLIII_typed_target_adjudication.py::test_round_xliii_typed_resolution_rejects_target_and_contract_drift"
+      ],
+      "node": "backend/tests/test_round_XLIII_typed_target_adjudication.py::test_round_xliii_typed_resolution_rejects_target_and_contract_drift",
+      "passed": true,
+      "returncode": 0
+    },
+    "legacy_fail_closed": {
+      "command": [
+        "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "backend/tests/test_round_XLIII_typed_target_adjudication.py::test_round_xliii_legacy_adjudication_is_fail_closed"
+      ],
+      "node": "backend/tests/test_round_XLIII_typed_target_adjudication.py::test_round_xliii_legacy_adjudication_is_fail_closed",
+      "passed": true,
+      "returncode": 0
+    },
+    "operation_transaction_receipt": {
+      "command": [
+        "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "backend/tests/test_rules_kernel.py::test_typed_adjudication_is_source_bound_and_emits_receipt"
+      ],
+      "node": "backend/tests/test_rules_kernel.py::test_typed_adjudication_is_source_bound_and_emits_receipt",
+      "passed": true,
+      "returncode": 0
+    },
+    "resolve_replay_payload_drift": {
+      "command": [
+        "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "backend/tests/test_round_XLIII_typed_target_adjudication.py::test_round_xliii_typed_resolution_rejects_payload_drift_on_replay"
+      ],
+      "node": "backend/tests/test_round_XLIII_typed_target_adjudication.py::test_round_xliii_typed_resolution_rejects_payload_drift_on_replay",
+      "passed": true,
+      "returncode": 0
+    },
+    "source_binding": {
+      "command": [
+        "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "backend/tests/test_rules_kernel.py::test_typed_adjudication_is_source_bound_and_emits_receipt"
+      ],
+      "node": "backend/tests/test_rules_kernel.py::test_typed_adjudication_is_source_bound_and_emits_receipt",
+      "passed": true,
+      "returncode": 0
+    },
+    "stale_cas_expiry": {
+      "command": [
+        "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "backend/tests/test_round_XLIII_typed_target_adjudication.py::test_round_xliii_adjudication_stale_cas_and_expiry_fail_closed"
+      ],
+      "node": "backend/tests/test_round_XLIII_typed_target_adjudication.py::test_round_xliii_adjudication_stale_cas_and_expiry_fail_closed",
+      "passed": true,
+      "returncode": 0
+    }
+  },
+  "count_delta": {
+    "compile_only": 0,
+    "production": 0,
+    "unique_compiled": 0
+  },
+  "focused_tests": {
+    "command": [
+      "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "backend/tests/test_rules_kernel.py",
+      "backend/tests/test_migrations.py",
+      "backend/tests/test_round_XLIII_typed_target_adjudication.py::test_round_xliii_legacy_adjudication_is_fail_closed",
+      "backend/tests/test_round_XLIII_typed_target_adjudication.py::test_round_xliii_typed_resolution_rejects_target_and_contract_drift",
+      "backend/tests/test_round_XLIII_typed_target_adjudication.py::test_round_xliii_typed_resolution_rejects_payload_drift_on_replay"
+    ],
+    "passed": true,
+    "returncode": 0,
+    "summary": "selected XLIII-focused nodes passed"
+  },
+  "generic_seam": {
+    "actor_target_scene_cas": true,
+    "campaign_actor_scene_target_binding": true,
+    "consumer": "RulesKernelService.confirm",
+    "fail_closed_missing_or_wrong_binding": true,
+    "idempotency_payload_drift_rejection": true,
+    "immutable_producer_provenance": true,
+    "operation_transaction_receipt": true,
+    "preview_confirm_replay": true,
+    "producer": "rules-kernel",
+    "source_record_fingerprint_clause_binding": true,
+    "typed_contract": "typed-adjudication-1"
+  },
+  "promotion_rule": "promote only when every source-required semantic dimension has a persisted tested consumer",
+  "protected_fingerprints": {
+    "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+    "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+  },
+  "report_fingerprint": "c0f336292e2312935db7f85fd9eee38940910445e7acdd36d8f5c18f5842e3da",
+  "round_id": "round-XLIII",
+  "schema_version": "round-XLIII-typed-target-adjudication-1",
+  "source_boundary_matrix": {
+    "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb": {
+      "blockers": [
+        "no spell modifier effect consumer persists speed_ft +10 on selected targets",
+        "no generic expiry/replacement path proves this modifier lifecycle",
+        "no upcast target fan-out contract is represented in the compiled runtime"
+      ],
+      "compiled_clause_ids": [
+        "target"
+      ],
+      "compiled_target_kind": "one_creature",
+      "content_id": "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb",
+      "decision": "retained_compile_only",
+      "name": "Longstrider",
+      "required_semantics": [
+        "touch single-or-upcast-multiple creature targets",
+        "speed +10 ft modifier",
+        "1-hour persistence and expiry",
+        "upcast target fan-out",
+        "replacement/stacking behavior"
+      ],
+      "source_fingerprint": "834e92d0104e26b08042388d344c97379f0274a935e10fd4953075ec9bd0a8b0",
+      "source_path": "data/generated-content/dnd5e_chm/markdown/spells/6f5b6f21ffa22e705a9bd6cb.md",
+      "source_record_id": "6f5b6f21ffa22e705a9bd6cb",
+      "source_sha256": "da6bb47a0d6535a9b645dc4b739d9a7e8fa8961eb1935648b27b93cd4e528412"
+    },
+    "core-phb-2024:spell:83b7d94b77f332dd71310bbe": {
+      "blockers": [
+        "no persisted illusion appearance envelope or physical-inspection behavior",
+        "no research-action/check consumer bound to the spell DC",
+        "no illusion expiry receipt"
+      ],
+      "compiled_clause_ids": [
+        "target"
+      ],
+      "compiled_target_kind": "one_creature",
+      "content_id": "core-phb-2024:spell:83b7d94b77f332dd71310bbe",
+      "decision": "retained_compile_only",
+      "name": "Disguise Self",
+      "required_semantics": [
+        "self target and 1-hour duration",
+        "appearance/clothing/armor/weapon illusion bounds",
+        "physical inspection passes through illusion",
+        "research action plus Intelligence (Investigation) vs spell DC",
+        "effect termination"
+      ],
+      "source_fingerprint": "333f2d3a48232acf17b222fc2782505ff5f61a059a7ffe49c26ad86823caa0f4",
+      "source_path": "data/generated-content/dnd5e_chm/markdown/spells/83b7d94b77f332dd71310bbe.md",
+      "source_record_id": "83b7d94b77f332dd71310bbe",
+      "source_sha256": "f67facbcc78161301a3a782d4d0c71b467675b17924938b157ee5499a25ba22f"
+    },
+    "core-phb-2024:spell:b9db026fa1853bca5b6f1c13": {
+      "blockers": [
+        "no generic effect-mode choice contract for all six modes",
+        "no object/surface persistence and dismissal/expiry consumer",
+        "no three-slot concurrent-effect lifecycle"
+      ],
+      "compiled_clause_ids": [
+        "target"
+      ],
+      "compiled_target_kind": "object",
+      "content_id": "core-phb-2024:spell:b9db026fa1853bca5b6f1c13",
+      "decision": "retained_compile_only",
+      "name": "Prestidigitation",
+      "required_semantics": [
+        "10-foot typed object/surface target boundary",
+        "six selectable effect modes",
+        "instant modes",
+        "one-hour minor sensation and mark modes",
+        "next-turn-end minor creation expiry",
+        "maximum three concurrent non-instant effects"
+      ],
+      "source_fingerprint": "ac01a2d5259ee244017fc18a87ba7014451a505a4e196d260a6dbb2a06806dda",
+      "source_path": "data/generated-content/dnd5e_chm/markdown/spells/b9db026fa1853bca5b6f1c13.md",
+      "source_record_id": "b9db026fa1853bca5b6f1c13",
+      "source_sha256": "794cb2bd4b70023bcd4d374f5e765b4b439e4b4174f4ee47ea0be04eae764862"
+    },
+    "core-phb-2024:spell:d82624a42cf6c33ccec927b8": {
+      "blockers": [
+        "no time-bounded communication capability effect",
+        "no beast-scope Influence skill-option consumer",
+        "no recent-observation information boundary receipt"
+      ],
+      "compiled_clause_ids": [
+        "target"
+      ],
+      "compiled_target_kind": "one_creature",
+      "content_id": "core-phb-2024:spell:d82624a42cf6c33ccec927b8",
+      "decision": "retained_compile_only",
+      "name": "Speak with Animals",
+      "required_semantics": [
+        "self target",
+        "10-minute duration",
+        "understand and communicate with beasts",
+        "all skill options for Influence actions against beasts",
+        "limited information scope and recent-observation boundary"
+      ],
+      "source_fingerprint": "efd7ccf941e012513b582fc600b535fae6d875bdbdfc3fff278a7fbfb9ad28c3",
+      "source_path": "data/generated-content/dnd5e_chm/markdown/spells/d82624a42cf6c33ccec927b8.md",
+      "source_record_id": "d82624a42cf6c33ccec927b8",
+      "source_sha256": "1a129ba7b156bce0823573b14a71a7d345c5bc48c44508bd6e57b085c19baaad"
+    },
+    "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c": {
+      "blockers": [
+        "no communication-path consumer for visibility/familiarity/material barriers",
+        "no private reply-channel persistence/receipt",
+        "no magical-silence interaction check"
+      ],
+      "compiled_clause_ids": [
+        "target"
+      ],
+      "compiled_target_kind": "one_creature",
+      "content_id": "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c",
+      "decision": "retained_compile_only",
+      "name": "Message",
+      "required_semantics": [
+        "120-foot single visible/familiar target",
+        "solid barrier and material thickness rules",
+        "magical silence blocking",
+        "only target hears",
+        "private reply channel",
+        "instant effect"
+      ],
+      "source_fingerprint": "a31360e68505c1721795f408c2ca955357f076a8c47f79c665fe9427fc357de6",
+      "source_path": "data/generated-content/dnd5e_chm/markdown/spells/dd9cb25c63b7e13194c7d01c.md",
+      "source_record_id": "dd9cb25c63b7e13194c7d01c",
+      "source_sha256": "4781ffcaf504be184bc99dbe4b4343cd639649d3e8d4490baaffc2af7ce186e4"
+    }
+  }
+}

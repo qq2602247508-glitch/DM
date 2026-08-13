@@ -38,12 +38,14 @@ from dnd_dm_assistant.domain.rules_kernel_protocol import (
     RulesKernelSceneDelta,
     RulesKernelStateDelta,
     SceneQuery,
+    TypedAdjudicationContract,
 )
 from dnd_dm_assistant.domain.spatial_authority import SceneGridSpatialAuthority, SpatialAuthority
 from dnd_dm_assistant.infrastructure.database.models import (
     Combat,
     Combatant,
     CompendiumEntry,
+    OperationTransaction,
     RulesKernelAdjudicationWindow,
     RulesKernelChoiceWindow,
     RulesKernelCommandRecord,
@@ -54,6 +56,7 @@ from dnd_dm_assistant.infrastructure.database.models import (
 )
 
 MAX_CAUSAL_DEPTH = 8
+TYPED_OPERATION_NAMESPACE = "rules_kernel_typed_adjudication"
 
 
 def _canonical(value: object) -> str:
@@ -68,6 +71,15 @@ def _now() -> datetime:
     return datetime.now(UTC)
 
 
+def _is_expired(value: datetime | None) -> bool:
+    if value is None:
+        return False
+    current = value
+    if current.tzinfo is None:
+        current = current.replace(tzinfo=UTC)
+    return current < _now()
+
+
 def _text(value: object) -> str:
     return str(value or "").strip()
 
@@ -78,6 +90,26 @@ def _as_dict(value: object) -> dict[str, Any]:
 
 def _as_list(value: object) -> list[Any]:
     return list(value) if isinstance(value, (list, tuple)) else []
+
+
+def _typed_adjudication_is_authoritative(
+    adjudication: RulesKernelAdjudicationWindow,
+) -> bool:
+    provenance = _as_dict(adjudication.producer_provenance)
+    return (
+        provenance.get("source_bound") is True
+        and provenance.get("contract_schema") == "typed-adjudication-1"
+        and _text(adjudication.source_record_id) not in {"", "legacy-unbound"}
+        and _text(adjudication.source_fingerprint) not in {"", "legacy-unbound"}
+        and bool(_as_list(adjudication.source_clause_ids))
+        and bool(_as_dict(adjudication.target_context))
+        and bool(_as_dict(adjudication.effect_envelope))
+        and bool(_as_dict(adjudication.frozen_context).get("typed_contract"))
+    )
+
+
+def _without_idempotency(payload: Mapping[str, Any]) -> dict[str, Any]:
+    return {key: value for key, value in payload.items() if key != "idempotency_key"}
 
 
 class RulesKernelService:
@@ -292,6 +324,22 @@ class RulesKernelService:
         category: str | None = None,
     ) -> tuple[RulesKernelAdjudicationWindow, RulesKernelAdjudicationRequest]:
         metadata = _as_dict(command.metadata.get("adjudication"))
+        typed_raw = _as_dict(command.metadata.get("typed_adjudication"))
+        typed_contract = TypedAdjudicationContract.model_validate(typed_raw) if typed_raw else None
+        if typed_contract is not None:
+            context = typed_contract.target_context
+            if not command.content_id or typed_contract.source_binding.content_id != command.content_id:
+                raise ValueError("typed adjudication content binding mismatch")
+            if not typed_contract.source_binding.clause_ids:
+                raise ValueError("typed adjudication requires source clause binding")
+            if context.campaign_id != command.campaign_id:
+                raise ValueError("typed adjudication campaign binding mismatch")
+            if context.actor_id != actor.id:
+                raise ValueError("typed adjudication actor binding mismatch")
+            if context.scene_id != command.scene_id:
+                raise ValueError("typed adjudication scene binding mismatch")
+            if context.target_id and context.target_id not in command.target_intent.target_ids and context.target_id != actor.id:
+                raise ValueError("typed adjudication target binding mismatch")
         category_value = category or _text(metadata.get("category")) or "target_semantics"
         allowed_categories = {
             "target_semantics", "freeform_effect", "illusion_interpretation",
@@ -312,7 +360,45 @@ class RulesKernelService:
             campaign_id=command.campaign_id,
             source_command_id=command.command_id,
             content_id=command.content_id,
+            source_record_id=(
+                typed_contract.source_binding.source_record_id
+                if typed_contract is not None
+                else (_text(metadata.get("source_record_id")) or _text(command.content_id) or "legacy-unbound")
+            ),
+            source_fingerprint=(
+                typed_contract.source_binding.source_fingerprint
+                if typed_contract is not None
+                else (_text(metadata.get("source_fingerprint")) or "legacy-unbound")
+            ),
+            source_clause_ids=list(
+                typed_contract.source_binding.clause_ids
+                if typed_contract is not None
+                else tuple(str(item) for item in _as_list(metadata.get("source_clause_ids")))
+            ),
             actor_id=actor.id,
+            target_context=(
+                typed_contract.target_context.model_dump(mode="json")
+                if typed_contract is not None
+                else {
+                    "campaign_id": command.campaign_id,
+                    "scene_id": command.scene_id,
+                    "actor_id": actor.id,
+                    "target_kind": command.target_intent.target_kind,
+                    "target_ids": list(command.target_intent.target_ids),
+                }
+            ),
+            effect_envelope=(
+                typed_contract.effect_envelope.model_dump(mode="json")
+                if typed_contract is not None
+                else {}
+            ),
+            decision_kind=typed_contract.decision_kind if typed_contract is not None else "target_selection",
+            producer_provenance={
+                "producer": "rules-kernel",
+                "producer_version": "2026-08-13",
+                "contract_schema": typed_contract.schema_version if typed_contract is not None else "legacy-adjudication-1",
+                "source_bound": typed_contract is not None,
+            },
             requested_by=_text(metadata.get("requested_by")) or "player",
             category=category_value,
             source_text_evidence=evidence,
@@ -324,6 +410,7 @@ class RulesKernelService:
                 "targets": list(command.target_intent.target_ids),
                 "spatial": command.spatial_intent.model_dump(mode="json"),
                 "rolls": command.roll_inputs.model_dump(mode="json"),
+                "typed_contract": typed_contract.model_dump(mode="json") if typed_contract is not None else None,
             },
             expected_versions=command.expected_versions.model_dump(mode="json"),
             expires_at=_now() + timedelta(minutes=30),
@@ -532,7 +619,7 @@ class RulesKernelService:
             return window
         if window.status != "pending":
             raise ValueError("choice window is no longer resolvable")
-        if window.expires_at is not None and window.expires_at < _now():
+        if _is_expired(window.expires_at):
             window.status = "expired"
             window.version += 1
             raise ValueError("choice window expired")
@@ -580,6 +667,23 @@ class RulesKernelService:
         if window is None:
             return None
         if window.status in {"approved", "modified", "rejected"}:
+            decision = next(
+                (
+                    item
+                    for item in confirmation.adjudication_decisions
+                    if item.adjudication_id == window.id
+                ),
+                None,
+            )
+            if decision is not None:
+                incoming = _without_idempotency(
+                    decision.model_dump(
+                        mode="json", exclude_none=True, exclude_defaults=True
+                    )
+                )
+                stored = _without_idempotency(_as_dict(window.dm_decision))
+                if incoming != stored:
+                    raise ValueError("adjudication decision payload drift")
             return window
         if window.status != "pending_dm":
             raise ValueError("adjudication window is no longer resolvable")
@@ -594,8 +698,24 @@ class RulesKernelService:
         decision_payload = decision.model_dump(
             mode="json", exclude_none=True, exclude_defaults=True
         )
+        frozen_contract = _as_dict(_as_dict(window.frozen_context).get("typed_contract"))
+        if frozen_contract:
+            submitted_contract = _as_dict(decision_payload.get("typed_contract"))
+            if submitted_contract != frozen_contract:
+                raise ValueError("typed adjudication decision does not match frozen contract")
+            target_context = _as_dict(frozen_contract.get("target_context"))
+            expected_target = _text(target_context.get("target_id"))
+            approved_targets = tuple(str(item) for item in decision.approved_targets)
+            if decision.status in {"approved", "modified"} and expected_target:
+                if approved_targets != (expected_target,):
+                    raise ValueError(
+                        "typed adjudication decision target does not match frozen target"
+                    )
         permitted = set(str(item) for item in window.allowed_decision_schema)
-        unexpected = set(decision_payload) - {"adjudication_id", "status", "notes"} - permitted
+        allowed_base = {"adjudication_id", "status", "notes"}
+        if frozen_contract:
+            allowed_base.add("typed_contract")
+        unexpected = set(decision_payload) - allowed_base - permitted
         if unexpected:
             raise ValueError("DM decision contains fields outside allowed_decision_schema")
         changed = session.execute(
@@ -1138,6 +1258,11 @@ class RulesKernelService:
                     scene.version += 1
                     scene.updated_at = _now()
                     new_versions[f"scene:{scene.id}"] = scene.version
+            adjudication = self._resolved_adjudication(session, command.command_id)
+            typed_authoritative = (
+                adjudication is not None
+                and _typed_adjudication_is_authoritative(adjudication)
+            )
             record.result_json = RulesKernelResult(
                 result_id=f"{command.command_id}:result",
                 command_id=command.command_id,
@@ -1155,7 +1280,65 @@ class RulesKernelService:
                 scene_delta=tuple(scene_deltas),
                 event_ids=tuple(delta.delta_id for delta in scene_deltas),
                 new_versions=new_versions,
+                adjudication_receipt=(
+                    {
+                        "adjudication_id": adjudication.id,
+                        "status": adjudication.status,
+                        "source_record_id": adjudication.source_record_id,
+                        "source_fingerprint": adjudication.source_fingerprint,
+                        "source_clause_ids": list(adjudication.source_clause_ids),
+                        "target_context": dict(adjudication.target_context),
+                        "effect_envelope": dict(adjudication.effect_envelope),
+                        "decision_kind": adjudication.decision_kind,
+                        "producer_provenance": dict(adjudication.producer_provenance),
+                    }
+                    if typed_authoritative and adjudication is not None
+                    else {}
+                ),
             ).model_dump(mode="json")
+            if typed_authoritative and adjudication is not None:
+                operation_key = (
+                    f"{TYPED_OPERATION_NAMESPACE}:{adjudication.id}:"
+                    f"{command.idempotency_key}"
+                )
+                existing_operation = session.scalar(
+                    select(OperationTransaction).where(
+                        OperationTransaction.campaign_id == command.campaign_id,
+                        OperationTransaction.idempotency_key == operation_key,
+                    )
+                )
+                if existing_operation is not None:
+                    if (
+                        _as_dict(existing_operation.after_snapshot).get("result")
+                        != record.result_json
+                    ):
+                        raise ValueError("typed operation transaction payload drift")
+                    result_payload = dict(record.result_json)
+                    result_payload["operation_transaction_id"] = existing_operation.id
+                    record.result_json = result_payload
+                else:
+                    operation = OperationTransaction(
+                        campaign_id=command.campaign_id,
+                        operation_type=TYPED_OPERATION_NAMESPACE,
+                        idempotency_key=operation_key,
+                        status="applied",
+                        before_snapshot={
+                            "command_id": command.command_id,
+                            "preview": preview.model_dump(mode="json"),
+                        },
+                        after_snapshot={
+                            "result": record.result_json,
+                            "producer_provenance": dict(adjudication.producer_provenance),
+                        },
+                        reason="typed adjudication producer-consumer confirmation",
+                        source="dm",
+                        confirmed_at=_now(),
+                    )
+                    session.add(operation)
+                    session.flush()
+                    result_payload = dict(record.result_json)
+                    result_payload["operation_transaction_id"] = operation.id
+                    record.result_json = result_payload
             record.status = "confirmed"
             record.version += 1
             record.updated_at = _now()
@@ -1224,18 +1407,55 @@ class RulesKernelService:
             if window is None or window.campaign_id != campaign_id:
                 raise StateNotFoundError("adjudication window not found")
             if window.status in {"approved", "modified", "rejected"}:
+                previous_key = _text(_as_dict(window.dm_decision).get("idempotency_key"))
+                incoming_key = _text(payload.get("idempotency_key"))
+                if previous_key and incoming_key and previous_key != incoming_key:
+                    raise ValueError("adjudication idempotency payload drift")
+                incoming_payload = _without_idempotency(
+                    decision.model_dump(
+                        mode="json", exclude_none=True, exclude_defaults=True
+                    )
+                )
+                stored_payload = _without_idempotency(_as_dict(window.dm_decision))
+                if incoming_payload != stored_payload:
+                    raise ValueError("adjudication payload drift")
                 return {"adjudication_id": window.id, "status": window.status, "decision": window.dm_decision, "idempotent_replay": True}
+            if _is_expired(window.expires_at):
+                window.status = "expired"
+                window.version += 1
+                raise ValueError("adjudication window expired")
             expected_version = int(payload.get("expected_version") or 0)
             if expected_version and expected_version != window.version:
                 raise VersionConflict("adjudication", window.id, expected_version, window.version)
             permitted = set(str(item) for item in window.allowed_decision_schema)
+            allowed_base = {"adjudication_id", "status", "notes"}
+            frozen_contract = _as_dict(_as_dict(window.frozen_context).get("typed_contract"))
+            if frozen_contract:
+                allowed_base.add("typed_contract")
+                submitted_contract = _as_dict(
+                    decision.model_dump(mode="json").get("typed_contract")
+                )
+                if submitted_contract != frozen_contract:
+                    raise ValueError("typed adjudication decision does not match frozen contract")
+                target_context = _as_dict(frozen_contract.get("target_context"))
+                expected_target = _text(target_context.get("target_id"))
+                approved_targets = tuple(str(item) for item in decision.approved_targets)
+                if decision.status in {"approved", "modified"} and expected_target:
+                    if approved_targets != (expected_target,):
+                        raise ValueError(
+                            "typed adjudication decision target does not match frozen target"
+                        )
             unexpected = set(
                 decision.model_dump(mode="json", exclude_none=True, exclude_defaults=True)
-            ) - {"adjudication_id", "status", "notes"} - permitted
+            ) - allowed_base - permitted
             if unexpected:
                 raise ValueError("DM decision contains fields outside allowed_decision_schema")
             decision_payload = decision.model_dump(
                 mode="json", exclude_none=True, exclude_defaults=True
+            )
+            decision_payload["idempotency_key"] = (
+                _text(payload.get("idempotency_key"))
+                or f"adjudication:{window.id}:{_fingerprint(decision_payload)[:16]}"
             )
             changed = session.execute(
                 update(RulesKernelAdjudicationWindow)

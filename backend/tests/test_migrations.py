@@ -52,9 +52,22 @@ def test_alembic_upgrades_empty_database(tmp_path: Path, monkeypatch: Any) -> No
         "campaign_session_states",
         "session_checkpoints",
         "vessel_spaces",
+        "rules_kernel_adjudications",
     } <= tables
 
     engine = create_engine(database_url)
+    adjudication_columns = {
+        column["name"] for column in inspect(engine).get_columns("rules_kernel_adjudications")
+    }
+    assert {
+        "source_record_id",
+        "source_fingerprint",
+        "source_clause_ids",
+        "target_context",
+        "effect_envelope",
+        "decision_kind",
+        "producer_provenance",
+    } <= adjudication_columns
     assert inspect(engine).get_pk_constraint("vessel_spaces")["constrained_columns"] == [
         "vessel_id"
     ]

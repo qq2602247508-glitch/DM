@@ -682,6 +682,32 @@ feature binding 与 spell-slot reactivation 仍保持 partial。
 - `entity.lifecycle.v1` 已接入真实 advancement preview/confirm/replay transaction；
   没有因此提升任何具体 feature 或 production status。
 - 机器证据：`reports/content-ir-remote-spell-origin-service-evidence-2026-08-13.json`。
+
+## 2026-08-13 Round XLIII：Generic typed target/adjudication seam
+
+- 状态：`platform_seam_complete/no_promotion`；本轮只完成通用平台 seam，未提升任何法术。
+- Rules Kernel 新增 `typed-adjudication-1` source-bound contract：冻结
+  campaign/scene/actor/target、source record/fingerprint/clause bindings、effect
+  envelope 和 DM decision；wrong contract/target/source/payload、expiry 与 stale CAS
+  均 fail closed。legacy/unbound rows 保留 `legacy-unbound` sentinel，不产生
+  authoritative typed receipt，也不产生 typed `OperationTransaction`。
+- typed confirm/replay 使用显式 collision-safe namespace
+  `rules_kernel_typed_adjudication:<adjudication_id>:<command_idempotency_key>`，
+  并持久化 producer provenance 与 receipt。
+- project counts 保持 `203 production / 35 compile-only / 111 unique compiled`，
+  delta `0/0/0`；promoted IDs 为空。Longstrider、Disguise Self、Prestidigitation、
+  Speak with Animals、Message 仍 compile-only。
+- focused `14 passed`；full backend `1018 passed`，仅既有 Starlette/httpx
+  deprecation warning；Ruff、compileall、`git diff --check` 通过。
+- validator 双跑 stdout/report byte-identical；report SHA-256
+  `98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f`，
+  fingerprint `c0f336292e2312935db7f85fd9eee38940910445e7acdd36d8f5c18f5842e3da`。
+- 保护指纹：integrations manifest
+  `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`；
+  `backend/tests/ollama.py`
+  `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab`。
+- 实现、迁移、测试、validator、report、docs 和 ledger 均只做本地提交；
+  明确未 push。
 # 2026-08-13 Round XXXIV：巨灵宗主扩展法术列表
 
 - 状态：`accepted`

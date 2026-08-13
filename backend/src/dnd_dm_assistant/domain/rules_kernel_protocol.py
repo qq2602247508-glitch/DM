@@ -18,6 +18,7 @@ RULES_KERNEL_SCHEMA_VERSION = "rules-kernel-1"
 SCENE_QUERY_SCHEMA_VERSION = "scene-query-1"
 SCENE_DELTA_SCHEMA_VERSION = "scene-delta-1"
 DM_ADJUDICATION_SCHEMA_VERSION = "dm-adjudication-1"
+TYPED_ADJUDICATION_SCHEMA_VERSION = "typed-adjudication-1"
 
 
 class KernelModel(BaseModel):
@@ -200,6 +201,71 @@ class RulesKernelAdjudicationRequest(KernelModel):
     expires_at: datetime | None = None
 
 
+class TypedTargetContext(KernelModel):
+    """Name-independent target context frozen at the producer boundary."""
+
+    campaign_id: str = Field(min_length=1, max_length=36)
+    scene_id: str | None = Field(default=None, max_length=36)
+    actor_id: str = Field(min_length=1, max_length=36)
+    target_kind: Literal["self", "single_entity", "single_object"] = "self"
+    target_id: str | None = Field(default=None, max_length=36)
+    target_type: Literal["character", "creature", "object"] | None = None
+
+    @model_validator(mode="after")
+    def validate_target_context(self) -> TypedTargetContext:
+        if self.target_kind == "self":
+            if self.target_id not in {None, self.actor_id}:
+                raise ValueError("self target context must point at actor")
+            if self.target_type not in {None, "character", "creature"}:
+                raise ValueError("self target context cannot target an object")
+        elif not self.target_id:
+            raise ValueError("entity/object target context requires target_id")
+        if self.target_kind == "single_object" and self.target_type != "object":
+            raise ValueError("object target context requires target_type=object")
+        if self.target_kind == "single_entity" and self.target_type == "object":
+            raise ValueError("entity target context cannot target an object")
+        return self
+
+
+class SourceClauseBinding(KernelModel):
+    content_id: str = Field(min_length=1, max_length=200)
+    source_record_id: str = Field(min_length=1, max_length=120)
+    source_fingerprint: str = Field(min_length=32, max_length=128)
+    clause_ids: tuple[str, ...] = Field(min_length=1, max_length=64)
+
+
+class TypedEffectEnvelope(KernelModel):
+    allowed_effect_kinds: tuple[
+        Literal[
+            "modifier",
+            "capability",
+            "communication",
+            "illusion",
+            "object_effect",
+            "instant_sensory",
+        ],
+        ...,
+    ] = ()
+    allowed_fields: tuple[str, ...] = ()
+    duration: dict[str, Any] | None = None
+    max_concurrent: int | None = Field(default=None, ge=1, le=100)
+    source_semantics: tuple[str, ...] = ()
+
+
+class TypedAdjudicationContract(KernelModel):
+    schema_version: Literal["typed-adjudication-1"] = TYPED_ADJUDICATION_SCHEMA_VERSION
+    decision_kind: Literal[
+        "target_selection",
+        "effect_mode",
+        "illusion_interpretation",
+        "communication_path",
+        "capability_scope",
+    ]
+    target_context: TypedTargetContext
+    effect_envelope: TypedEffectEnvelope
+    source_binding: SourceClauseBinding
+
+
 class RulesKernelAdjudicationDecision(KernelModel):
     adjudication_id: str
     status: Literal["approved", "modified", "rejected"]
@@ -212,6 +278,7 @@ class RulesKernelAdjudicationDecision(KernelModel):
     approved_movement: dict[str, Any] | None = None
     approved_exception: str | None = None
     notes: str | None = Field(default=None, max_length=2_000)
+    typed_contract: TypedAdjudicationContract | None = None
 
 
 class RulesKernelPreview(KernelModel):
@@ -334,6 +401,8 @@ class RulesKernelResult(KernelModel):
     scene_delta: tuple[RulesKernelSceneDelta, ...] = ()
     event_ids: tuple[str, ...] = ()
     new_versions: dict[str, int] = Field(default_factory=dict)
+    operation_transaction_id: str | None = None
+    adjudication_receipt: dict[str, Any] = Field(default_factory=dict)
     idempotent_replay: bool = False
 
 

@@ -3231,6 +3231,38 @@ git diff --check
 - `genie-bottled-respite` 仍缺 vessel 空间/离开/摧毁/休息边界；`scribe-manifest-mind` 仍缺 spectral-object 移动、300 尺过期和 spell-slot reactivation；二者不可升 production。
 - evidence：`docs/tashas-feature-production-consumer-round-XXXIV-2026-08-13.md`、`scripts/validate-tashas-feature-production-consumer-round-XXXIV.py`、`backend/tests/test_tashas_feature_production_consumer_round_XXXIV.py`、`reports/tashas-feature-production-consumer-round-XXXIV-2026-08-13.json`、`data/content-ir/compiled/production-runtime-results-XXXIV.json`。
 
+## 2026-08-13 Round XLIII Typed Target/Adjudication Seam
+
+- Status: `platform_seam_complete/no_promotion`; local-only closeout, no push.
+- Generic `typed-adjudication-1` now freezes source-bound target/effect/DM
+  contracts and validates source record/fingerprint/clause IDs, campaign/scene/actor/
+  target bindings, immutable producer provenance, exact replay, payload/key drift,
+  expiry, and stale CAS. Legacy rows are explicitly fail-closed via
+  `legacy-unbound`; they cannot emit an authoritative typed receipt or typed
+  operation transaction.
+- Typed transaction key is explicit and collision-safe:
+  `rules_kernel_typed_adjudication:<adjudication_id>:<command_idempotency_key>`.
+  Existing legacy item adjudication producers were updated to populate the
+  fail-closed sentinel fields required by the migration/model.
+- Counts remain `203 production / 35 compile-only / 111 unique compiled`;
+  delta `0/0/0`; promoted IDs `[]`. The five audited spells remain compile-only:
+  Longstrider, Disguise Self, Prestidigitation, Speak with Animals, Message.
+- Evidence: `docs/round-XLIII-typed-target-adjudication-2026-08-13.md`,
+  `scripts/validate-round-XLIII-typed-target-adjudication.py`,
+  `reports/round-XLIII-typed-target-adjudication-2026-08-13.json`, and
+  `backend/tests/test_round_XLIII_typed_target_adjudication.py`.
+- Verification: focused `14 passed`; full backend `1018 passed`, one existing
+  Starlette/httpx deprecation warning; changed-file Ruff, compileall, and
+  `git diff --check` passed. Validator stdout/report bytes were identical across
+  two runs. Report SHA-256:
+  `98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f`;
+  report fingerprint:
+  `c0f336292e2312935db7f85fd9eee38940910445e7acdd36d8f5c18f5842e3da`.
+- Protected paths unchanged: integrations manifest
+  `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`;
+  `backend/tests/ollama.py`
+  `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab`.
+
 ## 2026-08-13 Round XXXV Entity Spatial Evidence
 
 - 本轮先执行可靠 push helper；GitHub smart HTTP 端到端检测失败，helper 报告

@@ -14,6 +14,7 @@ from dnd_dm_assistant.infrastructure.database.models import (
     Combat,
     Combatant,
     CompendiumEntry,
+    OperationTransaction,
     Scene,
     SceneGrid,
 )
@@ -239,6 +240,143 @@ def test_dm_adjudication_requires_dm_and_then_continues(campaign_client: TestCli
     )
     assert confirmed.status_code == 200, confirmed.text
     assert confirmed.json()["status"] == "confirmed"
+
+
+def test_typed_adjudication_is_source_bound_and_emits_receipt(campaign_client: TestClient) -> None:
+    ids = _seed_kernel_graph(campaign_client)
+    source_binding = {
+        "content_id": "core-phb-2024:spell:typed-seam",
+        "source_record_id": "typed-seam-record",
+        "source_fingerprint": "a" * 64,
+        "clause_ids": ["core-phb-2024:spell:typed-seam:clause:target"],
+    }
+    typed_contract = {
+        "decision_kind": "target_selection",
+        "target_context": {
+            "campaign_id": ids["campaign_id"],
+            "scene_id": ids["scene_id"],
+            "actor_id": ids["actor_id"],
+            "target_kind": "single_entity",
+            "target_id": ids["target_id"],
+            "target_type": "creature",
+        },
+        "effect_envelope": {
+            "allowed_effect_kinds": ["modifier"],
+            "allowed_fields": ["stat", "operation", "value", "duration"],
+            "duration": {"unit": "rounds", "value": 1},
+            "source_semantics": ["typed-target"],
+        },
+        "source_binding": source_binding,
+    }
+    command = {
+        **_damage_command(ids, "command-typed-adjudication-1"),
+        "content_id": source_binding["content_id"],
+        "action_kind": "adjudication",
+        "target_intent": {
+            "target_ids": [ids["target_id"]],
+            "target_kind": "one_creature",
+            "semantic": "typed",
+        },
+        "metadata": {
+            "clause_types": ["target_semantics"],
+            "adjudication": {
+                "category": "target_semantics",
+                "source_text_evidence": "Source-bound typed target contract.",
+                "allowed_decision_schema": ["approved_targets", "notes"],
+            },
+            "typed_adjudication": typed_contract,
+        },
+    }
+    preview = campaign_client.post("/api/v1/rules-kernel/preview", json=command)
+    assert preview.status_code == 200, preview.text
+    request = preview.json()["required_adjudications"][0]
+    assert request["frozen_context"]["typed_contract"]["schema_version"] == "typed-adjudication-1"
+    assert request["frozen_context"]["typed_contract"]["source_binding"] == source_binding
+    adjudication_id = request["adjudication_id"]
+    decision = {
+        "adjudication_id": adjudication_id,
+        "status": "approved",
+        "approved_targets": [ids["target_id"]],
+        "typed_contract": request["frozen_context"]["typed_contract"],
+    }
+    resolved = campaign_client.post(
+        f"/api/v1/rules-kernel/adjudications/{adjudication_id}/resolve",
+        params={"campaign_id": ids["campaign_id"]},
+        json={
+            "permission": "dm",
+            "expected_version": 1,
+            "idempotency_key": "typed-adjudication-idem-1",
+            "decision": decision,
+        },
+    )
+    assert resolved.status_code == 200, resolved.text
+    drift = campaign_client.post(
+        f"/api/v1/rules-kernel/adjudications/{adjudication_id}/resolve",
+        params={"campaign_id": ids["campaign_id"]},
+        json={
+            "permission": "dm",
+            "idempotency_key": "typed-adjudication-idem-drift",
+            "decision": decision,
+        },
+    )
+    assert drift.status_code == 400
+    assert "payload drift" in drift.text
+    confirmed = campaign_client.post(
+        "/api/v1/rules-kernel/confirm",
+        json={**command, "preview_version": 1, "adjudication_decisions": [decision]},
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    result = confirmed.json()
+    assert result["operation_transaction_id"]
+    assert result["adjudication_receipt"]["source_fingerprint"] == "a" * 64
+    assert result["adjudication_receipt"]["producer_provenance"]["source_bound"] is True
+    replay = campaign_client.post(
+        "/api/v1/rules-kernel/confirm",
+        json={**command, "preview_version": 1, "adjudication_decisions": [decision]},
+    )
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["idempotent_replay"] is True
+
+    engine = create_database_engine(campaign_client.database_url)  # type: ignore[attr-defined]
+    with Session(engine) as session:
+        tx = session.get(OperationTransaction, result["operation_transaction_id"])
+        assert tx is not None
+        assert tx.after_snapshot["producer_provenance"]["contract_schema"] == "typed-adjudication-1"
+
+
+def test_typed_adjudication_rejects_wrong_source_and_target_bindings(campaign_client: TestClient) -> None:
+    ids = _seed_kernel_graph(campaign_client)
+    command = {
+        **_damage_command(ids, "command-typed-binding-1"),
+        "content_id": "core-phb-2024:spell:typed-binding",
+        "action_kind": "adjudication",
+        "target_intent": {"target_kind": "one_creature", "target_ids": [ids["target_id"]]},
+        "metadata": {
+            "clause_types": ["target_semantics"],
+            "adjudication": {"source_text_evidence": "Binding test."},
+            "typed_adjudication": {
+                "decision_kind": "target_selection",
+                "target_context": {
+                    "campaign_id": ids["campaign_id"],
+                    "scene_id": ids["scene_id"],
+                    "actor_id": ids["actor_id"],
+                    "target_kind": "single_entity",
+                    "target_id": ids["actor_id"],
+                    "target_type": "creature",
+                },
+                "effect_envelope": {"allowed_effect_kinds": ["capability"]},
+                "source_binding": {
+                    "content_id": "different-content",
+                    "source_record_id": "record",
+                    "source_fingerprint": "b" * 64,
+                    "clause_ids": ["clause"],
+                },
+            },
+        },
+    }
+    response = campaign_client.post("/api/v1/rules-kernel/preview", json=command)
+    assert response.status_code == 400
+    assert "binding mismatch" in response.text
 
 
 def test_known_profile_summon_uses_existing_combat_and_scene_records(campaign_client: TestClient) -> None:

@@ -1176,7 +1176,22 @@ class RulesKernelAdjudicationWindow(Timestamped, Base):
     )
     source_command_id: Mapped[str] = mapped_column(String(120), nullable=False)
     content_id: Mapped[str | None] = mapped_column(String(200))
+    source_record_id: Mapped[str] = mapped_column(String(120), nullable=False)
+    source_fingerprint: Mapped[str] = mapped_column(String(128), nullable=False)
+    source_clause_ids: Mapped[list[object]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
     actor_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    target_context: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    effect_envelope: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    decision_kind: Mapped[str] = mapped_column(String(50), nullable=False)
+    producer_provenance: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
     requested_by: Mapped[str] = mapped_column(
         String(30), nullable=False, default="player", server_default="player"
     )
