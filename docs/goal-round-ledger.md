@@ -6,6 +6,38 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round XLVI：typed spell communication-route seam
+
+当前状态：`no_promotion`；五条 audited utility spells 继续 compile-only。选择
+Message 的可见/熟悉、固体障碍、目标独享、私密回复和魔法沉默语义，新增名称无关
+`spell.communication.route.v1`。
+
+- `TypedSpellCommunicationRouteSpec` 绑定 content/source provenance、sender/target、
+  range、barrier policy 和 route policy；consumer 对距离、可见/熟悉、障碍厚度、
+  magical silence、target-only/private-reply 做 fail-closed 判定。
+- receipt 写入 versioned `communication_routes` snapshot，含 message fingerprint；
+  CAS、幂等 replay 和 payload drift rejection 均有 focused behavioral tests。
+- production registry 只按 typed `communication_route` + `target_selection` contract
+  注册 consumer，没有 Message name dispatch，也没有伪造 known-spell producer。
+- Message 仍缺 source-complete producer/runtime fixture、完整来源绑定的 barrier/
+  familiarity/material semantics 和 magical-silence persistence receipt；因此不升
+  production。Longstrider、Disguise Self、Prestidigitation、Speak with Animals
+  同样保留 compile-only。
+- Project baseline→after：`203/35/111` → `203/35/111`，delta `0/0/0`；
+  promoted IDs 为空。
+- Gate receipts：focused `13 passed`；backend full `1084 passed, 1 warning`；
+  Ruff、compileall、`git diff --check` 通过；validator stdout 双跑 SHA-256
+  `960be5fbb72ac11ad8539f6bc37a4f63858476a6f4c19df64c76d51f6bc671fe`；
+  report SHA-256 `3cd0f9a8833db6dfd03444d42495e63d7f4919aad8112c1e22415033e22747ff`。
+- Protected `backend/tests/ollama.py` SHA-256 保持
+  `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`；
+  `backend/tests/integrations/` 保持用户原有未跟踪状态；未 push。
+- Evidence：`docs/round-XLVI-typed-spell-communication-route-2026-08-13.md`、
+  `scripts/validate-round-XLVI-typed-spell-communication-route.py`、
+  `backend/tests/test_typed_spell_communication_routes.py`、
+  `backend/tests/test_round_XLVI_typed_communication_route.py`、
+  `reports/round-XLVI-typed-spell-communication-route-2026-08-13.json`。
+
 ## Round XLV：typed spell timed-modifier persistence seam
 
 当前状态：`no_promotion`；五条候选继续 compile-only。选择 Longstrider 暴露的

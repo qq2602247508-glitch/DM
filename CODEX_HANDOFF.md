@@ -1,5 +1,30 @@
 ## 2026-08-13 Round XLIV typed spell target fan-out seam
 
+## 2026-08-13 Round XLVI handoff: typed spell communication-route seam
+
+- HEAD before this round: `3ab4cacd2be7ef475796c55a4abae1e238b67ee0`; local main
+  remains ahead of origin by 15 commits; no push.
+- Chosen cluster: Message communication route. Added generic
+  `spell.communication.route.v1` with source provenance, visibility/familiarity,
+  material-barrier thickness, target-only delivery, private reply, magical-silence
+  blocking, versioned snapshot persistence, CAS, replay and payload-drift rejection.
+- Registry resolution is contract-shaped (`communication_route` +
+  `target_selection`), with no spell-name dispatch. Message and the other four audited
+  utility spells remain compile-only; no promoted IDs.
+- Counts unchanged: project `203 production / 35 compile-only / 111 unique compiled`.
+- Required gates: focused `13 passed`; backend full `1084 passed, 1 warning`; Ruff,
+  compileall and `git diff --check` passed. Validator stdout twice byte-identical,
+  SHA-256 `960be5fbb72ac11ad8539f6bc37a4f63858476a6f4c19df64c76d51f6bc671fe`;
+  report SHA-256 `3cd0f9a8833db6dfd03444d42495e63d7f4919aad8112c1e22415033e22747ff`.
+- Protected `backend/tests/ollama.py` remains SHA
+  `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`; protected
+  integrations remain untouched/untracked. Commit locally after final ownership audit;
+  do not push.
+- Next closure blockers: Message needs a real source-complete producer/runtime fixture
+  and canonical persisted source evidence before promotion. Longstrider still needs a
+  real known-spell producer plus replacement/stacking semantics; do not promote from
+  the XLIV/XLV seams alone.
+
 - Candidate correction: `scribe-manifest-mind` was already promoted in Round XL and
   is included in the current project count `203/35/111`; do not treat the audit
   script's historical `promote=true` as a new promotion.

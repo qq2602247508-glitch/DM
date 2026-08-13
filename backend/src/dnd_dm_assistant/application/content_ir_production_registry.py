@@ -80,6 +80,24 @@ _CONSUMERS: dict[str, dict[str, Any]] = {
         "idempotency_scope": "campaign_content_ir_and_spell_cast",
         "snapshot_effects": ("timed_spell_modifiers", "expiry", "audit"),
     },
+    "spell.communication.route.v1": {
+        "content_kind": "spell",
+        "runtime_schema_version": "spell-runtime-1",
+        "clause_types": ("communication_route", "target_selection"),
+        "required_fields": (
+            "target_combatant_id",
+            "target_version",
+            "actor_combatant_id",
+            "actor_version",
+        ),
+        "required_services": ("combat_engine.communication_route",),
+        "transaction_boundary": (
+            "spell_cast_with_communication_route_snapshot_and_rollback_boundary"
+        ),
+        "cas_entities": ("actor_combatant", "target_combatant"),
+        "idempotency_scope": "campaign_content_ir_and_spell_cast",
+        "snapshot_effects": ("communication_routes", "private_reply", "audit"),
+    },
     "combat_engine.condition_lifecycle.v1": {
         "content_kind": "spell_or_feature",
         "runtime_schema_version": "spell-runtime-1|feature-runtime-1",
@@ -451,6 +469,7 @@ _ALLOWED_SPELL_BLOCKS = {
     "upcast",
     "area",
     "spell_origins",
+    "communication_route",
 }
 
 _ALLOWED_ITEM_CLAUSES = {
@@ -539,6 +558,15 @@ def resolve_production_consumers(
             if not blocks.get("target_selection") or not blocks.get("duration"):
                 raise ValueError("timed spell modifier requires typed target and duration")
             resolved.append("spell.timed_modifier.v1")
+        if blocks.get("communication_route"):
+            if not blocks.get("target_selection"):
+                raise ValueError("communication route requires typed target selection")
+            if len(blocks["communication_route"]) != 1:
+                raise ValueError("spell runtime requires exactly one communication route contract")
+            route = blocks["communication_route"][0]
+            if route.get("resolution_kind") != "private_communication_route":
+                raise ValueError("unsupported communication route resolution")
+            resolved.append("spell.communication.route.v1")
         if _has_effect(blocks, "summon_or_creation"):
             if not blocks.get("target_selection"):
                 raise ValueError("summon runtime requires a typed target selection")

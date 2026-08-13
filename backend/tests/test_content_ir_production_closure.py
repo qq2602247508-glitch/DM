@@ -34,6 +34,39 @@ def test_generic_capabilities_are_closed_and_registered_without_feature_name() -
         },
     )
     assert [item["consumer_id"] for item in timed] == ["spell.timed_modifier.v1"]
+    communication = resolve_production_consumers(
+        content_kind="spell",
+        runtime_schema_version="spell-runtime-1",
+        blocks={
+            "target_selection": [{"kind": "one_creature"}],
+            "communication_route": [
+                {"resolution_kind": "private_communication_route"}
+            ],
+        },
+    )
+    assert [item["consumer_id"] for item in communication] == [
+        "spell.communication.route.v1"
+    ]
+
+
+def test_communication_route_requires_typed_target_and_contract() -> None:
+    import pytest
+
+    with pytest.raises(ValueError, match="typed target"):
+        resolve_production_consumers(
+            content_kind="spell",
+            runtime_schema_version="spell-runtime-1",
+            blocks={"communication_route": [{"resolution_kind": "private_communication_route"}]},
+        )
+    with pytest.raises(ValueError, match="unsupported"):
+        resolve_production_consumers(
+            content_kind="spell",
+            runtime_schema_version="spell-runtime-1",
+            blocks={
+                "target_selection": [{}],
+                "communication_route": [{"resolution_kind": "wrong"}],
+            },
+        )
 
 
 def test_telepathic_sharing_is_not_implied_by_entity_senses_closure() -> None:
