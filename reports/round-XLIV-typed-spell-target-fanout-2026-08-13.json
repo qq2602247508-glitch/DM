@@ -1,0 +1,149 @@
+{
+  "after": {
+    "canonical_projection_counts": {
+      "compile_only": 35,
+      "production": 203,
+      "unique_compiled": 111
+    },
+    "promoted_ids": [],
+    "retained_compile_only_ids": [
+      "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb",
+      "core-phb-2024:spell:83b7d94b77f332dd71310bbe",
+      "core-phb-2024:spell:b9db026fa1853bca5b6f1c13",
+      "core-phb-2024:spell:d82624a42cf6c33ccec927b8",
+      "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c"
+    ]
+  },
+  "artifact_date": "2026-08-13",
+  "baseline": {
+    "counts": {
+      "compile_only": 35,
+      "production": 203,
+      "unique_compiled": 111
+    },
+    "path": "reports/round-XLIII-typed-target-adjudication-2026-08-13.json",
+    "sha256": "98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f"
+  },
+  "candidate_selection": {
+    "chosen_cluster": "typed spell target fan-out",
+    "excluded_already_production_candidate": "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
+    "rationale": "Longstrider exposes a reusable upcast target-cardinality seam; the other four candidates confirm the seam is generic but retain distinct blockers."
+  },
+  "count_delta": {
+    "compile_only": 0,
+    "production": 0,
+    "unique_compiled": 0
+  },
+  "focused_tests": {
+    "command": [
+      "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "backend/tests/test_typed_spell_targets.py"
+    ],
+    "passed": true,
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "......                                                                   [100%]\n=============================== warnings summary ===============================\nbackend/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1\n  /Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n"
+  },
+  "generic_seam": {
+    "consumer": "TypedSpellTargetReceipt",
+    "effect_duration_persistence": false,
+    "fail_closed_invalid_targets": true,
+    "idempotent_replay": true,
+    "payload_drift_rejection": true,
+    "producer": "resolve_typed_spell_targets",
+    "schema": "spell.target.fanout.v1",
+    "source_provenance": true,
+    "upcast_cardinality": true
+  },
+  "promotion_decision": "no_promotion",
+  "promotion_rule": "promote only when every source-required semantic dimension has a persisted tested consumer",
+  "protected_fingerprints": {
+    "integrations_manifest": "00bc4a87e0bc794f6d08fec5f74d812ef53dff687105676ba77cfb935f335ddf",
+    "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+  },
+  "report_fingerprint": "caf1e3ccbdf2d3f5248961ab8087574dba33269c5df8bfc4643c17cb842cfb65",
+  "round_id": "round-XLIV",
+  "schema_version": "round-XLIV-typed-spell-target-fanout-1",
+  "source_boundary_matrix": {
+    "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb": {
+      "content_id": "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb",
+      "decision": "retained_compile_only",
+      "name": "Longstrider",
+      "seam_covered": [
+        "one_creature target",
+        "upcast target fan-out"
+      ],
+      "source_path": "data/generated-content/dnd5e_chm/markdown/spells/6f5b6f21ffa22e705a9bd6cb.md",
+      "source_required_blockers": [
+        "speed +10 ft modifier",
+        "1-hour persistence and expiry",
+        "replacement/stacking behavior"
+      ],
+      "source_sha256": "da6bb47a0d6535a9b645dc4b739d9a7e8fa8961eb1935648b27b93cd4e528412"
+    },
+    "core-phb-2024:spell:83b7d94b77f332dd71310bbe": {
+      "content_id": "core-phb-2024:spell:83b7d94b77f332dd71310bbe",
+      "decision": "retained_compile_only",
+      "name": "Disguise Self",
+      "seam_covered": [
+        "one_creature self target shape"
+      ],
+      "source_path": "data/generated-content/dnd5e_chm/markdown/spells/83b7d94b77f332dd71310bbe.md",
+      "source_required_blockers": [
+        "illusion appearance envelope",
+        "physical inspection behavior",
+        "research action and Investigation vs spell DC",
+        "1-hour expiry"
+      ],
+      "source_sha256": "f67facbcc78161301a3a782d4d0c71b467675b17924938b157ee5499a25ba22f"
+    },
+    "core-phb-2024:spell:b9db026fa1853bca5b6f1c13": {
+      "content_id": "core-phb-2024:spell:b9db026fa1853bca5b6f1c13",
+      "decision": "retained_compile_only",
+      "name": "Prestidigitation",
+      "seam_covered": [
+        "typed object target shape"
+      ],
+      "source_path": "data/generated-content/dnd5e_chm/markdown/spells/b9db026fa1853bca5b6f1c13.md",
+      "source_required_blockers": [
+        "six effect modes",
+        "instant vs timed mode lifecycle",
+        "three concurrent non-instant effects"
+      ],
+      "source_sha256": "794cb2bd4b70023bcd4d374f5e765b4b439e4b4174f4ee47ea0be04eae764862"
+    },
+    "core-phb-2024:spell:d82624a42cf6c33ccec927b8": {
+      "content_id": "core-phb-2024:spell:d82624a42cf6c33ccec927b8",
+      "decision": "retained_compile_only",
+      "name": "Speak with Animals",
+      "seam_covered": [
+        "self target shape"
+      ],
+      "source_path": "data/generated-content/dnd5e_chm/markdown/spells/d82624a42cf6c33ccec927b8.md",
+      "source_required_blockers": [
+        "10-minute communication capability",
+        "beast-scope Influence skills",
+        "recent-observation information boundary"
+      ],
+      "source_sha256": "1a129ba7b156bce0823573b14a71a7d345c5bc48c44508bd6e57b085c19baaad"
+    },
+    "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c": {
+      "content_id": "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c",
+      "decision": "retained_compile_only",
+      "name": "Message",
+      "seam_covered": [
+        "one creature target shape"
+      ],
+      "source_path": "data/generated-content/dnd5e_chm/markdown/spells/dd9cb25c63b7e13194c7d01c.md",
+      "source_required_blockers": [
+        "visibility/familiarity/material barrier path",
+        "private reply channel",
+        "magical silence interaction"
+      ],
+      "source_sha256": "4781ffcaf504be184bc99dbe4b4343cd639649d3e8d4490baaffc2af7ce186e4"
+    }
+  }
+}

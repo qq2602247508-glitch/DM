@@ -1,3 +1,30 @@
+## 2026-08-13 Round XLIV typed spell target fan-out seam
+
+- Candidate correction: `scribe-manifest-mind` was already promoted in Round XL and
+  is included in the current project count `203/35/111`; do not treat the audit
+  script's historical `promote=true` as a new promotion.
+- Chosen reusable cluster: typed spell target fan-out, derived from Longstrider's
+  one-creature target plus upcast additional targets. Added generic
+  `spell.target.fanout.v1` domain producer/receipt with source provenance,
+  cardinality validation, deterministic request fingerprint, replay and payload-drift
+  rejection.
+- Source boundary remains incomplete for all five audited spells. Longstrider still
+  lacks speed +10 modifier, one-hour persistence/expiry and replacement/stacking;
+  Disguise Self lacks illusion/inspection; Prestidigitation lacks six-mode lifecycle
+  and three-slot concurrency; Speak with Animals lacks beast communication and
+  recent-observation scope; Message lacks barrier/silence/private-reply path.
+- Counts unchanged: project `203 production / 35 compile-only / 111 unique compiled`;
+  promoted IDs empty; all five retained compile-only.
+- Evidence: `docs/round-XLIV-typed-spell-target-fanout-2026-08-13.md`,
+  `scripts/validate-round-XLIV-typed-spell-target-fanout.py`,
+  `reports/round-XLIV-typed-spell-target-fanout-2026-08-13.json`,
+  `backend/tests/test_typed_spell_targets.py`.
+- Focused tests pass; validator was run twice with byte-identical stdout. Full Ruff,
+  compileall, diff-check and backend pytest pass; only the existing Starlette/httpx
+  deprecation warning remains.
+- Protected paths `backend/tests/integrations/` and `backend/tests/ollama.py` remain
+  untouched; no push.
+
 ## 2026-08-13 Round XLII Genie Bottled Respite production closeout
 
 - Decision：`content.tashas-cauldron.round2.feature.genie-bottled-respite` is

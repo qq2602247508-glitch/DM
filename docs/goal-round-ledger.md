@@ -6,6 +6,23 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round XLIV：typed spell target fan-out seam
+
+当前状态：`no_promotion`；五条候选继续 compile-only。已排除早已在 Round XL
+生产化的 `scribe-manifest-mind`，本轮选择 Longstrider 暴露的通用单生物目标/
+升环目标扇出合同。
+
+- 新增名称无关 `spell.target.fanout.v1` consumer；receipt 绑定 content/source
+  provenance、clause、source slot level 和 target IDs。
+- focused tests 覆盖升环上限、最小目标、重复/空目标、低于源法术等级、幂等 replay
+  与 payload drift；没有 effect duration persistence，因此不满足 promotion。
+- Project baseline→after：`203/35/111` → `203/35/111`，delta `0/0/0`。
+- promoted IDs：空；retained compile-only IDs 与 Round XLIII 的五条候选一致。
+- Evidence：`scripts/validate-round-XLIV-typed-spell-target-fanout.py`、
+  `backend/tests/test_typed_spell_targets.py`、
+  `reports/round-XLIV-typed-spell-target-fanout-2026-08-13.json`、
+  `docs/round-XLIV-typed-spell-target-fanout-2026-08-13.md`。
+
 ## Round XLII：Genie Bottled Respite vessel production consumer
 
 当前状态：`accepted/local-uncommitted`；`genie-bottled-respite` 已从
