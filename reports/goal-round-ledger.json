@@ -99,8 +99,13 @@
       ],
       "status": "completed_with_compile_only_boundary",
       "push_receipt": {
-        "result": "pending_after_separated_local_commits",
-        "remote": "origin"
+        "branch": "main",
+        "commit_hash": "9914400b99c5aabee9c7c6a125ea9077e81bbeb4",
+        "pushed_at": "2026-08-13",
+        "remote": "origin",
+        "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
+        "result": "success",
+        "range": "5a7e17c..9914400"
       }
     },
     {

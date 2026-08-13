@@ -24,6 +24,9 @@
 - 保护路径、formal database/registry、source corpus、campaign/character 与 3D 未写入。
   下一步：entity sensory profile producer/consumer、实体移动与 300 ft expiry、长休/
   spell-slot reactivation payment；vessel 仍不迁移。
+- 三次分离提交 `060dead`、`c063ab7`、`9914400` 已成功推送到 `origin/main`
+  （`5a7e17c..9914400`，2026-08-13）；最终远端 ref 已核对为
+  `9914400b99c5aabee9c7c6a125ea9077e81bbeb4`。
 
 ## 2026-08-13 Round XXXII Entity Lifecycle ContentIRRuntimeService Runtime Evidence
 
