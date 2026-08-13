@@ -1,3 +1,44 @@
+## 2026-08-13 Round XXXII Entity Lifecycle ContentIRRuntimeService Runtime Evidence
+
+- 本轮只建设后续 `genie-bottled-respite` / `scribe-manifest-mind` 共用的名称无关
+  entity lifecycle 合同，没有伪造把两个候选升为 production。
+- 新增 `entity.lifecycle.v1` domain state machine：`created`、`entered`、`exited`、
+  `expired`；`active_entries/max_entries` 容量门禁；active entry 存在时禁止 expire；
+  existing state 强制 expected-version；operation ID + request fingerprint 提供
+  幂等 replay 与 payload drift 拒绝。
+- 新增 `configure_entity_lifecycle` operator → `entity.lifecycle` capability →
+  `entity.lifecycle` materializer seam；runtime section 为 `entity_lifecycles`。
+  materializer 强制 `FeatureSpec.source_fingerprint`，并保留
+  `source_record_id/source_fingerprint/source_book/source_path` provenance。
+- 新增名称无关 `remote.spell.origin.v1`：`configure_remote_spell_origin` operator →
+  `spell.remote_origin` capability → `spell.remote_origin` materializer，runtime section
+  为 `spell_origins`。合同显式要求 entity origin kind/id、source provenance、actor
+  authorization、target kind、range/line-of-effect；domain resolver 复用现有
+  `SpatialAuthority`，对 actor/origin/target/range/line-of-effect 不满足 fail closed。
+- `ContentIRRuntimeService` advancement 已真实接入 `entity_lifecycles` runtime section：
+  preview → confirm → 既有 `OperationTransaction` → Character version CAS → replay。
+  状态保存在 `Character.features[*].runtime.entity_lifecycles`；重复 confirm 返回
+  `already_applied`，同 operation 的 payload drift fail closed。
+- `ContentIRRuntimeService` spell preview → confirm → replay 已真实接入
+  `remote.spell.origin.v1`；receipt 持久化 origin、targets、距离、line-of-effect
+  与 validator，授权集合只从 actor 持有且 provenance 匹配的 lifecycle snapshot
+  state 读取。
+- 现有 `rules_kernel` entity spawn/scene transaction 仍是实际运行边界；本轮没有复制
+  runtime executor、没有 feature-name branch、没有新增候选内容 production dispatch。
+- focused lifecycle + remote-origin + real service suite `25 passed`；backend 全量 pytest
+  `966 passed`
+  （仅既有 Starlette/httpx deprecation warning）；Ruff、compileall、diff-check 通过。
+  focused 确定性双跑输出 SHA-256 均为
+  `29d68efd49f42366b1e9b94f42391bf5fd7d216fb797c9b0aee077e436131893`。
+- 真实结果报告：`docs/entity-lifecycle-contract-round-XXXII-2026-08-13.md`、
+  `reports/entity-lifecycle-contract-round-XXXII-2026-08-13.json`。保护路径
+  `backend/tests/integrations/`、`backend/tests/ollama.py` 未修改、未暂存；formal
+  database/registry、source corpus、campaign/character 与 3D 未写入；production/
+  compile-only 计数不变。`genie-bottled-respite` 与 `scribe-manifest-mind` 仍
+  source-incomplete，未升 production；具体 vessel/spectral-object typed IR 仍留作后续工作。
+- 本轮未提交、未推送。下一轮继续具体 vessel/spectral-object typed IR 与
+  feature-specific evidence，但不得把 source-incomplete feature 升 production。
+
 # 2026-08-13 Round 31 检查点：孢子结社法术（已知戏法 + 八条恒备法术）Character-Growth Consumer
 
 - 本轮关闭 source-complete 德鲁伊孢子结社结社法术（2 级）：一条 `known-cantrip` 子句（习得戏法 `chill_touch`，`grant_mode=known`）+ 一条 `always-prepared` 子句（3/5/7/9 级获得八条结社法术并恒备，`grant_mode=always_prepared`）。复用既有名称无关 `advancement_service.character_growth.v1` + `advancement_service.spell_registry` 消费者，未新增任何 dispatch 分支或底层 capability。
@@ -3033,3 +3074,38 @@ git diff --check
 - 本地 Round 1 提交在共同祖先 `2337f8a` 之后与 `origin/main` 分叉；已通过普通 merge 保留双方历史，不使用 force push 或 rebase。
 - 远程 `origin/main` 的 `e58e62b` 线包含 Ollama handoff、campaign conversation、场景语义地图、商店和玩家/游戏桌 UI 更新；这些变更已进入本地 merge 待验收状态。
 - 当前交接的规则平台重点仍是本地 Round 1 的 Tasha status layers 与 isolated Item registry；远程 UI/助手变更不应被当成 Tasha production 证据。
+
+# 2026-08-13 Remote Spell Origin Service Evidence
+
+## Evidence map
+
+- `backend/src/dnd_dm_assistant/application/content_ir_runtime.py`
+  - `_remote_origin_blocks`
+  - `_authorized_remote_origin_ids`
+  - `_resolve_remote_spell_origin`
+  - `_remote_origin_receipt`
+  - `_preview_spell` / `confirm`
+- `backend/src/dnd_dm_assistant/application/content_ir_production_registry.py`
+  - closed `spell.remote_origin.v1` consumer and spell-origin section gate.
+- `backend/src/dnd_dm_assistant/api/schemas.py`
+  - `ContentIRRuntimeRequest.origin_id`; authorization remains server-derived.
+- `backend/tests/test_content_ir_remote_spell_origin_runtime.py`
+  - 3 real API receipt tests: preview/confirm/replay, persisted single
+    `OperationTransaction`, stale actor, unauthorized origin, range, line-of-effect.
+- `reports/content-ir-remote-spell-origin-service-evidence-2026-08-13.json`
+  - machine-readable evidence and lifecycle boundary.
+
+## Verification
+
+- `PYTHONPATH=. backend/.venv/bin/pytest -q backend/tests`: passed 100%.
+- `backend/.venv/bin/ruff check backend/src backend/tests`: passed.
+- `PYTHONPATH=. backend/.venv/bin/python -m compileall -q backend/src backend/tests`:
+  passed.
+- `git diff --check`: passed.
+- Focused receipt test: 3/3 passed; consecutive stdout was byte-identical.
+- Protection: `backend/tests/integrations/` and `backend/tests/ollama.py` remain
+  untracked and untouched. No formal database/registry/source corpus/
+  campaign-character/3D changes; no commit or push.
+- Remaining gap: `entity.lifecycle.v1` is runtime infrastructure only; no concrete
+  source-incomplete feature has been promoted to production. Future work remains
+  source-complete vessel/spectral-object typed IR and feature-specific evidence.

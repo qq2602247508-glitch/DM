@@ -6,6 +6,50 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round XXXII：Entity Lifecycle ContentIRRuntimeService Runtime Evidence
+
+当前状态：`runtime_evidence_complete`；没有把 `genie-bottled-respite` 或
+`scribe-manifest-mind` 候选升为 production。
+
+- 新增名称无关 `configure_entity_lifecycle` operator、`entity.lifecycle` capability、
+  `entity.lifecycle` materializer 与 `entity_lifecycles` runtime section，供后续
+  vessel/spectral-object typed IR 复用。
+- 新增名称无关 `remote.spell.origin.v1` contract 与
+  `configure_remote_spell_origin` → `spell.remote_origin` → `spell.remote_origin`
+  compiler/materializer seam；显式绑定 source provenance、actor/origin authorization、
+  target kind、range、line-of-effect，以及 entity-lifecycle authorization / target CAS /
+  operation-idempotency requirements。
+- remote origin domain resolver 复用现有 `SpatialAuthority` 的距离和 line-of-sight
+  事实；正向、actor/origin authorization、非法 target、range、line-of-effect 与
+  source-fingerprint 缺失均有 focused coverage。已接入真实
+  `ContentIRRuntimeService` spell preview/confirm/replay transaction，并持久化
+  origin receipt；entity authorization 仍只从 actor 的既有 lifecycle snapshot
+  读取，没有新增 entity store。
+- `entity.lifecycle.v1` domain contract 覆盖 `created → entered → exited → expired`，
+  `active_entries/max_entries` 容量边界、非空 expire 拒绝、expected-version CAS、
+  operation-id + request-fingerprint 幂等 replay，以及 source fingerprint provenance。
+- `ContentIRRuntimeService` advancement 已接入真实 `entity_lifecycles` runtime section：
+  preview → confirm → `OperationTransaction` → Character CAS → replay；状态写入既有
+  `Character.features[*].runtime.entity_lifecycles`，没有新表、formal registry 或
+  parallel API。真实 fixture receipt 覆盖 create/enter/exit/expire、非法状态、重复
+  payload、stale CAS 与缺 provenance。
+- 现有 `rules_kernel` entity spawn/scene transaction 仍是实际执行边界；本轮只落地
+  可独立验证的机制合同，没有新增 feature-name dispatch，也没有修改 production 计数。
+- focused lifecycle + remote-origin + real service suite `25 passed`；全量 backend pytest
+  `966 passed`、
+  Ruff、compileall、diff-check 均通过；focused 双跑输出 SHA-256 为
+  `29d68efd49f42366b1e9b94f42391bf5fd7d216fb797c9b0aee077e436131893`。
+- 保护路径、formal database/registry、source corpus、campaign/character、3D 未写入；
+  `backend/tests/integrations/` 与 `backend/tests/ollama.py` 保持用户原有未跟踪状态。
+- 证据入口：`docs/entity-lifecycle-contract-round-XXXII-2026-08-13.md`、
+  `reports/entity-lifecycle-contract-round-XXXII-2026-08-13.json`、
+  `backend/tests/test_content_ir_entity_lifecycle_runtime.py`、
+  `backend/src/dnd_dm_assistant/domain/entity_lifecycle.py`、
+  `backend/src/dnd_dm_assistant/domain/remote_spell_origin.py`、
+  `backend/tests/test_entity_lifecycle.py`。
+- 本轮未提交或推送；具体 vessel/spectral-object typed IR 仍是后续工作。两个
+  source-incomplete feature 继续保持非 production。
+
 ## Round 31：孢子结社法术（已知戏法 + 八条恒备法术）Character-Growth Consumer
 
 当前状态：`accepted`；实现、receipt、报告、文档、全量门禁、分离提交和 push 均已完成。
@@ -380,3 +424,19 @@
 - 下一步：Feature/Option Contract Harvest Round，优先高扇出 choice/resource/trigger/target/duration/summon 合同。
 - 提交：`776c7fe`、`ecd6606`、`9c581e7`、merge `c8fe28c`。
 - Push receipt：`origin/main` → `c8fe28c1c3c4c215f4eaeda1e6acc590afd93add`，2026-08-12 00:23:50 +0800。
+
+## 2026-08-13：Remote Spell Origin Service Evidence
+
+- 保留既有未提交改动，不触碰 `backend/tests/integrations/` 与
+  `backend/tests/ollama.py`，不提交、不推送。
+- `remote.spell.origin.v1` 已接入真实 `ContentIRRuntimeService` 的
+  `preview -> confirm -> replay`；复用 `SpellEconomyService`、
+  `CombatEngineService`、`SceneGridSpatialAuthority`、`OperationTransaction`。
+- receipt 持久化 origin、targets、距离、line-of-effect 和 validator；授权集合只从
+  actor 持有且 provenance 匹配的 lifecycle snapshot state 读取。
+- focused receipt tests 3/3 通过，覆盖成功链、唯一审计 transaction、stale actor、
+  未授权 origin、越界和无视线。全量 pytest、Ruff、compileall、diff-check 通过；
+  focused 双跑 stdout byte-identical。
+- `entity.lifecycle.v1` 已接入真实 advancement preview/confirm/replay transaction；
+  没有因此提升任何具体 feature 或 production status。
+- 机器证据：`reports/content-ir-remote-spell-origin-service-evidence-2026-08-13.json`。
