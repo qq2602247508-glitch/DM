@@ -112,6 +112,15 @@
           "trigger": "explicit_activation"
         },
         "status": "full"
+      },
+      {
+        "blockers": [
+          "capability spell.slot.reactivation is production_partial"
+        ],
+        "capability_ids": [],
+        "clause_id": "spell-slot-reactivation",
+        "generated_block": null,
+        "status": "partial"
       }
     ],
     "compile_status": "partial",
@@ -122,7 +131,7 @@
       "test_hunters_lore_target_defense_inspection"
     ],
     "feature_id": "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
-    "fingerprint": "afac1c2f60ce434ba7d9ec15da7945a28741bc1d5d703ce462eae5e5c1c638e6",
+    "fingerprint": "afe5ed178853546daa83a26104669e0d03182fecdc920fbfd862e15372a1d33a",
     "generated_runtime_blocks": [
       {
         "action_economy": "none",
@@ -234,6 +243,7 @@
     "spectral-object-lifecycle",
     "remote-spell-origin",
     "mind-sight",
-    "shared-information"
+    "shared-information",
+    "spell-slot-reactivation"
   ]
 }

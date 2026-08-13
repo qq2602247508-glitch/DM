@@ -31,6 +31,22 @@ Round XXXII baseline：Tasha `105 authored / 104 compile / 104 preview /
 
 ## Evidence
 
+本轮后续接入了真实通用 runtime consumer，但没有改变 source completeness 或
+production promotion：
+
+- `entity.senses` 现在由 `ContentIRRuntimeService` advancement snapshot 持久化，
+  并由既有 inspection/combat action consumer 读取；实体来源仍必须来自已持久化的
+  `entity_lifecycle` + `entity_senses` 记录，不能由请求体伪造。
+- 真实 API receipt 覆盖 spectral object 的 source provenance、owner/entity binding、
+  lifecycle `entered` active gate、`SceneGridSpatialAuthority` 的实体/目标空间事实、
+  hearing/vision channel、距离、line-of-sight、preview → confirm → replay、
+  OperationTransaction 与 actor CAS。
+- 真实 API fail-closed 覆盖 inactive/expired entity、未授权 entity、无 authoritative
+  scene、stale actor CAS；既有 target policy、combat/inspection snapshot 和 lifecycle
+  state 未被平行实现替代。
+- 独立通用测试入口：
+  `backend/tests/test_content_ir_entity_senses_runtime.py`。
+
 - `scribe-manifest-mind` 当前真实 compile status：`partial`。
 - 完整 source IR 的 blockers：`capability entity.senses is production_partial`；
   source completeness 仍为 `incomplete`，未建模 terms 明确为 entity sensory profile、
@@ -42,8 +58,8 @@ Round XXXII baseline：Tasha `105 authored / 104 compile / 104 preview /
   `scripts/validate-tashas-feature-production-consumer-round-XXXIII.py`、
   `reports/tashas-feature-production-consumer-round-XXXIII-2026-08-13.json`、
   `data/content-ir/compiled/production-runtime-results-XXXIII.json`。
-- Round XXXIII focused suite：5 passed；既有 lifecycle/remote-origin suites：
-  25 passed；backend 全量 pytest：966 passed，仅既有 Starlette/httpx deprecation
+- Round XXXIII focused suite：6 passed；既有 lifecycle/remote-origin suites：
+  25 passed；backend 全量 pytest：990 passed，仅既有 Starlette/httpx deprecation
   warning。
 - Ruff、compileall、`git diff --check`：通过。
 - validator 双跑 stdout SHA-256：

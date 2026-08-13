@@ -122,7 +122,7 @@ def main() -> int:
             in spec.manual_decisions["unmodeled_source_terms"]
         ),
         "feature_compile_partial": compiled.compile_status == "partial",
-        "typed_clause_count": len(spec.clauses) == 4,
+        "typed_clause_count": len(spec.clauses) == 5,
         "entity_lifecycle_materializer_available": True,
         "remote_origin_materializer_available": True,
         "entity_senses_fail_closed": any(
