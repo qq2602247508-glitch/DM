@@ -127,16 +127,16 @@
   "pack_id": "tashas-cauldron",
   "schema_version": "content-ir-status-layer-audit-1",
   "status_layers": {
-    "authored_typed_ir": 94,
+    "authored_typed_ir": 105,
     "candidate": 408,
-    "compile_full": 94,
+    "compile_full": 105,
     "dm_assisted": 2,
     "draft": 408,
-    "game_usable": 91,
-    "isolated_runtime_validated": 91,
-    "registered_production_full": 89,
+    "game_usable": 103,
+    "isolated_runtime_validated": 103,
+    "registered_production_full": 101,
     "reviewed": 408,
-    "runtime_preview_full": 94,
+    "runtime_preview_full": 105,
     "source_identified": 525
   }
 }

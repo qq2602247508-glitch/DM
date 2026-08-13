@@ -11,8 +11,8 @@
     "maneuver:reviewed_typed_mapping": 8,
     "spell:reviewed_typed_mapping": 8,
     "spell:unmatched_requires_review": 13,
-    "subclass_feature:reviewed_typed_mapping": 63,
-    "subclass_feature:unmatched_requires_review": 169
+    "subclass_feature:reviewed_typed_mapping": 74,
+    "subclass_feature:unmatched_requires_review": 158
   },
   "candidate_total": 408,
   "candidates": [
@@ -3956,15 +3956,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "领域法术 Domain Spells",
       "required_review_fields": [
         "name",
@@ -3986,10 +3981,8 @@
       "source_fingerprint": "e5689d09e7842968e4dbf8e0666d203e349ac3c2729d2e7cc0e430716e477bd8",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/秩序领域.html",
       "source_record_id": "38a389e4b25a6eeec6c7835f",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "0d05da2e8142c1c2b2ed8970a70563f53296b560ac60f47579df96ef27a2ae80",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:38a389e4b25a6eeec6c7835f:embodiment-of-the-law:005",
@@ -4863,15 +4856,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "结社法术 Circle Spells",
       "required_review_fields": [
         "name",
@@ -4893,10 +4881,8 @@
       "source_fingerprint": "21a10b477d572ca77d27c6771002dab7cfefedaaba3ac1b1d9e0c2b01572d193",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/德鲁伊（TCE）/孢子结社.html",
       "source_record_id": "54721f3b2404977bbc9d3e53",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "f0f426490afb996ee93f00118760ff6f58f864843febfca3e8da241d111287b3",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:54721f3b2404977bbc9d3e53:fungal-body:006",
@@ -5475,15 +5461,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "战地匠师法术 Battle Smith Spells",
       "required_review_fields": [
         "name",
@@ -5505,10 +5486,8 @@
       "source_fingerprint": "11e6ee92ae2a0796271caaefa82befb2e7513731873cbc97c2fdd2128b42364b",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/战地匠师.html",
       "source_record_id": "606d89f6e0ea3b2e0194f24c",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "cf1d8868b02e8283ae20908a29cdca32083240f4c8feae67b0fb2c3c174e8155",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:606d89f6e0ea3b2e0194f24c:deflect-attack:008",
@@ -6347,15 +6326,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "领域法术 Domain Spells",
       "required_review_fields": [
         "name",
@@ -6377,10 +6351,8 @@
       "source_fingerprint": "89e760ab21dea53000f38c1ee48f1d8bebc4cfe943b3cde3ab3f0e2f22757b64",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/暮光领域.html",
       "source_record_id": "63d0abe27f6ad161f0820593",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "281eb4d343b8e68f01e234245f5399b8559b0d7d6941ddc155e606d8c1f35af6",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:63d0abe27f6ad161f0820593:eyes-of-night:003",
@@ -8353,15 +8325,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "领域法术 Domain Spells",
       "required_review_fields": [
         "name",
@@ -8383,10 +8350,8 @@
       "source_fingerprint": "879a912598b18c87873fcf247e3154ac8329511cc441217dd96f087fea95e0dc",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/和平领域.html",
       "source_record_id": "790ce45021cc1901403353e1",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "0e7aeb78e88a2bf225968b50025f8b8e91701e75af47ee8453b4fb698a48a4b4",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:790ce45021cc1901403353e1:emboldening-bond:003",
@@ -9073,15 +9038,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "圣誓法术 Oath Spells",
       "required_review_fields": [
         "name",
@@ -9103,10 +9063,8 @@
       "source_fingerprint": "ffec72791bbcb84f31c5b7b4a73a29fa9489ef7acfd32f1d2bf94013f3b48416",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/圣武士（TCE）/守望之誓.html",
       "source_record_id": "7f538e86d6af4475b48a524d",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "eaeab7526f4606e451d88f24f3d284444e655bba7a5e71091b62e94b52d3e6e6",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:7f538e86d6af4475b48a524d:vigilant-rebuke:009",
@@ -10626,15 +10584,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "圣誓法术 Oath Spells",
       "required_review_fields": [
         "name",
@@ -10656,10 +10609,8 @@
       "source_fingerprint": "45fd86e477af10b4b8e6c862362d7f933b66cb490f0645941c56a15c342e9965",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/圣武士（TCE）/荣耀之誓.html",
       "source_record_id": "867896faa26eb295d846a574",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "723d260786911da911f5676e3d9decbc83b95037b230bde06dc6b5061eeb0f7f",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:867896faa26eb295d846a574:peerless-athlete:007",
@@ -11562,15 +11513,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "结社法术 Circle Spells",
       "required_review_fields": [
         "name",
@@ -11592,10 +11538,8 @@
       "source_fingerprint": "a737798ee474bdac2bae8eb7c468605ada7261871bc05c3fe44090219a954ec1",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/德鲁伊（TCE）/野火结社.html",
       "source_record_id": "92c8bd3c6a3cd622e2ec4559",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "fd9dce76f900eb8dc29a0a352d76cf9a5e0adf537c5b9205a18c32efd22aa42d",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:92c8bd3c6a3cd622e2ec4559:enhanced-bond:003",
@@ -12449,15 +12393,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "扩展法术列表 Expanded Spell List",
       "required_review_fields": [
         "name",
@@ -12479,10 +12418,8 @@
       "source_fingerprint": "3c562644a5a4ec95d676bd50ced9cf6bbaa69fddea257d98ceddb0b3afc45998",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/巨灵宗主.html",
       "source_record_id": "98620543cf94e974361c6567",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "a853c960f926b18654a169252cdab70d8ac133886efacd4abad7bccc0c548a0e",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:genie-s-vessel:002",
@@ -16002,15 +15939,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "装甲师法术 Armorer Spells",
       "required_review_fields": [
         "name",
@@ -16032,10 +15964,8 @@
       "source_fingerprint": "1b57b10d47a01c1782ed672fc58392d14ea400d983cb2f2d0f029c4b2de905ab",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/装甲师.html",
       "source_record_id": "cf864e58ba0d62c93110f5c6",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "a19e58d6428b33096d1a859759790350a90f0c16c5ffca800597a8930b56b503",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:dampening-field:011",
@@ -20067,15 +19997,10 @@
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "match_confidence": "low",
-      "match_status": "unmatched_requires_review",
-      "matched_template_id": null,
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
       "name": "魔炮师法术 Artillerist Spells",
       "required_review_fields": [
         "name",
@@ -20097,10 +20022,8 @@
       "source_fingerprint": "ad6e67b1ee27604cc2ffb41d3ac68ccbcc4a74362e25255c8f5b797f4916988a",
       "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/魔炮师.html",
       "source_record_id": "fbf8451f879a169fb17a01e9",
-      "template_fingerprint": null,
-      "uncertain_fields": {
-        "clauses": "requires authored review"
-      }
+      "template_fingerprint": "c82bb645839f42f0fa0f58287addf84b55e899b3b411cb08dd93e353c702accc",
+      "uncertain_fields": {}
     },
     {
       "atom_id": "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:eldritch-cannon:003",
@@ -20479,6 +20402,6 @@
   ],
   "pack_id": "tashas-cauldron",
   "schema_version": "tashas-template-match-report-1",
-  "template_match_rate": 0.230392,
-  "template_matched": 94
+  "template_match_rate": 0.257353,
+  "template_matched": 105
 }

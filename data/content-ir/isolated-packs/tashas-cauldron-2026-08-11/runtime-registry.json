@@ -24,7 +24,7 @@
       "atom_id": "tashas-cauldron:atom:008f917eace997a6a54939d5:oceanic-soul:004",
       "content_id": "content.tashas-cauldron.round2.feature.fathomless-oceanic-soul",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "475e8e508d9a9f46c5df17d310287b38645f6be7adb5650f1251b2ad27b1dbe2",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.fathomless-oceanic-soul"
@@ -261,6 +261,16 @@
       ]
     },
     {
+      "atom_id": "tashas-cauldron:atom:38a389e4b25a6eeec6c7835f:domain-spells:001",
+      "content_id": "content.tashas-cauldron.round2.feature.order-cleric-domain-spells",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "e5689d09e7842968e4dbf8e0666d203e349ac3c2729d2e7cc0e430716e477bd8",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.order-cleric-domain-spells"
+      ]
+    },
+    {
       "atom_id": "tashas-cauldron:atom:4041ef4e8e0a5b7375019c27:training-in-sword-and-song:001",
       "content_id": "content.tashas-cauldron.round2.feature.bladesinger-training-in-sword-and-song",
       "content_kind": "subclass_feature",
@@ -268,6 +278,16 @@
       "source_fingerprint": "f819eec7176ec837481935e4097fc313ba6d41dbacef772baa1bfa58a6d6bfdd",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.bladesinger-training-in-sword-and-song"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:54721f3b2404977bbc9d3e53:circle-spells:001",
+      "content_id": "content.tashas-cauldron.round2.feature.spores-druid-circle-spells",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "21a10b477d572ca77d27c6771002dab7cfefedaaba3ac1b1d9e0c2b01572d193",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.spores-druid-circle-spells"
       ]
     },
     {
@@ -289,6 +309,16 @@
       "typed_content_ids": [
         "content.tashas-cauldron.feature.battle-smith-arcane-jolt-damage",
         "content.tashas-cauldron.feature.battle-smith-arcane-jolt-healing"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:606d89f6e0ea3b2e0194f24c:battle-smith-spells:002",
+      "content_id": "content.tashas-cauldron.round2.feature.battle-smith-spell-list",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "11e6ee92ae2a0796271caaefa82befb2e7513731873cbc97c2fdd2128b42364b",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.battle-smith-spell-list"
       ]
     },
     {
@@ -319,6 +349,16 @@
       "source_fingerprint": "4d42b7a9f01641ddfceddd9af35ddc869f2beee919f10c3c4e240a670165ee86",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.twilight-cleric-bonus-proficiencies"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:63d0abe27f6ad161f0820593:domain-spells:001",
+      "content_id": "content.tashas-cauldron.round2.feature.twilight-cleric-domain-spells",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "89e760ab21dea53000f38c1ee48f1d8bebc4cfe943b3cde3ab3f0e2f22757b64",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.twilight-cleric-domain-spells"
       ]
     },
     {
@@ -402,6 +442,16 @@
       ]
     },
     {
+      "atom_id": "tashas-cauldron:atom:790ce45021cc1901403353e1:domain-spells:001",
+      "content_id": "content.tashas-cauldron.round2.feature.peace-cleric-domain-spells",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "879a912598b18c87873fcf247e3154ac8329511cc441217dd96f087fea95e0dc",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.peace-cleric-domain-spells"
+      ]
+    },
+    {
       "atom_id": "tashas-cauldron:atom:790ce45021cc1901403353e1:implement-of-peace:002",
       "content_id": "content.tashas-cauldron.round2.feature.peace-cleric-implement-of-peace",
       "content_kind": "subclass_feature",
@@ -422,6 +472,16 @@
       ]
     },
     {
+      "atom_id": "tashas-cauldron:atom:7f538e86d6af4475b48a524d:oath-spells:004",
+      "content_id": "content.tashas-cauldron.round2.feature.watchers-paladin-oath-spells",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "ffec72791bbcb84f31c5b7b4a73a29fa9489ef7acfd32f1d2bf94013f3b48416",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.watchers-paladin-oath-spells"
+      ]
+    },
+    {
       "atom_id": "tashas-cauldron:atom:867896faa26eb295d846a574:glorious-defense:010",
       "content_id": "content.tashas-cauldron.round2.feature.glory-paladin-glorious-defense",
       "content_kind": "subclass_feature",
@@ -429,6 +489,26 @@
       "source_fingerprint": "f8b34dc43426edf2300e193c0b0e360a8a9abf0ba118bdca226a575956d21dc7",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.glory-paladin-glorious-defense"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:867896faa26eb295d846a574:oath-spells:005",
+      "content_id": "content.tashas-cauldron.round2.feature.glory-paladin-oath-spells",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "45fd86e477af10b4b8e6c862362d7f933b66cb490f0645941c56a15c342e9965",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.glory-paladin-oath-spells"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:92c8bd3c6a3cd622e2ec4559:circle-spells:001",
+      "content_id": "content.tashas-cauldron.round2.feature.wildfire-druid-circle-spells",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "a737798ee474bdac2bae8eb7c468605ada7261871bc05c3fe44090219a954ec1",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.wildfire-druid-circle-spells"
       ]
     },
     {
@@ -449,6 +529,16 @@
       "source_fingerprint": "0281762f3f17d10d7da5e74e4ed47ecc3b306de5a5f4a4259bcd675e73739c1d",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.genie-elemental-gift"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:expanded-spell-list:001",
+      "content_id": "content.tashas-cauldron.round2.feature.genie-expanded-spell-list",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "3c562644a5a4ec95d676bd50ced9cf6bbaa69fddea257d98ceddb0b3afc45998",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.genie-expanded-spell-list"
       ]
     },
     {
@@ -659,6 +749,16 @@
       "source_fingerprint": "5eb82d530c54387e576d47e3265dd5cfdabf010c3c765f9b787b82f1209b646e",
       "typed_content_ids": [
         "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:armorer-spells:002",
+      "content_id": "content.tashas-cauldron.round2.feature.armorer-spell-list",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "1b57b10d47a01c1782ed672fc58392d14ea400d983cb2f2d0f029c4b2de905ab",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.armorer-spell-list"
       ]
     },
     {
@@ -899,6 +999,16 @@
       "source_fingerprint": "245f8fff6a10113c6d0062a26dd054611122b8d830fe6e98b84855467c44d541",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.artillerist-arcane-firearm"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:artillerist-spells:002",
+      "content_id": "content.tashas-cauldron.round2.feature.artillerist-spell-list",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "ad6e67b1ee27604cc2ffb41d3ac68ccbcc4a74362e25255c8f5b797f4916988a",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.artillerist-spell-list"
       ]
     },
     {

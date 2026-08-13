@@ -1,12 +1,12 @@
 {
   "alias_reconciled_total": 2,
-  "authored_total": 95,
+  "authored_total": 106,
   "explicitly_retired_total": 0,
   "hard_gate": {
     "orphan_total": 0,
     "status": "passed"
   },
-  "matched_total": 95,
+  "matched_total": 106,
   "orphan_total": 0,
   "orphaned_content_ids": [],
   "pack_id": "tashas-cauldron",

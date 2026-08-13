@@ -1,6 +1,6 @@
 {
   "cluster_count": 14,
-  "cluster_fingerprint": "ddd2d18315cfceeb0e469507e3f43504ce220479057b6adb394bcaab8c5ca5e3",
+  "cluster_fingerprint": "56dcf517893ef356ea102b3949dd11c61810fff9a1e57d40a9cd8bebe3433115",
   "clusters": [
     {
       "cluster_id": "tashas.manual.cluster.001",
@@ -794,7 +794,7 @@
     {
       "cluster_id": "tashas.manual.cluster.013",
       "complete_content_unlock_count": 0,
-      "content_count": 111,
+      "content_count": 102,
       "exact_contract_signature": {
         "action_economy": "action_economy_unknown",
         "attack_or_save": "attack_or_save_unknown",
@@ -822,7 +822,7 @@
         "trigger": "trigger_unknown"
       },
       "existing_template_match": false,
-      "feature_count": 111,
+      "feature_count": 102,
       "item_count": 0,
       "missing_capability": [
         "typed_contract"
@@ -862,7 +862,7 @@
     {
       "cluster_id": "tashas.manual.cluster.014",
       "complete_content_unlock_count": 0,
-      "content_count": 58,
+      "content_count": 56,
       "exact_contract_signature": {
         "action_economy": "action_economy_unknown",
         "attack_or_save": "attack_or_save_unknown",
@@ -890,7 +890,7 @@
         "trigger": "trigger_unknown"
       },
       "existing_template_match": false,
-      "feature_count": 58,
+      "feature_count": 56,
       "item_count": 0,
       "missing_capability": [
         "typed_contract"

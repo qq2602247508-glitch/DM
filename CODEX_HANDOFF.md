@@ -3141,3 +3141,12 @@ git diff --check
 - Remaining gap: `entity.lifecycle.v1` is runtime infrastructure only; no concrete
   source-incomplete feature has been promoted to production. Future work remains
   source-complete vessel/spectral-object typed IR and feature-specific evidence.
+## 2026-08-13 Round XXXIV Genie expanded spell-list production consumer
+
+- baseline：Tasha `105 authored / 104 compile / 104 preview / 100 production / 2 compile-only`；项目 `200 production / 35 compile-only / 111 unique compiled`。
+- 选择 source-complete `content.tashas-cauldron.round2.feature.genie-expanded-spell-list`。只建模“加入魔契师法术列表进行选择”，不把法术误记为已知/恒备。
+- 新增 `configure_spell_list_expansion`、`advancement.spell_list_expansion`、`spell_list_expansions`。运行时通过 `advancement_service.character_growth.v1` 做真实 preview→confirm→CAS→OperationTransaction→replay。
+- source provenance 完整；`selection_mode=available_to_learn`；真实 evidence `spell_grants=0`、character CAS、transaction、feature persistence、replay 全通过。
+- after：Tasha `106/105/105/101/2`；项目 `201/35/111`。production delta `+1`，compile-only 与 unique compiled 不变。
+- `genie-bottled-respite` 仍缺 vessel 空间/离开/摧毁/休息边界；`scribe-manifest-mind` 仍缺 spectral-object 移动、300 尺过期和 spell-slot reactivation；二者不可升 production。
+- evidence：`docs/tashas-feature-production-consumer-round-XXXIV-2026-08-13.md`、`scripts/validate-tashas-feature-production-consumer-round-XXXIV.py`、`backend/tests/test_tashas_feature_production_consumer_round_XXXIV.py`、`reports/tashas-feature-production-consumer-round-XXXIV-2026-08-13.json`、`data/content-ir/compiled/production-runtime-results-XXXIV.json`。

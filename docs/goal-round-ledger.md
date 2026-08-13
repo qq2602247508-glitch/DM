@@ -472,3 +472,13 @@
 - `entity.lifecycle.v1` 已接入真实 advancement preview/confirm/replay transaction；
   没有因此提升任何具体 feature 或 production status。
 - 机器证据：`reports/content-ir-remote-spell-origin-service-evidence-2026-08-13.json`。
+# 2026-08-13 Round XXXIV：巨灵宗主扩展法术列表
+
+- 状态：`accepted`
+- baseline：Tasha `105/104/104/100/2`，项目 `200/35/111`（authored/compile/preview/production/compile-only；项目为 production/compile-only/unique compiled）。
+- 选择 source-complete `content.tashas-cauldron.round2.feature.genie-expanded-spell-list`，原因是它可复用既有 character-growth consumer，且不需要 vessel 或 spectral-object 新机制。
+- 新增名称无关 `configure_spell_list_expansion` → `advancement.spell_list_expansion` → `spell_list_expansions`。持久化的是 `available_to_learn` 法术访问权；不自动产生 known/always-prepared spell rows。
+- 真实结果：Tasha `106/105/105/101/2`，项目 `201/35/111`；production delta `+1`，compile-only delta `0`，unique compiled delta `0`。
+- focused validator、Round XXXIV/XXXIII tests、provenance/CAS/idempotency/replay/fail-closed checks通过；两个保护路径 fingerprint 未变化。
+- `genie-bottled-respite` 与 `scribe-manifest-mind` 保持 compile-only；前者缺 vessel 空间/休息边界，后者缺 spectral-object movement/300-foot expiry/spell-slot reactivation。
+- 证据：`docs/tashas-feature-production-consumer-round-XXXIV-2026-08-13.md`、`scripts/validate-tashas-feature-production-consumer-round-XXXIV.py`、`reports/tashas-feature-production-consumer-round-XXXIV-2026-08-13.json`、`data/content-ir/compiled/production-runtime-results-XXXIV.json`。

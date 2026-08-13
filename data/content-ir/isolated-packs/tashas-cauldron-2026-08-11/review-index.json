@@ -4061,33 +4061,27 @@
         "name",
         "content_kind",
         "level",
-        "prerequisites"
+        "prerequisites",
+        "typed_clauses",
+        "runtime_contract"
       ],
       "atom_id": "tashas-cauldron:atom:38a389e4b25a6eeec6c7835f:domain-spells:001",
       "clause_boundaries": {
         "source_fragment": "20"
       },
-      "edited_fields": [],
-      "manual_decisions": [
-        "keep source clause manual until a closed typed contract exists"
+      "edited_fields": [
+        "localized_name"
       ],
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "manual_decisions": [],
+      "missing_fields": [],
       "rejected_inferences": [
         "natural_language_to_operator",
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "review_blockers": [
-        "typed_ir_missing",
-        "runtime_consumer_or_evidence_missing"
-      ],
-      "review_fingerprint": "6f683a2af833b6aafd1afe2b119aead7f274e6ab4f3f75c3e915f79b52008685",
-      "review_status": "manual_boundary",
+      "review_blockers": [],
+      "review_fingerprint": "b4bcaa9ecd9b12eeb61e4dc29f8f412d6afdbdab97616f00ef8e6355490b5b8b",
+      "review_status": "accepted_with_edits",
       "reviewed_at": "2026-08-11",
       "reviewed_fields": [
         "name",
@@ -4106,7 +4100,9 @@
         "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/秩序领域.html",
         "source_record_id": "38a389e4b25a6eeec6c7835f"
       },
-      "typed_content_ids": []
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.order-cleric-domain-spells"
+      ]
     },
     {
       "accepted_fields": [
@@ -4993,33 +4989,27 @@
         "name",
         "content_kind",
         "level",
-        "prerequisites"
+        "prerequisites",
+        "typed_clauses",
+        "runtime_contract"
       ],
       "atom_id": "tashas-cauldron:atom:54721f3b2404977bbc9d3e53:circle-spells:001",
       "clause_boundaries": {
         "source_fragment": "11"
       },
-      "edited_fields": [],
-      "manual_decisions": [
-        "keep source clause manual until a closed typed contract exists"
+      "edited_fields": [
+        "localized_name"
       ],
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "manual_decisions": [],
+      "missing_fields": [],
       "rejected_inferences": [
         "natural_language_to_operator",
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "review_blockers": [
-        "typed_ir_missing",
-        "runtime_consumer_or_evidence_missing"
-      ],
-      "review_fingerprint": "75ee640505b6271bd03cc957a19e86852171bf2b61b3530683a1338312c9e2fd",
-      "review_status": "manual_boundary",
+      "review_blockers": [],
+      "review_fingerprint": "caea2e513c765dcc4dc299bb5fa048fff43d54c613cd0338410ddc88d23cb939",
+      "review_status": "accepted_with_edits",
       "reviewed_at": "2026-08-11",
       "reviewed_fields": [
         "name",
@@ -5038,7 +5028,9 @@
         "source_path": "塔莎的万事坩埚/玩家选项/职业/德鲁伊（TCE）/孢子结社.html",
         "source_record_id": "54721f3b2404977bbc9d3e53"
       },
-      "typed_content_ids": []
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.spores-druid-circle-spells"
+      ]
     },
     {
       "accepted_fields": [
@@ -5610,33 +5602,27 @@
         "name",
         "content_kind",
         "level",
-        "prerequisites"
+        "prerequisites",
+        "typed_clauses",
+        "runtime_contract"
       ],
       "atom_id": "tashas-cauldron:atom:606d89f6e0ea3b2e0194f24c:battle-smith-spells:002",
       "clause_boundaries": {
         "source_fragment": "13"
       },
-      "edited_fields": [],
-      "manual_decisions": [
-        "keep source clause manual until a closed typed contract exists"
+      "edited_fields": [
+        "localized_name"
       ],
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "manual_decisions": [],
+      "missing_fields": [],
       "rejected_inferences": [
         "natural_language_to_operator",
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "review_blockers": [
-        "typed_ir_missing",
-        "runtime_consumer_or_evidence_missing"
-      ],
-      "review_fingerprint": "60553adf64f3e9a16f11bd3a2c236b558c5486d1e5066f67b67d0938184e9ca5",
-      "review_status": "manual_boundary",
+      "review_blockers": [],
+      "review_fingerprint": "ff2f5c42d0e798cd9a18dea5b9fb41b6a578333f4b39fd26cca160e06bc3de54",
+      "review_status": "accepted_with_edits",
       "reviewed_at": "2026-08-11",
       "reviewed_fields": [
         "name",
@@ -5655,7 +5641,9 @@
         "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/战地匠师.html",
         "source_record_id": "606d89f6e0ea3b2e0194f24c"
       },
-      "typed_content_ids": []
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.battle-smith-spell-list"
+      ]
     },
     {
       "accepted_fields": [
@@ -6482,33 +6470,27 @@
         "name",
         "content_kind",
         "level",
-        "prerequisites"
+        "prerequisites",
+        "typed_clauses",
+        "runtime_contract"
       ],
       "atom_id": "tashas-cauldron:atom:63d0abe27f6ad161f0820593:domain-spells:001",
       "clause_boundaries": {
         "source_fragment": "21"
       },
-      "edited_fields": [],
-      "manual_decisions": [
-        "keep source clause manual until a closed typed contract exists"
+      "edited_fields": [
+        "localized_name"
       ],
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "manual_decisions": [],
+      "missing_fields": [],
       "rejected_inferences": [
         "natural_language_to_operator",
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "review_blockers": [
-        "typed_ir_missing",
-        "runtime_consumer_or_evidence_missing"
-      ],
-      "review_fingerprint": "7a478d92decae7e10c71a0d00cb64f1bfb8d24abce6ed2ed563fa3626271ae58",
-      "review_status": "manual_boundary",
+      "review_blockers": [],
+      "review_fingerprint": "1d8f4cafd4745243fb60f054b52067c15710a50c06f39605e4860dfc6bdc7114",
+      "review_status": "accepted_with_edits",
       "reviewed_at": "2026-08-11",
       "reviewed_fields": [
         "name",
@@ -6527,7 +6509,9 @@
         "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/暮光领域.html",
         "source_record_id": "63d0abe27f6ad161f0820593"
       },
-      "typed_content_ids": []
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.twilight-cleric-domain-spells"
+      ]
     },
     {
       "accepted_fields": [
@@ -8530,33 +8514,27 @@
         "name",
         "content_kind",
         "level",
-        "prerequisites"
+        "prerequisites",
+        "typed_clauses",
+        "runtime_contract"
       ],
       "atom_id": "tashas-cauldron:atom:790ce45021cc1901403353e1:domain-spells:001",
       "clause_boundaries": {
         "source_fragment": "22"
       },
-      "edited_fields": [],
-      "manual_decisions": [
-        "keep source clause manual until a closed typed contract exists"
+      "edited_fields": [
+        "localized_name"
       ],
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "manual_decisions": [],
+      "missing_fields": [],
       "rejected_inferences": [
         "natural_language_to_operator",
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "review_blockers": [
-        "typed_ir_missing",
-        "runtime_consumer_or_evidence_missing"
-      ],
-      "review_fingerprint": "4e9629e26f8bf3977c326351eccc350466e11620acc79e3217c106505512125a",
-      "review_status": "manual_boundary",
+      "review_blockers": [],
+      "review_fingerprint": "77ea6890b307e2a07127e3679d5925c9ee22c39e2aecdad63de2cca05c124e91",
+      "review_status": "accepted_with_edits",
       "reviewed_at": "2026-08-11",
       "reviewed_fields": [
         "name",
@@ -8575,7 +8553,9 @@
         "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/和平领域.html",
         "source_record_id": "790ce45021cc1901403353e1"
       },
-      "typed_content_ids": []
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.peace-cleric-domain-spells"
+      ]
     },
     {
       "accepted_fields": [
@@ -9250,33 +9230,27 @@
         "name",
         "content_kind",
         "level",
-        "prerequisites"
+        "prerequisites",
+        "typed_clauses",
+        "runtime_contract"
       ],
       "atom_id": "tashas-cauldron:atom:7f538e86d6af4475b48a524d:oath-spells:004",
       "clause_boundaries": {
         "source_fragment": "17"
       },
-      "edited_fields": [],
-      "manual_decisions": [
-        "keep source clause manual until a closed typed contract exists"
+      "edited_fields": [
+        "localized_name"
       ],
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "manual_decisions": [],
+      "missing_fields": [],
       "rejected_inferences": [
         "natural_language_to_operator",
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "review_blockers": [
-        "typed_ir_missing",
-        "runtime_consumer_or_evidence_missing"
-      ],
-      "review_fingerprint": "75240a66268f503c1cfa1d3eebd9f8612e96e33419b0f39b91a116af75647f09",
-      "review_status": "manual_boundary",
+      "review_blockers": [],
+      "review_fingerprint": "1df166d1c5bf924943915c3b83f0dd089ec1b0c6b3fe3dcea18009994fe7147c",
+      "review_status": "accepted_with_edits",
       "reviewed_at": "2026-08-11",
       "reviewed_fields": [
         "name",
@@ -9295,7 +9269,9 @@
         "source_path": "塔莎的万事坩埚/玩家选项/职业/圣武士（TCE）/守望之誓.html",
         "source_record_id": "7f538e86d6af4475b48a524d"
       },
-      "typed_content_ids": []
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.watchers-paladin-oath-spells"
+      ]
     },
     {
       "accepted_fields": [
@@ -10858,33 +10834,27 @@
         "name",
         "content_kind",
         "level",
-        "prerequisites"
+        "prerequisites",
+        "typed_clauses",
+        "runtime_contract"
       ],
       "atom_id": "tashas-cauldron:atom:867896faa26eb295d846a574:oath-spells:005",
       "clause_boundaries": {
         "source_fragment": "17"
       },
-      "edited_fields": [],
-      "manual_decisions": [
-        "keep source clause manual until a closed typed contract exists"
+      "edited_fields": [
+        "localized_name"
       ],
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "manual_decisions": [],
+      "missing_fields": [],
       "rejected_inferences": [
         "natural_language_to_operator",
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "review_blockers": [
-        "typed_ir_missing",
-        "runtime_consumer_or_evidence_missing"
-      ],
-      "review_fingerprint": "4b1db803da2ae001f78e96cc4ddd563294cc4218b2080aac4c1d49337adb1ed1",
-      "review_status": "manual_boundary",
+      "review_blockers": [],
+      "review_fingerprint": "c6b8037de39e46b0b4d748e8c89b7ff53231cf683335821c00c348b70f855e71",
+      "review_status": "accepted_with_edits",
       "reviewed_at": "2026-08-11",
       "reviewed_fields": [
         "name",
@@ -10903,7 +10873,9 @@
         "source_path": "塔莎的万事坩埚/玩家选项/职业/圣武士（TCE）/荣耀之誓.html",
         "source_record_id": "867896faa26eb295d846a574"
       },
-      "typed_content_ids": []
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.glory-paladin-oath-spells"
+      ]
     },
     {
       "accepted_fields": [
@@ -11794,33 +11766,27 @@
         "name",
         "content_kind",
         "level",
-        "prerequisites"
+        "prerequisites",
+        "typed_clauses",
+        "runtime_contract"
       ],
       "atom_id": "tashas-cauldron:atom:92c8bd3c6a3cd622e2ec4559:circle-spells:001",
       "clause_boundaries": {
         "source_fragment": "8"
       },
-      "edited_fields": [],
-      "manual_decisions": [
-        "keep source clause manual until a closed typed contract exists"
+      "edited_fields": [
+        "localized_name"
       ],
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "manual_decisions": [],
+      "missing_fields": [],
       "rejected_inferences": [
         "natural_language_to_operator",
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "review_blockers": [
-        "typed_ir_missing",
-        "runtime_consumer_or_evidence_missing"
-      ],
-      "review_fingerprint": "698aab3260c9cdc9b96a05e17ecbf1c4f1c1838412f41528008d3c187658e939",
-      "review_status": "manual_boundary",
+      "review_blockers": [],
+      "review_fingerprint": "dbdcfa8a9f4f3313e2c7368e0a16122bdddbf078051d47cc9f3a288b4da95b20",
+      "review_status": "accepted_with_edits",
       "reviewed_at": "2026-08-11",
       "reviewed_fields": [
         "name",
@@ -11839,7 +11805,9 @@
         "source_path": "塔莎的万事坩埚/玩家选项/职业/德鲁伊（TCE）/野火结社.html",
         "source_record_id": "92c8bd3c6a3cd622e2ec4559"
       },
-      "typed_content_ids": []
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.wildfire-druid-circle-spells"
+      ]
     },
     {
       "accepted_fields": [
@@ -12722,33 +12690,27 @@
         "name",
         "content_kind",
         "level",
-        "prerequisites"
+        "prerequisites",
+        "typed_clauses",
+        "runtime_contract"
       ],
       "atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:expanded-spell-list:001",
       "clause_boundaries": {
         "source_fragment": "21"
       },
-      "edited_fields": [],
-      "manual_decisions": [
-        "keep source clause manual until a closed typed contract exists"
+      "edited_fields": [
+        "localized_name"
       ],
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "manual_decisions": [],
+      "missing_fields": [],
       "rejected_inferences": [
         "natural_language_to_operator",
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "review_blockers": [
-        "typed_ir_missing",
-        "runtime_consumer_or_evidence_missing"
-      ],
-      "review_fingerprint": "718d669fe544bc98b77d06c1a1d0370000ba39ac435b7e571a6127d2dd882013",
-      "review_status": "manual_boundary",
+      "review_blockers": [],
+      "review_fingerprint": "44dfd1c72daa5cc13180485987a9221872db149fe5a59353148cc3ba18f19bde",
+      "review_status": "accepted_with_edits",
       "reviewed_at": "2026-08-11",
       "reviewed_fields": [
         "name",
@@ -12767,7 +12729,9 @@
         "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/巨灵宗主.html",
         "source_record_id": "98620543cf94e974361c6567"
       },
-      "typed_content_ids": []
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.genie-expanded-spell-list"
+      ]
     },
     {
       "accepted_fields": [
@@ -16330,33 +16294,27 @@
         "name",
         "content_kind",
         "level",
-        "prerequisites"
+        "prerequisites",
+        "typed_clauses",
+        "runtime_contract"
       ],
       "atom_id": "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:armorer-spells:002",
       "clause_boundaries": {
         "source_fragment": "12"
       },
-      "edited_fields": [],
-      "manual_decisions": [
-        "keep source clause manual until a closed typed contract exists"
+      "edited_fields": [
+        "localized_name"
       ],
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "manual_decisions": [],
+      "missing_fields": [],
       "rejected_inferences": [
         "natural_language_to_operator",
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "review_blockers": [
-        "typed_ir_missing",
-        "runtime_consumer_or_evidence_missing"
-      ],
-      "review_fingerprint": "58e01e31c9abb259d88b555922226c5b603e4fd17d1b275edca1d32b316bff0c",
-      "review_status": "manual_boundary",
+      "review_blockers": [],
+      "review_fingerprint": "058c8dffd68e82e9cc5fdbda40404c5e2e19aa2c19f92528c9ffa220c6b45991",
+      "review_status": "accepted_with_edits",
       "reviewed_at": "2026-08-11",
       "reviewed_fields": [
         "name",
@@ -16375,7 +16333,9 @@
         "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/装甲师.html",
         "source_record_id": "cf864e58ba0d62c93110f5c6"
       },
-      "typed_content_ids": []
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.armorer-spell-list"
+      ]
     },
     {
       "accepted_fields": [
@@ -20446,33 +20406,27 @@
         "name",
         "content_kind",
         "level",
-        "prerequisites"
+        "prerequisites",
+        "typed_clauses",
+        "runtime_contract"
       ],
       "atom_id": "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:artillerist-spells:002",
       "clause_boundaries": {
         "source_fragment": "12"
       },
-      "edited_fields": [],
-      "manual_decisions": [
-        "keep source clause manual until a closed typed contract exists"
+      "edited_fields": [
+        "localized_name"
       ],
-      "missing_fields": [
-        "typed_clause_mapping",
-        "action_economy",
-        "target_policy",
-        "resource_and_recovery"
-      ],
+      "manual_decisions": [],
+      "missing_fields": [],
       "rejected_inferences": [
         "natural_language_to_operator",
         "automatic_player_choice",
         "automatic_dm_ruling"
       ],
-      "review_blockers": [
-        "typed_ir_missing",
-        "runtime_consumer_or_evidence_missing"
-      ],
-      "review_fingerprint": "80fa3768d3f4798b0488c39d27db13ab7c5b63585a2671920b74882672f0a498",
-      "review_status": "manual_boundary",
+      "review_blockers": [],
+      "review_fingerprint": "ddf561079e6665d7511cb637ac371ae7fab3052cf78f35a64d208a135c2842b1",
+      "review_status": "accepted_with_edits",
       "reviewed_at": "2026-08-11",
       "reviewed_fields": [
         "name",
@@ -20491,7 +20445,9 @@
         "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/魔炮师.html",
         "source_record_id": "fbf8451f879a169fb17a01e9"
       },
-      "typed_content_ids": []
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.artillerist-spell-list"
+      ]
     },
     {
       "accepted_fields": [

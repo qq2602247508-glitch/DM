@@ -8,15 +8,15 @@
     "maneuver": 8,
     "subclass_feature": 232
   },
-  "compile_full_total": 86,
+  "compile_full_total": 97,
   "dm_assisted_total": 1,
   "gate_status": "partial",
-  "manual_total": 254,
+  "manual_total": 243,
   "pack_id": "tashas-cauldron",
-  "production_full_total": 82,
+  "production_full_total": 94,
   "review_blocker_counts": {
-    "reviewed_typed_mapping": 86,
-    "unmatched_requires_review": 254
+    "reviewed_typed_mapping": 97,
+    "unmatched_requires_review": 243
   },
   "reviewed_total": 340,
   "runtime_consumer_policy": {
@@ -49,11 +49,15 @@
     "tashas-cauldron:atom:28894d328bca545cc65f7eb9:interception:005",
     "tashas-cauldron:atom:2ceef8846dfb30c175abe0dd:tool-expertise:007",
     "tashas-cauldron:atom:38a389e4b25a6eeec6c7835f:bonus-proficiencies:002",
+    "tashas-cauldron:atom:38a389e4b25a6eeec6c7835f:domain-spells:001",
     "tashas-cauldron:atom:4041ef4e8e0a5b7375019c27:training-in-sword-and-song:001",
+    "tashas-cauldron:atom:54721f3b2404977bbc9d3e53:circle-spells:001",
     "tashas-cauldron:atom:606d89f6e0ea3b2e0194f24c:arcane-jolt:010",
+    "tashas-cauldron:atom:606d89f6e0ea3b2e0194f24c:battle-smith-spells:002",
     "tashas-cauldron:atom:606d89f6e0ea3b2e0194f24c:repair-3:007",
     "tashas-cauldron:atom:606d89f6e0ea3b2e0194f24c:tool-proficiency:001",
     "tashas-cauldron:atom:63d0abe27f6ad161f0820593:bonus-proficiencies:002",
+    "tashas-cauldron:atom:63d0abe27f6ad161f0820593:domain-spells:001",
     "tashas-cauldron:atom:63d0abe27f6ad161f0820593:eyes-of-night:003",
     "tashas-cauldron:atom:63d0abe27f6ad161f0820593:steps-of-night:006",
     "tashas-cauldron:atom:6ac3dd8adf2acd63eeabf4ea:otherworldly-glamour:003",
@@ -62,10 +66,15 @@
     "tashas-cauldron:atom:752d57e35706db428895da0a:druidic-warrior:009",
     "tashas-cauldron:atom:752d57e35706db428895da0a:roving-6:003",
     "tashas-cauldron:atom:752d57e35706db428895da0a:tireless-10:004",
+    "tashas-cauldron:atom:790ce45021cc1901403353e1:domain-spells:001",
     "tashas-cauldron:atom:790ce45021cc1901403353e1:implement-of-peace:002",
+    "tashas-cauldron:atom:7f538e86d6af4475b48a524d:oath-spells:004",
     "tashas-cauldron:atom:867896faa26eb295d846a574:glorious-defense:010",
+    "tashas-cauldron:atom:867896faa26eb295d846a574:oath-spells:005",
+    "tashas-cauldron:atom:92c8bd3c6a3cd622e2ec4559:circle-spells:001",
     "tashas-cauldron:atom:98620543cf94e974361c6567:bottled-respit:003",
     "tashas-cauldron:atom:98620543cf94e974361c6567:elemental-gift:005",
+    "tashas-cauldron:atom:98620543cf94e974361c6567:expanded-spell-list:001",
     "tashas-cauldron:atom:98620543cf94e974361c6567:genie-s-wrath:004",
     "tashas-cauldron:atom:a13253dc90904c96eaa719ab:guarded-mind:008",
     "tashas-cauldron:atom:a13253dc90904c96eaa719ab:protective-field:002",
@@ -85,6 +94,7 @@
     "tashas-cauldron:atom:b79182b9e28e7cac95e7c7a5:full-of-stars:010",
     "tashas-cauldron:atom:b79182b9e28e7cac95e7c7a5:weal:007",
     "tashas-cauldron:atom:b79182b9e28e7cac95e7c7a5:woe:008",
+    "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:armorer-spells:002",
     "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:dampening-field:011",
     "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:defensive-field:007",
     "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:extra-attack:012",
@@ -107,6 +117,7 @@
     "tashas-cauldron:atom:f8e42149abd618bfa3d0eac1:swarmkeeper-magic:002",
     "tashas-cauldron:atom:f8e42149abd618bfa3d0eac1:writhing-tide:003",
     "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:arcane-firearm:004",
+    "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:artillerist-spells:002",
     "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:explosive-cannon:005",
     "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:tool-proficiency:001",
     "tashas-cauldron:atom:ff7049c6a4d0aad0dae4adf5:manifest-mind:002",
@@ -121,5 +132,5 @@
     "reviewed": 120,
     "typed": 100
   },
-  "typed_total": 86
+  "typed_total": 97
 }
