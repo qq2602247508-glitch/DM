@@ -3,13 +3,15 @@
   "authored_ir": {
     "clause_ids": [
       "spectral-object-lifecycle",
+      "proficiency-bonus-uses",
+      "termination-events",
       "remote-spell-origin",
       "mind-sight",
       "shared-information",
       "spell-slot-reactivation"
     ],
     "path": "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/scribe-manifest-mind.json",
-    "sha256": "c92677607bc48784c066c7c5c32d764e230e5928895073059850d93dc244c7a3",
+    "sha256": "fb1670bc85d99f414f384cf813b0a3b021a2078c8c561e99a8bd4ba0ebc142ce",
     "source_completeness": "incomplete",
     "unmodeled_source_terms": [
       "entity sensory profile consumer",
@@ -244,10 +246,11 @@
   ],
   "compiler": {
     "blockers": [
-      "source is incomplete"
+      "source is incomplete",
+      "proficiency-bonus-uses: set_resource_profile"
     ],
     "compile_status": "partial",
-    "typed_clause_count": 5
+    "typed_clause_count": 7
   },
   "counts": {
     "covered": 1,
