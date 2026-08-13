@@ -1,12 +1,12 @@
 {
   "after": {
     "compile_only": 35,
-    "production_full": 201,
+    "production_full": 203,
     "tasha_atom_pack": {
       "authored_typed_ir": 106,
       "candidate_generated": 408,
       "compile_full": 105,
-      "compile_only": 2,
+      "compile_only": 0,
       "consumer_unlocks": {
         "existing_generic_consumer": {
           "content_ids": [
@@ -104,6 +104,7 @@
             "content.tashas-cauldron.round2.feature.feat-skill-expert",
             "content.tashas-cauldron.round2.feature.feat-telepathic",
             "content.tashas-cauldron.round2.feature.fey-wanderer-otherworldly-glamour",
+            "content.tashas-cauldron.round2.feature.genie-bottled-respite",
             "content.tashas-cauldron.round2.feature.genie-elemental-gift",
             "content.tashas-cauldron.round2.feature.genie-expanded-spell-list",
             "content.tashas-cauldron.round2.feature.genie-genies-wrath",
@@ -130,6 +131,7 @@
             "content.tashas-cauldron.round2.feature.rune-knight-giants-might",
             "content.tashas-cauldron.round2.feature.rune-knight-great-stature",
             "content.tashas-cauldron.round2.feature.rune-knight-runic-shield",
+            "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
             "content.tashas-cauldron.round2.feature.soulknife-homing-strikes",
             "content.tashas-cauldron.round2.feature.soulknife-psi-bolstered-knack",
             "content.tashas-cauldron.round2.feature.soulknife-psychic-teleportation",
@@ -161,16 +163,16 @@
       },
       "content_atom_total": 525,
       "content_id_funnel": {
-        "compile_only": 2,
+        "compile_only": 0,
         "dm_assisted": 2,
         "matched_typed_ir": 106,
-        "production_full": 102,
+        "production_full": 104,
         "relation_holds": true
       },
       "current_project_compile_only": 35,
       "current_project_compiled_unique": 111,
-      "current_project_production_full": 201,
-      "current_project_production_registry_fingerprint": "c6d1d64e89e93f1111b8b1a1abc84b15c8c7ea6ca6d69598841cf326ba117443",
+      "current_project_production_full": 203,
+      "current_project_production_registry_fingerprint": "272ece780cfe87e9c98ca2e578da17818a1530437a986c4708bfcfa811dafc6e",
       "dm_assisted": 2,
       "dm_reference": 107,
       "draft_total": 408,
@@ -187,7 +189,7 @@
         },
         "total": 499
       },
-      "game_usable": 103,
+      "game_usable": 105,
       "invalid_source": 0,
       "item_ir": {
         "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
@@ -259,7 +261,7 @@
         "spell": 21,
         "subclass_feature": 232
       },
-      "production_full": 101,
+      "production_full": 103,
       "reviewed_total": 408,
       "runtime_preview_full": 105,
       "schema_version": "tashas-whole-pack-migration-1",
@@ -269,7 +271,7 @@
       "source_record_total": 144,
       "source_record_unclassified": 0,
       "status_counts": {
-        "compile_only": 2,
+        "compile_only": 0,
         "dm_assisted": 2,
         "dm_reference": 107,
         "duplicate_or_reprint": 0,
@@ -277,7 +279,7 @@
         "manual_authoring": 303,
         "non_instantiable": 10,
         "out_of_scope_with_reason": 0,
-        "production_full": 101
+        "production_full": 103
       },
       "template_matched": 105
     },
@@ -285,7 +287,7 @@
   },
   "baseline": {
     "compile_only": 35,
-    "production_full": 201,
+    "production_full": 203,
     "unique_compiled": 111
   },
   "database_unchanged": true,

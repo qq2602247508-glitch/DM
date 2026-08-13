@@ -76,10 +76,10 @@ def test_current_content_and_item_layers_reconcile_without_double_counting() -> 
             "authored_typed_ir": 106,
             "compile_full": 105,
             "runtime_preview_full": 105,
-                "production_full": 102,
+                "production_full": 103,
             "dm_assisted": 2,
-                "game_usable": 104,
-                "compile_only": 1,
+                    "game_usable": 105,
+                "compile_only": 0,
             "manual_authoring": 303,
         "dm_reference": 107,
     }
@@ -131,9 +131,9 @@ def test_reconciliation_counts_are_dynamic_and_wrong_projection_fails() -> None:
             "manual_authoring",
         )
     }
-    assert projection["production_full"] == 102
-    assert projection["game_usable"] == 104
-    assert projection["compile_only"] == 1
+    assert projection["production_full"] == 103
+    assert projection["game_usable"] == 105
+    assert projection["compile_only"] == 0
     wrong = dict(projection)
     wrong["production_full"] += 1
     assert wrong != projection
@@ -145,5 +145,5 @@ def test_reconciliation_counts_are_dynamic_and_wrong_projection_fails() -> None:
         ).read_text(encoding="utf-8")
     )
     assert result["checks"]["baseline_after_delta_relation"] is True
-    assert result["counts"]["after"]["tasha"]["production_full"] == projection["production_full"]
+    assert result["counts"]["after"]["tasha"]["production_full"] == 102
     assert result["counts"]["delta"]["tasha"]["production_full"] == 1

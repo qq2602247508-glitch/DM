@@ -17200,7 +17200,7 @@
       "instantiable": true,
       "level": null,
       "localized_name": "瓶中小憩",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "name": "瓶中小憩 Bottled Respit。",
       "officiality": "unknown",
       "parent_atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:tce:000",
@@ -17228,10 +17228,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "runtime_preview_full",
-        "isolated_runtime_validated": false,
-        "registered_production_full": false,
+        "game_usable": true,
+        "highest_status": "game_usable",
+        "isolated_runtime_validated": true,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -29968,7 +29968,7 @@
       "instantiable": true,
       "level": 6,
       "localized_name": "神识显现",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "name": "神识显现 Manifest Mind",
       "officiality": "unknown",
       "parent_atom_id": "tashas-cauldron:atom:ff7049c6a4d0aad0dae4adf5:tce:000",
@@ -29996,10 +29996,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "runtime_preview_full",
-        "isolated_runtime_validated": false,
-        "registered_production_full": false,
+        "game_usable": true,
+        "highest_status": "game_usable",
+        "isolated_runtime_validated": true,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -30258,7 +30258,7 @@
       "player_facing": 408,
       "total": 525
     },
-    "audit_fingerprint": "e46fe56ffa348b3ac662c9539bedbe7e006ccf4d50a31dd10924930813eaccd4",
+    "audit_fingerprint": "09141d0f3ab5dbc8478283c51cb553255e1511813359ef6ed7dc84798bc069eb",
     "before_atom_counts": {
       "by_kind": {
         "character_option": 15,
@@ -31582,7 +31582,7 @@
   "semantic_cluster_fingerprint": "56dcf517893ef356ea102b3949dd11c61810fff9a1e57d40a9cd8bebe3433115",
   "source_book": "塔莎的万事坩埚",
   "status_counts": {
-    "compile_only": 2,
+    "compile_only": 0,
     "dm_assisted": 2,
     "dm_reference": 107,
     "duplicate_or_reprint": 0,
@@ -31590,6 +31590,6 @@
     "manual_authoring": 303,
     "non_instantiable": 10,
     "out_of_scope_with_reason": 0,
-    "production_full": 101
+    "production_full": 103
   }
 }

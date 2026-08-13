@@ -9949,7 +9949,7 @@
       "instantiable": true,
       "level": null,
       "localized_name": "瓶中小憩",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "name": "瓶中小憩 Bottled Respit。",
       "officiality": "unknown",
       "parent_atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:tce:000",
@@ -9977,10 +9977,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "runtime_preview_full",
-        "isolated_runtime_validated": false,
-        "registered_production_full": false,
+        "game_usable": true,
+        "highest_status": "game_usable",
+        "isolated_runtime_validated": true,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -18858,7 +18858,7 @@
       "instantiable": true,
       "level": 6,
       "localized_name": "神识显现",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "name": "神识显现 Manifest Mind",
       "officiality": "unknown",
       "parent_atom_id": "tashas-cauldron:atom:ff7049c6a4d0aad0dae4adf5:tce:000",
@@ -18886,10 +18886,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "runtime_preview_full",
-        "isolated_runtime_validated": false,
-        "registered_production_full": false,
+        "game_usable": true,
+        "highest_status": "game_usable",
+        "isolated_runtime_validated": true,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -19028,11 +19028,10 @@
   "pack_id": "tashas-cauldron",
   "schema_version": "tashas-feature-ir-report-1",
   "status_counts": {
-    "compile_only": 2,
     "dm_assisted": 1,
     "dm_reference": 31,
     "manual_authoring": 211,
-    "production_full": 81
+    "production_full": 83
   },
   "typed_atom_total": 84
 }

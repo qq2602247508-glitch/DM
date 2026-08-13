@@ -132,9 +132,9 @@
     "compile_full": 105,
     "dm_assisted": 2,
     "draft": 408,
-    "game_usable": 103,
-    "isolated_runtime_validated": 103,
-    "registered_production_full": 101,
+    "game_usable": 105,
+    "isolated_runtime_validated": 105,
+    "registered_production_full": 103,
     "reviewed": 408,
     "runtime_preview_full": 105,
     "source_identified": 525

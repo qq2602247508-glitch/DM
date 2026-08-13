@@ -3,12 +3,18 @@
     "clause_ids": [
       "vessel-space-contract"
     ],
+    "excluded_from_selected_feature": [
+      {
+        "feature_atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:sanctuary-vessel:006",
+        "feature_name": "Sanctuary Vessel",
+        "level": 10,
+        "reason": "The selected authored feature is the separate level-1 Bottled Respite clause; Sanctuary Vessel is a distinct future feature atom in the same source record.",
+        "source_fragment": "66",
+        "status": "future_feature_boundary"
+      }
+    ],
     "path": "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/genie-bottled-respite.json",
-    "unmodeled_source_terms": [
-      "formal vessel persistence and entity containment consumer",
-      "source-bound exit placement and item relocation receipts",
-      "sanctuary-vessel companion selection and short-rest benefit consumer"
-    ]
+    "unmodeled_source_terms": []
   },
   "feature_id": "content.tashas-cauldron.round2.feature.genie-bottled-respite",
   "matrix": [
@@ -25,12 +31,110 @@
       "status": "contracted"
     },
     {
+      "evidence": {
+        "blockers": [],
+        "checks": [
+          {
+            "id": "selected_bottled_respite_atom",
+            "matched": [
+              "tashas-cauldron:atom:98620543cf94e974361c6567:bottled-respit:003"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "data/content-ir/isolated-packs/tashas-cauldron-2026-08-11/atom-index.json",
+            "required": true
+          },
+          {
+            "id": "distinct_sanctuary_vessel_atom",
+            "matched": [
+              "tashas-cauldron:atom:98620543cf94e974361c6567:sanctuary-vessel:006"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "data/content-ir/isolated-packs/tashas-cauldron-2026-08-11/atom-index.json",
+            "required": true
+          },
+          {
+            "id": "authored_exclusion_metadata",
+            "matched": [
+              "feature_atom_id",
+              "level",
+              "source_fragment"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/genie-bottled-respite.json",
+            "required": true
+          }
+        ],
+        "future_feature": {
+          "atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:sanctuary-vessel:006",
+          "feature_name": "Sanctuary Vessel",
+          "level": 10,
+          "source_fragment": "66"
+        },
+        "selected_feature": {
+          "atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:bottled-respit:003",
+          "feature_id": "content.tashas-cauldron.round2.feature.genie-bottled-respite",
+          "source_fragment": "blockquote:42"
+        },
+        "status": "excluded_from_selected_feature"
+      },
       "id": "companion_capacity",
       "runtime": "future Sanctuary Vessel capability",
       "source": "10级器皿庇护所：最多5个可见自愿生物",
       "status": "excluded_from_selected_feature"
     },
     {
+      "evidence": {
+        "blockers": [],
+        "checks": [
+          {
+            "id": "selected_bottled_respite_atom",
+            "matched": [
+              "tashas-cauldron:atom:98620543cf94e974361c6567:bottled-respit:003"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "data/content-ir/isolated-packs/tashas-cauldron-2026-08-11/atom-index.json",
+            "required": true
+          },
+          {
+            "id": "distinct_sanctuary_vessel_atom",
+            "matched": [
+              "tashas-cauldron:atom:98620543cf94e974361c6567:sanctuary-vessel:006"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "data/content-ir/isolated-packs/tashas-cauldron-2026-08-11/atom-index.json",
+            "required": true
+          },
+          {
+            "id": "authored_exclusion_metadata",
+            "matched": [
+              "feature_atom_id",
+              "level",
+              "source_fragment"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/genie-bottled-respite.json",
+            "required": true
+          }
+        ],
+        "future_feature": {
+          "atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:sanctuary-vessel:006",
+          "feature_name": "Sanctuary Vessel",
+          "level": 10,
+          "source_fragment": "66"
+        },
+        "selected_feature": {
+          "atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:bottled-respit:003",
+          "feature_id": "content.tashas-cauldron.round2.feature.genie-bottled-respite",
+          "source_fragment": "blockquote:42"
+        },
+        "status": "excluded_from_selected_feature"
+      },
       "id": "companion_distance",
       "runtime": "future Sanctuary Vessel capability",
       "source": "10级器皿庇护所：30尺内",
@@ -49,10 +153,139 @@
       "status": "contracted"
     },
     {
+      "evidence": {
+        "allowed_request_shape": [
+          "event_id"
+        ],
+        "behavioral_pytest": [
+          "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+          "-m",
+          "pytest",
+          "-q",
+          "backend/tests/test_content_ir_vessel_runtime.py",
+          "-k",
+          "real_event_e2e_resolves_and_replays or direct_db_tampering_fails_closed"
+        ],
+        "blockers": [],
+        "caller_supplied_sound_events": false,
+        "checks": [
+          {
+            "id": "event_create_audible_validator",
+            "matched": [
+              "class EventCreate(BaseModel):",
+              "audible_sound events must be created through the producer path",
+              "class AudibleSoundEventCreate(BaseModel):"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/src/dnd_dm_assistant/api/schemas.py",
+            "required": true
+          },
+          {
+            "id": "real_events_api_create_test",
+            "matched": [
+              "f\"{base}/events/audible-sound\"",
+              "\"source_producer\"",
+              "\"producer_operation_id\"]"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/tests/test_content_ir_vessel_runtime.py",
+            "required": true
+          },
+          {
+            "id": "runtime_event_query_validation",
+            "matched": [
+              "session.get(Event, event_id)",
+              "event.event_type != \"audible_sound\"",
+              "event.campaign_id != campaign_id",
+              "event.location_id",
+              "event.visibility",
+              "source_producer",
+              "source_fingerprint"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+            "required": true
+          },
+          {
+            "id": "dedicated_event_producer",
+            "matched": [
+              "def create_audible_sound_event(",
+              "operation_type=\"event_audible_sound\"",
+              "\"source_facts_authority\": \"asserted_input\"",
+              "\"producer_operation_id\": operation.id"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/src/dnd_dm_assistant/infrastructure/database/campaign_service.py",
+            "required": true
+          },
+          {
+            "id": "generic_event_crud_rejection",
+            "matched": [
+              "audible_sound events must be created through the producer path",
+              "if singular == \"event\" and values.get(\"event_type\") == \"audible_sound\":"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/src/dnd_dm_assistant/api/routes/campaigns.py",
+            "required": true
+          },
+          {
+            "id": "external_sound_e2e_receipt_test",
+            "matched": [
+              "def test_vessel_external_sound_real_event_e2e_resolves_and_replays(",
+              "\"status\"] == \"resolved\"",
+              "\"event_id\"] == event[\"id\"]",
+              "\"channel\"] == \"hearing\"",
+              "\"state_mutated\"] is False",
+              "assert replay.json()[\"already_applied\"] is True"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/tests/test_content_ir_vessel_runtime.py",
+            "required": true
+          },
+          {
+            "id": "external_sound_negative_tests",
+            "matched": [
+              "test_vessel_external_sound_event_validation_fails_closed(",
+              "test_vessel_external_sound_rejects_non_audible_event_and_wrong_binding(",
+              "test_vessel_external_sound_patch_cannot_mutate_producer_provenance(",
+              "test_vessel_external_sound_rejects_terminated_state(",
+              "test_vessel_external_sound_rejects_outsider_and_non_hearing_channel("
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/tests/test_content_ir_vessel_runtime.py",
+            "required": true
+          },
+          {
+            "id": "external_sound_behavioral_tests",
+            "matched": [
+              "identical producer replay and conflicting same-key rejection",
+              "direct DB producer receipt tamper fail-closed cases"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/tests/test_content_ir_vessel_runtime.py",
+            "required": true
+          }
+        ],
+        "producer_exists": true,
+        "sources": [
+          "backend/src/dnd_dm_assistant/infrastructure/database/models.py",
+          "backend/src/dnd_dm_assistant/api/routes/campaigns.py",
+          "backend/src/dnd_dm_assistant/infrastructure/database/campaign_service.py"
+        ],
+        "status": "verified"
+      },
       "id": "external_sound",
-      "runtime": "sensory bridge",
+      "runtime": "producer-bound vessel.external_sound.v1",
       "source": "如同身在器皿所在之处一般听到外界的声音",
-      "status": "blocked"
+      "status": "verified"
     },
     {
       "id": "duration",
@@ -67,22 +300,573 @@
       "status": "contracted"
     },
     {
+      "evidence": {
+        "blockers": [],
+        "checks": [
+          {
+            "id": "nearest_source_bound_position_receipt",
+            "matched": [
+              "def _vessel_position_receipt(",
+              "find_nearest_unoccupied_space(",
+              "\"position_receipts\": position_receipts"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+            "required": true
+          },
+          {
+            "id": "distinct_termination_destinations",
+            "matched": [
+              "spatial.add_entity(",
+              "position_subject_ids = (",
+              "receipt_item_ids = (",
+              "event in {\"destroy\", \"owner_death\"}"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+            "required": true
+          },
+          {
+            "id": "normal_exit_keeps_items_contained",
+            "matched": [
+              "assert item_after_exit[\"metadata_json\"][\"vessel_container_id\"] == vessel_id",
+              "assert \"vessel_relocated_from\" not in item_after_exit[\"metadata_json\"]"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/tests/test_content_ir_vessel_runtime.py",
+            "required": true
+          },
+          {
+            "id": "owner_death_relocation_receipts",
+            "matched": [
+              "def test_owner_death_relocates_items_with_source_bound_receipts(",
+              "assert confirmed.json()[\"vessel_space\"][\"state\"][\"status\"] == \"removed\"",
+              "assert replay.json()[\"already_applied\"] is True"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/tests/test_content_ir_vessel_runtime.py",
+            "required": true
+          },
+          {
+            "id": "focused_runtime_tests",
+            "matched": [
+              "focused vessel runtime/domain suite"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/tests/test_content_ir_vessel_runtime.py",
+            "required": true
+          }
+        ],
+        "pytest_target": [
+          "backend/tests/test_content_ir_vessel_runtime.py",
+          "backend/tests/test_vessel_space.py"
+        ],
+        "required_checks_passed": true,
+        "status": "verified"
+      },
       "id": "exit_placement",
       "runtime": "SpatialAuthority",
       "source": "距离它最近的未占据空间",
+      "status": "verified"
+    },
+    {
+      "evidence": {
+        "api": "content_ir_runtime.vessel_space",
+        "receipt_fields": [
+          "item_receipts",
+          "vessel_container_id"
+        ],
+        "transactional": true
+      },
+      "id": "carried_items",
+      "runtime": "WorldItem containment receipt",
+      "source": "器皿内的一切物件将被留在其中直到被取出",
       "status": "contracted"
     },
     {
-      "id": "carried_items",
-      "runtime": "containment/item consumer",
-      "source": "器皿内的一切物件将被留在其中直到被取出",
-      "status": "blocked"
+      "evidence": {
+        "blockers": [],
+        "checks": [
+          {
+            "id": "formal_vessel_model",
+            "matched": [
+              "class VesselSpace(Timestamped, Base):",
+              "__tablename__ = \"vessel_spaces\"",
+              "source_fingerprint",
+              "occupants_json",
+              "items_json",
+              "termination_reason"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/src/dnd_dm_assistant/infrastructure/database/models.py",
+            "required": true
+          },
+          {
+            "id": "formal_vessel_empty_db_migration",
+            "matched": [
+              "op.create_table(\n        \"vessel_spaces\"",
+              "sa.PrimaryKeyConstraint(\"vessel_id\")",
+              "sa.ForeignKeyConstraint([\"campaign_id\"], [\"campaigns.id\"]"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/migrations/versions/20260813_0003_formal_vessel_persistence.py",
+            "required": true
+          },
+          {
+            "id": "formal_vessel_runtime_recovery_and_cas",
+            "matched": [
+              "select(VesselSpace).where(",
+              "formal_expected_version",
+              "update(VesselSpace)",
+              "vessel_preview[\"source_provenance\"]"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+            "required": true
+          },
+          {
+            "id": "formal_vessel_independent_recovery_test",
+            "matched": [
+              "def test_new_service_instance_recovers_vessel_state_from_formal_row(",
+              "ContentIRRuntimeService(engine).preview(",
+              "stale-feature-only"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/tests/test_content_ir_vessel_runtime.py",
+            "required": true
+          }
+        ],
+        "required_checks_passed": true,
+        "sources": [
+          "backend/src/dnd_dm_assistant/infrastructure/database/models.py",
+          "backend/migrations/versions/20260813_0003_formal_vessel_persistence.py",
+          "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+          "backend/tests/test_content_ir_vessel_runtime.py"
+        ],
+        "status": "verified"
+      },
+      "id": "formal_persistence",
+      "runtime": "VesselSpace SQLAlchemy model + ContentIRRuntime CAS",
+      "source": "formal vessel persistence and entity containment consumer",
+      "status": "contracted"
     },
     {
+      "evidence": {
+        "blockers": [],
+        "checks": {
+          "compiler_full": true,
+          "isolated_result_passed": true,
+          "materializer_full": true,
+          "name_branch_count_zero": true,
+          "registry_resolves_both_consumers": true,
+          "round_report_promoted": true,
+          "source_complete": true,
+          "vessel_external_sound_materialized": true
+        },
+        "compiler": {
+          "blockers": [],
+          "clause_results": [
+            {
+              "blockers": [],
+              "capability_ids": [
+                "vessel.space"
+              ],
+              "clause_id": "vessel-space-contract",
+              "generated_block": {
+                "action_economy": "action",
+                "activation": "automatic",
+                "capability_id": "vessel.space",
+                "clause_id": "vessel-space-contract",
+                "contract_version": "1.0",
+                "materializer_id": "vessel.space",
+                "operator": "configure_vessel_space",
+                "parameters": {
+                  "appearance_options": [
+                    "oil_lamp",
+                    "urn",
+                    "ring",
+                    "stoppered_bottle",
+                    "hollow_figurine",
+                    "lantern"
+                  ],
+                  "duration_hours_source": "proficiency_bonus_times_2",
+                  "exit_size_cells": 1,
+                  "max_occupants": 1,
+                  "vessel_binding": "feature_source"
+                },
+                "targeting": {
+                  "kind": "self",
+                  "parameters": {}
+                },
+                "trigger": "explicit_activation"
+              },
+              "status": "full"
+            }
+          ],
+          "compile_status": "full",
+          "dependencies": [],
+          "evidence": [
+            "test_vessel_space_runtime_contract",
+            "test_content_ir_vessel_runtime",
+            "test_migrations",
+            "test_content_ir_production_closure"
+          ],
+          "feature_id": "content.tashas-cauldron.round2.feature.genie-bottled-respite",
+          "fingerprint": "a14169e0f1e43b27cf24107dc4a8f047e0464a1974b065c06b20d1940fa0c1a8",
+          "generated_runtime_blocks": [
+            {
+              "action_economy": "action",
+              "activation": "automatic",
+              "capability_id": "vessel.space",
+              "clause_id": "vessel-space-contract",
+              "contract_version": "1.0",
+              "materializer_id": "vessel.space",
+              "operator": "configure_vessel_space",
+              "parameters": {
+                "appearance_options": [
+                  "oil_lamp",
+                  "urn",
+                  "ring",
+                  "stoppered_bottle",
+                  "hollow_figurine",
+                  "lantern"
+                ],
+                "duration_hours_source": "proficiency_bonus_times_2",
+                "exit_size_cells": 1,
+                "max_occupants": 1,
+                "vessel_binding": "feature_source"
+              },
+              "targeting": {
+                "kind": "self",
+                "parameters": {}
+              },
+              "trigger": "explicit_activation"
+            }
+          ],
+          "legacy_adapter_used": false,
+          "manual_boundaries": [],
+          "required_inputs": [],
+          "required_persistence": [
+            "character.feature_runtime.vessel_spaces"
+          ],
+          "required_tests": [
+            "test_vessel_space_runtime_contract",
+            "test_content_ir_vessel_runtime",
+            "test_migrations",
+            "test_content_ir_production_closure"
+          ],
+          "required_ui": [],
+          "source_trust": "authored_ir",
+          "status_authority": "compiler",
+          "unsupported_combinations": [],
+          "unsupported_conditions": [],
+          "unsupported_operators": []
+        },
+        "counts_from_whole_pack": {
+          "project": {
+            "compile_only": 0,
+            "production": 203,
+            "unique_compiled": 111
+          },
+          "tasha": {
+            "authored": 106,
+            "compile": 105,
+            "compile_only": 0,
+            "preview": 105,
+            "production": 103
+          }
+        },
+        "feature_id": "content.tashas-cauldron.round2.feature.genie-bottled-respite",
+        "materialized_sections": {
+          "vessel_external_sound": 1,
+          "vessel_spaces": 1
+        },
+        "production_report_path": "reports/tashas-feature-production-consumer-round-XLII-2026-08-13.json",
+        "production_result_path": "data/content-ir/compiled/production-runtime-results-XLII.json",
+        "production_runtime_full_ids": [
+          "content.tashas-cauldron.feature.alchemist-chemical-mastery",
+          "content.tashas-cauldron.feature.alchemist-restorative-reagents",
+          "content.tashas-cauldron.feature.alchemist.tool-proficiency",
+          "content.tashas-cauldron.feature.armorer-dampening-field",
+          "content.tashas-cauldron.feature.armorer-defensive-field",
+          "content.tashas-cauldron.feature.armorer-extra-attack",
+          "content.tashas-cauldron.feature.armorer-lightning-launcher",
+          "content.tashas-cauldron.feature.armorer.tools-of-the-trade",
+          "content.tashas-cauldron.feature.artillerist.tool-proficiency",
+          "content.tashas-cauldron.feature.battle-master.ambush",
+          "content.tashas-cauldron.feature.battle-master.commanding-presence",
+          "content.tashas-cauldron.feature.battle-master.precision-attack",
+          "content.tashas-cauldron.feature.battle-smith-arcane-jolt-damage",
+          "content.tashas-cauldron.feature.battle-smith-arcane-jolt-healing",
+          "content.tashas-cauldron.feature.battle-smith-repair",
+          "content.tashas-cauldron.feature.battle-smith.tool-proficiency",
+          "content.tashas-cauldron.feature.psi-warrior-protective-field",
+          "content.tashas-cauldron.feature.psi-warrior-psionic-strike",
+          "content.tashas-cauldron.feature.psi-warrior-telekinetic-movement",
+          "content.tashas-cauldron.feature.way-of-mercy-hand-harm",
+          "content.tashas-cauldron.feature.way-of-mercy-hand-healing",
+          "content.tashas-cauldron.feature.way-of-mercy-physicians-touch",
+          "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy",
+          "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery",
+          "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list",
+          "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech",
+          "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant",
+          "content.tashas-cauldron.round2.feature.alchemist-spell-list",
+          "content.tashas-cauldron.round2.feature.armorer-powered-steps",
+          "content.tashas-cauldron.round2.feature.armorer-spell-list",
+          "content.tashas-cauldron.round2.feature.artificer-tool-expertise",
+          "content.tashas-cauldron.round2.feature.artillerist-arcane-firearm",
+          "content.tashas-cauldron.round2.feature.artillerist-explosive-cannon",
+          "content.tashas-cauldron.round2.feature.artillerist-spell-list",
+          "content.tashas-cauldron.round2.feature.astral-self-armor-of-the-spirit",
+          "content.tashas-cauldron.round2.feature.astral-self-astral-sight",
+          "content.tashas-cauldron.round2.feature.astral-self-word-of-the-spirit",
+          "content.tashas-cauldron.round2.feature.battle-master-bait-and-switch",
+          "content.tashas-cauldron.round2.feature.battle-master-brace",
+          "content.tashas-cauldron.round2.feature.battle-master-grappling-strike",
+          "content.tashas-cauldron.round2.feature.battle-master-quick-toss",
+          "content.tashas-cauldron.round2.feature.battle-master-tactical-assessment",
+          "content.tashas-cauldron.round2.feature.battle-smith-spell-list",
+          "content.tashas-cauldron.round2.feature.beast-barbarian-bestial-soul",
+          "content.tashas-cauldron.round2.feature.bladesinger-training-in-sword-and-song",
+          "content.tashas-cauldron.round2.feature.clockwork-soul-clockwork-magic",
+          "content.tashas-cauldron.round2.feature.fathomless-gift-of-the-sea",
+          "content.tashas-cauldron.round2.feature.fathomless-oceanic-soul",
+          "content.tashas-cauldron.round2.feature.feat-crusher",
+          "content.tashas-cauldron.round2.feature.feat-fey-touched",
+          "content.tashas-cauldron.round2.feature.feat-shadow-touched",
+          "content.tashas-cauldron.round2.feature.feat-skill-expert",
+          "content.tashas-cauldron.round2.feature.feat-telepathic",
+          "content.tashas-cauldron.round2.feature.fey-wanderer-otherworldly-glamour",
+          "content.tashas-cauldron.round2.feature.genie-bottled-respite",
+          "content.tashas-cauldron.round2.feature.genie-elemental-gift",
+          "content.tashas-cauldron.round2.feature.genie-expanded-spell-list",
+          "content.tashas-cauldron.round2.feature.genie-genies-wrath",
+          "content.tashas-cauldron.round2.feature.glory-paladin-glorious-defense",
+          "content.tashas-cauldron.round2.feature.glory-paladin-oath-spells",
+          "content.tashas-cauldron.round2.feature.order-cleric-bonus-proficiencies",
+          "content.tashas-cauldron.round2.feature.order-cleric-domain-spells",
+          "content.tashas-cauldron.round2.feature.paladin-blessed-warrior",
+          "content.tashas-cauldron.round2.feature.paladin-blind-fighting",
+          "content.tashas-cauldron.round2.feature.paladin-harness-divine-power",
+          "content.tashas-cauldron.round2.feature.paladin-interception",
+          "content.tashas-cauldron.round2.feature.peace-cleric-domain-spells",
+          "content.tashas-cauldron.round2.feature.peace-cleric-implement-of-peace",
+          "content.tashas-cauldron.round2.feature.psi-warrior-guarded-mind",
+          "content.tashas-cauldron.round2.feature.psi-warrior-psi-powered-leap",
+          "content.tashas-cauldron.round2.feature.psi-warrior-psionic-power",
+          "content.tashas-cauldron.round2.feature.psi-warrior-telekinetic-master",
+          "content.tashas-cauldron.round2.feature.ranger-blind-fighting",
+          "content.tashas-cauldron.round2.feature.ranger-canny",
+          "content.tashas-cauldron.round2.feature.ranger-druidic-warrior",
+          "content.tashas-cauldron.round2.feature.ranger-roving",
+          "content.tashas-cauldron.round2.feature.ranger-tireless",
+          "content.tashas-cauldron.round2.feature.rune-knight-bonus-proficiencies",
+          "content.tashas-cauldron.round2.feature.rune-knight-giants-might",
+          "content.tashas-cauldron.round2.feature.rune-knight-great-stature",
+          "content.tashas-cauldron.round2.feature.rune-knight-runic-shield",
+          "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
+          "content.tashas-cauldron.round2.feature.soulknife-homing-strikes",
+          "content.tashas-cauldron.round2.feature.soulknife-psi-bolstered-knack",
+          "content.tashas-cauldron.round2.feature.soulknife-psychic-teleportation",
+          "content.tashas-cauldron.round2.feature.soulknife-psychic-whispers",
+          "content.tashas-cauldron.round2.feature.spores-druid-circle-spells",
+          "content.tashas-cauldron.round2.feature.stars-druid-full-of-stars",
+          "content.tashas-cauldron.round2.feature.stars-druid-weal",
+          "content.tashas-cauldron.round2.feature.stars-druid-woe",
+          "content.tashas-cauldron.round2.feature.swarmkeeper-spell-list",
+          "content.tashas-cauldron.round2.feature.swarmkeeper-writhing-tide",
+          "content.tashas-cauldron.round2.feature.twilight-cleric-bonus-proficiencies",
+          "content.tashas-cauldron.round2.feature.twilight-cleric-domain-spells",
+          "content.tashas-cauldron.round2.feature.twilight-cleric-eyes-of-night",
+          "content.tashas-cauldron.round2.feature.twilight-cleric-steps-of-night",
+          "content.tashas-cauldron.round2.feature.watchers-paladin-oath-spells",
+          "content.tashas-cauldron.round2.feature.wildfire-druid-circle-spells",
+          "tashas-cauldron:spell:0036d7dc058c496ef08fe340",
+          "tashas-cauldron:spell:083419d9de551806a5ca9748",
+          "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
+          "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac",
+          "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
+          "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+          "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+          "tashas-cauldron:spell:ef0f92b557fb48d421d462e1"
+        ],
+        "registry_consumers": [
+          "vessel.external_sound.v1",
+          "vessel.space.v1"
+        ],
+        "selected_feature_promoted": true,
+        "status": "verified"
+      },
+      "id": "whole_feature_production_parity",
+      "runtime": "registered_production_full",
+      "source": "compiler/materializer/registry/isolated production result/whole-pack migration",
+      "status": "verified"
+    },
+    {
+      "evidence": {
+        "blockers": [],
+        "checks": [
+          {
+            "id": "real_destroy_producer_validation",
+            "matched": [
+              "def _validate_lifecycle_producer(",
+              "operation_type != \"equipment_destroy\"",
+              "after.get(\"state\") != \"destroyed\"",
+              "_text(after.get(\"entity_id\")) != entity_id"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+            "required": true
+          },
+          {
+            "id": "world_item_version_cas",
+            "matched": [
+              "select(WorldItem).where(",
+              "update(WorldItem)",
+              "WorldItem.version == expected_item_version",
+              "raise VersionConflict(\n                            \"world_item\""
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+            "required": true
+          },
+          {
+            "id": "per_item_nearest_position_receipt",
+            "matched": [
+              "spatial.find_nearest_unoccupied_space(source)",
+              "\"position_receipt\": item_position_receipt",
+              "\"before\": before_item",
+              "\"after\": {",
+              "\"version\": item.version + 1"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+            "required": true
+          },
+          {
+            "id": "replay_is_idempotent",
+            "matched": [
+              "previous_vessel = previous.get(\"vessel_space\")",
+              "return {**previous, \"already_applied\": True}",
+              "vessel operation replay producer receipt does not match"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+            "required": true
+          },
+          {
+            "id": "real_producer_e2e_test",
+            "matched": [
+              "def _create_real_destroy_producer(",
+              "f\"{base}/characters/assets/equipment\"",
+              "f\"{base}/equipment/preview\"",
+              "f\"{base}/equipment/confirm\"",
+              "\"operation\": \"destroy\"",
+              "producer.operation_type == \"equipment_destroy\"",
+              "producer.status == \"applied\""
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/tests/test_content_ir_vessel_runtime.py",
+            "required": true
+          },
+          {
+            "id": "required_destroy_test_collection",
+            "matched": [
+              "def test_destroy_relocates_all_items_from_real_equipment_producer(",
+              "def test_destroy_requires_matching_real_producer_and_missing_producer_fails_closed(",
+              "def test_destroy_item_cas_conflict_rolls_back_vessel_and_character("
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/tests/test_content_ir_vessel_runtime.py",
+            "required": true
+          },
+          {
+            "id": "multiple_item_receipts",
+            "matched": [
+              "assert len(receipts) == 2",
+              "\"position_receipt\"",
+              "\"before\"",
+              "\"after\""
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/tests/test_content_ir_vessel_runtime.py",
+            "required": true
+          },
+          {
+            "id": "producer_mismatch_and_missing",
+            "matched": [
+              "metadata={\"vessel_id\": vessel_id}",
+              "\"producer receipt\" in response.text",
+              "\"not bound\" in response.text"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/tests/test_content_ir_vessel_runtime.py",
+            "required": true
+          },
+          {
+            "id": "item_cas_rollback",
+            "matched": [
+              "item.version += 1",
+              "assert confirmed.status_code == 409",
+              "\"vessel_container_id\"] == vessel_id",
+              "\"inside\""
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/tests/test_content_ir_vessel_runtime.py",
+            "required": true
+          },
+          {
+            "id": "replay_no_duplicate_relocation",
+            "matched": [
+              "assert replay.status_code == 200",
+              "assert replay.json()[\"already_applied\"] is True",
+              "\"vessel_relocated_from\"] == vessel_id"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "backend/tests/test_content_ir_vessel_runtime.py",
+            "required": true
+          }
+        ],
+        "missing": [],
+        "pytest_target": [
+          "backend/tests/test_content_ir_vessel_runtime.py",
+          "test_destroy_relocates_all_items_from_real_equipment_producer",
+          "test_destroy_requires_matching_real_producer_and_missing_producer_fails_closed",
+          "test_destroy_item_cas_conflict_rolls_back_vessel_and_character"
+        ],
+        "required_checks_passed": true,
+        "runtime_source": "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+        "status": "verified",
+        "test_source": "backend/tests/test_content_ir_vessel_runtime.py",
+        "verified_at_source_hashes": {
+          "backend/src/dnd_dm_assistant/application/content_ir_runtime.py": "86be08157b29137714b6d961c168b8897f43882768c1640153d1b60a120e8e61",
+          "backend/tests/test_content_ir_vessel_runtime.py": "2340da77d38219b0edc715b19abe0a2866797806bb3d7801faa209cb8fead827"
+        }
+      },
       "id": "destroyed_items",
-      "runtime": "containment/item relocation",
+      "runtime": "WorldItem destruction relocation",
       "source": "器皿被摧毁，物品完好无损出现在最近未占据空间",
-      "status": "blocked"
+      "status": "verified"
     },
     {
       "id": "long_rest_limit",
@@ -91,12 +875,110 @@
       "status": "contracted"
     },
     {
+      "evidence": {
+        "blockers": [],
+        "checks": [
+          {
+            "id": "selected_bottled_respite_atom",
+            "matched": [
+              "tashas-cauldron:atom:98620543cf94e974361c6567:bottled-respit:003"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "data/content-ir/isolated-packs/tashas-cauldron-2026-08-11/atom-index.json",
+            "required": true
+          },
+          {
+            "id": "distinct_sanctuary_vessel_atom",
+            "matched": [
+              "tashas-cauldron:atom:98620543cf94e974361c6567:sanctuary-vessel:006"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "data/content-ir/isolated-packs/tashas-cauldron-2026-08-11/atom-index.json",
+            "required": true
+          },
+          {
+            "id": "authored_exclusion_metadata",
+            "matched": [
+              "feature_atom_id",
+              "level",
+              "source_fragment"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/genie-bottled-respite.json",
+            "required": true
+          }
+        ],
+        "future_feature": {
+          "atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:sanctuary-vessel:006",
+          "feature_name": "Sanctuary Vessel",
+          "level": 10,
+          "source_fragment": "66"
+        },
+        "selected_feature": {
+          "atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:bottled-respit:003",
+          "feature_id": "content.tashas-cauldron.round2.feature.genie-bottled-respite",
+          "source_fragment": "blockquote:42"
+        },
+        "status": "excluded_from_selected_feature"
+      },
       "id": "sanctuary_eject",
       "runtime": "future Sanctuary Vessel capability",
       "source": "10级器皿庇护所：附赠动作逐出任意数目的生物",
       "status": "excluded_from_selected_feature"
     },
     {
+      "evidence": {
+        "blockers": [],
+        "checks": [
+          {
+            "id": "selected_bottled_respite_atom",
+            "matched": [
+              "tashas-cauldron:atom:98620543cf94e974361c6567:bottled-respit:003"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "data/content-ir/isolated-packs/tashas-cauldron-2026-08-11/atom-index.json",
+            "required": true
+          },
+          {
+            "id": "distinct_sanctuary_vessel_atom",
+            "matched": [
+              "tashas-cauldron:atom:98620543cf94e974361c6567:sanctuary-vessel:006"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "data/content-ir/isolated-packs/tashas-cauldron-2026-08-11/atom-index.json",
+            "required": true
+          },
+          {
+            "id": "authored_exclusion_metadata",
+            "matched": [
+              "feature_atom_id",
+              "level",
+              "source_fragment"
+            ],
+            "missing": [],
+            "passed": true,
+            "path": "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/genie-bottled-respite.json",
+            "required": true
+          }
+        ],
+        "future_feature": {
+          "atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:sanctuary-vessel:006",
+          "feature_name": "Sanctuary Vessel",
+          "level": 10,
+          "source_fragment": "66"
+        },
+        "selected_feature": {
+          "atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:bottled-respit:003",
+          "feature_id": "content.tashas-cauldron.round2.feature.genie-bottled-respite",
+          "source_fragment": "blockquote:42"
+        },
+        "status": "excluded_from_selected_feature"
+      },
       "id": "sanctuary_short_rest",
       "runtime": "future Sanctuary Vessel capability",
       "source": "10级器皿庇护所：停留至少10分钟可视为完成短休",
@@ -128,8 +1010,567 @@
     }
   ],
   "promotion": {
-    "compile_only": true,
-    "reason": "source is incomplete and vessel persistence/containment/API receipts are not closed"
+    "compile_only": false,
+    "external_sound": {
+      "allowed_request_shape": [
+        "event_id"
+      ],
+      "behavioral_pytest": [
+        "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "backend/tests/test_content_ir_vessel_runtime.py",
+        "-k",
+        "real_event_e2e_resolves_and_replays or direct_db_tampering_fails_closed"
+      ],
+      "blockers": [],
+      "caller_supplied_sound_events": false,
+      "checks": [
+        {
+          "id": "event_create_audible_validator",
+          "matched": [
+            "class EventCreate(BaseModel):",
+            "audible_sound events must be created through the producer path",
+            "class AudibleSoundEventCreate(BaseModel):"
+          ],
+          "missing": [],
+          "passed": true,
+          "path": "backend/src/dnd_dm_assistant/api/schemas.py",
+          "required": true
+        },
+        {
+          "id": "real_events_api_create_test",
+          "matched": [
+            "f\"{base}/events/audible-sound\"",
+            "\"source_producer\"",
+            "\"producer_operation_id\"]"
+          ],
+          "missing": [],
+          "passed": true,
+          "path": "backend/tests/test_content_ir_vessel_runtime.py",
+          "required": true
+        },
+        {
+          "id": "runtime_event_query_validation",
+          "matched": [
+            "session.get(Event, event_id)",
+            "event.event_type != \"audible_sound\"",
+            "event.campaign_id != campaign_id",
+            "event.location_id",
+            "event.visibility",
+            "source_producer",
+            "source_fingerprint"
+          ],
+          "missing": [],
+          "passed": true,
+          "path": "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+          "required": true
+        },
+        {
+          "id": "dedicated_event_producer",
+          "matched": [
+            "def create_audible_sound_event(",
+            "operation_type=\"event_audible_sound\"",
+            "\"source_facts_authority\": \"asserted_input\"",
+            "\"producer_operation_id\": operation.id"
+          ],
+          "missing": [],
+          "passed": true,
+          "path": "backend/src/dnd_dm_assistant/infrastructure/database/campaign_service.py",
+          "required": true
+        },
+        {
+          "id": "generic_event_crud_rejection",
+          "matched": [
+            "audible_sound events must be created through the producer path",
+            "if singular == \"event\" and values.get(\"event_type\") == \"audible_sound\":"
+          ],
+          "missing": [],
+          "passed": true,
+          "path": "backend/src/dnd_dm_assistant/api/routes/campaigns.py",
+          "required": true
+        },
+        {
+          "id": "external_sound_e2e_receipt_test",
+          "matched": [
+            "def test_vessel_external_sound_real_event_e2e_resolves_and_replays(",
+            "\"status\"] == \"resolved\"",
+            "\"event_id\"] == event[\"id\"]",
+            "\"channel\"] == \"hearing\"",
+            "\"state_mutated\"] is False",
+            "assert replay.json()[\"already_applied\"] is True"
+          ],
+          "missing": [],
+          "passed": true,
+          "path": "backend/tests/test_content_ir_vessel_runtime.py",
+          "required": true
+        },
+        {
+          "id": "external_sound_negative_tests",
+          "matched": [
+            "test_vessel_external_sound_event_validation_fails_closed(",
+            "test_vessel_external_sound_rejects_non_audible_event_and_wrong_binding(",
+            "test_vessel_external_sound_patch_cannot_mutate_producer_provenance(",
+            "test_vessel_external_sound_rejects_terminated_state(",
+            "test_vessel_external_sound_rejects_outsider_and_non_hearing_channel("
+          ],
+          "missing": [],
+          "passed": true,
+          "path": "backend/tests/test_content_ir_vessel_runtime.py",
+          "required": true
+        },
+        {
+          "id": "external_sound_behavioral_tests",
+          "matched": [
+            "identical producer replay and conflicting same-key rejection",
+            "direct DB producer receipt tamper fail-closed cases"
+          ],
+          "missing": [],
+          "passed": true,
+          "path": "backend/tests/test_content_ir_vessel_runtime.py",
+          "required": true
+        }
+      ],
+      "producer_exists": true,
+      "sources": [
+        "backend/src/dnd_dm_assistant/infrastructure/database/models.py",
+        "backend/src/dnd_dm_assistant/api/routes/campaigns.py",
+        "backend/src/dnd_dm_assistant/infrastructure/database/campaign_service.py"
+      ],
+      "status": "verified"
+    },
+    "formal_persistence": {
+      "blockers": [],
+      "checks": [
+        {
+          "id": "formal_vessel_model",
+          "matched": [
+            "class VesselSpace(Timestamped, Base):",
+            "__tablename__ = \"vessel_spaces\"",
+            "source_fingerprint",
+            "occupants_json",
+            "items_json",
+            "termination_reason"
+          ],
+          "missing": [],
+          "passed": true,
+          "path": "backend/src/dnd_dm_assistant/infrastructure/database/models.py",
+          "required": true
+        },
+        {
+          "id": "formal_vessel_empty_db_migration",
+          "matched": [
+            "op.create_table(\n        \"vessel_spaces\"",
+            "sa.PrimaryKeyConstraint(\"vessel_id\")",
+            "sa.ForeignKeyConstraint([\"campaign_id\"], [\"campaigns.id\"]"
+          ],
+          "missing": [],
+          "passed": true,
+          "path": "backend/migrations/versions/20260813_0003_formal_vessel_persistence.py",
+          "required": true
+        },
+        {
+          "id": "formal_vessel_runtime_recovery_and_cas",
+          "matched": [
+            "select(VesselSpace).where(",
+            "formal_expected_version",
+            "update(VesselSpace)",
+            "vessel_preview[\"source_provenance\"]"
+          ],
+          "missing": [],
+          "passed": true,
+          "path": "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+          "required": true
+        },
+        {
+          "id": "formal_vessel_independent_recovery_test",
+          "matched": [
+            "def test_new_service_instance_recovers_vessel_state_from_formal_row(",
+            "ContentIRRuntimeService(engine).preview(",
+            "stale-feature-only"
+          ],
+          "missing": [],
+          "passed": true,
+          "path": "backend/tests/test_content_ir_vessel_runtime.py",
+          "required": true
+        }
+      ],
+      "required_checks_passed": true,
+      "sources": [
+        "backend/src/dnd_dm_assistant/infrastructure/database/models.py",
+        "backend/migrations/versions/20260813_0003_formal_vessel_persistence.py",
+        "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+        "backend/tests/test_content_ir_vessel_runtime.py"
+      ],
+      "status": "verified"
+    },
+    "reason": "all selected level-1 Bottled Respite production gates passed",
+    "sanctuary_boundary": {
+      "blockers": [],
+      "checks": [
+        {
+          "id": "selected_bottled_respite_atom",
+          "matched": [
+            "tashas-cauldron:atom:98620543cf94e974361c6567:bottled-respit:003"
+          ],
+          "missing": [],
+          "passed": true,
+          "path": "data/content-ir/isolated-packs/tashas-cauldron-2026-08-11/atom-index.json",
+          "required": true
+        },
+        {
+          "id": "distinct_sanctuary_vessel_atom",
+          "matched": [
+            "tashas-cauldron:atom:98620543cf94e974361c6567:sanctuary-vessel:006"
+          ],
+          "missing": [],
+          "passed": true,
+          "path": "data/content-ir/isolated-packs/tashas-cauldron-2026-08-11/atom-index.json",
+          "required": true
+        },
+        {
+          "id": "authored_exclusion_metadata",
+          "matched": [
+            "feature_atom_id",
+            "level",
+            "source_fragment"
+          ],
+          "missing": [],
+          "passed": true,
+          "path": "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/genie-bottled-respite.json",
+          "required": true
+        }
+      ],
+      "future_feature": {
+        "atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:sanctuary-vessel:006",
+        "feature_name": "Sanctuary Vessel",
+        "level": 10,
+        "source_fragment": "66"
+      },
+      "selected_feature": {
+        "atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:bottled-respit:003",
+        "feature_id": "content.tashas-cauldron.round2.feature.genie-bottled-respite",
+        "source_fragment": "blockquote:42"
+      },
+      "status": "excluded_from_selected_feature"
+    },
+    "source_bound_exit_relocation": {
+      "blockers": [],
+      "checks": [
+        {
+          "id": "nearest_source_bound_position_receipt",
+          "matched": [
+            "def _vessel_position_receipt(",
+            "find_nearest_unoccupied_space(",
+            "\"position_receipts\": position_receipts"
+          ],
+          "missing": [],
+          "passed": true,
+          "path": "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+          "required": true
+        },
+        {
+          "id": "distinct_termination_destinations",
+          "matched": [
+            "spatial.add_entity(",
+            "position_subject_ids = (",
+            "receipt_item_ids = (",
+            "event in {\"destroy\", \"owner_death\"}"
+          ],
+          "missing": [],
+          "passed": true,
+          "path": "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+          "required": true
+        },
+        {
+          "id": "normal_exit_keeps_items_contained",
+          "matched": [
+            "assert item_after_exit[\"metadata_json\"][\"vessel_container_id\"] == vessel_id",
+            "assert \"vessel_relocated_from\" not in item_after_exit[\"metadata_json\"]"
+          ],
+          "missing": [],
+          "passed": true,
+          "path": "backend/tests/test_content_ir_vessel_runtime.py",
+          "required": true
+        },
+        {
+          "id": "owner_death_relocation_receipts",
+          "matched": [
+            "def test_owner_death_relocates_items_with_source_bound_receipts(",
+            "assert confirmed.json()[\"vessel_space\"][\"state\"][\"status\"] == \"removed\"",
+            "assert replay.json()[\"already_applied\"] is True"
+          ],
+          "missing": [],
+          "passed": true,
+          "path": "backend/tests/test_content_ir_vessel_runtime.py",
+          "required": true
+        },
+        {
+          "id": "focused_runtime_tests",
+          "matched": [
+            "focused vessel runtime/domain suite"
+          ],
+          "missing": [],
+          "passed": true,
+          "path": "backend/tests/test_content_ir_vessel_runtime.py",
+          "required": true
+        }
+      ],
+      "pytest_target": [
+        "backend/tests/test_content_ir_vessel_runtime.py",
+        "backend/tests/test_vessel_space.py"
+      ],
+      "required_checks_passed": true,
+      "status": "verified"
+    },
+    "whole_feature_production_parity": {
+      "blockers": [],
+      "checks": {
+        "compiler_full": true,
+        "isolated_result_passed": true,
+        "materializer_full": true,
+        "name_branch_count_zero": true,
+        "registry_resolves_both_consumers": true,
+        "round_report_promoted": true,
+        "source_complete": true,
+        "vessel_external_sound_materialized": true
+      },
+      "compiler": {
+        "blockers": [],
+        "clause_results": [
+          {
+            "blockers": [],
+            "capability_ids": [
+              "vessel.space"
+            ],
+            "clause_id": "vessel-space-contract",
+            "generated_block": {
+              "action_economy": "action",
+              "activation": "automatic",
+              "capability_id": "vessel.space",
+              "clause_id": "vessel-space-contract",
+              "contract_version": "1.0",
+              "materializer_id": "vessel.space",
+              "operator": "configure_vessel_space",
+              "parameters": {
+                "appearance_options": [
+                  "oil_lamp",
+                  "urn",
+                  "ring",
+                  "stoppered_bottle",
+                  "hollow_figurine",
+                  "lantern"
+                ],
+                "duration_hours_source": "proficiency_bonus_times_2",
+                "exit_size_cells": 1,
+                "max_occupants": 1,
+                "vessel_binding": "feature_source"
+              },
+              "targeting": {
+                "kind": "self",
+                "parameters": {}
+              },
+              "trigger": "explicit_activation"
+            },
+            "status": "full"
+          }
+        ],
+        "compile_status": "full",
+        "dependencies": [],
+        "evidence": [
+          "test_vessel_space_runtime_contract",
+          "test_content_ir_vessel_runtime",
+          "test_migrations",
+          "test_content_ir_production_closure"
+        ],
+        "feature_id": "content.tashas-cauldron.round2.feature.genie-bottled-respite",
+        "fingerprint": "a14169e0f1e43b27cf24107dc4a8f047e0464a1974b065c06b20d1940fa0c1a8",
+        "generated_runtime_blocks": [
+          {
+            "action_economy": "action",
+            "activation": "automatic",
+            "capability_id": "vessel.space",
+            "clause_id": "vessel-space-contract",
+            "contract_version": "1.0",
+            "materializer_id": "vessel.space",
+            "operator": "configure_vessel_space",
+            "parameters": {
+              "appearance_options": [
+                "oil_lamp",
+                "urn",
+                "ring",
+                "stoppered_bottle",
+                "hollow_figurine",
+                "lantern"
+              ],
+              "duration_hours_source": "proficiency_bonus_times_2",
+              "exit_size_cells": 1,
+              "max_occupants": 1,
+              "vessel_binding": "feature_source"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "explicit_activation"
+          }
+        ],
+        "legacy_adapter_used": false,
+        "manual_boundaries": [],
+        "required_inputs": [],
+        "required_persistence": [
+          "character.feature_runtime.vessel_spaces"
+        ],
+        "required_tests": [
+          "test_vessel_space_runtime_contract",
+          "test_content_ir_vessel_runtime",
+          "test_migrations",
+          "test_content_ir_production_closure"
+        ],
+        "required_ui": [],
+        "source_trust": "authored_ir",
+        "status_authority": "compiler",
+        "unsupported_combinations": [],
+        "unsupported_conditions": [],
+        "unsupported_operators": []
+      },
+      "counts_from_whole_pack": {
+        "project": {
+          "compile_only": 0,
+          "production": 203,
+          "unique_compiled": 111
+        },
+        "tasha": {
+          "authored": 106,
+          "compile": 105,
+          "compile_only": 0,
+          "preview": 105,
+          "production": 103
+        }
+      },
+      "feature_id": "content.tashas-cauldron.round2.feature.genie-bottled-respite",
+      "materialized_sections": {
+        "vessel_external_sound": 1,
+        "vessel_spaces": 1
+      },
+      "production_report_path": "reports/tashas-feature-production-consumer-round-XLII-2026-08-13.json",
+      "production_result_path": "data/content-ir/compiled/production-runtime-results-XLII.json",
+      "production_runtime_full_ids": [
+        "content.tashas-cauldron.feature.alchemist-chemical-mastery",
+        "content.tashas-cauldron.feature.alchemist-restorative-reagents",
+        "content.tashas-cauldron.feature.alchemist.tool-proficiency",
+        "content.tashas-cauldron.feature.armorer-dampening-field",
+        "content.tashas-cauldron.feature.armorer-defensive-field",
+        "content.tashas-cauldron.feature.armorer-extra-attack",
+        "content.tashas-cauldron.feature.armorer-lightning-launcher",
+        "content.tashas-cauldron.feature.armorer.tools-of-the-trade",
+        "content.tashas-cauldron.feature.artillerist.tool-proficiency",
+        "content.tashas-cauldron.feature.battle-master.ambush",
+        "content.tashas-cauldron.feature.battle-master.commanding-presence",
+        "content.tashas-cauldron.feature.battle-master.precision-attack",
+        "content.tashas-cauldron.feature.battle-smith-arcane-jolt-damage",
+        "content.tashas-cauldron.feature.battle-smith-arcane-jolt-healing",
+        "content.tashas-cauldron.feature.battle-smith-repair",
+        "content.tashas-cauldron.feature.battle-smith.tool-proficiency",
+        "content.tashas-cauldron.feature.psi-warrior-protective-field",
+        "content.tashas-cauldron.feature.psi-warrior-psionic-strike",
+        "content.tashas-cauldron.feature.psi-warrior-telekinetic-movement",
+        "content.tashas-cauldron.feature.way-of-mercy-hand-harm",
+        "content.tashas-cauldron.feature.way-of-mercy-hand-healing",
+        "content.tashas-cauldron.feature.way-of-mercy-physicians-touch",
+        "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy",
+        "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery",
+        "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list",
+        "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech",
+        "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant",
+        "content.tashas-cauldron.round2.feature.alchemist-spell-list",
+        "content.tashas-cauldron.round2.feature.armorer-powered-steps",
+        "content.tashas-cauldron.round2.feature.armorer-spell-list",
+        "content.tashas-cauldron.round2.feature.artificer-tool-expertise",
+        "content.tashas-cauldron.round2.feature.artillerist-arcane-firearm",
+        "content.tashas-cauldron.round2.feature.artillerist-explosive-cannon",
+        "content.tashas-cauldron.round2.feature.artillerist-spell-list",
+        "content.tashas-cauldron.round2.feature.astral-self-armor-of-the-spirit",
+        "content.tashas-cauldron.round2.feature.astral-self-astral-sight",
+        "content.tashas-cauldron.round2.feature.astral-self-word-of-the-spirit",
+        "content.tashas-cauldron.round2.feature.battle-master-bait-and-switch",
+        "content.tashas-cauldron.round2.feature.battle-master-brace",
+        "content.tashas-cauldron.round2.feature.battle-master-grappling-strike",
+        "content.tashas-cauldron.round2.feature.battle-master-quick-toss",
+        "content.tashas-cauldron.round2.feature.battle-master-tactical-assessment",
+        "content.tashas-cauldron.round2.feature.battle-smith-spell-list",
+        "content.tashas-cauldron.round2.feature.beast-barbarian-bestial-soul",
+        "content.tashas-cauldron.round2.feature.bladesinger-training-in-sword-and-song",
+        "content.tashas-cauldron.round2.feature.clockwork-soul-clockwork-magic",
+        "content.tashas-cauldron.round2.feature.fathomless-gift-of-the-sea",
+        "content.tashas-cauldron.round2.feature.fathomless-oceanic-soul",
+        "content.tashas-cauldron.round2.feature.feat-crusher",
+        "content.tashas-cauldron.round2.feature.feat-fey-touched",
+        "content.tashas-cauldron.round2.feature.feat-shadow-touched",
+        "content.tashas-cauldron.round2.feature.feat-skill-expert",
+        "content.tashas-cauldron.round2.feature.feat-telepathic",
+        "content.tashas-cauldron.round2.feature.fey-wanderer-otherworldly-glamour",
+        "content.tashas-cauldron.round2.feature.genie-bottled-respite",
+        "content.tashas-cauldron.round2.feature.genie-elemental-gift",
+        "content.tashas-cauldron.round2.feature.genie-expanded-spell-list",
+        "content.tashas-cauldron.round2.feature.genie-genies-wrath",
+        "content.tashas-cauldron.round2.feature.glory-paladin-glorious-defense",
+        "content.tashas-cauldron.round2.feature.glory-paladin-oath-spells",
+        "content.tashas-cauldron.round2.feature.order-cleric-bonus-proficiencies",
+        "content.tashas-cauldron.round2.feature.order-cleric-domain-spells",
+        "content.tashas-cauldron.round2.feature.paladin-blessed-warrior",
+        "content.tashas-cauldron.round2.feature.paladin-blind-fighting",
+        "content.tashas-cauldron.round2.feature.paladin-harness-divine-power",
+        "content.tashas-cauldron.round2.feature.paladin-interception",
+        "content.tashas-cauldron.round2.feature.peace-cleric-domain-spells",
+        "content.tashas-cauldron.round2.feature.peace-cleric-implement-of-peace",
+        "content.tashas-cauldron.round2.feature.psi-warrior-guarded-mind",
+        "content.tashas-cauldron.round2.feature.psi-warrior-psi-powered-leap",
+        "content.tashas-cauldron.round2.feature.psi-warrior-psionic-power",
+        "content.tashas-cauldron.round2.feature.psi-warrior-telekinetic-master",
+        "content.tashas-cauldron.round2.feature.ranger-blind-fighting",
+        "content.tashas-cauldron.round2.feature.ranger-canny",
+        "content.tashas-cauldron.round2.feature.ranger-druidic-warrior",
+        "content.tashas-cauldron.round2.feature.ranger-roving",
+        "content.tashas-cauldron.round2.feature.ranger-tireless",
+        "content.tashas-cauldron.round2.feature.rune-knight-bonus-proficiencies",
+        "content.tashas-cauldron.round2.feature.rune-knight-giants-might",
+        "content.tashas-cauldron.round2.feature.rune-knight-great-stature",
+        "content.tashas-cauldron.round2.feature.rune-knight-runic-shield",
+        "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
+        "content.tashas-cauldron.round2.feature.soulknife-homing-strikes",
+        "content.tashas-cauldron.round2.feature.soulknife-psi-bolstered-knack",
+        "content.tashas-cauldron.round2.feature.soulknife-psychic-teleportation",
+        "content.tashas-cauldron.round2.feature.soulknife-psychic-whispers",
+        "content.tashas-cauldron.round2.feature.spores-druid-circle-spells",
+        "content.tashas-cauldron.round2.feature.stars-druid-full-of-stars",
+        "content.tashas-cauldron.round2.feature.stars-druid-weal",
+        "content.tashas-cauldron.round2.feature.stars-druid-woe",
+        "content.tashas-cauldron.round2.feature.swarmkeeper-spell-list",
+        "content.tashas-cauldron.round2.feature.swarmkeeper-writhing-tide",
+        "content.tashas-cauldron.round2.feature.twilight-cleric-bonus-proficiencies",
+        "content.tashas-cauldron.round2.feature.twilight-cleric-domain-spells",
+        "content.tashas-cauldron.round2.feature.twilight-cleric-eyes-of-night",
+        "content.tashas-cauldron.round2.feature.twilight-cleric-steps-of-night",
+        "content.tashas-cauldron.round2.feature.watchers-paladin-oath-spells",
+        "content.tashas-cauldron.round2.feature.wildfire-druid-circle-spells",
+        "tashas-cauldron:spell:0036d7dc058c496ef08fe340",
+        "tashas-cauldron:spell:083419d9de551806a5ca9748",
+        "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
+        "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac",
+        "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
+        "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+        "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+        "tashas-cauldron:spell:ef0f92b557fb48d421d462e1"
+      ],
+      "registry_consumers": [
+        "vessel.external_sound.v1",
+        "vessel.space.v1"
+      ],
+      "selected_feature_promoted": true,
+      "status": "verified"
+    }
   },
   "schema_version": "tashas-genie-vessel-source-boundary-1",
   "source": {
@@ -138,6 +1579,6 @@
     "fingerprint": "e81b718b2ee8728e75cf77c2f00c33312a283a9e12d3654d9bb377a64ec745c7",
     "path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/巨灵宗主.html",
     "record_id": "98620543cf94e974361c6567",
-    "source_completeness": "incomplete"
+    "source_completeness": "complete"
   }
 }

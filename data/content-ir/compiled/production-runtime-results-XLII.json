@@ -1,0 +1,406 @@
+{
+  "after_counts": {
+    "project": {
+      "compile_only": 35,
+      "production": 203,
+      "unique_compiled": 111
+    },
+    "selected_atom_status": {
+      "compile_only": 0,
+      "production_full": 1
+    },
+    "tasha": {
+      "authored": 106,
+      "compile": 105,
+      "compile_only": 0,
+      "preview": 105,
+      "production": 103
+    }
+  },
+  "all_required_checks_passed": true,
+  "before_counts": {
+    "project": {
+      "compile_only": 35,
+      "production": 202,
+      "unique_compiled": 111
+    },
+    "selected_atom_status": {
+      "compile_only": 1,
+      "production_full": 0
+    },
+    "tasha": {
+      "authored": 106,
+      "compile": 105,
+      "compile_only": 1,
+      "preview": 105,
+      "production": 102
+    }
+  },
+  "checks": {
+    "baseline_after_state_is_accepted": true,
+    "baseline_artifact_hash_matches": true,
+    "baseline_artifact_present": true,
+    "compiler_full": true,
+    "external_sound_typed_and_producer_bound": true,
+    "isolated_real_api_e2e": true,
+    "materializer_full": true,
+    "name_branch_count_zero": true,
+    "protected_paths_unchanged": true,
+    "selected_atom_currently_production_full": true,
+    "source_complete_and_provenance": true,
+    "typed_consumers_complete": true
+  },
+  "compile": {
+    "blockers": [],
+    "clause_results": [
+      {
+        "blockers": [],
+        "capability_ids": [
+          "vessel.space"
+        ],
+        "clause_id": "vessel-space-contract",
+        "generated_block": {
+          "action_economy": "action",
+          "activation": "automatic",
+          "capability_id": "vessel.space",
+          "clause_id": "vessel-space-contract",
+          "contract_version": "1.0",
+          "materializer_id": "vessel.space",
+          "operator": "configure_vessel_space",
+          "parameters": {
+            "appearance_options": [
+              "oil_lamp",
+              "urn",
+              "ring",
+              "stoppered_bottle",
+              "hollow_figurine",
+              "lantern"
+            ],
+            "duration_hours_source": "proficiency_bonus_times_2",
+            "exit_size_cells": 1,
+            "max_occupants": 1,
+            "vessel_binding": "feature_source"
+          },
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "trigger": "explicit_activation"
+        },
+        "status": "full"
+      }
+    ],
+    "compile_status": "full",
+    "dependencies": [],
+    "evidence": [
+      "test_vessel_space_runtime_contract",
+      "test_content_ir_vessel_runtime",
+      "test_migrations",
+      "test_content_ir_production_closure"
+    ],
+    "feature_id": "content.tashas-cauldron.round2.feature.genie-bottled-respite",
+    "fingerprint": "a14169e0f1e43b27cf24107dc4a8f047e0464a1974b065c06b20d1940fa0c1a8",
+    "generated_runtime_blocks": [
+      {
+        "action_economy": "action",
+        "activation": "automatic",
+        "capability_id": "vessel.space",
+        "clause_id": "vessel-space-contract",
+        "contract_version": "1.0",
+        "materializer_id": "vessel.space",
+        "operator": "configure_vessel_space",
+        "parameters": {
+          "appearance_options": [
+            "oil_lamp",
+            "urn",
+            "ring",
+            "stoppered_bottle",
+            "hollow_figurine",
+            "lantern"
+          ],
+          "duration_hours_source": "proficiency_bonus_times_2",
+          "exit_size_cells": 1,
+          "max_occupants": 1,
+          "vessel_binding": "feature_source"
+        },
+        "targeting": {
+          "kind": "self",
+          "parameters": {}
+        },
+        "trigger": "explicit_activation"
+      }
+    ],
+    "legacy_adapter_used": false,
+    "manual_boundaries": [],
+    "required_inputs": [],
+    "required_persistence": [
+      "character.feature_runtime.vessel_spaces"
+    ],
+    "required_tests": [
+      "test_vessel_space_runtime_contract",
+      "test_content_ir_vessel_runtime",
+      "test_migrations",
+      "test_content_ir_production_closure"
+    ],
+    "required_ui": [],
+    "source_trust": "authored_ir",
+    "status_authority": "compiler",
+    "unsupported_combinations": [],
+    "unsupported_conditions": [],
+    "unsupported_operators": []
+  },
+  "compile_only_ids": [],
+  "count_delta": {
+    "project": {
+      "compile_only": 0,
+      "production": 1,
+      "unique_compiled": 0
+    },
+    "selected_atom_status": {
+      "compile_only": -1,
+      "production_full": 1
+    },
+    "tasha": {
+      "authored": 0,
+      "compile": 0,
+      "compile_only": -1,
+      "preview": 0,
+      "production": 1
+    }
+  },
+  "e2e": {
+    "command": [
+      "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "backend/tests/test_content_ir_vessel_runtime.py",
+      "-k",
+      "real_content_ir_vessel_runtime_receipts_cover_lifecycle_and_long_rest or test_vessel_external_sound_real_event_e2e_resolves_and_replays or test_destroy_relocates_all_items_from_real_equipment_producer or test_owner_death_relocates_items_with_source_bound_receipts or test_destroy_requires_matching_real_producer_and_missing_producer_fails_closed or test_vessel_external_sound_direct_db_tampering_fails_closed"
+    ],
+    "passed": true,
+    "pytest_summary": "......                                                                   [100%]",
+    "returncode": 0,
+    "warning_present": true
+  },
+  "evidence_by_id": {
+    "content.tashas-cauldron.round2.feature.genie-bottled-respite": {
+      "after_counts": {
+        "project": {
+          "compile_only": 35,
+          "production": 203,
+          "unique_compiled": 111
+        },
+        "selected_atom_status": {
+          "compile_only": 0,
+          "production_full": 1
+        },
+        "tasha": {
+          "authored": 106,
+          "compile": 105,
+          "compile_only": 0,
+          "preview": 105,
+          "production": 103
+        }
+      },
+      "all_required_checks_passed": true,
+      "before_counts": {
+        "project": {
+          "compile_only": 35,
+          "production": 202,
+          "unique_compiled": 111
+        },
+        "selected_atom_status": {
+          "compile_only": 1,
+          "production_full": 0
+        },
+        "tasha": {
+          "authored": 106,
+          "compile": 105,
+          "compile_only": 1,
+          "preview": 105,
+          "production": 102
+        }
+      },
+      "checks": {
+        "baseline_after_state_is_accepted": true,
+        "baseline_artifact_hash_matches": true,
+        "baseline_artifact_present": true,
+        "compiler_full": true,
+        "external_sound_typed_and_producer_bound": true,
+        "isolated_real_api_e2e": true,
+        "materializer_full": true,
+        "name_branch_count_zero": true,
+        "protected_paths_unchanged": true,
+        "selected_atom_currently_production_full": true,
+        "source_complete_and_provenance": true,
+        "typed_consumers_complete": true
+      },
+      "compile": {
+        "blockers": [],
+        "clause_results": [
+          {
+            "blockers": [],
+            "capability_ids": [
+              "vessel.space"
+            ],
+            "clause_id": "vessel-space-contract",
+            "generated_block": {
+              "action_economy": "action",
+              "activation": "automatic",
+              "capability_id": "vessel.space",
+              "clause_id": "vessel-space-contract",
+              "contract_version": "1.0",
+              "materializer_id": "vessel.space",
+              "operator": "configure_vessel_space",
+              "parameters": {
+                "appearance_options": [
+                  "oil_lamp",
+                  "urn",
+                  "ring",
+                  "stoppered_bottle",
+                  "hollow_figurine",
+                  "lantern"
+                ],
+                "duration_hours_source": "proficiency_bonus_times_2",
+                "exit_size_cells": 1,
+                "max_occupants": 1,
+                "vessel_binding": "feature_source"
+              },
+              "targeting": {
+                "kind": "self",
+                "parameters": {}
+              },
+              "trigger": "explicit_activation"
+            },
+            "status": "full"
+          }
+        ],
+        "compile_status": "full",
+        "dependencies": [],
+        "evidence": [
+          "test_vessel_space_runtime_contract",
+          "test_content_ir_vessel_runtime",
+          "test_migrations",
+          "test_content_ir_production_closure"
+        ],
+        "feature_id": "content.tashas-cauldron.round2.feature.genie-bottled-respite",
+        "fingerprint": "a14169e0f1e43b27cf24107dc4a8f047e0464a1974b065c06b20d1940fa0c1a8",
+        "generated_runtime_blocks": [
+          {
+            "action_economy": "action",
+            "activation": "automatic",
+            "capability_id": "vessel.space",
+            "clause_id": "vessel-space-contract",
+            "contract_version": "1.0",
+            "materializer_id": "vessel.space",
+            "operator": "configure_vessel_space",
+            "parameters": {
+              "appearance_options": [
+                "oil_lamp",
+                "urn",
+                "ring",
+                "stoppered_bottle",
+                "hollow_figurine",
+                "lantern"
+              ],
+              "duration_hours_source": "proficiency_bonus_times_2",
+              "exit_size_cells": 1,
+              "max_occupants": 1,
+              "vessel_binding": "feature_source"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "explicit_activation"
+          }
+        ],
+        "legacy_adapter_used": false,
+        "manual_boundaries": [],
+        "required_inputs": [],
+        "required_persistence": [
+          "character.feature_runtime.vessel_spaces"
+        ],
+        "required_tests": [
+          "test_vessel_space_runtime_contract",
+          "test_content_ir_vessel_runtime",
+          "test_migrations",
+          "test_content_ir_production_closure"
+        ],
+        "required_ui": [],
+        "source_trust": "authored_ir",
+        "status_authority": "compiler",
+        "unsupported_combinations": [],
+        "unsupported_conditions": [],
+        "unsupported_operators": []
+      },
+      "compile_only_ids": [],
+      "count_delta": {
+        "project": {
+          "compile_only": 0,
+          "production": 1,
+          "unique_compiled": 0
+        },
+        "selected_atom_status": {
+          "compile_only": -1,
+          "production_full": 1
+        },
+        "tasha": {
+          "authored": 0,
+          "compile": 0,
+          "compile_only": -1,
+          "preview": 0,
+          "production": 1
+        }
+      },
+      "e2e": {
+        "command": [
+          "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+          "-m",
+          "pytest",
+          "-q",
+          "backend/tests/test_content_ir_vessel_runtime.py",
+          "-k",
+          "real_content_ir_vessel_runtime_receipts_cover_lifecycle_and_long_rest or test_vessel_external_sound_real_event_e2e_resolves_and_replays or test_destroy_relocates_all_items_from_real_equipment_producer or test_owner_death_relocates_items_with_source_bound_receipts or test_destroy_requires_matching_real_producer_and_missing_producer_fails_closed or test_vessel_external_sound_direct_db_tampering_fails_closed"
+        ],
+        "passed": true,
+        "pytest_summary": "......                                                                   [100%]",
+        "returncode": 0,
+        "warning_present": true
+      },
+      "production_runtime_full_ids": [
+        "content.tashas-cauldron.round2.feature.genie-bottled-respite"
+      ],
+      "registry_consumers": [
+        "vessel.external_sound.v1",
+        "vessel.space.v1"
+      ],
+      "round_id": "round-XLII",
+      "runtime_fingerprint": "8b7caa75c4a360bbb96e4300a9daaa0d82a851ee60d84fe9d86d372095ea6eb6",
+      "schema_version": "content-ir-production-runtime-results-XLII-1",
+      "source": {
+        "feature_id": "content.tashas-cauldron.round2.feature.genie-bottled-respite",
+        "source_fingerprint": "e81b718b2ee8728e75cf77c2f00c33312a283a9e12d3654d9bb377a64ec745c7",
+        "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/巨灵宗主.html",
+        "source_record_id": "98620543cf94e974361c6567"
+      }
+    }
+  },
+  "production_runtime_full_ids": [
+    "content.tashas-cauldron.round2.feature.genie-bottled-respite"
+  ],
+  "registry_consumers": [
+    "vessel.external_sound.v1",
+    "vessel.space.v1"
+  ],
+  "round_id": "round-XLII",
+  "runtime_fingerprint": "8b7caa75c4a360bbb96e4300a9daaa0d82a851ee60d84fe9d86d372095ea6eb6",
+  "schema_version": "content-ir-production-runtime-results-XLII-1",
+  "source": {
+    "feature_id": "content.tashas-cauldron.round2.feature.genie-bottled-respite",
+    "source_fingerprint": "e81b718b2ee8728e75cf77c2f00c33312a283a9e12d3654d9bb377a64ec745c7",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/巨灵宗主.html",
+    "source_record_id": "98620543cf94e974361c6567"
+  }
+}

@@ -20,6 +20,15 @@ htmlcov/
 
 data/
 data
+# Round XLII promotion evidence is intentionally versioned; keep all other
+# generated data ignored.
+!/data/
+data/*
+!/data/content-ir/
+data/content-ir/*
+!/data/content-ir/compiled/
+data/content-ir/compiled/*
+!/data/content-ir/compiled/production-runtime-results-XLII.json
 generated-content/
 source-checkouts/
 backend/generated-content/
@@ -52,6 +61,11 @@ npm-debug.log*
 logs/
 reports/*
 !reports/.gitkeep
+# Round XLII promotion report is intentionally versioned; keep all other
+# runtime reports ignored.
+!/reports/
+reports/*
+!/reports/tashas-feature-production-consumer-round-XLII-2026-08-13.json
 tmp/
 temp/
 

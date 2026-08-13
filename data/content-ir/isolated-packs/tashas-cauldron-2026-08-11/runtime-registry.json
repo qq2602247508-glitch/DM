@@ -515,7 +515,7 @@
       "atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:bottled-respit:003",
       "content_id": "content.tashas-cauldron.round2.feature.genie-bottled-respite",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "e81b718b2ee8728e75cf77c2f00c33312a283a9e12d3654d9bb377a64ec745c7",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.genie-bottled-respite"
@@ -1035,7 +1035,7 @@
       "atom_id": "tashas-cauldron:atom:ff7049c6a4d0aad0dae4adf5:manifest-mind:002",
       "content_id": "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "dbbdb5b3ca9d86ece43c2f919d8483683f99068a478bccc401906057fccb920a",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.scribe-manifest-mind"
