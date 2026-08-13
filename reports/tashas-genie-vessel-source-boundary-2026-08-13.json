@@ -1,0 +1,143 @@
+{
+  "authored_ir": {
+    "clause_ids": [
+      "vessel-space-contract"
+    ],
+    "path": "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/genie-bottled-respite.json",
+    "unmodeled_source_terms": [
+      "formal vessel persistence and entity containment consumer",
+      "source-bound exit placement and item relocation receipts",
+      "sanctuary-vessel companion selection and short-rest benefit consumer"
+    ]
+  },
+  "feature_id": "content.tashas-cauldron.round2.feature.genie-bottled-respite",
+  "matrix": [
+    {
+      "id": "enter_action",
+      "runtime": "vessel.space.v1",
+      "source": "以一个动作",
+      "status": "contracted"
+    },
+    {
+      "id": "touch_vessel",
+      "runtime": "authoritative_fact",
+      "source": "在你触碰你器皿的情况下",
+      "status": "contracted"
+    },
+    {
+      "id": "companion_capacity",
+      "runtime": "future Sanctuary Vessel capability",
+      "source": "10级器皿庇护所：最多5个可见自愿生物",
+      "status": "excluded_from_selected_feature"
+    },
+    {
+      "id": "companion_distance",
+      "runtime": "future Sanctuary Vessel capability",
+      "source": "10级器皿庇护所：30尺内",
+      "status": "excluded_from_selected_feature"
+    },
+    {
+      "id": "interior_geometry",
+      "runtime": "vessel.space.v1",
+      "source": "20尺半径，20尺高的圆柱形异次元空间",
+      "status": "contracted"
+    },
+    {
+      "id": "interior_state",
+      "runtime": "vessel.space.v1",
+      "source": "温度适宜、舒适的垫子和茶几",
+      "status": "contracted"
+    },
+    {
+      "id": "external_sound",
+      "runtime": "sensory bridge",
+      "source": "如同身在器皿所在之处一般听到外界的声音",
+      "status": "blocked"
+    },
+    {
+      "id": "duration",
+      "runtime": "proficiency_bonus_times_2",
+      "source": "熟练加值双倍数目的小时",
+      "status": "contracted"
+    },
+    {
+      "id": "leave_conditions",
+      "runtime": "entity lifecycle",
+      "source": "死亡、器皿被摧毁、附赠动作离开",
+      "status": "contracted"
+    },
+    {
+      "id": "exit_placement",
+      "runtime": "SpatialAuthority",
+      "source": "距离它最近的未占据空间",
+      "status": "contracted"
+    },
+    {
+      "id": "carried_items",
+      "runtime": "containment/item consumer",
+      "source": "器皿内的一切物件将被留在其中直到被取出",
+      "status": "blocked"
+    },
+    {
+      "id": "destroyed_items",
+      "runtime": "containment/item relocation",
+      "source": "器皿被摧毁，物品完好无损出现在最近未占据空间",
+      "status": "blocked"
+    },
+    {
+      "id": "long_rest_limit",
+      "runtime": "RestService reset",
+      "source": "直到完成一次长休前不能再度进入",
+      "status": "contracted"
+    },
+    {
+      "id": "sanctuary_eject",
+      "runtime": "future Sanctuary Vessel capability",
+      "source": "10级器皿庇护所：附赠动作逐出任意数目的生物",
+      "status": "excluded_from_selected_feature"
+    },
+    {
+      "id": "sanctuary_short_rest",
+      "runtime": "future Sanctuary Vessel capability",
+      "source": "10级器皿庇护所：停留至少10分钟可视为完成短休",
+      "status": "excluded_from_selected_feature"
+    },
+    {
+      "id": "vessel_appearance",
+      "runtime": "source-bound enum",
+      "source": "D6 器皿表：油灯、瓮、戒指、瓶子、小雕像、提灯",
+      "status": "contracted"
+    },
+    {
+      "id": "vessel_size",
+      "runtime": "vessel.space.v1",
+      "source": "微型物件",
+      "status": "contracted"
+    },
+    {
+      "id": "nested_entry",
+      "runtime": "vessel.space.v1",
+      "source": "source does not explicitly state nested entry",
+      "status": "fail_closed_policy"
+    },
+    {
+      "id": "illegal_facts",
+      "runtime": "authoritative facts",
+      "source": "user/DM cannot invent capacity, consent, position or occupancy",
+      "status": "fail_closed_policy"
+    }
+  ],
+  "promotion": {
+    "compile_only": true,
+    "reason": "source is incomplete and vessel persistence/containment/API receipts are not closed"
+  },
+  "schema_version": "tashas-genie-vessel-source-boundary-1",
+  "source": {
+    "excerpt": "## 巨灵 The\nGenie\n\n我知道在灰鹰找房子很难，但如果巨灵或者魔契师要便宜租房子给你，快跑。\n\n——塔莎\n\n你与巨灵中的稀有群体，巨灵贵族缔结了契约。巨灵贵族乃是广阔的元素位面的统治者，并对其他次等巨灵与次等元素生物具有莫大的影响力。巨灵贵族们的动机各不相同，但都傲慢自大且有着匹敌次等神明的强大伟力。他们喜好让热衷于缚誓巨灵的凡人们反过来服侍他们，并对于缔结能扩张他们在多元宇宙中势力的契约有着巨大的热情。\n\n你可以选择你宗主是哪种巨灵，也可以通过巨灵种类表让骰子决定。\n\n**巨灵类型**\n\n| D4 | 类型 | 元素 |\n| --- | --- | --- |\n| 1 | 土巨灵Dao | 土 |\n| 2 | 气巨灵Djini | 气 |\n| 3 | 火巨灵Eferrti | 火 |\n| 4 | 水巨灵Marid | 水 |\n\n**扩展法术列表 Expanded Spell List**\n*第1级巨灵宗主特性\n*当你学习一个魔契师法术时，你的巨灵宗主赐予你将以下法术加入魔契师法术列表进行选择的权力，且除了全巨灵共用的法术列表外，另一组为你提供的法术与祂们的类型有关：土巨灵dao、气巨灵djinni、火巨灵eferrti、或水巨灵marid\n\n**巨灵扩展法术 Genie Expanded Spells**\n\n| 法术环阶 | 全巨灵法术 | 土巨灵法术 | 气巨灵法术 | 火巨灵法术 | 水巨灵法术 |\n| --- | --- | --- | --- | --- | --- |\n| 一环 | 侦测善恶detect evil and good | 庇护术sanctuary | 雷鸣波thunderwave | 燃烧之手burning hands | 云雾术fog cloud |\n| 二环 | 魅影之力phantasmal force | 荆棘丛生spike growth | 造风术gust of wind | 灼热射线scorching ray | 朦胧术blur |\n| 三环 | 创造食粮create food and water | 融身入石meld into stone | 风墙术wind wall | 火球术fireball | 雪雨暴sleet storm |\n| 四环 | 魅影杀手phantasmal killer | 塑石术stone shape | 高等隐形术greater invisibility | 火焰护盾fire shield | 操控水体control of water |\n| 五环 | 造物术creation | 石墙术wall of stone | 伪装术seeming | 焰击术flame strike | 寒冰锥cone of cold |\n| 九环 | 祈愿术wish | —— | —— | —— | —— |\n\n**巨灵器皿 Genie's\nVessel**\n*第1级巨灵宗主特性*\n你的宗主赐予你一个包含巨灵之力的魔法器皿。该器皿是一个微型物件，你可以将其作为施展你魔契师法术的法器。你可以自行决定物件的类别，或者你也可以通过巨灵器皿表来决定它。\n在你触碰你器皿的情况下，你可以用以下的方式使用它：\n\n> **瓶中小憩 Bottled\n>  Respit。**以一个动作，你可以用魔法消失并进到你的器皿内，器皿将留在你所在的原地。器皿内是与其本身相似的20尺半径，20尺高的圆柱形异次元空间。器皿内部温度适宜，并安放有舒适的垫子和茶几。在器皿之中时，你可以如同身在器皿所在之处一般听到外界的声音。你在器皿内可停留的时间等同于你熟练加值双倍数目的小时。如果你死亡，或是器皿被摧毁，抑或是使用一个附赠动作离开，你将提前从器皿中出来。当你离开器皿时，你出现在一处距离它最近的未占据空间中。在器皿内的一切物件将被留在其中直到被取出，而倘若器皿被摧毁，其中的物品则会完好无损地出现在距离它最近的不被占据的空间中。一旦你进入了器皿，直到你完成一次长休前你都不能再度进入它。\n> **巨灵之怒 Genie's\n>  Wrath。**在每个你的回合中，你可以在你攻击检定命中时，对攻击目标造成等同于你熟练加值的额外伤害。额外伤害的类型取决于你的宗主类型：钝击（土巨灵）、雷鸣（气巨灵）、火焰（火巨灵）、寒冷（水巨灵）。这一额外伤害每回合只能产生一次。\n\n器皿具有与你的法术豁免DC相同数值的AC，它的生命值等于你的魔契师等级加熟练加值，且免疫毒素和心灵伤害。\n倘若器皿被摧毁或是丢失，你可以进行一场持续1小时的仪式来从你的宗主处获得一个替代品。这一仪式可于短休或长休时进行，并会摧毁之前仍存在的器皿。当你死亡时，器皿将在一阵元素能量的闪耀中消失。\n**巨灵器皿 Genie's Vessel**\n\n| D6 | 器皿 |\n| --- | --- |\n| 1 | 油灯 |\n| 2 | 瓮 |\n| 3 | 带有小隔间的戒指 |\n| 4 | 被塞住的瓶子 |\n| 5 | 空心的小雕像 |\n| 6 | 华丽的提灯 |\n\n**元素赐福 Elemental\nGift**\n*第6级巨灵宗主特性*\n你逐渐显露出你的巨灵宗主的特质。你对一种特定的伤害类型具有抗性，具体由你的宗主类型决定：钝击（土巨灵）、雷鸣（气巨灵）、火焰（火巨灵）、寒冷（水巨灵）。\n此外，以一个附赠动作，你可以获得30尺飞行速度，并且可以悬浮，持续10分钟。你可以使用此附赠动作的次数等同于你的熟练加值次，在完成一次长休后你重获全部已消耗的使用次数。\n\n**器皿庇护所 Sanctuary\nVessel**\n*第10级巨灵宗主特性*\n当你使用 瓶中小憩Bottled Respite\n特性进入你的巨灵器皿时，你可以选择30尺内最多5个可见自愿生物与你一同进入器皿。\n以一个附赠动作，你可以将任意数目的生物从你的器皿中逐出。如果你离开器皿、或是器皿被摧毁，所有的生物都将被一并逐出。\n同时，在器皿中停留至少10分钟的任何生物（包括你自己）可视为完成了一次短休，且在短休时使用生命骰决定生命值恢复时，其恢复量中可以加入你的熟练加值。\n\n**有限祈愿术 Limited\nWish**\n*第14级巨灵宗主特性*\n你祈求你的宗主，并实现你的小小愿望。以一个动作，你可以向你的巨灵器皿说出你的愿望，并请求实现一个6环或更低环阶的，且施法时间为1动作的法术效应。这一法术可以来自任何职业的法术列表，且你不需要满足法术的任何需求，包括那些有价值的材料成分；该法术仅仅是作为此动作的一部分产生自己的效应。\n你使用此特性后，直到你完成1d4次长休前，你都不能再次使用它。",
+    "excerpt_sha256": "b803c95f455ecc890d758c76ad9f074c83226d4ed2c4a13d2065e210c43beba3",
+    "fingerprint": "e81b718b2ee8728e75cf77c2f00c33312a283a9e12d3654d9bb377a64ec745c7",
+    "path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/巨灵宗主.html",
+    "record_id": "98620543cf94e974361c6567",
+    "source_completeness": "incomplete"
+  }
+}
