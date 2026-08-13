@@ -6,7 +6,7 @@
 - 当前实际 Tasha：`144 source records / 525 atoms / 408 executable / 105 authored Typed IR / 104 compile / 104 preview / 100 production / 2 DM-assisted / 102 game usable / 2 compile-only / 304 manual / 107 DM reference`；content-ID funnel `105 = 101 + 2 + 2`。
 - 当前 project：`200 production / 35 compile-only / 111 unique compiled`；Tasha evidence union `143`，project union `200`；ItemSpec 保持 `47/40/40/40`。
 - Round XXXI validator 1/1 production_runtime_full；focused receipt suite 3 passed；backend 全量 pytest 941 passed（仅既有 Starlette/httpx deprecation warning）；Ruff、compileall、diff-check 通过；whole-pack migration 双跑 projection SHA-256 `2a852d31959daa884731c6ce51c0d4083c6c7c5375ee996615c2bccc2c554904`。
-- 分离提交 `ab78e85`（authored Spores circle-spells IR）、`387fd67`（validator + test + evidence + 计数调和）、`1f31727`（docs closeout）已推送到 `origin/main`（2026-08-13）。push receipt 已写入 ledger。
+- 分离提交 `ab78e85`（authored Spores circle-spells IR）、`387fd67`（validator + test + evidence + 计数调和）、`1f31727`（docs closeout）、`3a209b8`（ledger/handoff checkpoint）已推送到 `origin/main`（`b7aa810..3a209b8`，2026-08-13）。push receipt 已写入 ledger。
 - 证据入口：`docs/tashas-feature-production-consumer-round-XXXI-2026-08-13.md`、`scripts/validate-tashas-feature-production-consumer-round-XXXI.py`、`backend/tests/test_tashas_feature_production_consumer_round_XXXI.py`、`reports/tashas-feature-production-consumer-round-XXXI-2026-08-13.json`、`data/content-ir/compiled/production-runtime-results-XXXII.json`。
 - 下一轮继续巨灵宗主扩展法术（warlock「扩展列表」选择语义，非恒备，需先复核 corpus/contract）或转向单一抗性/移动/视觉类特性；仍剩 vessel（genie-bottled-respite）与 spectral-object（scribe-manifest-mind）两个 compile-only；不迁移下一本扩展包、不触碰 3D。
 

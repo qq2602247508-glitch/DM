@@ -18,7 +18,7 @@
 - 证据入口：`docs/tashas-feature-production-consumer-round-XXXI-2026-08-13.md`、`scripts/validate-tashas-feature-production-consumer-round-XXXI.py`、`backend/tests/test_tashas_feature_production_consumer_round_XXXI.py`、`reports/tashas-feature-production-consumer-round-XXXI-2026-08-13.json`、`data/content-ir/compiled/production-runtime-results-XXXII.json`。
 - 保护路径、正式 database、formal registry、source corpus、campaign/character 与 3D 未写入；`name_branch_count=0`。下一轮转向巨灵宗主扩展法术（warlock 列表扩展语义）或 vessel/spectral-object 机制，不迁移下一本扩展包。
 - 保护指纹保持 database `f3abdcf57b0d71888f085ca081511df4f4e23f100066b402d49d769089fa6aad`、formal registry `f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b`、integrations manifest `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`、ollama `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`。
-- Push receipt：`ab78e85`、`387fd67`、`1f31727` 已推送到 `origin/main`（2026-08-13）。
+- Push receipt：`ab78e85`、`387fd67`、`1f31727`、`3a209b8` 已推送到 `origin/main`（2026-08-13）。
 
 ## Round 30：战地匠师/装甲师/魔炮师三张奇械师法术表 Character-Growth Consumer
 
