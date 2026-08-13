@@ -9,6 +9,7 @@ from dnd_dm_assistant.application.feature_compiler import (
 from dnd_dm_assistant.application.feature_materializers import MaterializerError
 from dnd_dm_assistant.domain.entity_lifecycle import (
     ENTITY_LIFECYCLE_SCHEMA,
+    ENTITY_TERMINATION_REASONS,
     EntityLifecycleSpec,
     transition_entity_lifecycle,
 )
@@ -104,6 +105,60 @@ def test_entity_lifecycle_replay_is_idempotent_but_payload_or_version_drift_is_r
             operation_id="create-001",
             expected_version=1,
             metadata={"different": True},
+        )
+
+
+@pytest.mark.parametrize(
+    "reason",
+    [
+        "dispel_magic",
+        "source_object_destroyed",
+        "owner_died",
+        "owner_dismissed",
+        "distance_expired",
+    ],
+)
+def test_entity_lifecycle_termination_reasons_are_typed_and_terminal(reason: str) -> None:
+    assert reason in ENTITY_TERMINATION_REASONS
+    spec = _spec()
+    created = transition_entity_lifecycle(
+        spec, None, event="create", operation_id=f"create-{reason}", expected_version=0
+    )
+    entered = transition_entity_lifecycle(
+        spec,
+        created.state,
+        event="enter",
+        operation_id=f"enter-{reason}",
+        expected_version=1,
+        metadata={"owner_id": "character-1"},
+    )
+    terminated = transition_entity_lifecycle(
+        spec,
+        entered.state,
+        event="terminate",
+        operation_id=f"terminate-{reason}",
+        expected_version=2,
+        metadata={"termination_reason": reason},
+    )
+    assert terminated.state["status"] == "terminated"
+    assert terminated.state["termination_reason"] == reason
+    assert terminated.state["active_entries"] == 0
+    replay = transition_entity_lifecycle(
+        spec,
+        terminated.state,
+        event="terminate",
+        operation_id=f"terminate-{reason}",
+        expected_version=3,
+        metadata={"termination_reason": reason},
+    )
+    assert replay.replayed is True
+    with pytest.raises(ValueError, match="cannot enter from status terminated"):
+        transition_entity_lifecycle(
+            spec,
+            terminated.state,
+            event="enter",
+            operation_id=f"reactivate-{reason}",
+            expected_version=3,
         )
     with pytest.raises(ValueError, match="version conflict"):
         transition_entity_lifecycle(

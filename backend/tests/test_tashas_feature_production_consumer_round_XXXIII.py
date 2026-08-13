@@ -78,6 +78,8 @@ def test_manifest_mind_is_source_complete_and_schema_strict() -> None:
     assert "entity sensory profile consumer" in spec.manual_decisions["unmodeled_source_terms"]
     assert [clause.clause_id for clause in spec.clauses] == [
         "spectral-object-lifecycle",
+        "proficiency-bonus-uses",
+        "termination-events",
         "remote-spell-origin",
         "mind-sight",
         "shared-information",
@@ -165,7 +167,12 @@ def test_entity_senses_materializer_is_strict_and_provenance_bound() -> None:
     compiler = FeatureCompiler(status_authority="compiler")
     compiled = compiler.compile(spec)
     assert compiled.compile_status == "partial"
-    assert compiled.clause_results[2].blockers == (
+    mind_sight_result = next(
+        result
+        for result in compiled.clause_results
+        if result.clause_id == "mind-sight"
+    )
+    assert mind_sight_result.blockers == (
         "capability entity.senses is production_partial",
     )
 

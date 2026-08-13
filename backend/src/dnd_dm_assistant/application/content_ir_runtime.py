@@ -29,6 +29,7 @@ from dnd_dm_assistant.api.schemas import (
 from dnd_dm_assistant.application.content_ir_production_registry import (
     resolve_production_consumers,
 )
+from dnd_dm_assistant.domain.advancement import proficiency_bonus_for_level
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.domain.entity_lifecycle import (
     EntityLifecycleSpec,
@@ -258,8 +259,8 @@ class ContentIRRuntimeService:
             lifecycle_record: dict[str, Any] | None = None
             lifecycle_blocks = blocks.get("entity_lifecycles", [])
             if lifecycle_blocks:
-                if len(lifecycle_blocks) != 1:
-                    raise ValueError("entity lifecycle runtime requires exactly one lifecycle block")
+                if not all(isinstance(item, Mapping) for item in lifecycle_blocks):
+                    raise ValueError("entity lifecycle runtime contains an invalid lifecycle block")
                 entity_id = _text(
                     data.get("entity_id") or data.get("entity_lifecycle_entity_id")
                 )
@@ -271,7 +272,11 @@ class ContentIRRuntimeService:
                     raise ValueError("entity lifecycle event is required")
                 if not operation_id:
                     raise ValueError("entity lifecycle operation_id is required")
-                block = lifecycle_blocks[0]
+                block = dict(lifecycle_blocks[0])
+                for extra_block in lifecycle_blocks[1:]:
+                    for reason in extra_block.get("termination_reasons", []):
+                        if reason not in block.setdefault("termination_reasons", []):
+                            block["termination_reasons"].append(reason)
                 provenance = block.get("source_provenance")
                 if not isinstance(provenance, Mapping):
                     raise ValueError("entity lifecycle source provenance is required")
@@ -292,6 +297,7 @@ class ContentIRRuntimeService:
                     expires_on_owner_death=bool(block.get("expires_on_owner_death", False)),
                 )
                 prior_state: Mapping[str, Any] | None = None
+                records: object = None
                 for existing_feature in before["features"]:
                     if not isinstance(existing_feature, Mapping):
                         continue
@@ -303,8 +309,8 @@ class ContentIRRuntimeService:
                         if isinstance(existing_runtime, Mapping)
                         else None
                     )
-                    if isinstance(records, list):
-                        for record in records:
+                if isinstance(records, list):
+                    for record in records:
                             if (
                                 isinstance(record, Mapping)
                                 and _text(record.get("entity_id")) == entity_id
@@ -312,6 +318,32 @@ class ContentIRRuntimeService:
                             ):
                                 prior_state = record["state"]
                                 break
+                lifecycle_records = []
+                for existing_feature in before["features"]:
+                    if not isinstance(existing_feature, Mapping) or _text(
+                        existing_feature.get("feature_id")
+                    ) != feature_id:
+                        continue
+                    existing_runtime = existing_feature.get("runtime")
+                    raw_lifecycle = (
+                        existing_runtime.get("entity_lifecycles")
+                        if isinstance(existing_runtime, Mapping)
+                        else None
+                    )
+                    if isinstance(raw_lifecycle, list):
+                        lifecycle_records.extend(
+                            item for item in raw_lifecycle if isinstance(item, Mapping)
+                        )
+                for lifecycle_record in lifecycle_records:
+                    if _text(lifecycle_record.get("entity_id")) != entity_id:
+                        continue
+                    lifecycle_state = lifecycle_record.get("state")
+                    if isinstance(lifecycle_state, Mapping) and _text(
+                        lifecycle_state.get("status")
+                    ) in {"expired", "terminated"}:
+                        raise ValueError(
+                            "spell slot reactivation rejects an expired or terminated entity"
+                        )
                 expected_lifecycle_version = data.get("entity_lifecycle_expected_version")
                 transition = transition_entity_lifecycle(
                     spec,
@@ -579,12 +611,17 @@ class ContentIRRuntimeService:
 
             resource_grants: list[dict[str, Any]] = []
             resources = dict(after["resources"])
-            proficiency_bonus = 2 + (max(1, int(character.level or 1)) - 1) // 4
+            proficiency_bonus = proficiency_bonus_for_level(max(1, int(character.level or 1)))
             for block in blocks.get("resources", []):
                 resource_key = _text(block.get("key") or block.get("resource_key"))
                 if not resource_key:
                     raise ValueError("advancement resource block lacks a key")
                 maximum = block.get("maximum", block.get("max"))
+                if maximum is None and _text(block.get("max_formula")) in {
+                    "proficiency_bonus",
+                    "PB",
+                }:
+                    maximum = proficiency_bonus
                 if maximum is None and _text(block.get("max_formula")) == "2 * proficiency_bonus":
                     maximum = 2 * proficiency_bonus
                 if not isinstance(maximum, int) or isinstance(maximum, bool) or maximum < 1:
@@ -606,8 +643,25 @@ class ContentIRRuntimeService:
                 ):
                     if field in block:
                         entry[field] = deepcopy(block[field])
+                if _text(entry.get("max_formula")) == "proficiency_bonus":
+                    entry["authority"] = "character.proficiency_bonus"
                 resources[resource_key] = entry
                 resource_grants.append(deepcopy(entry))
+
+            requested_resource_key = _text(data.get("resource_key"))
+            requested_resource_cost = int(data.get("resource_cost") or 0)
+            if requested_resource_cost:
+                if not requested_resource_key:
+                    raise ValueError("resource_cost requires resource_key")
+                pool = resources.get(requested_resource_key)
+                if not isinstance(pool, Mapping):
+                    raise ValueError("requested resource does not exist")
+                current = int(pool.get("current") or 0)
+                if current < requested_resource_cost:
+                    raise ValueError("requested resource has insufficient uses")
+                pool = dict(pool)
+                pool["current"] = current - requested_resource_cost
+                resources[requested_resource_key] = pool
 
             feature_entry = {
                 "feature_id": feature_id,
@@ -847,7 +901,7 @@ class ContentIRRuntimeService:
                 provenance.get("source_fingerprint")
             ):
                 continue
-            if _text(state.get("status")) == "expired":
+            if _text(state.get("status")) in {"expired", "terminated"}:
                 continue
             metadata = state.get("metadata")
             metadata = metadata if isinstance(metadata, Mapping) else {}
@@ -2346,6 +2400,8 @@ class ContentIRRuntimeService:
                 output["entity_lifecycle"] = preview["entity_lifecycle"]
             if "spell_slot_reactivation" in preview:
                 output["spell_slot_reactivation"] = preview["spell_slot_reactivation"]
+            if "resource_consumption" in preview:
+                output["resource_consumption"] = preview["resource_consumption"]
             operation.after_snapshot = output
             session.flush()
             return output

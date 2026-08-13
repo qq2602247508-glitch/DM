@@ -15,21 +15,26 @@ from dataclasses import dataclass
 from typing import Any, Literal
 
 ENTITY_LIFECYCLE_SCHEMA = "entity.lifecycle.v1"
-ENTITY_LIFECYCLE_STATES = frozenset({"created", "entered", "exited", "expired"})
-ENTITY_LIFECYCLE_EVENTS = frozenset({"create", "enter", "exit", "expire"})
-EntityLifecycleState = Literal["created", "entered", "exited", "expired"]
+ENTITY_LIFECYCLE_STATES = frozenset({"created", "entered", "exited", "expired", "terminated"})
+ENTITY_LIFECYCLE_EVENTS = frozenset({"create", "enter", "exit", "expire", "terminate"})
+ENTITY_TERMINATION_REASONS = frozenset(
+    {"dispel_magic", "source_object_destroyed", "owner_died", "owner_dismissed", "distance_expired"}
+)
+EntityLifecycleState = Literal["created", "entered", "exited", "expired", "terminated"]
 
 _TRANSITIONS: dict[str, frozenset[str]] = {
     "create": frozenset({"created"}),
     "enter": frozenset({"entered"}),
     "exit": frozenset({"exited"}),
     "expire": frozenset({"expired"}),
+    "terminate": frozenset({"terminated"}),
 }
 _ALLOWED_FROM: dict[str, frozenset[str] | None] = {
     "create": None,
     "enter": frozenset({"created", "entered", "exited"}),
     "exit": frozenset({"entered"}),
     "expire": frozenset({"created", "entered", "exited"}),
+    "terminate": frozenset({"created", "entered", "exited"}),
 }
 
 
@@ -108,6 +113,10 @@ def _validate_state(state: Mapping[str, Any], spec: EntityLifecycleSpec) -> None
         raise ValueError("entity lifecycle active_entries is invalid")
     if spec.max_entries is not None and active_entries > spec.max_entries:
         raise ValueError("entity lifecycle active_entries exceeds max_entries")
+    if _text(state.get("status")) == "terminated" and _text(
+        state.get("termination_reason")
+    ) not in ENTITY_TERMINATION_REASONS:
+        raise ValueError("entity lifecycle termination_reason is invalid")
 
 
 def _request_fingerprint(
@@ -149,7 +158,19 @@ def transition_entity_lifecycle(
         raise ValueError("entity lifecycle event is invalid")
     if not operation_id:
         raise ValueError("entity lifecycle operation_id is required")
-    request_fingerprint = _request_fingerprint(spec, event=event, metadata=metadata)
+    normalized_metadata = dict(metadata or {})
+    termination_reason = _text(normalized_metadata.pop("termination_reason", ""))
+    if event == "expire":
+        termination_reason = termination_reason or "distance_expired"
+    if event == "terminate" and termination_reason not in ENTITY_TERMINATION_REASONS:
+        raise ValueError("entity lifecycle terminate requires a typed termination_reason")
+    request_fingerprint = _request_fingerprint(
+        spec,
+        event=event,
+        metadata={**normalized_metadata, "termination_reason": termination_reason}
+        if termination_reason
+        else normalized_metadata,
+    )
 
     if state is None:
         if event != "create":
@@ -167,7 +188,7 @@ def transition_entity_lifecycle(
                 "version": 1,
                 "last_operation_id": operation_id,
                 "last_operation_fingerprint": request_fingerprint,
-                "metadata": dict(metadata or {}),
+                "metadata": normalized_metadata,
             }
         )
 
@@ -206,11 +227,16 @@ def transition_entity_lifecycle(
     next_state = {
         **current,
         "status": next(iter(_TRANSITIONS[event])),
-        "active_entries": active_entries
-        + (1 if event == "enter" else -1 if event == "exit" else 0),
+        "active_entries": (
+            0
+            if event == "terminate"
+            else active_entries + (1 if event == "enter" else -1 if event == "exit" else 0)
+        ),
         "version": int(current["version"]) + 1,
         "last_operation_id": operation_id,
         "last_operation_fingerprint": request_fingerprint,
-        "metadata": dict(metadata or current.get("metadata") or {}),
+        "metadata": normalized_metadata or dict(current.get("metadata") or {}),
     }
+    if event in {"expire", "terminate"}:
+        next_state["termination_reason"] = termination_reason
     return EntityLifecycleResult(state=next_state)

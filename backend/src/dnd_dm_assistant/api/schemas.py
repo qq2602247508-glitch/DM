@@ -2552,6 +2552,7 @@ class ContentIRRuntimeRequest(BaseModel):
         "enter",
         "exit",
         "expire",
+        "terminate",
         "activate",
         "deactivate",
         "reactivate",
@@ -2559,6 +2560,8 @@ class ContentIRRuntimeRequest(BaseModel):
     ] | None = None
     entity_lifecycle_expected_version: int | None = Field(default=None, ge=0)
     entity_lifecycle_metadata: dict[str, Any] = Field(default_factory=dict, max_length=20)
+    resource_key: str | None = Field(default=None, min_length=1, max_length=120)
+    resource_cost: int = Field(default=0, ge=0, le=100)
     operation_id: str | None = Field(default=None, min_length=1, max_length=200)
     reactivation_payment: dict[str, Any] | None = None
     runtime_contract: dict[str, Any] | None = None

@@ -521,7 +521,7 @@ def default_operator_contracts() -> dict[str, OperatorContract]:
                 "recovery_events": "array",
                 "id": "string",
             },
-            enums={"resource_kind": {"superiority_dice", "psionic_dice", "d20_pool"}},
+            enums={"resource_kind": {"superiority_dice", "psionic_dice", "d20_pool", "uses"}},
             bounds={"die_size": (2, 100)},
             triggers=_TRIGGER_ADVANCEMENT,
             durations=_DURATION_PERSISTENT,
@@ -1123,12 +1123,13 @@ def default_operator_contracts() -> dict[str, OperatorContract]:
         _contract(
             "configure_entity_lifecycle",
             required=("entity_type", "source_binding"),
-            optional=("max_entries", "expires_on_owner_death", "id"),
+            optional=("max_entries", "expires_on_owner_death", "termination_reasons", "id"),
             types={
                 "entity_type": "string",
                 "source_binding": "string",
                 "max_entries": "integer",
                 "expires_on_owner_death": "boolean",
+                "termination_reasons": "array",
                 "id": "string",
             },
             enums={"source_binding": {"feature_source"}},

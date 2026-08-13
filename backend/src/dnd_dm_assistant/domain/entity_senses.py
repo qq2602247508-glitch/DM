@@ -64,6 +64,8 @@ def resolve_entity_senses(
     state = lifecycle_record.get("state")
     if not isinstance(state, Mapping) or _text(state.get("status")) != "entered":
         raise ValueError("entity senses requires an active entity lifecycle")
+    if _text(state.get("termination_reason")):
+        raise ValueError("entity senses rejects a terminated entity lifecycle")
     metadata = state.get("metadata")
     if not isinstance(metadata, Mapping) or _text(metadata.get("owner_character_id")) != owner_id:
         raise ValueError("entity senses owner authorization failed")

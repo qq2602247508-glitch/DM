@@ -793,8 +793,15 @@ def _materialize_entity_lifecycle(context: MaterializerContext) -> MaterializedB
                 "source_path": context.spec.source_path,
             },
             "lifecycle_schema": "entity.lifecycle.v1",
-            "lifecycle_states": ["created", "entered", "exited", "expired"],
-            "lifecycle_events": ["create", "enter", "exit", "expire"],
+            "lifecycle_states": ["created", "entered", "exited", "expired", "terminated"],
+            "lifecycle_events": ["create", "enter", "exit", "expire", "terminate"],
+            "termination_reasons": [
+                "dispel_magic",
+                "source_object_destroyed",
+                "owner_died",
+                "owner_dismissed",
+                "distance_expired",
+            ],
             "cas": {"version_field": "version", "expected_version_required": True},
             "idempotency": {
                 "operation_id_field": "operation_id",
@@ -805,6 +812,13 @@ def _materialize_entity_lifecycle(context: MaterializerContext) -> MaterializedB
     for key in ("max_entries", "expires_on_owner_death"):
         if key in params:
             entry[key] = params[key]
+    if "termination_reasons" in params:
+        reasons = params["termination_reasons"]
+        if not isinstance(reasons, list) or not reasons:
+            raise MaterializerError(
+                "entity lifecycle termination_reasons must be a non-empty array"
+            )
+        entry["termination_reasons"] = [str(item) for item in reasons]
     return MaterializedBlock("entity_lifecycles", entry)
 
 

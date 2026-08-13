@@ -103,8 +103,12 @@ def _validate_state(state: Mapping[str, Any], spec: EntitySpatialSpec) -> None:
     ):
         if _text(state.get(key)) != expected:
             raise ValueError(f"entity spatial {key} does not match the spec")
-    if _text(state.get("status")) not in {"active", "expired"}:
+    if _text(state.get("status")) not in {"active", "expired", "terminated"}:
         raise ValueError("entity spatial state status is invalid")
+    if _text(state.get("status")) in {"expired", "terminated"} and not _text(
+        state.get("termination_reason")
+    ):
+        raise ValueError("entity spatial terminated state requires a termination_reason")
     version = state.get("version")
     if not isinstance(version, int) or isinstance(version, bool) or version < 1:
         raise ValueError("entity spatial state version is invalid")
@@ -200,7 +204,11 @@ def transition_entity_spatial(
             next_position, current_owner_position, cell_size_ft=spec.cell_size_ft
         )
         if distance > spec.expiry_distance_ft:
-            state = {**state, "status": "expired"}
+            state = {
+                **state,
+                "status": "expired",
+                "termination_reason": "distance_expired",
+            }
         return EntitySpatialResult(
             dict(state), distance_ft=distance, expired=state["status"] == "expired"
         )
@@ -221,11 +229,11 @@ def transition_entity_spatial(
         return EntitySpatialResult(
             current,
             replayed=True,
-            expired=current["status"] == "expired",
+            expired=current["status"] in {"expired", "terminated"},
             distance_ft=distance,
         )
-    if current["status"] == "expired":
-        raise ValueError("entity spatial entity is expired")
+    if current["status"] in {"expired", "terminated"}:
+        raise ValueError("entity spatial entity is terminated")
 
     facts = dict(spatial_facts or {})
     if event == "move":
@@ -246,6 +254,9 @@ def transition_entity_spatial(
     next_state = {
         **current,
         "status": "expired" if distance > spec.expiry_distance_ft else "active",
+        "termination_reason": (
+            "distance_expired" if distance > spec.expiry_distance_ft else None
+        ),
         "position": next_position if event == "move" else current_position,
         "owner_position": current_owner_position,
         "version": int(current["version"]) + 1,
