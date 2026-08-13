@@ -233,6 +233,51 @@ _CONSUMERS: dict[str, dict[str, Any]] = {
         "idempotency_scope": "campaign_content_ir_and_reactivation",
         "snapshot_effects": ("entity_state", "spell_slots", "resource_receipt", "audit"),
     },
+    "vessel.space.v1": {
+        "content_kind": "advancement",
+        "runtime_schema_version": "feature-runtime-1",
+        "clause_types": ("vessel_spaces",),
+        "required_fields": (
+            "character_id",
+            "character_version",
+            "entity_lifecycle_event",
+            "operation_id",
+        ),
+        "required_services": (
+            "content_ir_runtime.vessel_space",
+            "operation_transaction",
+        ),
+        "transaction_boundary": "character_vessel_lifecycle_and_operation_transaction",
+        "cas_entities": ("character", "vessel_space", "contained_items"),
+        "idempotency_scope": "campaign_content_ir_and_vessel_space",
+        "snapshot_effects": (
+            "vessel_state",
+            "occupants",
+            "item_relocation",
+            "action_economy",
+            "audit",
+        ),
+    },
+    "vessel.external_sound.v1": {
+        "content_kind": "advancement",
+        "runtime_schema_version": "feature-runtime-1",
+        "clause_types": ("vessel_external_sound",),
+        "required_fields": (
+            "character_id",
+            "character_version",
+            "event_id",
+            "scene_id",
+            "combat_id",
+        ),
+        "required_services": (
+            "content_ir_runtime.vessel_external_sound",
+            "operation_transaction",
+        ),
+        "transaction_boundary": "read_only_vessel_external_sound_event_receipt",
+        "cas_entities": ("character", "vessel_space", "event"),
+        "idempotency_scope": "campaign_content_ir_and_vessel_external_sound",
+        "snapshot_effects": ("external_sound_receipt", "audit"),
+    },
     "combat_engine.roll_intervention.v1": {
         "content_kind": "feature",
         "runtime_schema_version": "feature-runtime-1",
@@ -517,6 +562,8 @@ def resolve_production_consumers(
             resolved.append("advancement_service.character_growth.v1")
         if blocks.get("spell_slot_reactivations"):
             resolved.append("spell.slot.reactivation.v1")
+        if blocks.get("vessel_spaces"):
+            resolved.append("vessel.space.v1")
         if blocks.get("spell_origins"):
             resolved.append("spell.remote_origin.v1")
         if blocks.get("attack_rider"):
@@ -582,6 +629,8 @@ def resolve_production_consumers(
             "entity_senses",
             "spell_slot_reactivations",
             "spell_list_expansions",
+            "vessel_spaces",
+            "vessel_external_sound",
         }
         unknown = set(blocks) - allowed
         if unknown:
@@ -593,6 +642,10 @@ def resolve_production_consumers(
             resolved.append("entity.senses.v1")
         if blocks.get("spell_slot_reactivations"):
             resolved.append("spell.slot.reactivation.v1")
+        if blocks.get("vessel_spaces"):
+            resolved.append("vessel.space.v1")
+        if blocks.get("vessel_external_sound"):
+            resolved.append("vessel.external_sound.v1")
         if any(
             blocks.get(section)
             for section in (

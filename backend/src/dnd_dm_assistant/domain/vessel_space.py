@@ -101,6 +101,8 @@ def _validate_state(state: Mapping[str, Any], spec: VesselSpaceSpec) -> None:
             raise ValueError(f"vessel space {key} does not match the spec")
     if state.get("status") not in {"outside", "inside", "destroyed", "removed"}:
         raise ValueError("vessel space status is invalid")
+    if not _text(state.get("owner_character_id")):
+        raise ValueError("vessel space owner binding is missing")
     if not isinstance(state.get("version"), int) or isinstance(state.get("version"), bool):
         raise ValueError("vessel space version is invalid")
     occupants = state.get("occupants")
@@ -122,6 +124,7 @@ def _request_fingerprint(
     *,
     event: str,
     subject_ids: Sequence[str],
+    item_ids: Sequence[str],
     facts: Mapping[str, Any],
 ) -> str:
     return _fingerprint(
@@ -130,6 +133,7 @@ def _request_fingerprint(
             "spec": spec.as_dict(),
             "event": event,
             "subject_ids": list(subject_ids),
+            "item_ids": list(item_ids),
             "facts": dict(facts),
         }
     )
@@ -143,8 +147,10 @@ def transition_vessel_space(
     operation_id: str,
     expected_version: int | None,
     subject_ids: Sequence[str] = (),
+    item_ids: Sequence[str] = (),
     facts: Mapping[str, Any] | None = None,
     appearance: str | None = None,
+    owner_character_id: str | None = None,
 ) -> VesselSpaceResult:
     """Validate one vessel transition; persistence belongs to the caller."""
 
@@ -154,10 +160,18 @@ def transition_vessel_space(
         raise ValueError("vessel space event is invalid")
     if not operation_id:
         raise ValueError("vessel space operation_id is required")
+    owner_character_id = _text(owner_character_id)
+    if not owner_character_id:
+        raise ValueError("vessel space owner binding is required")
     normalized_ids = tuple(dict.fromkeys(_text(item) for item in subject_ids if _text(item)))
+    normalized_item_ids = tuple(dict.fromkeys(_text(item) for item in item_ids if _text(item)))
     normalized_facts = dict(facts or {})
     request_fingerprint = _request_fingerprint(
-        spec, event=event, subject_ids=normalized_ids, facts=normalized_facts
+        spec,
+        event=event,
+        subject_ids=normalized_ids,
+        item_ids=normalized_item_ids,
+        facts=normalized_facts,
     )
 
     if state is None:
@@ -170,6 +184,7 @@ def transition_vessel_space(
             state={
                 "schema": VESSEL_SPACE_SCHEMA,
                 "vessel_id": spec.vessel_id,
+                "owner_character_id": owner_character_id,
                 "source_id": spec.source_id,
                 "source_fingerprint": spec.source_fingerprint,
                 "status": "outside",
@@ -194,6 +209,8 @@ def transition_vessel_space(
 
     current = dict(state)
     _validate_state(current, spec)
+    if current["owner_character_id"] != owner_character_id:
+        raise ValueError("vessel space owner binding does not match character")
     if expected_version != current["version"]:
         raise ValueError(
             "vessel space version conflict: "
@@ -216,7 +233,6 @@ def transition_vessel_space(
         current["entry_used_since_long_rest"] = False
     elif event == "enter":
         _require_bool(normalized_facts, "vessel_touched")
-        _require_bool(normalized_facts, "source_owner")
         _require_bool(normalized_facts, "entry_action_available")
         if current.get("entry_used_since_long_rest"):
             raise ValueError("vessel entry is unavailable until a long rest")
@@ -234,11 +250,13 @@ def transition_vessel_space(
         _require_bool(normalized_facts, "all_creatures_visible")
         current["status"] = "inside"
         occupants.extend(normalized_ids)
+        items.extend(normalized_item_ids)
         current["entry_used_since_long_rest"] = True
     elif event in {"exit", "eject", "destroy", "owner_death"}:
         if event in {"exit", "eject"} and status != "inside":
             raise ValueError("vessel exit requires occupants inside")
         if event in {"exit", "eject"}:
+            _require_bool(normalized_facts, "bonus_action_available")
             selected = normalized_ids or tuple(occupants)
             if any(item not in occupants for item in selected):
                 raise ValueError("vessel exit subject is not inside")

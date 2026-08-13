@@ -1751,6 +1751,59 @@ class WorldItem(Timestamped, Base):
     )
 
 
+class VesselSpace(Timestamped, Base):
+    """Durable vessel state; ``vessel_id`` is the canonical sole primary key.
+
+    The inherited ``id`` remains a generated, non-canonical audit field for
+    shared timestamped serialization and must not be treated as the identity.
+    """
+
+    __tablename__ = "vessel_spaces"
+    id: Mapped[str] = mapped_column(String(36), primary_key=False, default=_id)
+    vessel_id: Mapped[str] = mapped_column(String(200), primary_key=True)
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    owner_character_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="CASCADE"), nullable=False
+    )
+    scene_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("scenes.id", ondelete="SET NULL")
+    )
+    combat_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("combats.id", ondelete="SET NULL")
+    )
+    source_record_id: Mapped[str] = mapped_column(String(200), nullable=False)
+    source_fingerprint: Mapped[str] = mapped_column(String(128), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    state_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    occupants_json: Mapped[list[object]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    items_json: Mapped[list[object]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    termination_reason: Mapped[str | None] = mapped_column(String(100))
+    metadata_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('outside','inside','destroyed','removed')",
+            name="ck_vessel_space_status",
+        ),
+        Index("ix_vessel_spaces_campaign_status", "campaign_id", "status", "updated_at"),
+        Index(
+            "ix_vessel_spaces_owner_campaign",
+            "owner_character_id",
+            "campaign_id",
+            "vessel_id",
+        ),
+    )
+
+
 class CompendiumEntry(Timestamped, Base):
     """Reusable rule/content atom; runtime instances always remain separate."""
 

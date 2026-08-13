@@ -1220,6 +1220,18 @@ class MaterializerRegistry:
                 "appearance_options"
             ]:
                 raise MaterializerError("vessel space block lacks appearance options")
+        elif block.section == "vessel_external_sound":
+            if entry.get("resolution_kind") != "vessel_external_sound":
+                raise MaterializerError("external sound block has invalid resolution kind")
+            contract = entry.get("sound_contract")
+            if not isinstance(contract, Mapping) or contract.get(
+                "schema"
+            ) != "vessel.external_sound.v1":
+                raise MaterializerError("external sound block lacks typed contract")
+            if contract.get("source_facts_authority") != "asserted_input":
+                raise MaterializerError(
+                    "external sound source facts must remain asserted_input"
+                )
         elif block.section == "entity_senses":
             if entry.get("resolution_kind") != "entity_senses":
                 raise MaterializerError("entity senses block has invalid resolution kind")

@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 from dnd_dm_assistant.api.dependencies import get_campaign_service
 from dnd_dm_assistant.api.schemas import (
+    AudibleSoundEventCreate,
     CampaignBackup,
     CampaignCreate,
     CampaignImportRequest,
@@ -201,6 +202,22 @@ def export_campaign_backup(
     return _safe_call(lambda: service.export_backup(campaign_id))
 
 
+@router.post("/{campaign_id}/events/audible-sound", status_code=201)
+def create_audible_sound_event(
+    campaign_id: str,
+    body: AudibleSoundEventCreate,
+    request: Request,
+    service: Annotated[CampaignService, Depends(get_campaign_service)],
+) -> dict[str, Any]:
+    return _safe_call(
+        lambda: service.create_audible_sound_event(
+            campaign_id,
+            body.model_dump(exclude_unset=True),
+            request_id=_request_id(request),
+        )
+    )
+
+
 def _crud_routes(
     *,
     resource: str,
@@ -228,6 +245,11 @@ def _crud_routes(
                     enabled_rule_extensions=campaign.get("enabled_rule_extensions", []),
                     dm_override_reason=override_reason,
                 )
+            )
+        if singular == "event" and values.get("event_type") == "audible_sound":
+            raise HTTPException(
+                status_code=400,
+                detail="audible_sound events must be created through the producer path",
             )
         return _safe_call(
             lambda: service.create(
@@ -291,6 +313,17 @@ def _crud_routes(
             values = {
                 key: normalized.get(key, submitted) for key, submitted in values.items()
             }
+        if singular == "event":
+            current = _safe_call(
+                lambda: service.get(singular, entity_id, campaign_id=campaign_id)
+            )
+            if current.get("event_type") == "audible_sound":
+                forbidden = {"event_type", "metadata_json", "location_id", "visibility"}
+                if forbidden.intersection(values):
+                    raise HTTPException(
+                        status_code=400,
+                        detail="audible_sound producer provenance is immutable",
+                    )
         return _safe_call(
             lambda: service.update(
                 singular,

@@ -17,6 +17,14 @@ class CampaignStateGateway(Protocol):
         request_id: str = "unknown",
     ) -> dict[str, Any]: ...
 
+    def create_audible_sound_event(
+        self,
+        campaign_id: str,
+        data: dict[str, Any],
+        *,
+        request_id: str = "unknown",
+    ) -> dict[str, Any]: ...
+
     def get(
         self, entity_type: str, entity_id: str, *, campaign_id: str | None = None
     ) -> dict[str, Any]: ...

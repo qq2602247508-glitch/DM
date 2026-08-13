@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import datetime
 from typing import Annotated, Any, Literal
 
@@ -604,6 +605,12 @@ class EventCreate(BaseModel):
     visibility: Literal["dm", "players", "public"] = "dm"
     metadata_json: dict[str, Any] = Field(default_factory=dict)
 
+    @model_validator(mode="after")
+    def validate_audible_sound(self) -> EventCreate:
+        if self.event_type == "audible_sound":
+            raise ValueError("audible_sound events must be created through the producer path")
+        return self
+
 
 class EventPatch(BaseModel):
     title: Annotated[
@@ -616,6 +623,27 @@ class EventPatch(BaseModel):
     visibility: Literal["dm", "players", "public"] | None = None
     metadata_json: dict[str, Any] | None = None
     version: int | None = Field(None, ge=1)
+
+    @model_validator(mode="after")
+    def validate_audible_sound_patch(self) -> EventPatch:
+        if self.event_type != "audible_sound":
+            return self
+        raise ValueError("audible_sound events must be created through the producer path")
+
+
+class AudibleSoundEventCreate(BaseModel):
+    title: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
+    description: str | None = None
+    occurred_at: datetime | None = None
+    scene_id: str = Field(min_length=1, max_length=36)
+    combat_id: str = Field(min_length=1, max_length=36)
+    location_id: str = Field(min_length=1, max_length=36)
+    visibility: Literal["players", "public"] = "players"
+    source_producer: str = Field(min_length=1, max_length=200)
+    source_record_id: str = Field(min_length=1, max_length=200)
+    source_fingerprint: str = Field(min_length=1, max_length=128)
+    source_facts: dict[str, Any] = Field(min_length=1)
+    idempotency_key: str = Field(min_length=8, max_length=120)
 
 
 class CombatCreate(BaseModel):
@@ -2549,10 +2577,18 @@ class ContentIRRuntimeRequest(BaseModel):
     condition_to_remove: Literal["charmed", "frightened", "poisoned"] | None = None
     advancement_choices: dict[str, list[str]] = Field(default_factory=dict, max_length=50)
     entity_id: str | None = Field(default=None, min_length=1, max_length=200)
+    event_id: str | None = Field(default=None, min_length=1, max_length=36)
+    vessel_id: str | None = Field(default=None, min_length=1, max_length=200)
+    scene_id: str | None = Field(default=None, min_length=1, max_length=36)
+    combat_id: str | None = Field(default=None, min_length=1, max_length=36)
     entity_lifecycle_event: Literal[
         "create",
         "enter",
         "exit",
+        "eject",
+        "destroy",
+        "owner_death",
+        "long_rest",
         "expire",
         "terminate",
         "activate",
@@ -2591,8 +2627,28 @@ class ContentIRRuntimeRequest(BaseModel):
                 raise ValueError("advancement content runtime requires character binding")
             if self.runtime_contract is None:
                 raise ValueError("advancement content runtime requires a typed runtime contract")
-            if self.known_spell_id is not None or self.combat_id is not None:
+            vessel_runtime = (
+                self.runtime_contract.get("vessel_spaces", [])
+                if self.runtime_contract
+                else []
+            )
+            has_vessel_runtime = isinstance(vessel_runtime, list) and bool(vessel_runtime)
+            has_external_sound_runtime = isinstance(
+                self.runtime_contract.get("vessel_external_sound"), Mapping
+            )
+            if self.known_spell_id is not None or (
+                self.combat_id is not None
+                and not has_vessel_runtime
+                and not has_external_sound_runtime
+            ):
                 raise ValueError("advancement content runtime cannot bind combat or known spell")
+            if self.scene_id is not None and self.combat_id is None:
+                raise ValueError("scene_id requires combat_id")
+            if isinstance(self.runtime_contract.get("vessel_external_sound"), Mapping):
+                if not self.event_id or not self.scene_id or not self.combat_id:
+                    raise ValueError(
+                        "external sound runtime requires event_id, scene_id and combat_id"
+                    )
         target_ids = [
             item for item in [self.target_combatant_id, *self.target_combatant_ids] if item
         ]

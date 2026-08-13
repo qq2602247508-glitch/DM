@@ -55,13 +55,24 @@ from dnd_dm_assistant.domain.spell_slot_reactivation import (
 from dnd_dm_assistant.domain.telepathic_information import (
     share_authorized_sensory_information,
 )
+from dnd_dm_assistant.domain.vessel_external_sound import (
+    resolve_vessel_external_sound,
+)
+from dnd_dm_assistant.domain.vessel_space import (
+    VesselSpaceSpec,
+    transition_vessel_space,
+)
 from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngineService
 from dnd_dm_assistant.infrastructure.database.models import (
     Character,
     Combat,
     Combatant,
+    Event,
     KnownSpell,
     OperationTransaction,
+    Scene,
+    VesselSpace,
+    WorldItem,
 )
 from dnd_dm_assistant.infrastructure.database.spell_economy_service import SpellEconomyService
 
@@ -201,6 +212,18 @@ class ContentIRRuntimeService:
             blocks["spell_slot_reactivations"] = [
                 dict(item) for item in reactivations if isinstance(item, Mapping)
             ]
+        vessel_spaces = runtime.get("vessel_spaces")
+        if isinstance(vessel_spaces, list) and vessel_spaces:
+            blocks["vessel_spaces"] = [
+                dict(item) for item in vessel_spaces if isinstance(item, Mapping)
+            ]
+        external_sound = runtime.get("vessel_external_sound")
+        if isinstance(external_sound, list) and external_sound:
+            blocks["vessel_external_sound"] = [
+                dict(item) for item in external_sound if isinstance(item, Mapping)
+            ]
+        elif isinstance(external_sound, Mapping):
+            blocks["vessel_external_sound"] = [dict(external_sound)]
         proficiencies = runtime.get("proficiencies")
         if isinstance(proficiencies, list) and proficiencies:
             blocks["proficiencies"] = [dict(item) for item in proficiencies if isinstance(item, Mapping)]
@@ -249,6 +272,40 @@ class ContentIRRuntimeService:
                 raise ValueError("spell list expansion common spells must be unique and non-empty")
             if not isinstance(options, Mapping) or not options:
                 raise ValueError("spell list expansion selection options are required")
+        vessel_blocks = blocks.get("vessel_spaces", [])
+        if vessel_blocks and len(vessel_blocks) != 1:
+            raise ValueError("vessel space runtime requires exactly one block")
+        for block in vessel_blocks:
+            if _text(block.get("resolution_kind")) != "vessel_space":
+                raise ValueError("vessel space has an invalid resolution kind")
+            contract = block.get("space_contract")
+            provenance = block.get("source_provenance")
+            if not isinstance(contract, Mapping) or contract.get("schema") != "vessel.space.v1":
+                raise ValueError("vessel space contract is incomplete")
+            if not isinstance(provenance, Mapping):
+                raise ValueError("vessel space source provenance is required")
+            if _text(provenance.get("source_record_id")) != _text(runtime.get("source_record_id")):
+                raise ValueError("vessel space provenance does not match runtime")
+            if _text(provenance.get("source_fingerprint")) != _text(runtime.get("source_fingerprint")):
+                raise ValueError("vessel space provenance does not match runtime")
+        sound_blocks = blocks.get("vessel_external_sound", [])
+        if sound_blocks and len(sound_blocks) != 1:
+            raise ValueError("external sound runtime requires exactly one block")
+        for block in sound_blocks:
+            if _text(block.get("resolution_kind")) != "vessel_external_sound":
+                raise ValueError("external sound has an invalid resolution kind")
+            contract = block.get("sound_contract")
+            if not isinstance(contract, Mapping) or contract.get(
+                "schema"
+            ) != "vessel.external_sound.v1":
+                raise ValueError("external sound contract is incomplete")
+            provenance = block.get("source_provenance")
+            if not isinstance(provenance, Mapping):
+                raise ValueError("external sound source provenance is required")
+            if _text(provenance.get("source_record_id")) != _text(runtime.get("source_record_id")):
+                raise ValueError("external sound provenance does not match runtime")
+            if _text(provenance.get("source_fingerprint")) != _text(runtime.get("source_fingerprint")):
+                raise ValueError("external sound provenance does not match runtime")
         consumers = resolve_production_consumers(
             content_kind="advancement",
             runtime_schema_version="feature-runtime-1",
@@ -256,11 +313,109 @@ class ContentIRRuntimeService:
         )
         return character, runtime, blocks, consumers
 
+    @staticmethod
+    def _vessel_actor_and_authority(
+        session: Session,
+        campaign_id: str,
+        character: Character,
+        data: Mapping[str, Any],
+        vessel_id: str,
+    ) -> tuple[Combat, Combatant, Combatant, SceneGridSpatialAuthority]:
+        combat_id = _text(data.get("combat_id"))
+        scene_id = _text(data.get("scene_id"))
+        if not combat_id or not scene_id:
+            raise ValueError("vessel runtime requires scene_id and combat_id")
+        combat = session.get(Combat, combat_id)
+        if (
+            combat is None
+            or combat.campaign_id != campaign_id
+            or combat.scene_id != scene_id
+            or combat.status != "active"
+        ):
+            raise StateNotFoundError("vessel runtime combat/scene binding not found")
+        scene = session.get(Scene, scene_id)
+        if scene is None or scene.campaign_id != campaign_id or scene.status != "active":
+            raise StateNotFoundError("vessel runtime scene binding not found")
+        actor = next(
+            (
+                row
+                for row in session.scalars(
+                    select(Combatant).where(
+                        Combatant.combat_id == combat.id,
+                        Combatant.is_active.is_(True),
+                    )
+                ).all()
+                if _text(row.entity_id) == character.id or row.id == character.id
+            ),
+            None,
+        )
+        if actor is None:
+            raise ValueError("vessel runtime requires the character's combatant binding")
+        vessel = next(
+            (
+                row
+                for row in session.scalars(
+                    select(Combatant).where(
+                        Combatant.combat_id == combat.id,
+                        Combatant.is_active.is_(True),
+                    )
+                ).all()
+                if row.id == vessel_id or _text(row.entity_id) == vessel_id
+            ),
+            None,
+        )
+        if vessel is None or vessel.id == actor.id:
+            raise StateNotFoundError("vessel runtime vessel entity binding not found")
+        vessel_metadata = dict(vessel.snapshot_json or {})
+        owner_character_id = _text(vessel_metadata.get("owner_character_id"))
+        owner_combatant_id = _text(vessel_metadata.get("owner_combatant_id"))
+        if owner_character_id != character.id and owner_combatant_id != actor.id:
+            raise ValueError("vessel runtime character is not the vessel owner")
+        authority = SceneGridSpatialAuthority(session, scene_id, combat_id=combat.id)
+        authority.get_entity_position(actor.id)
+        authority.get_entity_position(vessel.id)
+        return combat, actor, vessel, authority
+
+    @staticmethod
+    def _vessel_action_fact(actor: Combatant, event: str) -> str:
+        if event == "enter":
+            return "action_available"
+        if event in {"exit", "eject"}:
+            return "bonus_action_available"
+        return ""
+
+    @staticmethod
+    def _vessel_position_receipt(
+        authority: SceneGridSpatialAuthority,
+        *,
+        source_entity_id: str,
+        destination_entity_id: str,
+        size_cells: int,
+    ) -> dict[str, Any]:
+        source = authority.get_entity_position(source_entity_id)
+        destination = authority.find_nearest_unoccupied_space(
+            source,
+            size_cells=size_cells,
+            ignore_entity_id=destination_entity_id,
+        )
+        return {
+            "source_entity_id": source_entity_id,
+            "destination_entity_id": destination_entity_id,
+            "from": source.model_dump(mode="json"),
+            "to": destination.model_dump(mode="json"),
+            "validated_by": "SceneGridSpatialAuthority",
+        }
+
     def _preview_advancement(self, campaign_id: str, data: dict[str, Any]) -> dict[str, Any]:
         with Session(self.engine) as session:
             character, runtime, blocks, consumers = self._advancement_runtime(
                 session, campaign_id, data
             )
+            if blocks.get("vessel_external_sound"):
+                return self._preview_vessel_external_sound(
+                    session, campaign_id, character, runtime,
+                    blocks["vessel_external_sound"][0], data, consumers
+                )
             before = self._character_snapshot(character)
             after = deepcopy(before)
             choices = data.get("advancement_choices") or {}
@@ -275,6 +430,8 @@ class ContentIRRuntimeService:
             feature_name = _text(runtime.get("feature_name")) or feature_id
             lifecycle_receipt: dict[str, Any] | None = None
             lifecycle_record: dict[str, Any] | None = None
+            vessel_receipt: dict[str, Any] | None = None
+            vessel_record: dict[str, Any] | None = None
             lifecycle_blocks = blocks.get("entity_lifecycles", [])
             if lifecycle_blocks:
                 if not all(isinstance(item, Mapping) for item in lifecycle_blocks):
@@ -423,6 +580,317 @@ class ContentIRRuntimeService:
                 }
                 if producer_receipt is not None:
                     lifecycle_receipt["producer_receipt"] = producer_receipt
+            vessel_blocks = blocks.get("vessel_spaces", [])
+            if vessel_blocks:
+                block = vessel_blocks[0]
+                contract = dict(block["space_contract"])
+                provenance = dict(block["source_provenance"])
+                metadata = (
+                    data.get("entity_lifecycle_metadata")
+                    if isinstance(data.get("entity_lifecycle_metadata"), Mapping)
+                    else {}
+                )
+                vessel_id = _text(metadata.get("vessel_id")) or f"{feature_id}:vessel"
+                event = _text(data.get("entity_lifecycle_event")).casefold()
+                operation_id = _text(data.get("operation_id"))
+                if not event or not operation_id:
+                    raise ValueError("vessel space requires event and operation_id")
+                allowed_events = {
+                    "create",
+                    "enter",
+                    "exit",
+                    "eject",
+                    "destroy",
+                    "owner_death",
+                    "long_rest",
+                }
+                if event not in allowed_events:
+                    raise ValueError("vessel space event is unsupported")
+                duration_hours = contract.get("duration_hours")
+                if duration_hours is None:
+                    duration_hours = 2 * proficiency_bonus_for_level(
+                        max(1, int(character.level or 1))
+                    )
+                spec = VesselSpaceSpec(
+                    vessel_id=vessel_id,
+                    source_id=_text(provenance["source_record_id"]),
+                    source_fingerprint=_text(provenance["source_fingerprint"]),
+                    max_occupants=int(contract["max_occupants"]),
+                    duration_hours=int(duration_hours),
+                    exit_size_cells=int(contract.get("exit_size_cells") or 1),
+                )
+                formal_vessel = session.scalar(
+                    select(VesselSpace).where(
+                        VesselSpace.vessel_id == vessel_id,
+                        VesselSpace.campaign_id == campaign_id,
+                    )
+                )
+                prior_state = (
+                    deepcopy(dict(formal_vessel.state_json))
+                    if formal_vessel is not None
+                    else None
+                )
+                raw_subjects = metadata.get("vessel_subject_ids") or []
+                raw_items = metadata.get("vessel_item_ids") or []
+                facts = metadata.get("vessel_facts") or {}
+                if not isinstance(raw_subjects, list) or not isinstance(raw_items, list):
+                    raise ValueError("vessel subject and item ids must be lists")
+                if not isinstance(facts, Mapping):
+                    raise ValueError("vessel facts must be an object")
+                forbidden_facts = {
+                    "source_owner",
+                    "entry_action_available",
+                    "bonus_action_available",
+                    "destination_nearest_unoccupied",
+                    "nearest_unoccupied_for_items",
+                    "nearest_unoccupied_for_occupants",
+                }
+                if forbidden_facts.intersection(facts):
+                    raise ValueError("vessel facts cannot contain caller-supplied authority booleans")
+                _combat, actor, vessel_entity, spatial = self._vessel_actor_and_authority(
+                    session, campaign_id, character, data, vessel_id
+                )
+                authoritative_facts = dict(facts)
+                if event == "enter":
+                    if not actor.action_available:
+                        raise ValueError("vessel entry requires an available action")
+                    authoritative_facts["entry_action_available"] = True
+                    authoritative_facts["source_owner"] = True
+                elif event in {"exit", "eject"}:
+                    if not actor.bonus_action_available:
+                        raise ValueError("vessel exit requires an available bonus action")
+                    authoritative_facts["bonus_action_available"] = True
+                if event in {"exit", "eject", "destroy", "owner_death"}:
+                    authoritative_facts["destination_nearest_unoccupied"] = True
+                    authoritative_facts["nearest_unoccupied_for_occupants"] = True
+                    authoritative_facts["nearest_unoccupied_for_items"] = True
+                subject_ids = [str(item) for item in raw_subjects]
+                item_ids = [str(item) for item in raw_items]
+                if event in {"exit", "eject", "destroy", "owner_death"} and isinstance(prior_state, Mapping):
+                    subject_ids = list(prior_state.get("occupants") or [])
+                    item_ids = list(prior_state.get("items") or [])
+                producer_receipt: dict[str, Any] | None = None
+                if event == "destroy":
+                    producer_operation_id = _text(metadata.get("producer_operation_id"))
+                    if not producer_operation_id:
+                        raise ValueError("vessel termination requires a producer receipt")
+                    producer_receipt = self._validate_lifecycle_producer(
+                        session,
+                        campaign_id,
+                        entity_id=vessel_id,
+                        reason="source_object_destroyed",
+                        producer_operation_id=producer_operation_id,
+                        owner_character_id=character.id,
+                    )
+                position_receipts: list[dict[str, Any]] = []
+                position_subject_ids = (
+                    subject_ids
+                    if event in {"exit", "eject", "destroy", "owner_death"}
+                    else []
+                )
+                for subject_id in position_subject_ids:
+                    if subject_id not in spatial.entities:
+                        raise StateNotFoundError(f"vessel subject spatial entity not found: {subject_id}")
+                    subject_receipt = self._vessel_position_receipt(
+                        spatial,
+                        source_entity_id=vessel_entity.id,
+                        destination_entity_id=subject_id,
+                        size_cells=spatial.get_entity_size(subject_id),
+                    )
+                    subject = session.get(Combatant, subject_id)
+                    if subject is None or subject.combat_id != _combat.id:
+                        raise StateNotFoundError(
+                            f"vessel subject combatant not found: {subject_id}"
+                        )
+                    before_subject = {
+                        "id": subject.id,
+                        "version": subject.version,
+                        "snapshot_json": deepcopy(dict(subject.snapshot_json or {})),
+                    }
+                    after_snapshot = deepcopy(dict(subject.snapshot_json or {}))
+                    after_snapshot["grid_position"] = subject_receipt["to"]
+                    subject_receipt.update(
+                        {
+                            "before": before_subject,
+                            "after": {
+                                **before_subject,
+                                "version": subject.version + 1,
+                                "snapshot_json": after_snapshot,
+                            },
+                        }
+                    )
+                    position_receipts.append(subject_receipt)
+                    spatial.add_entity(
+                        subject_id,
+                        KernelPosition.model_validate(subject_receipt["to"]),
+                        size_cells=spatial.get_entity_size(subject_id),
+                    )
+                item_receipts: list[dict[str, Any]] = []
+                receipt_item_ids = (
+                    item_ids if event in {"enter", "destroy", "owner_death"} else []
+                )
+                for item_id in receipt_item_ids:
+                    item = session.scalar(
+                        select(WorldItem).where(
+                            WorldItem.id == item_id,
+                            WorldItem.campaign_id == campaign_id,
+                        )
+                    )
+                    if item is None:
+                        raise StateNotFoundError(f"vessel world item not found: {item_id}")
+                    before_item = {
+                        "id": item.id,
+                        "version": item.version,
+                        "owner_character_id": item.owner_character_id,
+                        "location_id": item.location_id,
+                        "metadata_json": deepcopy(dict(item.metadata_json or {})),
+                    }
+                    item_position_receipt: dict[str, Any] | None = None
+                    if event == "enter":
+                        if item.owner_character_id not in {None, character.id}:
+                            raise ValueError("vessel item is owned by another character")
+                        metadata_after = deepcopy(dict(item.metadata_json or {}))
+                        metadata_after.update(
+                            {
+                                "vessel_container_id": vessel_id,
+                                "vessel_scene_id": _text(data.get("scene_id")),
+                                "vessel_combat_id": _text(data.get("combat_id")),
+                            }
+                        )
+                    else:
+                        metadata_after = deepcopy(dict(item.metadata_json or {}))
+                        metadata_after.pop("vessel_container_id", None)
+                        metadata_after.update(
+                            {
+                                "vessel_relocated_from": vessel_id,
+                                "vessel_scene_id": _text(data.get("scene_id")),
+                                "vessel_combat_id": _text(data.get("combat_id")),
+                            }
+                        )
+                        if event in {"destroy", "owner_death"}:
+                            source = spatial.get_entity_position(vessel_entity.id)
+                            destination = spatial.find_nearest_unoccupied_space(source)
+                            spatial.add_entity(
+                                item.id,
+                                destination,
+                                size_cells=1,
+                            )
+                            item_position_receipt = {
+                                "source_entity_id": vessel_entity.id,
+                                "destination_entity_id": item.id,
+                                "from": source.model_dump(mode="json"),
+                                "to": destination.model_dump(mode="json"),
+                                "validated_by": "SceneGridSpatialAuthority",
+                            }
+                            metadata_after["grid_position"] = destination.model_dump(mode="json")
+                        elif position_receipts and event in {"destroy", "owner_death"}:
+                            metadata_after["grid_position"] = position_receipts[0]["to"]
+                    item_receipts.append(
+                        {
+                            "item_id": item.id,
+                            "before": before_item,
+                            "after": {
+                                **before_item,
+                                "version": item.version + 1,
+                                "owner_character_id": character.id,
+                                "location_id": None,
+                                "metadata_json": metadata_after,
+                            },
+                            **(
+                                {"position_receipt": item_position_receipt}
+                                if item_position_receipt is not None
+                                else {}
+                            ),
+                        }
+                    )
+                if event in {"destroy", "owner_death"}:
+                    if event == "owner_death":
+                        producer_operation_id = _text(metadata.get("producer_operation_id"))
+                        if not producer_operation_id:
+                            raise ValueError("vessel termination requires a producer receipt")
+                        self._validate_lifecycle_producer(
+                            session,
+                            campaign_id,
+                            entity_id=vessel_id,
+                            reason="owner_died",
+                            producer_operation_id=producer_operation_id,
+                            owner_character_id=character.id,
+                        )
+                transition = transition_vessel_space(
+                    spec,
+                    prior_state,
+                    event=event,
+                    operation_id=operation_id,
+                    expected_version=(
+                        None
+                        if data.get("entity_lifecycle_expected_version") is None
+                        else int(data["entity_lifecycle_expected_version"])
+                    ),
+                    subject_ids=subject_ids,
+                    item_ids=item_ids,
+                    facts=authoritative_facts,
+                    appearance=_text(metadata.get("vessel_appearance")) or None,
+                    owner_character_id=character.id,
+                )
+                vessel_record = {
+                    "vessel_id": vessel_id,
+                    "source_provenance": provenance,
+                    "state": transition.state,
+                }
+                vessel_receipt = {
+                    "schema": "vessel.space.v1",
+                    "vessel_id": vessel_id,
+                    "source_provenance": provenance,
+                    "event": event,
+                    "operation_id": operation_id,
+                    "replayed": transition.replayed,
+                    "state": transition.state,
+                    "ejected_occupants": list(transition.ejected_occupants),
+                    "ejected_items": list(transition.ejected_items),
+                    "item_ids": item_ids,
+                    "position_receipts": position_receipts,
+                    "item_receipts": item_receipts,
+                    **(
+                        {"producer_receipt": producer_receipt}
+                        if producer_receipt is not None
+                        else {}
+                    ),
+                    "action_economy": (
+                        {
+                            "cost": "action",
+                            "authority": "combatant.action_available",
+                            "combatant_id": actor.id,
+                            "combatant_version": actor.version,
+                        }
+                        if event == "enter"
+                        else (
+                            {
+                                "cost": "bonus_action",
+                                "authority": "combatant.bonus_action_available",
+                                "combatant_id": actor.id,
+                                "combatant_version": next(
+                                    (
+                                        int(receipt["after"]["version"])
+                                        for receipt in position_receipts
+                                        if receipt.get("destination_entity_id") == actor.id
+                                    ),
+                                    actor.version,
+                                ),
+                            }
+                            if event in {"exit", "eject"}
+                            else {"cost": "none"}
+                        )
+                    ),
+                    "formal_persistence": {
+                        "vessel_id": vessel_id,
+                        "version": transition.state["version"],
+                        "expected_version": (
+                            None
+                            if prior_state is None
+                            else int(prior_state["version"])
+                        ),
+                    },
+                }
             senses_blocks = blocks.get("entity_senses", [])
             senses_records: list[dict[str, Any]] = []
             for block in senses_blocks:
@@ -808,6 +1276,34 @@ class ContentIRRuntimeService:
                 prior_records.append(reactivation_record)
                 feature_runtime["spell_slot_reactivations"] = prior_records
                 feature_entry["runtime"] = feature_runtime
+            if vessel_record is not None:
+                feature_runtime = dict(feature_entry["runtime"])
+                prior_records: list[dict[str, Any]] = []
+                for existing_feature in before["features"]:
+                    if (
+                        isinstance(existing_feature, Mapping)
+                        and _text(existing_feature.get("feature_id")) == feature_id
+                    ):
+                        existing_runtime = existing_feature.get("runtime")
+                        records = (
+                            existing_runtime.get("vessel_spaces")
+                            if isinstance(existing_runtime, Mapping)
+                            else None
+                        )
+                        if isinstance(records, list):
+                            prior_records = [
+                                dict(record)
+                                for record in records
+                                if isinstance(record, Mapping)
+                            ]
+                prior_records = [
+                    record
+                    for record in prior_records
+                    if _text(record.get("vessel_id")) != _text(vessel_record["vessel_id"])
+                ]
+                prior_records.append(vessel_record)
+                feature_runtime["vessel_spaces"] = prior_records
+                feature_entry["runtime"] = feature_runtime
             if blocks.get("spell_list_expansions"):
                 feature_runtime = dict(feature_entry["runtime"])
                 feature_runtime["spell_list_expansions"] = [
@@ -868,10 +1364,193 @@ class ContentIRRuntimeService:
                     "requires_operation_transaction": True,
                     "payment": reactivation_receipt["payment"],
                 }
+            if vessel_receipt is not None:
+                result["vessel_space"] = vessel_receipt
+                result["production_contract"]["vessel_space"] = {
+                    "schema": "vessel.space.v1",
+                    "requires_character_cas": True,
+                    "requires_operation_transaction": True,
+                    "requires_authoritative_facts": True,
+                    "status": "production_partial",
+                }
             result["preview_token"] = _fingerprint(
                 {"data": _stable_request_data(data), "result": result}
             )
             return result
+
+    def _preview_vessel_external_sound(
+        self,
+        session: Session,
+        campaign_id: str,
+        character: Character,
+        runtime: Mapping[str, Any],
+        block: Mapping[str, Any],
+        data: Mapping[str, Any],
+        consumers: tuple[dict[str, Any], ...],
+    ) -> dict[str, Any]:
+        event_id = _text(data.get("event_id"))
+        scene_id = _text(data.get("scene_id"))
+        combat_id = _text(data.get("combat_id"))
+        if not event_id:
+            raise ValueError("external sound requires an event_id")
+        _combat = session.get(Combat, combat_id)
+        if _combat is None or _combat.campaign_id != campaign_id:
+            raise StateNotFoundError("external sound combat not found")
+        actor = next(
+            (
+                row
+                for row in session.scalars(
+                    select(Combatant).where(
+                        Combatant.combat_id == combat_id,
+                        Combatant.is_active.is_(True),
+                    )
+                ).all()
+                if _text(row.entity_id) == character.id
+            ),
+            None,
+        )
+        if actor is None:
+            raise StateNotFoundError("external sound owner combatant not found")
+        vessel_id = None
+        vessel_state: Mapping[str, Any] | None = None
+        for feature in character.features or []:
+            if not isinstance(feature, Mapping):
+                continue
+            feature_runtime = feature.get("runtime")
+            records = (
+                feature_runtime.get("vessel_spaces")
+                if isinstance(feature_runtime, Mapping)
+                else None
+            )
+            if not isinstance(records, list):
+                continue
+            for record in records:
+                if (
+                    isinstance(record, Mapping)
+                    and isinstance(record.get("state"), Mapping)
+                    and actor.id in (record["state"].get("occupants") or [])
+                    and record["state"].get("status") == "inside"
+                ):
+                    vessel_id = _text(record.get("vessel_id"))
+                    vessel_state = record["state"]
+                    break
+            if vessel_id:
+                break
+        if not vessel_id:
+            raise ValueError("external sound requires the owner to be inside an active vessel")
+        vessel_entity = next(
+            (
+                row
+                for row in session.scalars(
+                    select(Combatant).where(
+                        Combatant.combat_id == combat_id,
+                        Combatant.is_active.is_(True),
+                    )
+                ).all()
+                if row.id == vessel_id or _text(row.entity_id) == vessel_id
+            ),
+            None,
+        )
+        if vessel_entity is None:
+            raise StateNotFoundError("external sound vessel entity not found")
+        if _text((vessel_entity.snapshot_json or {}).get("owner_character_id")) != character.id:
+            raise ValueError("external sound vessel owner binding does not match")
+        if not isinstance(vessel_state, Mapping):
+            raise StateNotFoundError("external sound vessel state is not bound")
+        event = session.get(Event, event_id)
+        if event is None or event.campaign_id != campaign_id:
+            raise StateNotFoundError("external sound event not found")
+        if event.event_type != "audible_sound":
+            raise ValueError("external sound event type is not audible_sound")
+        event_metadata = dict(event.metadata_json or {})
+        if (
+            _text(event_metadata.get("scene_id")) != scene_id
+            or _text(event_metadata.get("combat_id")) != combat_id
+            or _text(event_metadata.get("scene_id")) != _text(_combat.scene_id)
+        ):
+            raise ValueError("external sound event scene/combat binding does not match")
+        scene = session.get(Scene, scene_id)
+        if scene is None or event.location_id != scene.location_id:
+            raise ValueError("external sound event location binding does not match")
+        if event.visibility not in {"players", "public"}:
+            raise ValueError("external sound event is not visible to players")
+        source_producer = _text(event_metadata.get("source_producer"))
+        source_record_id = _text(event_metadata.get("source_record_id"))
+        source_fingerprint = _text(event_metadata.get("source_fingerprint"))
+        source_facts = event_metadata.get("source_facts")
+        producer_operation_id = _text(event_metadata.get("producer_operation_id"))
+        provenance = block.get("source_provenance")
+        if (
+            not source_producer
+            or not source_record_id
+            or not source_fingerprint
+            or not producer_operation_id
+            or _text(event_metadata.get("source_facts_authority")) != "asserted_input"
+            or not isinstance(source_facts, Mapping)
+            or not source_facts
+            or not isinstance(provenance, Mapping)
+            or source_record_id != _text(provenance.get("source_record_id"))
+            or source_fingerprint != _text(provenance.get("source_fingerprint"))
+        ):
+            raise ValueError("external sound event source metadata is incomplete")
+        producer = session.scalar(
+            select(OperationTransaction).where(
+                OperationTransaction.id == producer_operation_id,
+                OperationTransaction.campaign_id == campaign_id,
+                OperationTransaction.status == "applied",
+            )
+        )
+        if producer is None:
+            raise StateNotFoundError("external sound producer receipt not found")
+        if producer.operation_type != "event_audible_sound":
+            raise ValueError("external sound producer operation type is not allowed")
+        producer_after = dict(producer.after_snapshot or {})
+        expected_bindings = {
+            "event_id": event.id,
+            "scene_id": scene_id,
+            "combat_id": combat_id,
+            "location_id": event.location_id,
+            "source_producer": source_producer,
+            "source_record_id": source_record_id,
+            "source_fingerprint": source_fingerprint,
+            "source_facts": dict(source_facts),
+            "source_facts_authority": "asserted_input",
+        }
+        if any(producer_after.get(key) != value for key, value in expected_bindings.items()):
+            raise ValueError("external sound producer receipt binding does not match event")
+        receipt = resolve_vessel_external_sound(
+            vessel_state,
+            vessel_id=vessel_id,
+            owner_character_id=character.id,
+            inside_occupant_id=actor.id,
+            scene_id=scene_id,
+            combat_id=combat_id,
+            vessel_entity_id=vessel_entity.id,
+            channel="hearing",
+            event_id=event.id,
+            source_producer=source_producer,
+        ).as_dict()
+        return {
+            "schema_version": RUNTIME_PREVIEW_SCHEMA,
+            "content_kind": "advancement",
+            "runtime_id": _text(data.get("runtime_id")),
+            "runtime_preview_full": True,
+            "character_id": character.id,
+            "character_version": character.version,
+            "vessel_external_sound": receipt,
+            "producer_operation_id": producer_operation_id,
+            "production_contract": {
+                "content_kind": "advancement",
+                "consumers": [str(item["consumer_id"]) for item in consumers],
+                "requires_character_cas": True,
+                "requires_idempotency": True,
+                "requires_read_only_receipt": True,
+                "state_mutated": False,
+            },
+            "preview_token": _fingerprint(
+                {"data": _stable_request_data(data), "result": receipt}
+            ),
+        }
 
     @staticmethod
     def _validate_lifecycle_producer(
@@ -2785,6 +3464,11 @@ class ContentIRRuntimeService:
             return output
 
     def _confirm_advancement(self, campaign_id: str, data: dict[str, Any]) -> dict[str, Any]:
+        runtime_contract = data.get("runtime_contract")
+        if isinstance(runtime_contract, Mapping) and isinstance(
+            runtime_contract.get("vessel_external_sound"), Mapping
+        ):
+            return self._confirm_vessel_external_sound(campaign_id, data)
         key = _text(data.get("idempotency_key"))
         if len(key) < 8:
             raise ValueError("content runtime idempotency_key is required")
@@ -2825,6 +3509,36 @@ class ContentIRRuntimeService:
                         )
                 if _text(previous.get("preview_token")) != _text(data.get("preview_token")):
                     raise ValueError("spell slot reactivation replay payload does not match")
+            previous_vessel = previous.get("vessel_space")
+            if (
+                isinstance(previous_vessel, Mapping)
+                and _text(previous_vessel.get("event")) == "destroy"
+            ):
+                submitted_metadata = data.get("entity_lifecycle_metadata")
+                if not isinstance(submitted_metadata, Mapping):
+                    raise ValueError("vessel operation replay payload does not match")
+                previous_producer = previous_vessel.get("producer_receipt")
+                submitted_producer_id = _text(
+                    submitted_metadata.get("producer_operation_id")
+                )
+                if (
+                    isinstance(previous_producer, Mapping)
+                    and _text(previous_producer.get("operation_transaction_id"))
+                    != submitted_producer_id
+                ):
+                    raise ValueError("vessel operation replay producer receipt does not match")
+                for field, submitted_key in (
+                    ("event", "entity_lifecycle_event"),
+                    ("operation_id", "operation_id"),
+                ):
+                    if _text(previous_vessel.get(field)) != _text(data.get(submitted_key)):
+                        raise ValueError("vessel operation replay payload does not match")
+                if _text(previous_vessel.get("vessel_id")) != _text(
+                    submitted_metadata.get("vessel_id")
+                ):
+                    raise ValueError("vessel operation replay payload does not match")
+                if _text(previous.get("preview_token")) != _text(data.get("preview_token")):
+                    raise ValueError("vessel operation replay payload does not match")
             return {**previous, "already_applied": True}
 
         with Session(self.engine) as session:
@@ -2898,6 +3612,216 @@ class ContentIRRuntimeService:
                     expected_version,
                     int(actual or 0),
                 )
+            vessel_preview = preview.get("vessel_space")
+            if isinstance(vessel_preview, Mapping):
+                formal = session.scalar(
+                    select(VesselSpace).where(
+                        VesselSpace.vessel_id == _text(vessel_preview.get("vessel_id")),
+                        VesselSpace.campaign_id == campaign_id,
+                    )
+                )
+                formal_state = vessel_preview.get("state")
+                if not isinstance(formal_state, Mapping):
+                    raise ValueError("vessel formal persistence receipt is incomplete")
+                formal_expected_version = (
+                    int(vessel_preview["formal_persistence"]["expected_version"])
+                    if isinstance(vessel_preview.get("formal_persistence"), Mapping)
+                    and vessel_preview["formal_persistence"].get("expected_version") is not None
+                    else None
+                )
+                if formal_expected_version is None:
+                    if formal is not None:
+                        raise VersionConflict(
+                            "vessel_space",
+                            _text(vessel_preview.get("vessel_id")),
+                            0,
+                            formal.version,
+                        )
+                    formal = VesselSpace(
+                        vessel_id=_text(vessel_preview.get("vessel_id")),
+                        campaign_id=campaign_id,
+                        owner_character_id=_text(data["character_id"]),
+                        scene_id=_text(data.get("scene_id")) or None,
+                        combat_id=_text(data.get("combat_id")) or None,
+                        source_record_id=_text(
+                            vessel_preview["source_provenance"]["source_record_id"]
+                        ),
+                        source_fingerprint=_text(
+                            vessel_preview["source_provenance"]["source_fingerprint"]
+                        ),
+                        status=_text(formal_state["status"]),
+                        state_json=deepcopy(dict(formal_state)),
+                        occupants_json=list(formal_state.get("occupants") or []),
+                        items_json=list(formal_state.get("items") or []),
+                        termination_reason=_text(formal_state.get("termination_reason")) or None,
+                        metadata_json={
+                            "schema": "vessel.space.v1",
+                            "last_operation_id": _text(formal_state.get("last_operation_id")),
+                        },
+                        version=int(formal_state["version"]),
+                    )
+                    session.add(formal)
+                else:
+                    if formal is None:
+                        raise VersionConflict(
+                            "vessel_space",
+                            _text(vessel_preview.get("vessel_id")),
+                            formal_expected_version,
+                            0,
+                        )
+                    formal_outcome = session.execute(
+                        update(VesselSpace)
+                        .where(
+                            VesselSpace.vessel_id == formal.vessel_id,
+                            VesselSpace.campaign_id == campaign_id,
+                            VesselSpace.owner_character_id == _text(data["character_id"]),
+                            VesselSpace.version == formal_expected_version,
+                        )
+                        .values(
+                            scene_id=_text(data.get("scene_id")) or None,
+                            combat_id=_text(data.get("combat_id")) or None,
+                            status=_text(formal_state["status"]),
+                            state_json=deepcopy(dict(formal_state)),
+                            occupants_json=list(formal_state.get("occupants") or []),
+                            items_json=list(formal_state.get("items") or []),
+                            termination_reason=_text(formal_state.get("termination_reason"))
+                            or None,
+                            metadata_json={
+                                "schema": "vessel.space.v1",
+                                "last_operation_id": _text(
+                                    formal_state.get("last_operation_id")
+                                ),
+                            },
+                            version=int(formal_state["version"]),
+                            updated_at=now,
+                        )
+                    )
+                    if formal_outcome.rowcount != 1:
+                        actual = session.scalar(
+                            select(VesselSpace.version).where(
+                                VesselSpace.vessel_id == formal.vessel_id,
+                                VesselSpace.campaign_id == campaign_id,
+                            )
+                        )
+                        raise VersionConflict(
+                            "vessel_space",
+                            formal.vessel_id,
+                            formal_expected_version,
+                            int(actual or 0),
+                        )
+                item_receipts = vessel_preview.get("item_receipts")
+                for receipt in item_receipts if isinstance(item_receipts, list) else []:
+                    if not isinstance(receipt, Mapping):
+                        continue
+                    before_item = receipt.get("before")
+                    after_item = receipt.get("after")
+                    if not isinstance(before_item, Mapping) or not isinstance(after_item, Mapping):
+                        raise ValueError("vessel item receipt is incomplete")
+                    item_id = _text(receipt.get("item_id"))
+                    expected_item_version = int(before_item.get("version") or 0)
+                    after_metadata = after_item.get("metadata_json")
+                    if not isinstance(after_metadata, Mapping):
+                        raise ValueError("vessel item metadata receipt is incomplete")
+                    item_outcome = session.execute(
+                        update(WorldItem)
+                        .where(
+                            WorldItem.id == item_id,
+                            WorldItem.campaign_id == campaign_id,
+                            WorldItem.version == expected_item_version,
+                        )
+                        .values(
+                            owner_character_id=_text(after_item.get("owner_character_id")) or None,
+                            location_id=_text(after_item.get("location_id")) or None,
+                            metadata_json=dict(after_metadata),
+                            version=expected_item_version + 1,
+                            updated_at=now,
+                        )
+                    )
+                    if item_outcome.rowcount != 1:
+                        raise VersionConflict(
+                            "world_item",
+                            item_id,
+                            expected_item_version,
+                            expected_item_version + 1,
+                        )
+                position_receipts = vessel_preview.get("position_receipts")
+                for receipt in position_receipts if isinstance(position_receipts, list) else []:
+                    if not isinstance(receipt, Mapping):
+                        continue
+                    before_subject = receipt.get("before")
+                    after_subject = receipt.get("after")
+                    if (
+                        not isinstance(before_subject, Mapping)
+                        or not isinstance(after_subject, Mapping)
+                    ):
+                        raise ValueError("vessel position receipt is incomplete")
+                    subject_id = _text(receipt.get("destination_entity_id"))
+                    snapshot_json = after_subject.get("snapshot_json")
+                    expected_subject_version = int(before_subject.get("version") or 0)
+                    if not isinstance(snapshot_json, Mapping):
+                        raise ValueError("vessel position snapshot receipt is incomplete")
+                    subject_outcome = session.execute(
+                        update(Combatant)
+                        .where(
+                            Combatant.id == subject_id,
+                            Combatant.combat_id == _text(data.get("combat_id")),
+                            Combatant.version == expected_subject_version,
+                        )
+                        .values(
+                            snapshot_json=dict(snapshot_json),
+                            version=expected_subject_version + 1,
+                            updated_at=now,
+                        )
+                    )
+                    if subject_outcome.rowcount != 1:
+                        raise VersionConflict(
+                            "combatant position",
+                            subject_id,
+                            expected_subject_version,
+                            expected_subject_version + 1,
+                        )
+                action_economy = vessel_preview.get("action_economy")
+                if isinstance(action_economy, Mapping):
+                    cost = _text(action_economy.get("cost"))
+                    if cost == "action":
+                        economy_outcome = session.execute(
+                            update(Combatant)
+                            .where(
+                                Combatant.id == _text(action_economy.get("combatant_id")),
+                                Combatant.version
+                                == int(action_economy.get("combatant_version") or 0),
+                                Combatant.action_available.is_(True),
+                            )
+                            .values(
+                                action_available=False,
+                                version=Combatant.version + 1,
+                                updated_at=now,
+                            )
+                        )
+                    elif cost == "bonus_action":
+                        economy_outcome = session.execute(
+                            update(Combatant)
+                            .where(
+                                Combatant.id == _text(action_economy.get("combatant_id")),
+                                Combatant.version
+                                == int(action_economy.get("combatant_version") or 0),
+                                Combatant.bonus_action_available.is_(True),
+                            )
+                            .values(
+                                bonus_action_available=False,
+                                version=Combatant.version + 1,
+                                updated_at=now,
+                            )
+                        )
+                    else:
+                        economy_outcome = None
+                    if economy_outcome is not None and economy_outcome.rowcount != 1:
+                        raise VersionConflict(
+                            "combatant action economy",
+                            _text(action_economy.get("combatant_id")),
+                            int(action_economy.get("combatant_version") or 0),
+                            int(action_economy.get("combatant_version") or 0) + 1,
+                        )
             output = {
                 "schema_version": PRODUCTION_SCHEMA,
                 "content_kind": "advancement",
@@ -2921,11 +3845,97 @@ class ContentIRRuntimeService:
                 output["entity_lifecycle"] = preview["entity_lifecycle"]
             if "spell_slot_reactivation" in preview:
                 output["spell_slot_reactivation"] = preview["spell_slot_reactivation"]
+            if "vessel_space" in preview:
+                output["vessel_space"] = preview["vessel_space"]
             if "resource_consumption" in preview:
                 output["resource_consumption"] = preview["resource_consumption"]
             operation.after_snapshot = output
             session.flush()
             return output
+
+    def _confirm_vessel_external_sound(
+        self, campaign_id: str, data: dict[str, Any]
+    ) -> dict[str, Any]:
+        key = _text(data.get("idempotency_key"))
+        if len(key) < 8:
+            raise ValueError("content runtime idempotency_key is required")
+        operation_key = f"content-ir:{key}"
+
+        with Session(self.engine) as session:
+            existing = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == campaign_id,
+                    OperationTransaction.idempotency_key == operation_key,
+                )
+            )
+            if existing is not None:
+                previous = dict(existing.after_snapshot or {})
+                if _text(previous.get("preview_token")) != _text(data.get("preview_token")):
+                    raise ValueError("external sound replay preview does not match")
+                if _text(previous.get("event_id")) != _text(data.get("event_id")):
+                    raise ValueError("external sound replay event does not match")
+                return {**previous, "already_applied": True}
+
+        preview = self._preview_advancement(campaign_id, data)
+        token = _text(data.get("preview_token"))
+        if token != _text(preview.get("preview_token")):
+            raise VersionConflict("content runtime external sound preview", key, 1, 2)
+        receipt = dict(preview["vessel_external_sound"])
+        output = {
+            "schema_version": PRODUCTION_SCHEMA,
+            "content_kind": "advancement",
+            "runtime_id": _text(data.get("runtime_id")),
+            "production_runtime_full": True,
+            "preview_token": token,
+            "consumer": "vessel.external_sound.v1",
+            "vessel_external_sound": receipt,
+            "event_id": _text(data.get("event_id")),
+            "character_id": _text(data.get("character_id")),
+            "character_version": int(data["character_version"]),
+            "state_mutated": False,
+        }
+        with Session(self.engine) as session, session.begin():
+            existing = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == campaign_id,
+                    OperationTransaction.idempotency_key == operation_key,
+                )
+            )
+            if existing is not None:
+                previous = dict(existing.after_snapshot or {})
+                if _text(previous.get("preview_token")) != token:
+                    raise ValueError("external sound replay preview does not match")
+                return {**previous, "already_applied": True}
+            character = session.get(Character, _text(data.get("character_id")))
+            expected_version = int(data["character_version"])
+            if (
+                character is None
+                or character.campaign_id != campaign_id
+                or character.version != expected_version
+            ):
+                raise VersionConflict(
+                    "character",
+                    _text(data.get("character_id")),
+                    expected_version,
+                    int(character.version if character is not None else 0),
+                )
+            operation = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="content_ir_external_sound",
+                idempotency_key=operation_key,
+                status="applied",
+                before_snapshot={"character_version": expected_version},
+                after_snapshot=output,
+                reason="typed hearing-only vessel external sound receipt",
+                source="combat",
+                confirmed_at=datetime.now(UTC),
+            )
+            session.add(operation)
+            session.flush()
+            output["operation_transaction_id"] = operation.id
+            operation.after_snapshot = output
+            session.flush()
+        return output
 
     @classmethod
     def _validate_feature_roll(cls, data: Mapping[str, Any], action: Mapping[str, Any]) -> int:

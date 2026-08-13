@@ -597,6 +597,7 @@ def materialize_runtime_definition(
         "entity_spatial": [],
         "spell_origins": [],
         "spell_slot_reactivations": [],
+        "vessel_external_sound": [],
     }
     for index, block in enumerate(result.generated_runtime_blocks):
         operator = str(block.get("operator") or "")
@@ -794,6 +795,8 @@ def materialize_runtime_definition(
             definition["resources"][str(entry.get("key") or entry["id"])] = entry
         elif section == "entity_lifecycles":
             definition["entity_lifecycles"].append(entry)
+        elif section == "vessel_spaces":
+            definition["vessel_spaces"].append(entry)
         elif section == "entity_senses":
             definition["entity_senses"].append(entry)
         elif section == "telepathic_information":
@@ -1039,6 +1042,38 @@ def materialize_runtime_definition(
             }
         )
         definition["actions"][f"{spec.feature_id}:vessel_space"] = action
+        definition["vessel_external_sound"].append(
+            {
+                "id": f"{entry['id']}:external_sound",
+                "feature_id": spec.feature_id,
+                "clause_id": entry["clause_id"],
+                "source_record_id": entry["source_record_id"],
+                "feature_name": entry["feature_name"],
+                "class_name": entry["class_name"],
+                "class_level": entry["class_level"],
+                "kind": "vessel_external_sound",
+                "operator": "configure_vessel_space",
+                "resolution_kind": "vessel_external_sound",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "content_ir_runtime.vessel_external_sound",
+                    "capability_id": "vessel.external_sound",
+                    "contract_version": "1.0",
+                    "materializer_id": "vessel.external_sound",
+                    "persistence": "operation_transaction.external_sound_receipt",
+                },
+                "source_provenance": dict(entry["source_provenance"]),
+                "sound_contract": {
+                    "schema": "vessel.external_sound.v1",
+                    "channel": "hearing",
+                    "source_facts_authority": "asserted_input",
+                    "state_mutated": False,
+                    "producer_bound": True,
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        )
 
     definition.setdefault("automation_status", "full")
     definition.setdefault("requires_dm_adjudication", False)

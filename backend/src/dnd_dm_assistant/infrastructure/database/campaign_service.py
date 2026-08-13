@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime
 from math import floor
 from typing import Any, TypeVar
@@ -44,6 +45,7 @@ from dnd_dm_assistant.infrastructure.database.models import (
     Location,
     LocationConnection,
     MonsterInstance,
+    OperationTransaction,
     Quest,
     Scene,
     SceneParticipant,
@@ -288,6 +290,15 @@ def _json_value(value: Any) -> Any:
     return value
 
 
+def _canonical_json(value: Any) -> str:
+    return json.dumps(
+        _json_value(value),
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+
+
 def serialize(entity: Any) -> dict[str, Any]:
     fields = ["id", "created_at", "updated_at", "version"]
     fields += [column.name for column in entity.__table__.columns if column.name not in fields]
@@ -411,6 +422,153 @@ class SqlAlchemyCampaignStateGateway:
             )
             session.flush()
             return serialize(entity)
+
+    def create_audible_sound_event(
+        self,
+        campaign_id: str,
+        data: dict[str, Any],
+        *,
+        request_id: str = "unknown",
+    ) -> dict[str, Any]:
+        with Session(self.engine) as session, session.begin():
+            self._ensure_campaign(session, campaign_id)
+            scene = session.get(Scene, data["scene_id"])
+            combat = session.get(Combat, data["combat_id"])
+            location = session.get(Location, data["location_id"])
+            if scene is None or scene.campaign_id != campaign_id:
+                raise NotFoundError("scene not found in campaign")
+            if combat is None or combat.campaign_id != campaign_id:
+                raise NotFoundError("combat not found in campaign")
+            if location is None or location.campaign_id != campaign_id:
+                raise NotFoundError("location not found in campaign")
+            if combat.scene_id != scene.id or scene.location_id != location.id:
+                raise ValueError("audible sound scene/combat/location binding does not match")
+            idempotency_key = str(data["idempotency_key"])
+            operation_key = f"event-audible-sound:{idempotency_key}"
+            existing = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == campaign_id,
+                    OperationTransaction.idempotency_key == operation_key,
+                )
+            )
+            if existing is not None:
+                after = dict(existing.after_snapshot or {})
+                event = session.get(Event, after.get("event_id"))
+                if event is None:
+                    raise StateNotFoundError("audible sound producer event is missing")
+                if (
+                    existing.status != "applied"
+                    or existing.operation_type != "event_audible_sound"
+                ):
+                    raise ValueError("audible sound producer replay receipt is invalid")
+                source_facts = dict(data["source_facts"])
+                expected = {
+                    "event_id": event.id,
+                    "scene_id": scene.id,
+                    "combat_id": combat.id,
+                    "location_id": location.id,
+                    "title": data["title"],
+                    "description": data.get("description"),
+                    "visibility": data["visibility"],
+                    "source_producer": data["source_producer"],
+                    "source_record_id": data["source_record_id"],
+                    "source_fingerprint": data["source_fingerprint"],
+                    "source_facts": source_facts,
+                    "source_facts_authority": "asserted_input",
+                }
+                if ("occurred_at" in after) != (
+                    "occurred_at" in data and data["occurred_at"] is not None
+                ):
+                    raise ValueError("audible sound producer replay payload conflicts")
+                if "occurred_at" in data and data["occurred_at"] is not None:
+                    expected["occurred_at"] = data["occurred_at"]
+                persisted = {
+                    "event_id": event.id,
+                    "scene_id": after.get("scene_id"),
+                    "combat_id": after.get("combat_id"),
+                    "location_id": event.location_id,
+                    "title": event.title,
+                    "description": event.description,
+                    "visibility": event.visibility,
+                    "source_producer": after.get("source_producer"),
+                    "source_record_id": after.get("source_record_id"),
+                    "source_fingerprint": after.get("source_fingerprint"),
+                    "source_facts": after.get("source_facts"),
+                    "source_facts_authority": after.get("source_facts_authority"),
+                }
+                if "occurred_at" in expected:
+                    persisted["occurred_at"] = event.occurred_at
+                if _canonical_json(persisted) != _canonical_json(expected):
+                    raise ValueError("audible sound producer replay payload conflicts")
+                return serialize(event)
+            source_facts = dict(data["source_facts"])
+            metadata = {
+                "scene_id": scene.id,
+                "combat_id": combat.id,
+                "source_producer": data["source_producer"],
+                "source_record_id": data["source_record_id"],
+                "source_fingerprint": data["source_fingerprint"],
+                "source_facts": source_facts,
+                "source_facts_authority": "asserted_input",
+            }
+            event_values = {
+                "campaign_id": campaign_id,
+                "event_type": "audible_sound",
+                "title": data["title"],
+                "description": data.get("description"),
+                "location_id": location.id,
+                "visibility": data["visibility"],
+                "metadata_json": metadata,
+            }
+            if data.get("occurred_at") is not None:
+                event_values["occurred_at"] = data["occurred_at"]
+            event = Event(
+                **event_values,
+            )
+            session.add(event)
+            session.flush()
+            after = {
+                "event_id": event.id,
+                "scene_id": scene.id,
+                "combat_id": combat.id,
+                "location_id": location.id,
+                "title": data["title"],
+                "description": data.get("description"),
+                "visibility": data["visibility"],
+                "source_producer": data["source_producer"],
+                "source_record_id": data["source_record_id"],
+                "source_fingerprint": data["source_fingerprint"],
+                "source_facts": source_facts,
+                "source_facts_authority": "asserted_input",
+            }
+            if data.get("occurred_at") is not None:
+                after["occurred_at"] = data["occurred_at"]
+            operation = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="event_audible_sound",
+                idempotency_key=operation_key,
+                status="applied",
+                before_snapshot={},
+                after_snapshot=after,
+                reason="authoritative audible sound event producer",
+                source="combat",
+                confirmed_at=datetime.now(UTC),
+            )
+            session.add(operation)
+            session.flush()
+            event.metadata_json = {**metadata, "producer_operation_id": operation.id}
+            self._audit(
+                session,
+                campaign_id=campaign_id,
+                action="create",
+                entity_type="event",
+                entity_id=event.id,
+                before=None,
+                after=event,
+                request_id=request_id,
+            )
+            session.flush()
+            return serialize(event)
 
     @staticmethod
     def _hydrate_combatant_feature_runtime(

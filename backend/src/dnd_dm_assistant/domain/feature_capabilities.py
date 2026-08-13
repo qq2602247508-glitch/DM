@@ -689,15 +689,16 @@ def default_capability_catalog() -> CapabilityCatalog:
             consumer="vessel_space_service",
             producer="feature_runtime_compiler",
             persisted_state="character.feature_runtime.vessel_spaces",
-            status="production_partial",
+            status="production_closed",
             targets=frozenset({"self"}),
             durations=frozenset({"until_long_rest", "advancement_persistent"}),
             actions=frozenset({"none", "action", "bonus_action"}),
-            limitations=(
-                "formal vessel persistence, containment, item transfer and runtime API "
-                "receipts are not closed",
+            evidence=(
+                "test_vessel_space_runtime_contract",
+                "test_content_ir_vessel_runtime",
+                "test_migrations",
+                "test_content_ir_production_closure",
             ),
-            evidence=("test_vessel_space_runtime_contract",),
         ),
         _descriptor(
             "entity.senses",

@@ -30,6 +30,18 @@ class CampaignService:
             entity_type, data, campaign_id=campaign_id, request_id=request_id
         )
 
+    def create_audible_sound_event(
+        self,
+        campaign_id: str,
+        data: dict[str, Any],
+        *,
+        request_id: str = "unknown",
+    ) -> dict[str, Any]:
+        producer = getattr(self._gateway, "create_audible_sound_event", None)
+        if not callable(producer):
+            raise ValueError("audible sound producer is unavailable")
+        return producer(campaign_id, data, request_id=request_id)
+
     def get(
         self, entity_type: str, entity_id: str, *, campaign_id: str | None = None
     ) -> dict[str, Any]:
