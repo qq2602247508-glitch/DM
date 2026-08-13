@@ -907,6 +907,63 @@ def _materialize_entity_lifecycle(context: MaterializerContext) -> MaterializedB
     return MaterializedBlock("entity_lifecycles", entry)
 
 
+def _materialize_vessel_space(context: MaterializerContext) -> MaterializedBlock:
+    params = context.parameters
+    source_fingerprint = str(context.spec.source_fingerprint or "").strip()
+    if not source_fingerprint:
+        raise MaterializerError("vessel space requires a source fingerprint for provenance binding")
+    appearance_options = params.get("appearance_options")
+    if not isinstance(appearance_options, list) or not appearance_options:
+        raise MaterializerError("vessel space requires source-bound appearance options")
+    if any(not isinstance(item, str) or not item.strip() for item in appearance_options):
+        raise MaterializerError("vessel space appearance options must be non-empty strings")
+    if "duration_hours" not in params and (
+        params.get("duration_hours_source") != "proficiency_bonus_times_2"
+    ):
+        raise MaterializerError(
+            "vessel space requires a fixed duration or proficiency bonus duration source"
+        )
+    entry = context.base(kind="vessel_space")
+    entry.update(
+        {
+            "resolution_kind": "vessel_space",
+            "vessel_binding": str(params["vessel_binding"]),
+            "space_contract": {
+                "schema": "vessel.space.v1",
+                "max_occupants": int(params["max_occupants"]),
+                "duration_hours": (
+                    int(params["duration_hours"])
+                    if "duration_hours" in params
+                    else None
+                ),
+                "duration_hours_source": params.get("duration_hours_source"),
+                "exit_size_cells": int(params.get("exit_size_cells", 1)),
+                "entry_facts": [
+                    "vessel_touched",
+                    "source_owner",
+                    "entry_action_available",
+                    "all_creatures_voluntary",
+                    "all_creatures_visible",
+                ],
+                "exit_facts": ["destination_nearest_unoccupied"],
+                "termination_facts": [
+                    "nearest_unoccupied_for_occupants",
+                    "nearest_unoccupied_for_items",
+                ],
+                "prohibitions": ["nested_entry", "duplicate_entry", "capacity_overflow"],
+            },
+            "appearance_options": list(appearance_options),
+            "source_provenance": {
+                "source_record_id": context.spec.source_record_id,
+                "source_fingerprint": source_fingerprint,
+                "source_book": context.spec.source_book,
+                "source_path": context.spec.source_path,
+            },
+        }
+    )
+    return MaterializedBlock("vessel_spaces", entry)
+
+
 def _materialize_remote_spell_origin(context: MaterializerContext) -> MaterializedBlock:
     source_fingerprint = str(context.spec.source_fingerprint or "").strip()
     if not source_fingerprint:
@@ -1149,6 +1206,20 @@ class MaterializerRegistry:
             provenance = entry.get("source_provenance")
             if not entry.get("entity_type") or not isinstance(provenance, Mapping):
                 raise MaterializerError("entity lifecycle block lacks typed provenance")
+        elif block.section == "vessel_spaces":
+            contract = entry.get("space_contract")
+            if entry.get("resolution_kind") != "vessel_space" or not isinstance(
+                contract, Mapping
+            ):
+                raise MaterializerError("vessel space block lacks typed contract")
+            if contract.get("schema") != "vessel.space.v1":
+                raise MaterializerError("vessel space block has invalid schema")
+            if not isinstance(entry.get("source_provenance"), Mapping):
+                raise MaterializerError("vessel space block lacks source provenance")
+            if not isinstance(entry.get("appearance_options"), list) or not entry[
+                "appearance_options"
+            ]:
+                raise MaterializerError("vessel space block lacks appearance options")
         elif block.section == "entity_senses":
             if entry.get("resolution_kind") != "entity_senses":
                 raise MaterializerError("entity senses block has invalid resolution kind")
@@ -1233,6 +1304,7 @@ def default_materializer_registry() -> MaterializerRegistry:
         "target.authorized_information": _materialize_authorized_information,
         "communication.channel": _materialize_communication,
         "entity.lifecycle": _materialize_entity_lifecycle,
+        "vessel.space": _materialize_vessel_space,
         "entity.senses": _materialize_entity_senses,
         "telepathic.information": _materialize_telepathic_information,
         "entity.spatial": _materialize_entity_spatial,

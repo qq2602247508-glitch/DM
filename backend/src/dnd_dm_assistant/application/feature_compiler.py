@@ -528,6 +528,8 @@ _RUNTIME_SECTION_BY_OPERATOR = {
     "configure_entity_senses": "entity_senses",
     "share_authorized_sensory_information": "telepathic_information",
     "configure_entity_spatial": "entity_spatial",
+    "configure_entity_lifecycle": "entity_lifecycles",
+    "configure_vessel_space": "vessel_spaces",
     "configure_spell_slot_reactivation": "spell_slot_reactivations",
     "heal": "actions",
     "grant_temporary_hp": "triggers",
@@ -589,6 +591,7 @@ def materialize_runtime_definition(
         "spell_list_expansions": [],
         "prepared_spell_list": None,
         "entity_lifecycles": [],
+        "vessel_spaces": [],
         "entity_senses": [],
         "telepathic_information": [],
         "entity_spatial": [],
@@ -1021,6 +1024,21 @@ def materialize_runtime_definition(
             }
         )
         definition["actions"][f"{spec.feature_id}:entity_spatial"] = action
+
+    for entry in definition["vessel_spaces"]:
+        action = dict(entry)
+        action.update(
+            {
+                "kind": "feature_action",
+                "feature_id": spec.feature_id,
+                "name": spec.source_name,
+                "target": "self",
+                "target_policy": {"mode": "self"},
+                "resolution_kind": "vessel_space",
+                "effects": [{"kind": "enter_exit_vessel_space"}],
+            }
+        )
+        definition["actions"][f"{spec.feature_id}:vessel_space"] = action
 
     definition.setdefault("automation_status", "full")
     definition.setdefault("requires_dm_adjudication", False)

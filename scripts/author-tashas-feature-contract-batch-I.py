@@ -389,8 +389,37 @@ AUTHORING: dict[str, dict[str, Any]] = {
     "tashas-cauldron:atom:98620543cf94e974361c6567:bottled-respit:003": {
         "slug": "genie-bottled-respite",
         "source_completeness": "incomplete",
-        "unmodeled": ["magic-vessel creation and extradimensional companion state need an item/entity consumer"],
-        "clauses": [clause("bottle-entry", [effect("create_reaction_window", window_kind="bottled_respite", expires="until_long_rest", target_policy={"mode": "self"})], trigger="explicit_activation", activation="automatic", action_economy="action", duration="until_long_rest")],
+        "unmodeled": [
+            "formal vessel persistence and entity containment consumer",
+            "source-bound exit placement and item relocation receipts",
+            "sanctuary-vessel companion selection and short-rest benefit consumer",
+        ],
+        "clauses": [
+            clause(
+                "vessel-space-contract",
+                [
+                    effect(
+                        "configure_vessel_space",
+                        vessel_binding="feature_source",
+                        max_occupants=1,
+                        duration_hours_source="proficiency_bonus_times_2",
+                        exit_size_cells=1,
+                        appearance_options=[
+                            "oil_lamp",
+                            "urn",
+                            "ring",
+                            "stoppered_bottle",
+                            "hollow_figurine",
+                            "lantern",
+                        ],
+                    )
+                ],
+                trigger="explicit_activation",
+                activation="automatic",
+                action_economy="action",
+                duration="until_long_rest",
+            )
+        ],
     },
     "tashas-cauldron:atom:98620543cf94e974361c6567:elemental-gift:005": {
         "slug": "genie-elemental-gift",
