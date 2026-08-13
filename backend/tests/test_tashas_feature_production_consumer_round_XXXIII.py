@@ -81,6 +81,7 @@ def test_manifest_mind_is_source_complete_and_schema_strict() -> None:
         "remote-spell-origin",
         "mind-sight",
         "shared-information",
+        "spell-slot-reactivation",
     ]
 
 

@@ -715,6 +715,24 @@ def default_capability_catalog() -> CapabilityCatalog:
             evidence=("test_remote_spell_origin_runtime_contract",),
         ),
         _descriptor(
+            "spell.slot.reactivation",
+            "configure_spell_slot_reactivation",
+            consumer="spell_slot_reactivation_service",
+            producer="feature_runtime_compiler",
+            persisted_state="entity.lifecycle.reactivation_state",
+            targets=frozenset({"self"}),
+            durations=frozenset({"permanent", "advancement_persistent"}),
+            actions=frozenset({"none", "bonus_action"}),
+            resources=frozenset({"long_rest", "consume"}),
+            status="production_partial",
+            limitations=(
+                "Typed contract and materializer are closed; production payment/rest "
+                "consumer is intentionally compile-only until entity sensory/runtime "
+                "transaction evidence is complete."
+            ),
+            evidence=("test_spell_slot_reactivation_contract",),
+        ),
+        _descriptor(
             "spell.context",
             "override_spell_components",
             consumer="spell_economy_service",

@@ -1170,6 +1170,27 @@ def default_operator_contracts() -> dict[str, OperatorContract]:
             capability="spell.remote_origin",
         ),
         _contract(
+            "configure_spell_slot_reactivation",
+            required=("entity_binding", "spell_slot_resource_prefix"),
+            optional=("activation_limit", "id"),
+            types={
+                "entity_binding": "string",
+                "spell_slot_resource_prefix": "string",
+                "activation_limit": "integer",
+                "id": "string",
+            },
+            enums={"entity_binding": {"entity_lifecycle"}},
+            bounds={"activation_limit": (1, 1)},
+            triggers=frozenset(
+                {"advancement_confirmed", "explicit_activation", "long_rest_completed"}
+            ),
+            actions=frozenset({"none", "bonus_action"}),
+            targets=_TARGET_SELF,
+            durations=_DURATION_PERSISTENT,
+            materializer="spell.slot.reactivation",
+            capability="spell.slot.reactivation",
+        ),
+        _contract(
             "override_spell_components",
             required=("component", "operation"),
             optional=("applies_when", "id"),

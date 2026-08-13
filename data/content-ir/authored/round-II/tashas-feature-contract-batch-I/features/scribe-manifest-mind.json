@@ -169,6 +169,43 @@
       },
       "trigger": "explicit_activation",
       "visibility": "owner"
+    },
+    {
+      "action_economy": "bonus_action",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-13-round-XXXVI",
+        "source": "authored_ir",
+        "source_boundary": "spell-slot-reactivation",
+        "source_excerpt": "*第6级书士会**特性* 显现过灵体意识后，你必须完成一次长休、或是消耗一枚任意环位的法术位，才能再次显现它。",
+        "decision": "The reactivation payment is represented by the generic spell.slot.reactivation.v1 contract; its production resource transaction remains partial."
+      },
+      "clause_id": "spell-slot-reactivation",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "configure_spell_slot_reactivation",
+          "parameters": {
+            "entity_binding": "entity_lifecycle",
+            "spell_slot_resource_prefix": "spell_slots_",
+            "activation_limit": 1
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "explicit_activation",
+      "visibility": "owner"
     }
   ],
   "compatibility": {
@@ -191,8 +228,7 @@
     "operator_mapping": "generic_entity_lifecycle_and_remote_origin_consumers",
     "unmodeled_source_terms": [
       "entity sensory profile consumer",
-      "entity movement and 300-foot separation expiry",
-      "spell-slot reactivation payment"
+      "entity movement and 300-foot separation expiry"
     ]
   },
   "namespace": "content.tashas-cauldron",

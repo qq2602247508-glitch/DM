@@ -526,6 +526,7 @@ _RUNTIME_SECTION_BY_OPERATOR = {
     "teleport": "actions",
     "grant_sight_mode": "combat_modifiers",
     "configure_entity_senses": "entity_senses",
+    "configure_spell_slot_reactivation": "spell_slot_reactivations",
     "heal": "actions",
     "grant_temporary_hp": "triggers",
     "add_damage": "attack_riders",
@@ -588,6 +589,7 @@ def materialize_runtime_definition(
         "entity_lifecycles": [],
         "entity_senses": [],
         "spell_origins": [],
+        "spell_slot_reactivations": [],
     }
     for index, block in enumerate(result.generated_runtime_blocks):
         operator = str(block.get("operator") or "")
@@ -789,6 +791,8 @@ def materialize_runtime_definition(
             definition["entity_senses"].append(entry)
         elif section == "spell_origins":
             definition["spell_origins"].append(entry)
+        elif section == "spell_slot_reactivations":
+            definition["spell_slot_reactivations"].append(entry)
         elif section == "advancement":
             existing = definition["advancement"]
             if existing is None:

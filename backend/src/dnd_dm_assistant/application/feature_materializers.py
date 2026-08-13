@@ -849,6 +849,59 @@ def _materialize_remote_spell_origin(context: MaterializerContext) -> Materializ
     return MaterializedBlock("spell_origins", entry)
 
 
+def _materialize_spell_slot_reactivation(context: MaterializerContext) -> MaterializedBlock:
+    params = context.parameters
+    source_fingerprint = str(context.spec.source_fingerprint or "").strip()
+    if not source_fingerprint:
+        raise MaterializerError("spell slot reactivation requires source provenance")
+    if int(params.get("activation_limit", 1)) != 1:
+        raise MaterializerError("spell slot reactivation activation_limit must be one")
+    prefix = str(params["spell_slot_resource_prefix"]).strip()
+    if not prefix.startswith("spell_slots_"):
+        raise MaterializerError("spell slot reactivation must bind spell_slots_*")
+    entry = context.base(kind="spell_slot_reactivation")
+    entry.update(
+        {
+            "resolution_kind": "spell_slot_reactivation",
+            "entity_binding": str(params["entity_binding"]),
+            "activation_limit": 1,
+            "spell_slot_resource_prefix": prefix,
+            "reactivation_contract": {
+                "schema": "spell.slot.reactivation.v1",
+                "status_values": ["inactive", "active"],
+                "activation_event": "activate",
+                "deactivation_event": "deactivate",
+                "reactivation_payments": ["long_rest", "spell_slot_any_level"],
+                "spell_slot_amount": 1,
+                "spell_slot_level_range": [1, 9],
+                "long_rest_resets_activation_count": True,
+            },
+            "source_provenance": {
+                "source_record_id": context.spec.source_record_id,
+                "source_fingerprint": source_fingerprint,
+                "source_book": context.spec.source_book,
+                "source_path": context.spec.source_path,
+            },
+            "cas": {"version_field": "version", "expected_version_required": True},
+            "idempotency": {
+                "operation_id_field": "operation_id",
+                "request_fingerprint_field": "last_operation_fingerprint",
+            },
+            "rollback": {
+                "strategy": "restore_prior_snapshot",
+                "requires_adjacent_version": True,
+            },
+            "runtime_execution": {
+                **context.base()["runtime_execution"],
+                "status": "production_partial",
+            },
+            "automation_status": "production_partial",
+            "requires_dm_adjudication": False,
+        }
+    )
+    return MaterializedBlock("spell_slot_reactivations", entry)
+
+
 def _materialize_defense(context: MaterializerContext) -> MaterializedBlock:
     kind = {
         "grant_resistance": "damage_resistance",
@@ -964,9 +1017,14 @@ class MaterializerRegistry:
         if not entry.get("id") or not entry.get("feature_id"):
             raise MaterializerError("materialized block needs stable id and feature_id")
         execution = entry.get("runtime_execution")
-        if not isinstance(execution, Mapping) or execution.get("status") != "ready":
+        partial_contract = block.section == "spell_slot_reactivations"
+        if not isinstance(execution, Mapping) or execution.get("status") not in (
+            {"ready", "production_partial"} if partial_contract else {"ready"}
+        ):
             raise MaterializerError("materialized block lacks ready runtime_execution")
-        if entry.get("automation_status") != "full":
+        if entry.get("automation_status") not in (
+            {"full", "production_partial"} if partial_contract else {"full"}
+        ):
             raise MaterializerError("materialized block is not full")
         if block.section == "combat_modifiers":
             for key in ("stat", "operation", "scope"):
@@ -1054,6 +1112,7 @@ def default_materializer_registry() -> MaterializerRegistry:
         "entity.lifecycle": _materialize_entity_lifecycle,
         "entity.senses": _materialize_entity_senses,
         "spell.remote_origin": _materialize_remote_spell_origin,
+        "spell.slot.reactivation": _materialize_spell_slot_reactivation,
         "zero_hp.intervention": _materialize_zero_hp,
         "spell.healing_modifier": _materialize_spell_modifier,
         "spell.damage_modifier": _materialize_spell_modifier,
