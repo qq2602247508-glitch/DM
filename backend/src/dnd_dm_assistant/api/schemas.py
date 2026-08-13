@@ -2554,6 +2554,8 @@ class ContentIRRuntimeRequest(BaseModel):
     target_version: int | None = Field(default=None, ge=1)
     target_combatant_ids: list[str] = Field(default_factory=list, max_length=20)
     target_versions: dict[str, int] = Field(default_factory=dict, max_length=20)
+    target_willing: bool | None = None
+    target_willing_by_id: dict[str, bool] = Field(default_factory=dict, max_length=20)
     origin_id: str | None = Field(default=None, min_length=1, max_length=36)
     summon_choice: str | None = Field(default=None, min_length=1, max_length=80)
     area_shape: Literal["cone", "line", "cube", "sphere", "cylinder"] | None = None

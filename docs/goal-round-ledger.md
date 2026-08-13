@@ -6,6 +6,35 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round XLVII：Longstrider source-complete production closure
+
+日期：2026-08-13。当前状态：`registered_production_full` / local commit only；
+未 push。
+
+- `core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb` now has a source-bound typed
+  producer with four clauses: one willing creature touch target, one-hour duration,
+  `speed_ft +10 add` timed modifier with `replace_source`, and one additional target
+  per slot level above first.
+- The real `ContentIRRuntimeService` path is wired through known-spell persistence,
+  preview → spell-slot confirm → target/actor CAS → typed timed-modifier snapshot
+  persistence → `OperationTransaction` receipt. Replay uses the same idempotency
+  boundary; payload drift, unwilling targets, wrong slot/source/target/duration/
+  modifier and stale versions fail closed.
+- Project baseline→after: `203/35/111` → `204/34/111`; promoted ID is derived from
+  the source-bound runtime evidence, not a name dispatch.
+- Focused behavioral suite: `20 passed`; validator stdout double-run byte-identical,
+  SHA-256 `788b0f048d052e6744028589a92ae93de22b0ee3e6bf095dd8f771d375ac3d16`.
+- Report SHA-256:
+  `59156a8c9740654c317fe6cce9cee091b23b63263e31c042c5216421d5acf6bf`.
+- Evidence: `docs/round-XLVII-longstrider-production-2026-08-13.md`,
+  `scripts/validate-round-XLVII-longstrider-production.py`,
+  `backend/tests/test_round_XLVII_longstrider_runtime.py`,
+  `reports/round-XLVII-longstrider-production-2026-08-13.json`.
+- Protected `backend/tests/ollama.py` remains SHA-256
+  `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`;
+  `backend/tests/integrations/` remains untouched and untracked. No campaign/
+  character data, source corpus, 3D/UI or push.
+
 ## Round XLVI：typed spell communication-route seam
 
 当前状态：`no_promotion`；五条 audited utility spells 继续 compile-only。选择

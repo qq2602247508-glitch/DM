@@ -1,0 +1,83 @@
+{
+  "after": {
+    "canonical_projection_counts": {
+      "compile_only": 34,
+      "production": 204,
+      "unique_compiled": 111
+    },
+    "promoted_ids": [
+      "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb"
+    ],
+    "retained_compile_only_excluding_promoted": [
+      "core-phb-2024:spell:83b7d94b77f332dd71310bbe",
+      "core-phb-2024:spell:b9db026fa1853bca5b6f1c13",
+      "core-phb-2024:spell:d82624a42cf6c33ccec927b8",
+      "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c"
+    ]
+  },
+  "artifact_date": "2026-08-13",
+  "baseline": {
+    "counts": {
+      "compile_only": 35,
+      "production": 203,
+      "unique_compiled": 111
+    },
+    "path": "reports/round-XLVI-typed-spell-communication-route-2026-08-13.json",
+    "sha256": "3cd0f9a8833db6dfd03444d42495e63d7f4919aad8112c1e22415033e22747ff"
+  },
+  "behavioral_coverage": {
+    "base_target": true,
+    "exact_replay": true,
+    "expiry": true,
+    "payload_drift": true,
+    "same_source_replacement": true,
+    "stale_cas": true,
+    "transaction_receipt": true,
+    "upcast_fanout": true,
+    "willing_target_rejection": true,
+    "wrong_source_target_slot_duration_modifier_rejection": true
+  },
+  "focused_tests": {
+    "command": [
+      "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "backend/tests/test_round_XLVII_longstrider_runtime.py",
+      "backend/tests/test_typed_spell_timed_modifiers.py",
+      "backend/tests/test_typed_spell_targets.py",
+      "backend/tests/test_content_ir_production_closure.py"
+    ],
+    "passed": true,
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "....................                                                     [100%]\n=============================== warnings summary ===============================\nbackend/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1\n  /Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n"
+  },
+  "no_push": true,
+  "promotion_decision": "promote",
+  "report_fingerprint": "e777e470a8e4fdcf9677cc67523f26d7cc6febaa7c067ce91d247e81bc1e1160",
+  "round_id": "round-XLVII",
+  "runtime_consumers": [
+    "spell.timed_modifier.v1"
+  ],
+  "schema_version": "round-XLVII-longstrider-production-1",
+  "source_bound_producer": {
+    "authored_path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-6f5b6f21ffa22e705a9bd6cb.json",
+    "compile_status": "full",
+    "runtime_schema": "spell-runtime-1",
+    "source_fingerprint": "834e92d0104e26b08042388d344c97379f0274a935e10fd4953075ec9bd0a8b0",
+    "source_text_terms_present": {
+      "1 小时": true,
+      "你触碰一个生物": true,
+      "持续时间": true,
+      "速度增加10尺": true,
+      "额外指定一个目标": true
+    },
+    "typed_clause_types": [
+      "target_selection",
+      "duration",
+      "timed_modifier",
+      "upcast"
+    ]
+  }
+}

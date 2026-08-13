@@ -150,7 +150,7 @@
     "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
     "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
   },
-  "report_fingerprint": "c0f336292e2312935db7f85fd9eee38940910445e7acdd36d8f5c18f5842e3da",
+  "report_fingerprint": "ba9993fe2fd573c1fd0475be855e13ea34430da9f76009613a557b91695053bc",
   "round_id": "round-XLIII",
   "schema_version": "round-XLIII-typed-target-adjudication-1",
   "source_boundary_matrix": {
@@ -161,7 +161,10 @@
         "no upcast target fan-out contract is represented in the compiled runtime"
       ],
       "compiled_clause_ids": [
-        "target"
+        "target",
+        "duration",
+        "speed",
+        "upcast_targets"
       ],
       "compiled_target_kind": "one_creature",
       "content_id": "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb",

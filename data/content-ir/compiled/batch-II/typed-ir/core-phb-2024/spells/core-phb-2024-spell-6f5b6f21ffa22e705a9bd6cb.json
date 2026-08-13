@@ -12,7 +12,10 @@
     }
   },
   "clause_identity": [
-    "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb:target"
+    "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb:target",
+    "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb:duration",
+    "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb:speed",
+    "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb:upcast_targets"
   ],
   "clauses": [
     {
@@ -22,6 +25,34 @@
       "kind": "one_creature",
       "type": "target_selection",
       "visibility": "visible"
+    },
+    {
+      "clause_id": "duration",
+      "duration": "1 hour",
+      "evidence_ref": "持续时间：1 小时",
+      "type": "duration"
+    },
+    {
+      "applies_to": "target",
+      "clause_id": "speed",
+      "duration": "1 hour",
+      "evidence_ref": "你触碰一个生物，该目标的速度增加10尺，直至法术结束。",
+      "modifier": "speed_ft",
+      "operation": "add",
+      "stacking": "replace_source",
+      "stat": "speed_ft",
+      "type": "timed_modifier",
+      "value": 10,
+      "evidence_ref": "你触碰一个生物，该目标的速度增加10尺，直至法术结束。"
+    },
+    {
+      "applies_to": "target_selection",
+      "clause_id": "upcast_targets",
+      "increments": 1,
+      "minimum_slot": 2,
+      "target_count_increment": 1,
+      "text": "使用的法术位每比一环高一环，你就可以额外指定一个目标。",
+      "type": "upcast"
     }
   ],
   "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",

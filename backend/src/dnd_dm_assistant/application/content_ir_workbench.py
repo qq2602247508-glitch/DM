@@ -62,6 +62,7 @@ _SPELL_CLAUSE_TYPES = frozenset(
         "resource_effect",
         "upcast",
         "spell_modifier",
+        "timed_modifier",
         "target_selection",
     }
 )
@@ -265,6 +266,23 @@ _SPELL_CLAUSE_FIELDS = {
     "spell_modifier": frozenset(
         {"type", "clause_id", "modifier", "value", "scope", "duration", "applies_to"}
     ),
+    "timed_modifier": frozenset(
+        {
+            "type",
+            "clause_id",
+            "modifier",
+            "stat",
+            "operation",
+            "value",
+            "scope",
+            "duration",
+            "duration_unit",
+            "duration_value",
+            "applies_to",
+            "stacking",
+            "evidence_ref",
+        }
+    ),
     "target_selection": frozenset(
         {
             "type",
@@ -301,6 +319,7 @@ _SPELL_REQUIRED_FIELDS = {
     "resource_effect": (("resource_key", "operation"),),
     "upcast": (("increments", "text", "per_slot", "target_count_increment"),),
     "spell_modifier": (("modifier",),),
+    "timed_modifier": (("stat", "operation", "value", "duration_unit", "duration_value"),),
     "target_selection": (("kind",),),
 }
 _SPELL_TOP_LEVEL_FIELDS = frozenset(

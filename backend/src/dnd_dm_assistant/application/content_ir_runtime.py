@@ -55,6 +55,10 @@ from dnd_dm_assistant.domain.spell_slot_reactivation import (
 from dnd_dm_assistant.domain.telepathic_information import (
     share_authorized_sensory_information,
 )
+from dnd_dm_assistant.domain.typed_spell_timed_modifiers import (
+    TypedSpellTimedModifierSpec,
+    apply_typed_spell_timed_modifier,
+)
 from dnd_dm_assistant.domain.vessel_external_sound import (
     resolve_vessel_external_sound,
 )
@@ -2366,6 +2370,8 @@ class ContentIRRuntimeService:
         increment = int(upcast.get("target_count_increment") or 0)
         minimum_slot = int(upcast.get("minimum_slot") or runtime_level + 1)
         slot_level = int(data.get("slot_level") or 0)
+        if slot_level < runtime_level:
+            raise ValueError("typed timed modifier slot level is below spell level")
         maximum_count = target_count
         if increment:
             if slot_level >= minimum_slot:
@@ -2379,9 +2385,21 @@ class ContentIRRuntimeService:
             raise ValueError(f"typed spell runtime requires at least {target_count} target")
         target_versions = dict(data.get("target_versions") or {})
         if data.get("target_combatant_id"):
+            primary_target_id = _text(data.get("target_combatant_id"))
+            submitted_primary_version = int(data.get("target_version") or 0)
+            if (
+                primary_target_id in target_versions
+                and int(target_versions[primary_target_id]) != submitted_primary_version
+            ):
+                raise VersionConflict(
+                    "combatant",
+                    primary_target_id,
+                    int(target_versions[primary_target_id]),
+                    submitted_primary_version,
+                )
             target_versions.setdefault(
-                _text(data.get("target_combatant_id")),
-                int(data.get("target_version") or 0),
+                primary_target_id,
+                submitted_primary_version,
             )
         if any(int(target_versions.get(item) or 0) < 1 for item in target_ids):
             raise ValueError("typed spell runtime requires every target version")
@@ -2403,6 +2421,266 @@ class ContentIRRuntimeService:
             "runtime_level": runtime_level,
             "caster_level": caster_level,
         }
+
+    @classmethod
+    def _spell_timed_modifier_contract(
+        cls,
+        data: Mapping[str, Any],
+        blocks: Mapping[str, list[dict[str, Any]]],
+        *,
+        runtime_id: str,
+        runtime_source: Mapping[str, Any],
+        runtime_level: int,
+    ) -> dict[str, Any] | None:
+        modifier = next(
+            (
+                cls._parameters(block)
+                for block in blocks.get("effects", [])
+                if cls._parameters(block).get("type") == "timed_modifier"
+                and cls._parameters(block).get("stat") == "speed_ft"
+            ),
+            None,
+        )
+        if modifier is None:
+            return None
+        target = cls._first_parameters(blocks, "target_selection")
+        duration = cls._first_parameters(blocks, "duration")
+        target_ids = cls._runtime_target_ids(data)
+        base_count = int(target.get("count") or 1)
+        if base_count != 1:
+            raise ValueError("typed timed modifier currently requires one source target")
+        upcast = cls._first_parameters(blocks, "upcast")
+        increment = int(upcast.get("target_count_increment") or 0)
+        slot_level = int(data.get("slot_level") or 0)
+        maximum = base_count + max(0, slot_level - runtime_level) * increment
+        if len(target_ids) > maximum:
+            raise ValueError(f"typed timed modifier allows at most {maximum} targets")
+        if len(target_ids) < base_count:
+            raise ValueError("typed timed modifier requires at least one target")
+        target_versions = dict(data.get("target_versions") or {})
+        if data.get("target_combatant_id"):
+            primary_target_id = _text(data.get("target_combatant_id"))
+            submitted_primary_version = int(data.get("target_version") or 0)
+            if (
+                primary_target_id in target_versions
+                and int(target_versions[primary_target_id]) != submitted_primary_version
+            ):
+                raise VersionConflict(
+                    "combatant",
+                    primary_target_id,
+                    int(target_versions[primary_target_id]),
+                    submitted_primary_version,
+                )
+            target_versions.setdefault(
+                primary_target_id,
+                submitted_primary_version,
+            )
+        if any(int(target_versions.get(item) or 0) < 1 for item in target_ids):
+            raise ValueError("typed timed modifier requires every target version")
+        willing_by_id = dict(data.get("target_willing_by_id") or {})
+        if data.get("target_combatant_id") and data.get("target_willing") is not None:
+            willing_by_id.setdefault(
+                _text(data.get("target_combatant_id")),
+                bool(data.get("target_willing")),
+            )
+        if any(willing_by_id.get(item) is not True for item in target_ids):
+            raise ValueError("typed timed modifier requires every target to be willing")
+        duration_value = int(
+            modifier.get("duration_value")
+            or duration.get("duration_value")
+            or 1
+        )
+        duration_unit = _text(
+            modifier.get("duration_unit")
+            or duration.get("duration_unit")
+            or "hours"
+        ).lower()
+        source_record_id = _text(runtime_source.get("source_record_id"))
+        source_fingerprint = _text(runtime_source.get("source_fingerprint"))
+        if not source_record_id or len(source_fingerprint) != 64:
+            raise ValueError("typed timed modifier requires source provenance")
+        return {
+            "content_id": runtime_id,
+            "source_record_id": source_record_id,
+            "source_fingerprint": source_fingerprint,
+            "clause_id": _text(modifier.get("clause_id")) or "timed_modifier",
+            "source_id": runtime_id,
+            "target_ids": target_ids,
+            "target_versions": {item: int(target_versions[item]) for item in target_ids},
+            "target_willing": {item: bool(willing_by_id[item]) for item in target_ids},
+            "stat": _text(modifier.get("stat")),
+            "operation": _text(modifier.get("operation")) or "add",
+            "value": int(modifier.get("value")),
+            "duration_unit": duration_unit,
+            "duration_value": duration_value,
+            "stacking": _text(modifier.get("stacking")) or "replace_source",
+            "range_ft": int(target.get("range_ft") or 5),
+            "slot_level": slot_level,
+            "maximum_target_count": maximum,
+        }
+
+    @staticmethod
+    def _expire_spell_timed_modifiers(target: Combatant, now: datetime) -> None:
+        snapshot = dict(target.snapshot_json or {})
+        raw = snapshot.get("timed_spell_modifiers")
+        if not isinstance(raw, list):
+            return
+        active: list[dict[str, Any]] = []
+        base_speed = snapshot.get("_typed_spell_base_speed_ft")
+        expired_speed = False
+        for item in raw:
+            if not isinstance(item, Mapping):
+                continue
+            expires_at = _text(item.get("expires_at"))
+            try:
+                expiry = datetime.fromisoformat(expires_at)
+            except ValueError:
+                continue
+            if expiry.tzinfo is None:
+                expiry = expiry.replace(tzinfo=UTC)
+            if now.astimezone(UTC) >= expiry:
+                expired_speed = expired_speed or (
+                    isinstance(item.get("modifier"), Mapping)
+                    and item["modifier"].get("stat") == "speed_ft"
+                )
+                continue
+            active.append(dict(item))
+        if expired_speed and isinstance(base_speed, int) and base_speed >= 0:
+            target.speed_ft = base_speed
+            target.movement_remaining_ft = min(target.movement_remaining_ft, target.speed_ft)
+            snapshot.pop("_typed_spell_base_speed_ft", None)
+        snapshot["timed_spell_modifiers"] = active
+        target.snapshot_json = snapshot
+
+    def _confirm_timed_spell_modifier(
+        self,
+        campaign_id: str,
+        data: Mapping[str, Any],
+        *,
+        key: str,
+        token: str,
+        preview: Mapping[str, Any],
+        contract: Mapping[str, Any],
+        spell_done: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        with Session(self.engine) as session, session.begin():
+            existing = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == campaign_id,
+                    OperationTransaction.idempotency_key == f"content-ir:{key}",
+                )
+            )
+            if existing is not None:
+                return {**dict(existing.after_snapshot or {}), "already_applied": True}
+            actor = session.get(Combatant, _text(data.get("actor_combatant_id")))
+            if actor is None:
+                raise StateNotFoundError("typed timed modifier actor not found")
+            expected_actor_version = int(data.get("actor_version") or 0)
+            if actor.version != expected_actor_version:
+                raise VersionConflict(
+                    "combatant", actor.id, expected_actor_version, actor.version
+                )
+            combat = session.get(Combat, _text(data.get("combat_id")))
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("typed timed modifier combat not found")
+            if token != _text(preview.get("preview_token")):
+                raise VersionConflict("content runtime preview", key, 1, 2)
+            target_ids = tuple(str(item) for item in contract["target_ids"])
+            targets = []
+            for target_id in target_ids:
+                target = session.get(Combatant, target_id)
+                if target is None or target.combat_id != combat.id:
+                    raise StateNotFoundError("typed timed modifier target not found")
+                expected = int(contract["target_versions"][target_id])
+                if target.version != expected:
+                    raise VersionConflict("combatant", target.id, expected, target.version)
+                targets.append(target)
+            spatial = (
+                SceneGridSpatialAuthority(session, combat.scene_id, combat_id=combat.id)
+                if combat.scene_id
+                else None
+            )
+            if spatial is not None:
+                for target in targets:
+                    spatial.validate_target_range(actor.id, target.id, int(contract["range_ft"]))
+            now = datetime.now(UTC)
+            before = {
+                "actor": {"id": actor.id, "version": actor.version},
+                "targets": [
+                    {"id": target.id, "version": target.version, "speed_ft": target.speed_ft,
+                     "snapshot_json": deepcopy(target.snapshot_json or {})}
+                    for target in targets
+                ],
+            }
+            receipts: list[dict[str, Any]] = []
+            for target in targets:
+                self._expire_spell_timed_modifiers(target, now)
+                snapshot = dict(target.snapshot_json or {})
+                snapshot.setdefault("_typed_spell_base_speed_ft", target.speed_ft)
+                state = {
+                    "version": int(snapshot.get("timed_spell_modifier_version") or 0),
+                    "timed_spell_modifiers": list(snapshot.get("timed_spell_modifiers") or []),
+                }
+                spec = TypedSpellTimedModifierSpec(
+                    content_id=_text(contract["content_id"]),
+                    source_record_id=_text(contract["source_record_id"]),
+                    source_fingerprint=_text(contract["source_fingerprint"]),
+                    clause_id=_text(contract["clause_id"]),
+                    source_id=_text(contract["source_id"]),
+                    target_id=target.id,
+                    stat=_text(contract["stat"]),
+                    operation=_text(contract["operation"]),
+                    value=int(contract["value"]),
+                    duration_unit=_text(contract["duration_unit"]),
+                    duration_value=int(contract["duration_value"]),
+                    stacking=_text(contract["stacking"]),
+                )
+                updated, receipt = apply_typed_spell_timed_modifier(
+                    spec,
+                    state=state,
+                    expected_version=state["version"],
+                    now=now,
+                )
+                target.speed_ft += int(contract["value"])
+                target.movement_remaining_ft = min(target.speed_ft, target.movement_remaining_ft + int(contract["value"]))
+                snapshot["timed_spell_modifier_version"] = updated["version"]
+                snapshot["timed_spell_modifiers"] = updated["timed_spell_modifiers"]
+                target.snapshot_json = snapshot
+                target.version += 1
+                receipts.append(receipt.as_dict())
+            actor.version += 1
+            output = {
+                "schema_version": PRODUCTION_SCHEMA,
+                "runtime_id": _text(data.get("runtime_id")),
+                "production_runtime_full": True,
+                "preview_token": token,
+                "consumer": "spell.timed_modifier.v1",
+                "spell_cast": dict(spell_done),
+                "timed_modifier_receipts": receipts,
+                "actor_combatant_id": actor.id,
+                "actor_version_after": actor.version,
+                "target_versions_after": {target.id: target.version for target in targets},
+                "upcast": {
+                    "slot_level": int(data.get("slot_level") or 0),
+                    "maximum_target_count": int(contract["maximum_target_count"]),
+                },
+            }
+            operation = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="content_ir_timed_spell_modifier",
+                idempotency_key=f"content-ir:{key}:timed",
+                status="applied",
+                before_snapshot=before,
+                after_snapshot=output,
+                reason="source-bound Longstrider timed modifier confirmed",
+                source="combat",
+                confirmed_at=now,
+            )
+            session.add(operation)
+            session.flush()
+            output["operation_transaction_id"] = operation.id
+            operation.after_snapshot = output
+            return output
 
     @classmethod
     def _spell_summon_contract(
@@ -2844,6 +3122,11 @@ class ContentIRRuntimeService:
             actor = session.get(Combatant, _text(data.get("actor_combatant_id")))
             if actor is None or actor.combat_id != _text(data.get("combat_id")):
                 raise StateNotFoundError("content runtime spell actor not found")
+            expected_actor_version = int(data.get("actor_version") or 0)
+            if actor.version != expected_actor_version:
+                raise VersionConflict(
+                    "combatant", actor.id, expected_actor_version, actor.version
+                )
             combat = session.get(Combat, _text(data.get("combat_id")))
             if combat is None or combat.campaign_id != campaign_id:
                 raise StateNotFoundError("content runtime spell combat not found")
@@ -2868,6 +3151,22 @@ class ContentIRRuntimeService:
                 runtime_level=int(runtime.get("level") or 0),
                 caster_level=int(character.level or 0),
             )
+            timed_modifier_contract = self._spell_timed_modifier_contract(
+                execution_data,
+                blocks,
+                runtime_id=_text(runtime.get("spell_id")),
+                runtime_source=runtime.get("source") if isinstance(runtime.get("source"), Mapping) else {},
+                runtime_level=int(runtime.get("level") or 0),
+            )
+            if timed_modifier_contract is not None:
+                for target_id, expected_version in timed_modifier_contract["target_versions"].items():
+                    target = session.get(Combatant, target_id)
+                    if target is None or target.combat_id != combat.id:
+                        raise StateNotFoundError("typed timed modifier target not found")
+                    if target.version != int(expected_version):
+                        raise VersionConflict(
+                            "combatant", target.id, int(expected_version), target.version
+                        )
             summon_contract = self._spell_summon_contract(
                 execution_data,
                 blocks,
@@ -2895,7 +3194,9 @@ class ContentIRRuntimeService:
                 }
             commands = (
                 None
-                if defense_contract is not None or summon_contract is not None
+                if defense_contract is not None
+                or timed_modifier_contract is not None
+                or summon_contract is not None
                 else self._spell_commands(execution_data, blocks)
             )
             combat_preview = None
@@ -2959,6 +3260,7 @@ class ContentIRRuntimeService:
                     "consumers": [str(item["consumer_id"]) for item in consumers],
                     "area_batch": len(commands or []) > 1,
                     "defense": defense_contract,
+                    "timed_modifier": timed_modifier_contract,
                     "summon": summon_preview,
                     "remote_spell_origin": self._remote_origin_receipt(remote_origin),
                 },
@@ -4046,6 +4348,13 @@ class ContentIRRuntimeService:
                     OperationTransaction.idempotency_key == f"content-ir:{key}",
                 )
             )
+            if existing is None:
+                existing = session.scalar(
+                    select(OperationTransaction).where(
+                        OperationTransaction.campaign_id == campaign_id,
+                        OperationTransaction.idempotency_key == f"content-ir:{key}:timed",
+                    )
+                )
             if existing is not None:
                 return {**dict(existing.after_snapshot or {}), "already_applied": True}
         preview = self.preview(campaign_id, data)
@@ -4216,6 +4525,13 @@ class ContentIRRuntimeService:
                 runtime_level=int(runtime.get("level") or 0),
                 caster_level=int(character.level or 0),
             )
+            timed_modifier_contract = self._spell_timed_modifier_contract(
+                execution_data,
+                blocks,
+                runtime_id=_text(runtime.get("spell_id")),
+                runtime_source=runtime.get("source") if isinstance(runtime.get("source"), Mapping) else {},
+                runtime_level=int(runtime.get("level") or 0),
+            )
             summon_contract = self._spell_summon_contract(
                 execution_data,
                 blocks,
@@ -4224,7 +4540,17 @@ class ContentIRRuntimeService:
                 runtime_level=int(runtime.get("level") or 0),
                 caster_level=int(character.level or 0),
             )
-            if defense_contract is not None:
+            if timed_modifier_contract is not None:
+                combat_done = self._confirm_timed_spell_modifier(
+                    campaign_id,
+                    data,
+                    key=key,
+                    token=token,
+                    preview=preview,
+                    contract=timed_modifier_contract,
+                    spell_done=spell_done,
+                )
+            elif defense_contract is not None:
                 if not blocks.get("concentration") or data.get("concentration") is not True:
                     raise ValueError(
                         "typed spell defense runtime requires concentration=True"
@@ -4263,7 +4589,7 @@ class ContentIRRuntimeService:
                 )
             else:
                 commands = self._spell_commands(execution_data, blocks)
-            if defense_contract is not None or summon_contract is not None:
+            if timed_modifier_contract is not None or defense_contract is not None or summon_contract is not None:
                 pass
             elif commands is not None:
                 if len(commands) == 1:
@@ -4320,13 +4646,17 @@ class ContentIRRuntimeService:
                 expected_character_version=expected_character_version,
             )
             raise
+        if timed_modifier_contract is not None:
+            return dict(combat_done)
         output = {
             "schema_version": PRODUCTION_SCHEMA,
             "runtime_id": data.get("runtime_id"),
             "production_runtime_full": True,
             "preview_token": token,
             "consumer": (
-                "spell.defense.v1"
+                "spell.timed_modifier.v1"
+                if timed_modifier_contract is not None
+                else "spell.defense.v1"
                 if defense_contract is not None
                 else "spell.summon.v1"
                 if summon_contract is not None

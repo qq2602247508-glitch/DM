@@ -466,6 +466,7 @@ _ALLOWED_SPELL_BLOCKS = {
     "target_selection",
     "summon_or_creation",
     "temporary_hp",
+    "timed_modifier",
     "upcast",
     "area",
     "spell_origins",
