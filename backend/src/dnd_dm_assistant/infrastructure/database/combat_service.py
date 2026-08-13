@@ -2154,6 +2154,29 @@ class CombatEngineService:
                     command.summon_version,
                     summon.version,
                 )
+            source = None
+            if command.actor == "player":
+                if command.action_cost != "bonus_action":
+                    raise ValueError("player summon dismissal must spend a bonus action")
+                owner_id = self._combatant_owner(summon)
+                source_id = summon.snapshot_json.get("summon_source_combatant_id")
+                source = (
+                    session.get(Combatant, source_id)
+                    if isinstance(source_id, str)
+                    else None
+                )
+                if source is None or not source.is_active:
+                    raise StateNotFoundError("summon owner combatant not found")
+                if self._combatant_owner(source) != owner_id:
+                    raise ValueError("summon owner binding is invalid")
+                self._validate_action_economy(
+                    session,
+                    combat,
+                    source,
+                    actor_version=source.version,
+                    action_cost=command.action_cost,
+                    consume=True,
+                )
 
             linked_effects = [
                 effect
@@ -2207,7 +2230,11 @@ class CombatEngineService:
             )
             result = {
                 "combatant_id": summon.id,
-                "entity_id": str(summon.entity_id or ""),
+                "entity_id": str(
+                    summon.entity_id
+                    or (summon.snapshot_json or {}).get("summon_source", {}).get("entity_id")
+                    or ""
+                ),
                 "ended_effect_ids": [effect.id for effect in linked_effects],
                 "current_turn_index": combat.current_turn_index,
                 "active_combatant_id": active.id if active is not None else None,
@@ -2226,11 +2253,21 @@ class CombatEngineService:
             )
             session.add(transaction)
             session.flush()
-            source_id = summon.snapshot_json.get("summon_source_combatant_id")
             action = CombatAction(
                 campaign_id=campaign_id,
                 combat_id=combat_id,
-                actor_combatant_id=(source_id if isinstance(source_id, str) else None),
+                actor_combatant_id=(
+                    source.id
+                    if source is not None
+                    else (
+                        summon.snapshot_json.get("summon_source_combatant_id")
+                        if isinstance(
+                            summon.snapshot_json.get("summon_source_combatant_id"),
+                            str,
+                        )
+                        else None
+                    )
+                ),
                 transaction_id=transaction.id,
                 action_type="end_summon",
                 target_combatant_ids=[summon.id],
@@ -15612,6 +15649,13 @@ class CombatEngineService:
                     "combatant_id": target.id,
                     "hp": target.hp,
                     "temporary_hp": target.temporary_hp,
+                    "owner_character_id": (
+                        str(target.entity_id)
+                        if target.entity_type == "character" and target.entity_id
+                        else ""
+                    ),
+                    "dead": bool(death_save_result and death_save_result.get("dead")),
+                    "death_save": death_save_result,
                 },
                 reason=command.override_reason
                 if command.dm_override

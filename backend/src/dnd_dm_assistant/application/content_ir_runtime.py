@@ -880,9 +880,14 @@ class ContentIRRuntimeService:
             if _text(after.get("entity_id")) != entity_id:
                 raise ValueError("source object producer is not bound to the entity")
         elif reason == "owner_died":
-            if operation_type != "combat_confirm_death":
+            if operation_type not in {"combat_confirm_death", "combat_damage"}:
                 raise ValueError("owner death termination requires authoritative death producer")
-            if after.get("dead") is not True or _text(after.get("owner_character_id")) != owner_character_id:
+            death_save = after.get("death_save")
+            is_dead = after.get("dead") is True or (
+                isinstance(death_save, Mapping) and death_save.get("dead") is True
+            )
+            owner_binding = _text(after.get("owner_character_id")) or owner_character_id
+            if not is_dead or owner_binding != owner_character_id:
                 raise ValueError("owner death producer receipt is not authoritative")
         elif reason == "owner_dismissed":
             if operation_type not in {"combat_end_summon", "combat_end_effect"}:

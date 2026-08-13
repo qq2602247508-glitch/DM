@@ -117,6 +117,122 @@ def _apply(
     return preview_body, confirmed.json()
 
 
+def _real_termination_producer(
+    client: TestClient,
+    base: str,
+    character: dict[str, Any],
+    reason: str,
+) -> tuple[str, dict[str, Any]]:
+    combat = client.post(f"{base}/combats", json={"name": f"producer-{reason}"}).json()
+    if reason == "dispel_magic":
+        target = client.post(
+            f"{base}/combats/{combat['id']}/combatants",
+            json={
+                "display_name": "Manifested entity",
+                "entity_type": "spectral_object",
+                "initiative": 20,
+                "hp": 10,
+                "max_hp": 10,
+                "entity_id": "entity-fixture-001",
+            },
+        ).json()
+        effect = client.post(
+            f"{base}/combats/{combat['id']}/effects/confirm",
+            json={
+                "target_combatant_id": target["id"],
+                "target_version": target["version"],
+                "name": "Manifest Mind",
+                "effect_type": "aura",
+                "details_json": {"entity_lifecycle_entity_id": "entity-fixture-001"},
+            },
+            headers={"X-Request-ID": "producer-dispel-add"},
+        )
+        assert effect.status_code == 200, effect.text
+        ended = client.post(
+            f"{base}/combats/{combat['id']}/effects/{effect.json()['effect']['id']}/end",
+            json={
+                "target_version": effect.json()["target"]["version"],
+                "reason": "Dispel Magic",
+            },
+            headers={"X-Request-ID": "producer-dispel-end"},
+        )
+        assert ended.status_code == 200, ended.text
+        return ended.json()["action"]["transaction_id"], ended.json()
+    if reason == "owner_died":
+        owner = client.post(
+            f"{base}/combats/{combat['id']}/combatants",
+            json={
+                "display_name": "Owner",
+                "entity_type": "character",
+                "entity_id": character["id"],
+                "initiative": 20,
+                "hp": 1,
+                "max_hp": 1,
+            },
+        ).json()
+        damage = client.post(
+            f"{base}/combats/{combat['id']}/actions/confirm",
+            json={
+                "action_type": "damage",
+                "target_combatant_id": owner["id"],
+                "target_version": owner["version"],
+                "amount": 2,
+                "damage_type": "force",
+            },
+            headers={"X-Request-ID": "producer-owner-damage"},
+        )
+        assert damage.status_code == 200, damage.text
+        assert damage.json()["death_save"]["dead"] is True
+        result = damage.json()
+        result["death_save"] = {"dead": True}
+        return result["action"]["transaction_id"], result
+    if reason == "owner_dismissed":
+        owner = client.post(
+            f"{base}/combats/{combat['id']}/combatants",
+            json={
+                "display_name": "Owner",
+                "entity_type": "character",
+                "entity_id": character["id"],
+                "initiative": 20,
+                "hp": 10,
+                "max_hp": 10,
+            },
+        ).json()
+        summon = client.post(
+            f"{base}/combats/{combat['id']}/summons",
+            json={
+                "name": "Manifested entity",
+                "controller": "player",
+                "owner_character_id": character["id"],
+                "source_combatant_id": owner["id"],
+                "source_version": owner["version"],
+                "initiative_mode": "shared_with_source",
+                "action_cost": "none",
+                "hp": 5,
+                "max_hp": 5,
+                "armor_class": 10,
+                "speed_ft": 30,
+                "template_json": {"entity_id": "entity-fixture-001"},
+            },
+            headers={"X-Request-ID": "producer-dismiss-add"},
+        )
+        assert summon.status_code == 200, summon.text
+        summon_body = summon.json()["combatant"]
+        ended = client.post(
+            f"{base}/combats/{combat['id']}/summons/{summon_body['id']}/end",
+            json={
+                "summon_version": summon_body["version"],
+                "actor": "player",
+                "action_cost": "bonus_action",
+                "reason": "Owner bonus action dismissal",
+            },
+            headers={"X-Request-ID": "producer-dismiss-end"},
+        )
+        assert ended.status_code == 200, ended.text
+        return ended.json()["action"]["transaction_id"], ended.json()
+    raise AssertionError(f"unsupported real producer reason: {reason}")
+
+
 def test_entity_lifecycle_real_service_receipt_chain_and_replay(
     campaign_client: TestClient,
 ) -> None:
@@ -369,22 +485,23 @@ def test_termination_runtime_requires_real_producer_receipt_and_is_idempotent(
             assert producer is not None
             producer_id = producer.id
         current = campaign_client.get(f"{base}/characters/{character['id']}").json()
-    elif reason == "owner_died":
-        after = {**after, "owner_character_id": character["id"]}
-    if reason != "source_object_destroyed":
-        with Session(engine) as session, session.begin():
-            producer = OperationTransaction(
-                campaign_id=base.rsplit("/", 1)[-1],
-                operation_type=operation_type,
-                idempotency_key=f"producer-{reason}",
-                status="applied",
-                before_snapshot={},
-                after_snapshot=after,
-                source="combat" if operation_type.startswith("combat_") else "dm",
+    else:
+        producer_id, producer_result = _real_termination_producer(
+            campaign_client,
+            base,
+            character,
+            reason,
+        )
+        if reason == "owner_died":
+            assert producer_result["death_save"]["dead"] is True
+        if reason == "owner_dismissed":
+            assert producer_result["action"]["request_json"]["action_cost"] == "bonus_action"
+            owner = campaign_client.get(
+                f"{base}/combats/{producer_result['combat']['id']}/combatants/"
+                f"{producer_result['action']['actor_combatant_id']}"
             )
-            session.add(producer)
-            session.flush()
-            producer_id = producer.id
+            assert owner.status_code == 200, owner.text
+            assert owner.json()["bonus_action_available"] is False
 
     body = _body(
         current,
@@ -407,9 +524,12 @@ def test_termination_runtime_requires_real_producer_receipt_and_is_idempotent(
     )
     assert confirmed.status_code == 200, confirmed.text
     assert confirmed.json()["entity_lifecycle"]["state"]["termination_reason"] == reason
+    expected_operation_type = (
+        "combat_damage" if reason == "owner_died" else operation_type
+    )
     assert (
         confirmed.json()["entity_lifecycle"]["producer_receipt"]["operation_type"]
-        == operation_type
+        == expected_operation_type
     )
 
     replay = campaign_client.post(
@@ -442,25 +562,40 @@ def test_termination_runtime_rejects_failed_or_unbound_producer_without_mutation
         expected_lifecycle_version=None,
     )
     current = campaign_client.get(f"{base}/characters/{character['id']}").json()
-    engine = create_database_engine(campaign_client.database_url)  # type: ignore[attr-defined]
-    with Session(engine) as session, session.begin():
-        producer = OperationTransaction(
-            campaign_id=base.rsplit("/", 1)[-1],
-            operation_type="combat_end_effect",
-            idempotency_key="failed-dispel",
-            status="failed",
-            before_snapshot={},
-            after_snapshot={
-                "effect_id": "effect-1",
-                "entity_ids": ["entity-fixture-001"],
-                "status": "ended",
-                "end_reason": "failed dispel",
-            },
-            source="combat",
-        )
-        session.add(producer)
-        session.flush()
-        producer_id = producer.id
+    combat = campaign_client.post(f"{base}/combats", json={"name": "failed-dispel"}).json()
+    target = campaign_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "Manifested entity",
+            "entity_type": "spectral_object",
+            "initiative": 20,
+            "hp": 10,
+            "max_hp": 10,
+            "entity_id": "entity-fixture-001",
+        },
+    ).json()
+    effect = campaign_client.post(
+        f"{base}/combats/{combat['id']}/effects/confirm",
+        json={
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "name": "Manifest Mind",
+            "effect_type": "aura",
+            "details_json": {"entity_lifecycle_entity_id": "entity-fixture-001"},
+        },
+        headers={"X-Request-ID": "failed-dispel-add"},
+    )
+    assert effect.status_code == 200, effect.text
+    failed = campaign_client.post(
+        f"{base}/combats/{combat['id']}/effects/{effect.json()['effect']['id']}/end",
+        json={
+            "target_version": target["version"],
+            "reason": "Dispel Magic",
+        },
+        headers={"X-Request-ID": "failed-dispel-end"},
+    )
+    assert failed.status_code == 409, failed.text
+    producer_id = "missing-after-failed-producer"
     body = _body(
         current,
         event="terminate",

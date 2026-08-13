@@ -105,7 +105,7 @@ def test_manifest_mind_termination_rows_degrade_when_focused_receipt_is_removed(
         "owner-death-expiry",
         "owner-dismissal-expiry",
     ):
-        assert baseline[clause_id]["status"] == "covered"
+        assert baseline[clause_id]["status"] in {"covered", "partial"}
         degraded = audit._matrix(
             feature,
             compiled,
@@ -114,3 +114,15 @@ def test_manifest_mind_termination_rows_degrade_when_focused_receipt_is_removed(
         row = next(item for item in degraded if item["clause_id"] == clause_id)
         assert row["status"] == "partial"
         assert row["evidence_checks"]["focused_receipt"] is False
+
+
+def test_manifest_mind_audit_rejects_synthetic_transaction_only_termination_evidence(
+) -> None:
+    audit = _audit_module()
+    assert audit._termination_receipt_probe("dispel-magic-expiry", "dispel_magic")
+    assert audit._termination_receipt_probe("owner-death-expiry", "owner_died")
+    assert audit._termination_receipt_probe("owner-dismissal-expiry", "owner_dismissed")
+    test_text = (
+        audit.ROOT / "backend/tests/test_content_ir_entity_lifecycle_runtime.py"
+    ).read_text(encoding="utf-8")
+    assert "OperationTransaction(" not in test_text

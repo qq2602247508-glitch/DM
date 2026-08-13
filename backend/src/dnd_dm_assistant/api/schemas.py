@@ -1960,6 +1960,7 @@ class CombatSummonCommand(BaseModel):
 class CombatSummonEndCommand(BaseModel):
     summon_version: int = Field(ge=1)
     actor: Literal["dm", "player"] = "dm"
+    action_cost: Literal["none", "bonus_action"] = "none"
     reason: Annotated[
         str,
         StringConstraints(strip_whitespace=True, min_length=1, max_length=1_000),

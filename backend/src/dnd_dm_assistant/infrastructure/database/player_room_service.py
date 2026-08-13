@@ -5059,7 +5059,12 @@ class PlayerRoomService:
             principal.campaign_id,
             combat_id,
             summon_combatant_id,
-            CombatSummonEndCommand(summon_version=summon_version, reason=reason, actor="player"),
+            CombatSummonEndCommand(
+                summon_version=summon_version,
+                reason=reason,
+                actor="player",
+                action_cost="bonus_action",
+            ),
             idempotency_key=idempotency_key,
         )
 
