@@ -723,11 +723,30 @@ def default_operator_contracts() -> dict[str, OperatorContract]:
             },
             enums={"mode": {"blindsight", "darkvision", "truesight", "tremorsense"}},
             bounds={"range_ft": (1, 120)},
-            triggers=_TRIGGER_ADVANCEMENT | frozenset({"combat_started"}),
-            durations=_DURATION_PERSISTENT,
+            triggers=_TRIGGER_ADVANCEMENT
+            | frozenset({"combat_started", "explicit_activation"}),
+            actions=_ACTIONS_NONE | frozenset({"bonus_action"}),
+            durations=_DURATION_PERSISTENT | frozenset({"ten_minutes"}),
             materializer="sight.mode",
             capability="sight.mode",
             mutually_exclusive=(frozenset({"range_ft", "range_source"}),),
+        ),
+        _contract(
+            "configure_entity_senses",
+            required=("entity_binding", "senses"),
+            optional=("id",),
+            types={
+                "entity_binding": "string",
+                "senses": "object",
+                "id": "string",
+            },
+            enums={"entity_binding": {"entity_lifecycle"}},
+            triggers=frozenset({"advancement_confirmed", "explicit_activation"}),
+            actions=frozenset({"none", "bonus_action", "action"}),
+            targets=_TARGET_SELF,
+            durations=_DURATION_PERSISTENT | frozenset({"ten_minutes"}),
+            materializer="entity.senses",
+            capability="entity.senses",
         ),
         _contract(
             "heal",
@@ -1120,7 +1139,9 @@ def default_operator_contracts() -> dict[str, OperatorContract]:
                 {"none", "action", "bonus_action", "reaction", "explicit_player_choice"}
             ),
             targets=frozenset({"one_creature", "multiple_creatures"}),
-            durations=frozenset({"current_turn", "permanent", "advancement_persistent"}),
+            durations=frozenset(
+                {"current_turn", "permanent", "advancement_persistent"}
+            ),
             materializer="spell.remote_origin",
             capability="spell.remote_origin",
         ),

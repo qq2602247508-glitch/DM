@@ -469,6 +469,49 @@ def _materialize_sight(context: MaterializerContext) -> MaterializedBlock:
     return MaterializedBlock("combat_modifiers", entry)
 
 
+def _materialize_entity_senses(context: MaterializerContext) -> MaterializedBlock:
+    params = context.parameters
+    senses = params.get("senses")
+    if not isinstance(senses, Mapping) or not senses:
+        raise MaterializerError("entity senses requires a non-empty senses object")
+    normalized: dict[str, Any] = {}
+    for key, value in senses.items():
+        if key not in {"hearing", "darkvision_ft", "light_radius_ft"}:
+            raise MaterializerError(f"entity senses field is unsupported: {key}")
+        if key == "hearing":
+            if not isinstance(value, bool):
+                raise MaterializerError("entity senses hearing must be boolean")
+            normalized[key] = value
+        else:
+            if (
+                not isinstance(value, int)
+                or isinstance(value, bool)
+                or value < 0
+                or value > 300
+            ):
+                raise MaterializerError(f"entity senses {key} must be an integer from 0 to 300")
+            normalized[key] = value
+    entry = context.base(kind="entity_senses")
+    entry.update(
+        {
+            "resolution_kind": "entity_senses",
+            "entity_binding": str(params["entity_binding"]),
+            "senses": normalized,
+            "source_provenance": {
+                "source_record_id": context.spec.source_record_id,
+                "source_fingerprint": str(context.spec.source_fingerprint or ""),
+                "source_book": context.spec.source_book,
+                "source_path": context.spec.source_path,
+            },
+        }
+    )
+    if not entry["source_provenance"]["source_fingerprint"]:
+        raise MaterializerError(
+            "entity senses requires a source fingerprint for provenance binding"
+        )
+    return MaterializedBlock("entity_senses", entry)
+
+
 def _materialize_action(context: MaterializerContext) -> MaterializedBlock:
     if context.operator == "teleport":
         params = context.parameters
@@ -868,6 +911,15 @@ class MaterializerRegistry:
             provenance = entry.get("source_provenance")
             if not entry.get("entity_type") or not isinstance(provenance, Mapping):
                 raise MaterializerError("entity lifecycle block lacks typed provenance")
+        elif block.section == "entity_senses":
+            if entry.get("resolution_kind") != "entity_senses":
+                raise MaterializerError("entity senses block has invalid resolution kind")
+            if entry.get("entity_binding") != "entity_lifecycle":
+                raise MaterializerError("entity senses block has invalid entity binding")
+            if not isinstance(entry.get("senses"), Mapping):
+                raise MaterializerError("entity senses block lacks typed senses")
+            if not isinstance(entry.get("source_provenance"), Mapping):
+                raise MaterializerError("entity senses block lacks source provenance")
         elif block.section == "spell_origins":
             if entry.get("resolution_kind") != "remote_spell_origin":
                 raise MaterializerError("remote spell origin block has invalid resolution kind")
@@ -917,6 +969,7 @@ def default_materializer_registry() -> MaterializerRegistry:
         "target.authorized_information": _materialize_authorized_information,
         "communication.channel": _materialize_communication,
         "entity.lifecycle": _materialize_entity_lifecycle,
+        "entity.senses": _materialize_entity_senses,
         "spell.remote_origin": _materialize_remote_spell_origin,
         "zero_hp.intervention": _materialize_zero_hp,
         "spell.healing_modifier": _materialize_spell_modifier,

@@ -572,8 +572,15 @@ class ContentIRRuntimeService:
         if not isinstance(provenance, Mapping):
             raise ValueError("remote spell origin source provenance is required")
         runtime = (actor.snapshot_json or {}).get("feature_runtime")
-        lifecycle = runtime.get("entity_lifecycle") if isinstance(runtime, Mapping) else None
-        records = lifecycle if isinstance(lifecycle, list) else [lifecycle]
+        lifecycle_records: list[object] = []
+        if isinstance(runtime, Mapping):
+            for key in ("entity_lifecycle", "entity_lifecycles"):
+                value = runtime.get(key)
+                if isinstance(value, list):
+                    lifecycle_records.extend(value)
+                elif isinstance(value, Mapping):
+                    lifecycle_records.append(value)
+        records = lifecycle_records
         actor_keys = {actor.id}
         owner_id = (actor.snapshot_json or {}).get("owner_character_id")
         if isinstance(owner_id, str) and owner_id.strip():
@@ -582,13 +589,17 @@ class ContentIRRuntimeService:
         for record in records:
             if not isinstance(record, Mapping):
                 continue
-            if _text(record.get("source_id")) != _text(provenance.get("source_record_id")):
+            state = record.get("state")
+            state = state if isinstance(state, Mapping) else record
+            if _text(state.get("source_id")) != _text(provenance.get("source_record_id")):
                 continue
-            if _text(record.get("source_fingerprint")) != _text(provenance.get("source_fingerprint")):
+            if _text(state.get("source_fingerprint")) != _text(
+                provenance.get("source_fingerprint")
+            ):
                 continue
-            if _text(record.get("status")) == "expired":
+            if _text(state.get("status")) == "expired":
                 continue
-            metadata = record.get("metadata")
+            metadata = state.get("metadata")
             metadata = metadata if isinstance(metadata, Mapping) else {}
             owners = {
                 _text(metadata.get(key))
@@ -597,7 +608,11 @@ class ContentIRRuntimeService:
             }
             if owners and not owners.intersection(actor_keys):
                 continue
-            raw_ids = record.get("authorized_origin_ids") or record.get("origin_ids")
+            raw_ids = (
+                record.get("authorized_origin_ids")
+                or record.get("origin_ids")
+                or ([record.get("entity_id")] if record.get("entity_id") else [])
+            )
             if isinstance(raw_ids, list):
                 authorized.extend(_text(item) for item in raw_ids if _text(item))
         return tuple(dict.fromkeys(authorized))

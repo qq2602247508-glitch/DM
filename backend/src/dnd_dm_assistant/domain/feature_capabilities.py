@@ -321,6 +321,7 @@ def _descriptor(
     targets: frozenset[str] = _ALL_TARGETS,
     durations: frozenset[str] = _ALL_DURATIONS,
     actions: frozenset[str] | None = None,
+    inputs: frozenset[str] | None = None,
     resources: frozenset[str] | None = None,
     limitations: tuple[str, ...] = (),
     evidence: tuple[str, ...] = ("feature_runtime_contract_tests",),
@@ -348,8 +349,12 @@ def _descriptor(
         supported_operator=operator,
         supported_triggers=supported_triggers,
         supported_conditions=supported_conditions,
-        supported_inputs=frozenset(
-            {"choice", "d20", "damage_total", "target_ids", "player_or_dm_choice"}
+        supported_inputs=(
+            inputs
+            if inputs is not None
+            else frozenset(
+                {"choice", "d20", "damage_total", "target_ids", "player_or_dm_choice"}
+            )
         ),
         supported_targets=supported_targets,
         supported_duration=supported_duration,
@@ -667,7 +672,25 @@ def default_capability_catalog() -> CapabilityCatalog:
             persisted_state="entity.lifecycle.state",
             targets=frozenset({"self"}),
             durations=frozenset({"permanent", "advancement_persistent"}),
+            inputs=frozenset(),
             evidence=("test_entity_lifecycle_runtime_contract",),
+        ),
+        _descriptor(
+            "entity.senses",
+            "configure_entity_senses",
+            consumer="entity_sensory_profile_service",
+            producer="feature_runtime_compiler",
+            persisted_state="entity.lifecycle.sensory_profile",
+            targets=frozenset({"self"}),
+            durations=frozenset({"permanent", "advancement_persistent", "ten_minutes"}),
+            actions=frozenset({"none", "bonus_action", "action"}),
+            inputs=frozenset(),
+            status="production_partial",
+            limitations=(
+                "Entity sensory profile is typed and provenance-bound, but movement, "
+                "distance expiry, and remote spell payment consumers are not closed."
+            ),
+            evidence=("test_manifest_mind_entity_senses_contract",),
         ),
         _descriptor(
             "spell.remote_origin",
@@ -677,6 +700,7 @@ def default_capability_catalog() -> CapabilityCatalog:
             persisted_state="combat_action.spell_origin_resolution",
             targets=frozenset({"one_creature", "multiple_creatures"}),
             durations=frozenset({"current_turn", "permanent", "advancement_persistent"}),
+            inputs=frozenset(),
             actions=frozenset(
                 {"none", "action", "bonus_action", "reaction", "explicit_player_choice"}
             ),

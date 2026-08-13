@@ -524,6 +524,7 @@ _RUNTIME_SECTION_BY_OPERATOR = {
     "grant_movement_mode": "movement_modes",
     "teleport": "actions",
     "grant_sight_mode": "combat_modifiers",
+    "configure_entity_senses": "entity_senses",
     "heal": "actions",
     "grant_temporary_hp": "triggers",
     "add_damage": "attack_riders",
@@ -579,6 +580,7 @@ def materialize_runtime_definition(
         "advancement": None,
         "prepared_spell_list": None,
         "entity_lifecycles": [],
+        "entity_senses": [],
         "spell_origins": [],
     }
     for index, block in enumerate(result.generated_runtime_blocks):
@@ -777,6 +779,8 @@ def materialize_runtime_definition(
             definition["resources"][str(entry.get("key") or entry["id"])] = entry
         elif section == "entity_lifecycles":
             definition["entity_lifecycles"].append(entry)
+        elif section == "entity_senses":
+            definition["entity_senses"].append(entry)
         elif section == "spell_origins":
             definition["spell_origins"].append(entry)
         elif section == "advancement":
