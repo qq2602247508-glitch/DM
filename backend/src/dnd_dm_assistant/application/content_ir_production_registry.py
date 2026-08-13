@@ -64,6 +64,22 @@ _CONSUMERS: dict[str, dict[str, Any]] = {
         "idempotency_scope": "campaign_content_ir_and_spell_cast",
         "snapshot_effects": ("hp", "combatant_versions", "audit"),
     },
+    "spell.timed_modifier.v1": {
+        "content_kind": "spell",
+        "runtime_schema_version": "spell-runtime-1",
+        "clause_types": ("timed_modifier", "target_selection", "duration"),
+        "required_fields": (
+            "target_combatant_ids",
+            "target_versions",
+            "actor_combatant_id",
+            "actor_version",
+        ),
+        "required_services": ("combat_engine.timed_spell_modifier",),
+        "transaction_boundary": "spell_cast_with_timed_modifier_snapshot_and_rollback_boundary",
+        "cas_entities": ("character", "actor_combatants", "target_combatants"),
+        "idempotency_scope": "campaign_content_ir_and_spell_cast",
+        "snapshot_effects": ("timed_spell_modifiers", "expiry", "audit"),
+    },
     "combat_engine.condition_lifecycle.v1": {
         "content_kind": "spell_or_feature",
         "runtime_schema_version": "spell-runtime-1|feature-runtime-1",
@@ -519,6 +535,10 @@ def resolve_production_consumers(
             resolved.append("spell_economy.concentration.v1")
         if _has_effect(blocks, "spell_modifier"):
             resolved.append("spell.defense.v1")
+        if _has_effect(blocks, "timed_modifier"):
+            if not blocks.get("target_selection") or not blocks.get("duration"):
+                raise ValueError("timed spell modifier requires typed target and duration")
+            resolved.append("spell.timed_modifier.v1")
         if _has_effect(blocks, "summon_or_creation"):
             if not blocks.get("target_selection"):
                 raise ValueError("summon runtime requires a typed target selection")

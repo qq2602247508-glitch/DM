@@ -24,6 +24,16 @@ def test_generic_capabilities_are_closed_and_registered_without_feature_name() -
     assert [item["consumer_id"] for item in reactivation] == [
         "spell.slot.reactivation.v1"
     ]
+    timed = resolve_production_consumers(
+        content_kind="spell",
+        runtime_schema_version="spell-runtime-1",
+        blocks={
+            "effects": [{"parameters": {"type": "timed_modifier"}}],
+            "target_selection": [{"kind": "one_creature"}],
+            "duration": [{"unit": "hours", "value": 1}],
+        },
+    )
+    assert [item["consumer_id"] for item in timed] == ["spell.timed_modifier.v1"]
 
 
 def test_telepathic_sharing_is_not_implied_by_entity_senses_closure() -> None:

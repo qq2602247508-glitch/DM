@@ -3394,3 +3394,17 @@ git diff --check
 - 保护路径 `backend/tests/integrations/`、`backend/tests/ollama.py` 未修改、未暂存。
 - push：本轮开始时安全 push helper 因 GitHub smart HTTP 未健康而失败；尚未重试，
   本地提交待分离提交后再安全 push。
+## Round XLV handoff — 2026-08-13
+
+- Chosen reusable cluster: typed spell timed-modifier persistence, derived from
+  Longstrider's source-required `speed +10 ft` and `1-hour` duration.
+- Added `spell.timed_modifier.v1` to the closed production consumer registry and
+  added source-bound `TypedSpellTimedModifierSpec` / receipt / state transition.
+- Focused behavior proves typed stat validation, expiry, same-source replacement,
+  stale CAS, malformed-state rejection, idempotent replay, and replay payload drift.
+- No spell was promoted. Longstrider still lacks a real known-spell producer/runtime
+  fixture and source-complete replacement/stacking evidence; the other four candidates
+  retain their distinct blockers.
+- Counts unchanged: project `203 production / 35 compile-only / 111 unique compiled`;
+  promoted IDs empty; all five candidates retained compile-only.
+- Evidence: Round XLV doc, validator, report, and focused tests.

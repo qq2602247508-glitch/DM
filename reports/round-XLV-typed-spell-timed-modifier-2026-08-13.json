@@ -1,0 +1,140 @@
+{
+  "after": {
+    "canonical_projection_counts": {
+      "compile_only": 35,
+      "production": 203,
+      "unique_compiled": 111
+    },
+    "promoted_ids": [],
+    "retained_compile_only_ids": [
+      "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb",
+      "core-phb-2024:spell:83b7d94b77f332dd71310bbe",
+      "core-phb-2024:spell:b9db026fa1853bca5b6f1c13",
+      "core-phb-2024:spell:d82624a42cf6c33ccec927b8",
+      "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c"
+    ]
+  },
+  "artifact_date": "2026-08-13",
+  "baseline": {
+    "counts": {
+      "compile_only": 35,
+      "production": 203,
+      "unique_compiled": 111
+    },
+    "path": "reports/round-XLIV-typed-spell-target-fanout-2026-08-13.json",
+    "sha256": "47485736a6d8b2fd9a09e3cbaacacf5c7f61fd8d721195128c5817615c3f5629"
+  },
+  "candidate_selection": {
+    "chosen_cluster": "typed spell timed modifier persistence",
+    "excluded_already_production_candidate": "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
+    "rationale": "Longstrider exposes a reusable speed modifier plus one-hour expiry contract; the existing combat snapshot already has a typed timed-modifier persistence seam."
+  },
+  "count_delta": {
+    "compile_only": 0,
+    "production": 0,
+    "unique_compiled": 0
+  },
+  "focused_tests": {
+    "command": [
+      "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "backend/tests/test_typed_spell_timed_modifiers.py",
+      "backend/tests/test_content_ir_production_closure.py"
+    ],
+    "passed": true,
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ".........                                                                [100%]\n=============================== warnings summary ===============================\nbackend/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1\n  /Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n"
+  },
+  "generic_seam": {
+    "cas_version_check": true,
+    "consumer": "apply_typed_spell_timed_modifier",
+    "expiry_persistence": true,
+    "fail_closed_invalid_contract": true,
+    "idempotent_replay": true,
+    "payload_drift_rejection": true,
+    "producer": "TypedSpellTimedModifierSpec",
+    "same_source_replacement": true,
+    "schema": "spell.timed_modifier.v1",
+    "source_provenance": true,
+    "typed_speed_modifier": true
+  },
+  "promotion_decision": "no_promotion",
+  "promotion_rule": "promote only when every source-required semantic dimension has a persisted tested producer and real runtime consumer",
+  "protected_fingerprints": {
+    "integrations_manifest": "00bc4a87e0bc794f6d08fec5f74d812ef53dff687105676ba77cfb935f335ddf",
+    "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+  },
+  "report_fingerprint": "125345558c24f5cf25e2befae8f829baf8e0678e2279344c5055e6fbab46bb2e",
+  "round_id": "round-XLV",
+  "schema_version": "round-XLV-typed-spell-timed-modifier-1",
+  "source_boundary_matrix": {
+    "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb": {
+      "content_id": "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb",
+      "decision": "retained_compile_only",
+      "name": "Longstrider",
+      "seam_covered": [
+        "typed speed_ft add modifier",
+        "one-hour expiry persistence",
+        "same-source replacement",
+        "CAS and idempotent replay"
+      ],
+      "source_path": "data/generated-content/dnd5e_chm/markdown/spells/6f5b6f21ffa22e705a9bd6cb.md",
+      "source_required_blockers": [
+        "production known-spell producer and runtime fixture",
+        "source-complete replacement/stacking behavior"
+      ],
+      "source_sha256": "da6bb47a0d6535a9b645dc4b739d9a7e8fa8961eb1935648b27b93cd4e528412"
+    },
+    "core-phb-2024:spell:83b7d94b77f332dd71310bbe": {
+      "content_id": "core-phb-2024:spell:83b7d94b77f332dd71310bbe",
+      "decision": "retained_compile_only",
+      "name": "Disguise Self",
+      "seam_covered": [],
+      "source_path": "data/generated-content/dnd5e_chm/markdown/spells/83b7d94b77f332dd71310bbe.md",
+      "source_required_blockers": [
+        "illusion appearance envelope",
+        "physical inspection and Investigation check"
+      ],
+      "source_sha256": "f67facbcc78161301a3a782d4d0c71b467675b17924938b157ee5499a25ba22f"
+    },
+    "core-phb-2024:spell:b9db026fa1853bca5b6f1c13": {
+      "content_id": "core-phb-2024:spell:b9db026fa1853bca5b6f1c13",
+      "decision": "retained_compile_only",
+      "name": "Prestidigitation",
+      "seam_covered": [],
+      "source_path": "data/generated-content/dnd5e_chm/markdown/spells/b9db026fa1853bca5b6f1c13.md",
+      "source_required_blockers": [
+        "six effect modes",
+        "three concurrent non-instant effects"
+      ],
+      "source_sha256": "794cb2bd4b70023bcd4d374f5e765b4b439e4b4174f4ee47ea0be04eae764862"
+    },
+    "core-phb-2024:spell:d82624a42cf6c33ccec927b8": {
+      "content_id": "core-phb-2024:spell:d82624a42cf6c33ccec927b8",
+      "decision": "retained_compile_only",
+      "name": "Speak with Animals",
+      "seam_covered": [],
+      "source_path": "data/generated-content/dnd5e_chm/markdown/spells/d82624a42cf6c33ccec927b8.md",
+      "source_required_blockers": [
+        "beast communication capability",
+        "recent-observation information boundary"
+      ],
+      "source_sha256": "1a129ba7b156bce0823573b14a71a7d345c5bc48c44508bd6e57b085c19baaad"
+    },
+    "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c": {
+      "content_id": "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c",
+      "decision": "retained_compile_only",
+      "name": "Message",
+      "seam_covered": [],
+      "source_path": "data/generated-content/dnd5e_chm/markdown/spells/dd9cb25c63b7e13194c7d01c.md",
+      "source_required_blockers": [
+        "barrier and familiarity path",
+        "private reply and magical silence interaction"
+      ],
+      "source_sha256": "4781ffcaf504be184bc99dbe4b4343cd639649d3e8d4490baaffc2af7ce186e4"
+    }
+  }
+}

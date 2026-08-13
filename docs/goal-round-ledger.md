@@ -6,6 +6,20 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round XLV：typed spell timed-modifier persistence seam
+
+当前状态：`no_promotion`；五条候选继续 compile-only。选择 Longstrider 暴露的
+速度 `+10 ft` 与 `1 hour` expiry，补齐名称无关 `spell.timed_modifier.v1`。
+
+- 覆盖 source provenance、typed speed modifier、expiry persistence、same-source
+  replacement、CAS、replay 与 payload drift fail-closed。
+- production registry 已注册该 spell consumer，但没有把任何法术名接入 dispatch，
+  也没有伪造 known-spell producer；因此不满足 candidate promotion。
+- Project baseline→after：`203/35/111` → `203/35/111`，delta `0/0/0`；promoted IDs 为空。
+- Evidence：`scripts/validate-round-XLV-typed-spell-timed-modifier.py`、
+  `backend/tests/test_typed_spell_timed_modifiers.py`、
+  `reports/round-XLV-typed-spell-timed-modifier-2026-08-13.json`。
+
 ## Round XLIV：typed spell target fan-out seam
 
 当前状态：`no_promotion`；五条候选继续 compile-only。已排除早已在 Round XL
