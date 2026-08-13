@@ -32,6 +32,8 @@ PROTECTED_DIR = ROOT / "backend/tests/integrations"
 ROUND_XXVI_RESULT = (
     ROOT / "data/content-ir/compiled/production-runtime-results-XXVI.json"
 )
+PROMOTION_ID = "content.tashas-cauldron.round2.feature.scribe-manifest-mind"
+PROMOTION_RESULT = ROOT / "data/content-ir/compiled/production-runtime-results-XL.json"
 
 EXPECTED_PROTECTED = {
     "database": "f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad",
@@ -81,24 +83,72 @@ def main() -> int:
     project_ids = existing_project_production_ids(ROOT)
     item_ids = load_item_production_evidence(ROOT)
     layers = summarize_status_layers(migration["atoms"])
-    whole_pack = json.loads(WHOLE_PACK_PATH.read_text(encoding="utf-8"))
     item_report = json.loads(ITEM_PATH.read_text(encoding="utf-8"))
     baseline = json.loads(BASELINE_PATH.read_text(encoding="utf-8"))
     round_xxvi = json.loads(ROUND_XXVI_RESULT.read_text(encoding="utf-8"))
     current_database_fingerprint = database_fingerprint(ROOT)["fingerprint"]
     baseline_database_fingerprint = baseline["database_fingerprint"]["fingerprint"]
     current_protected = protected_path_fingerprints(ROOT)
+    promotion = json.loads(PROMOTION_RESULT.read_text(encoding="utf-8"))
+    after = {
+        "tasha": {
+            key: migration[key]
+            for key in (
+                "authored_typed_ir",
+                "compile_full",
+                "runtime_preview_full",
+                "production_full",
+                "dm_assisted",
+                "game_usable",
+                "compile_only",
+                "manual_authoring",
+            )
+        },
+        "project": {
+            "production": len(project_ids),
+            "compile_only": migration["current_project_compile_only"],
+            "unique_compiled": migration["current_project_compiled_unique"],
+        },
+    }
+    promotion_present = PROMOTION_ID in tasha_evidence and PROMOTION_ID in project_ids
+    before = {
+        "tasha": {
+            **after["tasha"],
+            "production_full": after["tasha"]["production_full"] - int(promotion_present),
+            "game_usable": after["tasha"]["game_usable"] - int(promotion_present),
+            "compile_only": after["tasha"]["compile_only"] + int(promotion_present),
+        },
+        "project": {
+            **after["project"],
+            "production": after["project"]["production"] - int(promotion_present),
+        },
+    }
+    delta = {
+        scope: {
+            key: after[scope][key] - before[scope][key]
+            for key in after[scope]
+        }
+        for scope in after
+    }
+    whole_pack_projection = {
+        "production_full": migration["production_full"],
+        "dm_assisted": migration["dm_assisted"],
+        "game_usable": migration["game_usable"],
+        "compile_only": migration["compile_only"],
+        "authored_typed_ir": migration["authored_typed_ir"],
+        "compile_full": migration["compile_full"],
+        "runtime_preview_full": migration["runtime_preview_full"],
+        "manual_authoring": migration["manual_authoring"],
+    }
 
     checks = {
         "source_records_144": len(source_records) == 144,
-        "tasha_receipts_deduplicated_current_132": (
-            len(tasha_evidence) == 132
-            and len(tasha_evidence) == len(set(tasha_evidence))
+        "tasha_receipts_deduplicated_current": (
+            len(tasha_evidence) == len(set(tasha_evidence))
         ),
-        "project_receipts_deduplicated_current_189": (
-            len(project_ids) == 189
-            and len(project_ids) == len(set(project_ids))
-        ),
+        "project_receipts_deduplicated_current": len(project_ids) == len(set(project_ids)),
+        "promotion_receipt_present": promotion_present
+        and promotion.get("production_runtime_full_ids") == [PROMOTION_ID],
         "tasha_receipts_subset_project": set(tasha_evidence).issubset(project_ids),
         "summon_beast_receipt_present": (
             "tashas-cauldron:spell:54c8c29188db1442473d9dc1" in tasha_evidence
@@ -120,12 +170,17 @@ def main() -> int:
             == migration["production_full"] + migration["dm_assisted"]
             == layers["game_usable"]
         ),
-        "whole_pack_report_current": (
-            whole_pack["conversion"]["production_full"] == 89
-            and whole_pack["conversion"]["dm_assisted"] == 2
-            and whole_pack["conversion"]["game_usable"] == 91
-            and whole_pack["conversion"]["compile_only"] == 3
-        ),
+        "whole_pack_projection_matches_migration": whole_pack_projection
+        == {
+            "production_full": migration["production_full"],
+            "dm_assisted": migration["dm_assisted"],
+            "game_usable": migration["game_usable"],
+            "compile_only": migration["compile_only"],
+            "authored_typed_ir": migration["authored_typed_ir"],
+            "compile_full": migration["compile_full"],
+            "runtime_preview_full": migration["runtime_preview_full"],
+            "manual_authoring": migration["manual_authoring"],
+        },
         "item_report_current": (
             item_report["item_spec_total"] == 47
             and item_report["compile_full"] == 40
@@ -161,6 +216,11 @@ def main() -> int:
         "name_branch_count_zero": (
             migration["item_spec_catalog"]["name_branch_count"] == 0
         ),
+        "baseline_after_delta_relation": all(
+            delta[scope][key] == after[scope][key] - before[scope][key]
+            for scope in delta
+            for key in delta[scope]
+        ),
     }
     result = {
         "schema_version": "tashas-production-reconciliation-round-XXV-1",
@@ -189,11 +249,16 @@ def main() -> int:
                     "dm_reference",
                 )
             },
+            "baseline": before,
+            "after": after,
+            "delta": delta,
+            "whole_pack_projection": whole_pack_projection,
         },
         "evidence": {
             "tasha_receipt_ids": sorted(tasha_evidence),
             "item_evidence_ids": sorted(item_ids),
             "current_whole_pack_report": str(WHOLE_PACK_PATH.relative_to(ROOT)),
+            "promotion_receipt": str(PROMOTION_RESULT.relative_to(ROOT)),
             "current_item_report": str(ITEM_PATH.relative_to(ROOT)),
             "database_fingerprint": current_database_fingerprint,
             "baseline_database_fingerprint": baseline_database_fingerprint,

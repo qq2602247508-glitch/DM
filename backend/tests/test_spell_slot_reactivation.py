@@ -58,7 +58,7 @@ def test_source_bound_ir_materializes_closed_reactivation_contract() -> None:
     spec = _spec()
     compiler = FeatureCompiler(status_authority="compiler")
     compiled = compiler.compile(spec)
-    assert compiled.compile_status == "partial"
+    assert compiled.compile_status == "full"
     assert all(
         not (
             result.clause_id == "spell-slot-reactivation"
@@ -67,7 +67,7 @@ def test_source_bound_ir_materializes_closed_reactivation_contract() -> None:
         for result in compiled.clause_results
     )
 
-    clause = next(item for item in spec.clauses if item.clause_id == "spell-slot-reactivation")
+    clause = next(item for item in spec.clauses if item.clause_id == "long-rest-reactivation")
     descriptor = default_capability_catalog().get("spell.slot.reactivation")
     assert descriptor is not None
     materialized = default_materializer_registry().materialize(

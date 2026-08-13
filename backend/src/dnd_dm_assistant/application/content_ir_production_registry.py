@@ -494,70 +494,45 @@ def resolve_production_consumers(
     if content_kind == "feature":
         if runtime_schema_version not in {"feature-runtime-1", ""}:
             raise ValueError("unsupported Content IR feature runtime schema")
+        resolved: list[str] = []
         if blocks.get("spell_context"):
-            return (
-                dict(
-                    _CONSUMERS["spell.context.v1"],
-                    consumer_id="spell.context.v1",
-                ),
-            )
+            resolved.append("spell.context.v1")
         if blocks.get("feature_event_window"):
-            return (
-                dict(
-                    _CONSUMERS["combat_engine.feature_event_window.v1"],
-                    consumer_id="combat_engine.feature_event_window.v1",
-                ),
-            )
+            resolved.append("combat_engine.feature_event_window.v1")
         if blocks.get("roll_intervention"):
-            return (
-                dict(
-                    _CONSUMERS["combat_engine.roll_intervention.v1"],
-                    consumer_id="combat_engine.roll_intervention.v1",
-                ),
-            )
+            resolved.append("combat_engine.roll_intervention.v1")
         if blocks.get("communication"):
-            return (
-                dict(
-                    _CONSUMERS["communication.mutual_comprehension.v1"],
-                    consumer_id="communication.mutual_comprehension.v1",
-                ),
-            )
+            resolved.append("communication.mutual_comprehension.v1")
         if blocks.get("telepathic_information"):
-            return (
-                dict(
-                    _CONSUMERS["telepathic.information.v1"],
-                    consumer_id="telepathic.information.v1",
-                ),
-            )
+            resolved.append("telepathic.information.v1")
         if blocks.get("entity_spatial"):
-            return (
-                dict(_CONSUMERS["entity.spatial.v1"], consumer_id="entity.spatial.v1"),
-            )
+            resolved.append("entity.spatial.v1")
         if blocks.get("entity_senses"):
-            return (
-                dict(_CONSUMERS["entity.senses.v1"], consumer_id="entity.senses.v1"),
-            )
-        if blocks.get("attack_rider") or blocks.get("feature_action"):
-            key = (
-                "combat_engine.damage_heal.v1"
-                if blocks.get("attack_rider")
-                else "combat_engine.feature_action.v1"
-            )
-            return (dict(_CONSUMERS[key], consumer_id=key),)
+            resolved.append("entity.senses.v1")
+        if blocks.get("entity_lifecycles") or blocks.get("resources") or blocks.get(
+            "advancement"
+        ) or blocks.get("proficiencies") or blocks.get("prepared_spell_list") or blocks.get(
+            "spell_list_expansions"
+        ):
+            resolved.append("advancement_service.character_growth.v1")
+        if blocks.get("spell_slot_reactivations"):
+            resolved.append("spell.slot.reactivation.v1")
+        if blocks.get("spell_origins"):
+            resolved.append("spell.remote_origin.v1")
+        if blocks.get("attack_rider"):
+            resolved.append("combat_engine.damage_heal.v1")
+        if blocks.get("feature_action"):
+            resolved.append("combat_engine.feature_action.v1")
         if blocks.get("condition_removal"):
-            return (
-                dict(
-                    _CONSUMERS["combat_engine.condition_lifecycle.v1"],
-                    consumer_id="combat_engine.condition_lifecycle.v1",
-                ),
-            )
+            resolved.append("combat_engine.condition_lifecycle.v1")
         if blocks.get("timed_modifier") or blocks.get("passive_registry"):
-            return (
-                dict(
-                    _CONSUMERS["combat_engine.feature_action.v1"],
-                    consumer_id="combat_engine.feature_action.v1",
-                ),
-            )
+            resolved.append("combat_engine.feature_action.v1")
+        if not resolved:
+            raise ValueError("feature runtime has no registered executable consumer")
+        return tuple(
+            dict(_CONSUMERS[item], consumer_id=item)
+            for item in sorted(set(resolved))
+        )
         raise ValueError("feature runtime has no registered executable consumer")
 
     if content_kind == "item":

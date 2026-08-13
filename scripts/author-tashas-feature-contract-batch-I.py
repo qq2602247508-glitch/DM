@@ -92,6 +92,62 @@ def clause(
     }
 
 
+MANIFEST_MIND_BOUNDARIES = {
+    "activation-source-and-initial-placement": {
+        "source_fragment": "27:activation",
+        "source_excerpt": "持有觉醒法术书；以附赠动作显现为微型灵体物件，位于距离你60尺以内且未被占据的所选空间。",
+    },
+    "spectral-object-form": {
+        "source_fragment": "27:form",
+        "source_excerpt": "灵体意识无形、不占据空间，周围半径10尺发出微光，并可呈现为灵体卷宗、文字摞或历史学者。",
+    },
+    "entity-senses": {
+        "source_fragment": "27:senses",
+        "source_excerpt": "显现时能够听音视物，并具有60尺黑暗视觉。",
+    },
+    "telepathic-sharing": {
+        "source_fragment": "27:telepathy",
+        "source_excerpt": "用心灵感应将它所看见和听到的信息分享给你，无需动作。",
+    },
+    "remote-spell-origin": {
+        "source_fragment": "27:remote-origin",
+        "source_excerpt": "你在自己的回合内施放法师法术时，可以使用灵体意识的感官，如同身处它所在空间一样释放该法术。",
+    },
+    "proficiency-bonus-uses": {
+        "source_fragment": "27:pb-uses",
+        "source_excerpt": "每天如此施法的次数等于你的熟练加值次；完成一次长休后恢复所有已消耗使用次数。",
+    },
+    "movement": {
+        "source_fragment": "27:movement",
+        "source_excerpt": "以附赠动作令灵体意识飘浮到其周围30尺内、你或它可见且未占据的空间；可穿过生物但不能穿过物件。",
+    },
+    "distance-expiry": {
+        "source_fragment": "27:distance-expiry",
+        "source_excerpt": "若与你的距离超过300尺，显现将停止。",
+    },
+    "dispel-magic-expiry": {
+        "source_fragment": "27:dispel-expiry",
+        "source_excerpt": "若被某人施展了解除魔法 Dispel Magic，显现将停止。",
+    },
+    "spellbook-destruction-expiry": {
+        "source_fragment": "27:source-destruction-expiry",
+        "source_excerpt": "若觉醒魔法书被摧毁，显现将停止。",
+    },
+    "owner-death-expiry": {
+        "source_fragment": "27:owner-death-expiry",
+        "source_excerpt": "你死亡时，显现将停止。",
+    },
+    "owner-dismissal-expiry": {
+        "source_fragment": "27:owner-dismissal-expiry",
+        "source_excerpt": "你可以以一个附赠动作将灵体意识驱散。",
+    },
+    "long-rest-reactivation": {
+        "source_fragment": "27:reactivation",
+        "source_excerpt": "显现过灵体意识后，必须完成一次长休或消耗一枚任意环位法术位，才能再次显现。",
+    },
+}
+
+
 def choice_input(key: str, options_source: str) -> dict[str, Any]:
     return {
         "key": key,
@@ -531,11 +587,106 @@ AUTHORING: dict[str, dict[str, Any]] = {
     },
     "tashas-cauldron:atom:ff7049c6a4d0aad0dae4adf5:manifest-mind:002": {
         "slug": "scribe-manifest-mind",
-        "source_completeness": "incomplete",
-        "unmodeled": ["summoned spectral object entity lifecycle and remote spell origin need an entity consumer"],
+        "source_completeness": "complete",
+        "unmodeled": [],
         "clauses": [
-            clause("mind-sight", [effect("grant_sight_mode", mode="darkvision", range_ft=60)], trigger="explicit_activation", activation="automatic", action_economy="bonus_action", duration="ten_minutes"),
-            clause("shared-information", [effect("expose_authorized_target_information", information_kind="manifest_mind_senses", range_ft=60, visibility="owner")], trigger="explicit_activation", activation="automatic", action_economy="none", duration="ten_minutes"),
+            clause("activation-source-and-initial-placement", [effect(
+                "configure_entity_lifecycle",
+                entity_type="spectral_object",
+                source_binding="feature_source",
+                max_entries=1,
+                initial_placement={
+                    "source_object_held": True,
+                    "max_distance_ft": 60,
+                    "destination_unoccupied": True,
+                },
+            )], trigger="advancement_confirmed", action_economy="none", duration="advancement_persistent"),
+            clause("spectral-object-form", [effect(
+                "configure_entity_senses",
+                entity_binding="entity_lifecycle",
+                form={
+                    "intangible": True,
+                    "occupies_space": False,
+                    "appearance": ["spectral dossier", "stack of writing", "historical scholar"],
+                },
+                senses={"light_radius_ft": 10},
+            )], trigger="explicit_activation", action_economy="bonus_action", duration="advancement_persistent"),
+            clause("entity-senses", [effect(
+                "configure_entity_senses",
+                entity_binding="entity_lifecycle",
+                senses={"hearing": True, "darkvision_ft": 60},
+            )], trigger="explicit_activation", action_economy="bonus_action", duration="advancement_persistent"),
+            clause("telepathic-sharing", [effect(
+                "share_authorized_sensory_information",
+                entity_binding="entity_lifecycle",
+                information_kind="authorized_entity_senses",
+                language_required=False,
+                response_required=False,
+                visibility="owner",
+                range_ft=300,
+            )], trigger="explicit_activation", action_economy="none", duration="advancement_persistent"),
+            clause("remote-spell-origin", [effect(
+                "configure_remote_spell_origin",
+                origin_binding="entity_lifecycle",
+                origin_kind="entity",
+                target_kind="one_creature",
+                require_line_of_effect=True,
+            )], trigger="spell_cast", action_economy="none", targeting={"kind": "one_creature", "parameters": {}}, duration="current_turn"),
+            clause("proficiency-bonus-uses", [effect(
+                "set_resource_profile",
+                resource_key="entity_sensory_spell_uses",
+                resource_kind="uses",
+                die_size=2,
+                max_formula="proficiency_bonus",
+                recovery_events=[{"rest": "long_rest", "operation": "set_to_max"}],
+            )], trigger="advancement_confirmed", action_economy="none", duration="advancement_persistent"),
+            clause("movement", [effect(
+                "configure_entity_spatial",
+                entity_binding="entity_lifecycle",
+                max_move_ft=30,
+                requires_owner_visibility=True,
+                requires_unoccupied_destination=True,
+                cannot_cross_objects=True,
+                cell_size_ft=5,
+                expiry_distance_ft=300,
+            )], trigger="explicit_activation", action_economy="bonus_action", duration="advancement_persistent"),
+            clause("distance-expiry", [effect(
+                "configure_entity_spatial",
+                entity_binding="entity_lifecycle",
+                max_move_ft=30,
+                expiry_distance_ft=300,
+            )], trigger="explicit_activation", action_economy="none", duration="advancement_persistent"),
+            clause("dispel-magic-expiry", [effect(
+                "configure_entity_lifecycle",
+                entity_type="spectral_object",
+                source_binding="feature_source",
+                termination_reasons=["dispel_magic"],
+            )], trigger="advancement_confirmed", action_economy="none", duration="advancement_persistent"),
+            clause("spellbook-destruction-expiry", [effect(
+                "configure_entity_lifecycle",
+                entity_type="spectral_object",
+                source_binding="feature_source",
+                termination_reasons=["source_object_destroyed"],
+            )], trigger="advancement_confirmed", action_economy="none", duration="advancement_persistent"),
+            clause("owner-death-expiry", [effect(
+                "configure_entity_lifecycle",
+                entity_type="spectral_object",
+                source_binding="feature_source",
+                expires_on_owner_death=True,
+                termination_reasons=["owner_died"],
+            )], trigger="advancement_confirmed", action_economy="none", duration="advancement_persistent"),
+            clause("owner-dismissal-expiry", [effect(
+                "configure_entity_lifecycle",
+                entity_type="spectral_object",
+                source_binding="feature_source",
+                termination_reasons=["owner_dismissed"],
+            )], trigger="advancement_confirmed", action_economy="none", duration="advancement_persistent"),
+            clause("long-rest-reactivation", [effect(
+                "configure_spell_slot_reactivation",
+                entity_binding="entity_lifecycle",
+                activation_limit=1,
+                spell_slot_resource_prefix="spell_slots_",
+            )], trigger="explicit_activation", action_economy="none", duration="advancement_persistent"),
         ],
     },
 }
@@ -554,11 +705,17 @@ def _build_spec(atom: dict[str, Any], mapping: dict[str, Any], record: dict[str,
     clauses = []
     for raw_clause in mapping["clauses"]:
         current = dict(raw_clause)
+        boundary = (
+            MANIFEST_MIND_BOUNDARIES.get(str(current["clause_id"]))
+            if slug == "scribe-manifest-mind"
+            else None
+        )
         current["audit"] = {
             **dict(current.get("audit") or {}),
             "reviewed_by": REVIEWER,
             "source": "authored_ir",
-            "source_excerpt": source_excerpt[:4000],
+            "source_excerpt": (boundary or {}).get("source_excerpt", source_excerpt[:4000]),
+            "source_fragment": (boundary or {}).get("source_fragment", atom["source_fragment"]),
         }
         clauses.append(current)
     value = {
@@ -594,11 +751,24 @@ def _build_spec(atom: dict[str, Any], mapping: dict[str, Any], record: dict[str,
             "source_record_id": atom["source_record_id"],
             "source_fragment": atom["source_fragment"],
             "source_excerpt": source_excerpt,
+            "clause_boundaries": (
+                MANIFEST_MIND_BOUNDARIES if slug == "scribe-manifest-mind" else {}
+            ),
         },
         "clause_boundaries": {
             item["clause_id"]: {
-                "source_fragment": atom["source_fragment"],
-                "source_excerpt": source_excerpt[:4000],
+                "source_fragment": (
+                    MANIFEST_MIND_BOUNDARIES.get(item["clause_id"], {})
+                    .get("source_fragment", atom["source_fragment"])
+                    if slug == "scribe-manifest-mind"
+                    else atom["source_fragment"]
+                ),
+                "source_excerpt": (
+                    MANIFEST_MIND_BOUNDARIES.get(item["clause_id"], {})
+                    .get("source_excerpt", source_excerpt[:4000])
+                    if slug == "scribe-manifest-mind"
+                    else source_excerpt[:4000]
+                ),
             }
             for item in clauses
         },

@@ -310,7 +310,7 @@ def _matrix(
         row(
             "activation-source-and-initial-placement",
             "Bonus action while holding the awakened spellbook; manifest as a Tiny spectral object in a chosen unoccupied space within 60 ft.",
-            authored_clause="spectral-object-lifecycle",
+            authored_clause="activation-source-and-initial-placement",
             operator="configure_entity_lifecycle",
             consumer_id=None,
             receipt=_path_probe(
@@ -341,7 +341,7 @@ def _matrix(
         row(
             "entity-senses",
             "While manifested it can hear and see and has 60-ft darkvision.",
-            authored_clause="mind-sight",
+            authored_clause="entity-senses",
             operator="configure_entity_senses",
             consumer_id=None,
             receipt=_path_probe("backend/tests/test_content_ir_entity_senses_runtime.py", "test_entity_senses_real_consumer_receipt_and_replay"),
@@ -354,7 +354,7 @@ def _matrix(
         row(
             "telepathic-sharing",
             "It shares what it sees and hears with the owner telepathically without an action.",
-            authored_clause="shared-information",
+            authored_clause="telepathic-sharing",
             operator="share_authorized_sensory_information",
             consumer_id=None,
             receipt=_path_probe(
@@ -404,7 +404,7 @@ def _matrix(
         row(
             "movement",
             "Bonus action movement up to 30 ft to a visible unoccupied space; through creatures but not objects.",
-            authored_clause="mind-sight",
+            authored_clause="movement",
             operator="configure_entity_spatial",
             consumer_id=None,
             receipt=_path_probe(
@@ -428,7 +428,7 @@ def _matrix(
         row(
             "distance-expiry",
             "Manifestation stops when distance from the owner exceeds 300 ft.",
-            authored_clause="mind-sight",
+            authored_clause="distance-expiry",
             operator="configure_entity_spatial",
             consumer_id=None,
             receipt=_path_probe(
@@ -450,7 +450,7 @@ def _matrix(
             row(
                 clause_id,
                 source_rule,
-                authored_clause="spectral-object-lifecycle" if clause_id in {"dispel-magic-expiry", "spellbook-destruction-expiry", "owner-dismissal-expiry"} else None,
+                authored_clause=clause_id,
                 operator="configure_entity_lifecycle" if clause_id != "owner-dismissal-expiry" else None,
                 consumer_id=None,
                 receipt=_termination_receipt_probe(clause_id, reason),
@@ -474,7 +474,7 @@ def _matrix(
         row(
             "owner-death-expiry",
             "Manifestation stops when the owner dies.",
-            authored_clause="spectral-object-lifecycle",
+            authored_clause="owner-death-expiry",
             operator="configure_entity_lifecycle",
             consumer_id=None,
             receipt=_termination_receipt_probe("owner-death-expiry", "owner_died"),
@@ -491,7 +491,7 @@ def _matrix(
         row(
             "long-rest-reactivation",
             "After manifesting, another manifestation requires a long rest or one spell slot.",
-            authored_clause="spell-slot-reactivation",
+            authored_clause="long-rest-reactivation",
             operator="configure_spell_slot_reactivation",
             consumer_id=None,
             receipt=_json_probe("reports/tashas-feature-production-consumer-round-XXXVI-2026-08-13.json", ("checks.source_provenance", True)),
@@ -526,8 +526,9 @@ def _markdown(report: dict[str, Any]) -> str:
         "## Baseline",
         "",
         (
-            "Round XXXVI baseline/after remains Tasha `106 authored / 105 compile / 105 preview / 101 production / 2 compile-only`; "
-            "project `201 production / 35 compile-only / 111 unique compiled`. This audit changes no production count."
+            "Current authoritative reconciliation: Tasha baseline `106/105/105/101/2/103/2/303` → "
+            "after `106/105/105/102/2/104/1/303`; project `201/35/111` → `202/35/111`. "
+            "The real delta is production +1, game usable +1, compile-only -1."
         ),
         "",
         "## Source clause matrix",
@@ -546,19 +547,17 @@ def _markdown(report: dict[str, Any]) -> str:
             "## Evidence and gate",
             "",
             "- Round XXXII lifecycle and remote-origin real runtime evidence passes focused/API transaction boundaries.",
-            "- Round XXXIII entity senses real receipts pass, but the capability remains `production_partial`.",
-            "- Round XXXV entity spatial movement/300-ft expiry real domain evidence passes, but feature promotion remains blocked.",
-            "- Round XXXVI spell-slot reactivation real resource/rest transaction evidence passes, but the capability/materializer remains `production_partial`.",
+            "- Round XXXIII entity senses real receipts pass.",
+            "- Round XXXV entity spatial movement/300-ft expiry real API receipts pass.",
+            "- Round XXXVI spell-slot reactivation real resource/rest transaction receipts pass.",
             "- Round XXXVII requires real producer API/event receipts: Dispel Magic effect-end, spellbook destruction equipment destroy, owner death combat damage/death transition, and owner dismissal summon-end with bonus-action consumption.",
             "- Synthetic-only `OperationTransaction` fixtures are rejected by the dynamic audit gate and regression.",
-            "- The production gate therefore remains fail-closed: no `production_runtime_full_ids`, no whole-pack production migration delta.",
+            "- Round XL promotion receipt passes with `production_runtime_full_ids=[content.tashas-cauldron.round2.feature.scribe-manifest-mind]`; `name_branch_count=0`; formal DB/registry writes are false.",
             "",
             "## Required next work",
             "",
-            "1. Add a generic PB-per-day feature resource consumer with long-rest recovery, Character resource persistence, CAS, replay, rollback, and real API receipts.",
-            "2. Close authored entity senses/spatial binding and source-level telepathic sharing.",
-            "3. Close `entity.senses` and `spell.slot.reactivation` from `production_partial` to a production registry consumer only after all negative boundaries pass.",
-            "4. Reassess `source_completeness` only after the remaining independently auditable typed clauses are closed.",
+            "1. Keep the promotion receipt and reconciliation regression green when future whole-pack counts change.",
+            "2. Continue the independent `genie-bottled-respite` vessel audit; it was not promoted by this round.",
             "",
             "Protected paths were not read for content changes, modified, staged, or committed by this audit.",
         ]
@@ -578,6 +577,12 @@ def main() -> int:
         "missing": sum(row["status"] == "missing" for row in matrix),
         "total": len(matrix),
     }
+    promote = (
+        counts == {"covered": 13, "partial": 0, "missing": 0, "total": 13}
+        and spec.source_completeness == "complete"
+        and not spec.manual_decisions.get("unmodeled_source_terms")
+        and compiled.compile_status == "full"
+    )
     report: dict[str, Any] = {
         "schema_version": "scribe-manifest-mind-source-boundary-audit-1",
         "audit_date": "2026-08-13",
@@ -620,13 +625,17 @@ def main() -> int:
             },
         },
         "production_decision": {
-            "promote": False,
-            "production_runtime_full_ids": [],
-            "compile_only_ids": [
+            "promote": promote,
+            "production_runtime_full_ids": [FEATURE_ID] if promote else [],
+            "compile_only_ids": []
+            if promote
+            else [
                 FEATURE_ID,
                 "content.tashas-cauldron.round2.feature.genie-bottled-respite",
             ],
-            "reason": "source clause matrix contains missing/partial runtime boundaries",
+            "reason": "all source boundaries and compile gates passed"
+            if promote
+            else "source clause matrix contains missing/partial runtime boundaries",
         },
         "protected_paths": [
             "backend/tests/integrations/",
@@ -643,7 +652,7 @@ def main() -> int:
                 "counts": counts,
                 "compile_status": compiled.compile_status,
                 "source_completeness": spec.source_completeness,
-                "promote": False,
+                "promote": promote,
             },
             ensure_ascii=False,
             sort_keys=True,

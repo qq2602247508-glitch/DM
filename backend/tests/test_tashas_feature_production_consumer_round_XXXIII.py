@@ -47,16 +47,7 @@ def _contract() -> tuple[FeatureSpec, dict[str, object]]:
             **{key: item for key, item in raw.items() if key in FeatureSpec._FIELDS},
             "source_completeness": "complete",
             "manual_decisions": {"unmodeled_source_terms": []},
-            "clauses": [
-                clause
-                for clause in raw["clauses"]
-                if clause["clause_id"] in {
-                    "spectral-object-lifecycle",
-                    "remote-spell-origin",
-                    "mind-sight",
-                    "shared-information",
-                }
-            ],
+            "clauses": raw["clauses"],
         },
         path=str(FEATURE),
     )
@@ -71,21 +62,26 @@ def _contract() -> tuple[FeatureSpec, dict[str, object]]:
 def test_manifest_mind_is_source_complete_and_schema_strict() -> None:
     spec, _runtime = _contract()
     assert spec.feature_id == FEATURE_ID
-    assert spec.source_completeness == "incomplete"
+    assert spec.source_completeness == "complete"
     assert spec.source_record_id == SOURCE_RECORD_ID
     assert spec.source_fingerprint == SOURCE_FINGERPRINT
     assert spec.source_path == "塔莎的万事坩埚/玩家选项/职业/法师（TCE）/书士会.html"
     assert spec.source_book == "塔莎的万事坩埚"
-    assert "entity sensory profile consumer" in spec.manual_decisions["unmodeled_source_terms"]
+    assert spec.manual_decisions["unmodeled_source_terms"] == []
     assert [clause.clause_id for clause in spec.clauses] == [
-        "spectral-object-lifecycle",
-        "proficiency-bonus-uses",
-        "termination-events",
-        "remote-spell-origin",
-        "mind-sight",
+        "activation-source-and-initial-placement",
         "spectral-object-form",
-        "shared-information",
-        "spell-slot-reactivation",
+        "entity-senses",
+        "telepathic-sharing",
+        "remote-spell-origin",
+        "proficiency-bonus-uses",
+        "movement",
+        "distance-expiry",
+        "dispel-magic-expiry",
+        "spellbook-destruction-expiry",
+        "owner-death-expiry",
+        "owner-dismissal-expiry",
+        "long-rest-reactivation",
     ]
 
 
@@ -99,11 +95,11 @@ def test_manifest_mind_preserves_existing_typed_seams_but_does_not_promote() -> 
         for item in runtime["actions"].values()
         if item["feature_id"] == FEATURE_ID
     ]
-    assert len(lifecycle) == 1
-    assert lifecycle[0]["entity_type"] == "spectral_object"
-    assert lifecycle[0]["max_entries"] == 1
-    assert lifecycle[0]["expires_on_owner_death"] is True
-    assert lifecycle[0]["source_provenance"] == {
+    assert len(lifecycle) == 5
+    lifecycle_root = next(item for item in lifecycle if item["max_entries"] == 1)
+    assert lifecycle_root["entity_type"] == "spectral_object"
+    assert lifecycle_root.get("expires_on_owner_death") is None
+    assert lifecycle_root["source_provenance"] == {
         "source_record_id": SOURCE_RECORD_ID,
         "source_fingerprint": SOURCE_FINGERPRINT,
         "source_book": "塔莎的万事坩埚",
@@ -130,7 +126,7 @@ def test_manifest_mind_preserves_existing_typed_seams_but_does_not_promote() -> 
     assert telepathic["language_required"] is False
     assert telepathic["response_required"] is False
     assert spatial["resolution_kind"] == "entity_spatial"
-    assert spatial["action_cost"] == "bonus_action"
+    assert spatial["action_cost"] == "none"
 
 
 def test_manifest_mind_resolves_existing_generic_consumers_without_name_dispatch() -> None:
@@ -149,7 +145,7 @@ def test_manifest_mind_resolves_existing_generic_consumers_without_name_dispatch
     assert [item["consumer_id"] for item in consumers] == [
         "telepathic.information.v1"
     ]
-    assert spec.source_completeness == "incomplete"
+    assert spec.source_completeness == "complete"
     assert all(
         item["runtime_execution"]["status"] == "ready"
         for item in [
@@ -165,7 +161,7 @@ def test_entity_senses_materializer_is_strict_and_provenance_bound() -> None:
     value["source_completeness"] = "complete"
     value["manual_decisions"] = {"unmodeled_source_terms": []}
     for clause in value["clauses"]:
-        if clause["clause_id"] == "mind-sight":
+        if clause["clause_id"] == "entity-senses":
             clause["effects"][0] = {
                 "operator": "configure_entity_senses",
                 "parameters": {
@@ -186,7 +182,7 @@ def test_entity_senses_materializer_is_strict_and_provenance_bound() -> None:
     mind_sight_result = next(
         result
         for result in compiled.clause_results
-        if result.clause_id == "mind-sight"
+        if result.clause_id == "entity-senses"
     )
     assert mind_sight_result.blockers == ()
 
@@ -198,7 +194,7 @@ def test_manifest_mind_materializes_generic_spatial_boundary_without_promotion()
     value["source_completeness"] = "complete"
     value["manual_decisions"] = {"unmodeled_source_terms": []}
     value["clauses"] = [
-        clause for clause in value["clauses"] if clause["clause_id"] == "mind-sight"
+        clause for clause in value["clauses"] if clause["clause_id"] == "movement"
     ]
     spec = FeatureSpec.from_dict(
         {key: item for key, item in value.items() if key in FeatureSpec._FIELDS},

@@ -1,13 +1,57 @@
 {
   "class_name": "法师",
   "clause_boundaries": {
-    "mind-sight": {
-      "source_excerpt": "*第6级书士会**特性*\n你能将你觉醒法术书中的意识召唤出来。当你持有该法术书时，你可以以一个附赠动作令书中的意识显现为一个微型的灵体物件，使其悬浮于距离你60尺以内且未被占据的、由你选择的空间中。这一灵体意识是无形的，不会占据其空间，并会在其周围半径10尺范围内发出微光光照。它看上去如同一本灵体卷宗、一摞文字、或是一位历史中的学者（由你选择）。\n显现时，该灵体意识能够听音视物，并具有60尺的黑暗视觉。它能用心灵感应将它所看见和听到的信息分享给你（无需动作）。\n每当你在自己的回合内施放法师法术时，你可以使用灵体意识的感官、如同身处它所在的空间一样释放该法术。你每天能如此施法的次数等于你的熟练加值次，完成一次长休后，你恢复所有已消耗的使用次数。\n以一个附赠动作，你可以令灵体意识飘浮到其周围30尺内、你或它可见且未占据空间。灵体意识可以穿过生物但不能穿过物件。\n若遇到以下情况之一，灵体意识的显现将会停止：与你的距离超过300尺、被某人施展了解除魔法Dispel Magic 、觉醒魔法书被摧毁、你死亡时、或是你以一个附赠动作将其驱散。\n显现过灵体意识后，你必须完成一次长休、或是消耗一枚任意环位的法术位，才能再次显现它。",
-      "source_fragment": "27"
+    "activation-source-and-initial-placement": {
+      "source_excerpt": "持有觉醒法术书；以附赠动作显现为微型灵体物件，位于距离你60尺以内且未被占据的所选空间。",
+      "source_fragment": "27:activation"
     },
-    "shared-information": {
-      "source_excerpt": "*第6级书士会**特性*\n你能将你觉醒法术书中的意识召唤出来。当你持有该法术书时，你可以以一个附赠动作令书中的意识显现为一个微型的灵体物件，使其悬浮于距离你60尺以内且未被占据的、由你选择的空间中。这一灵体意识是无形的，不会占据其空间，并会在其周围半径10尺范围内发出微光光照。它看上去如同一本灵体卷宗、一摞文字、或是一位历史中的学者（由你选择）。\n显现时，该灵体意识能够听音视物，并具有60尺的黑暗视觉。它能用心灵感应将它所看见和听到的信息分享给你（无需动作）。\n每当你在自己的回合内施放法师法术时，你可以使用灵体意识的感官、如同身处它所在的空间一样释放该法术。你每天能如此施法的次数等于你的熟练加值次，完成一次长休后，你恢复所有已消耗的使用次数。\n以一个附赠动作，你可以令灵体意识飘浮到其周围30尺内、你或它可见且未占据空间。灵体意识可以穿过生物但不能穿过物件。\n若遇到以下情况之一，灵体意识的显现将会停止：与你的距离超过300尺、被某人施展了解除魔法Dispel Magic 、觉醒魔法书被摧毁、你死亡时、或是你以一个附赠动作将其驱散。\n显现过灵体意识后，你必须完成一次长休、或是消耗一枚任意环位的法术位，才能再次显现它。",
-      "source_fragment": "27"
+    "dispel-magic-expiry": {
+      "source_excerpt": "若被某人施展了解除魔法 Dispel Magic，显现将停止。",
+      "source_fragment": "27:dispel-expiry"
+    },
+    "distance-expiry": {
+      "source_excerpt": "若与你的距离超过300尺，显现将停止。",
+      "source_fragment": "27:distance-expiry"
+    },
+    "entity-senses": {
+      "source_excerpt": "显现时能够听音视物，并具有60尺黑暗视觉。",
+      "source_fragment": "27:senses"
+    },
+    "long-rest-reactivation": {
+      "source_excerpt": "显现过灵体意识后，必须完成一次长休或消耗一枚任意环位法术位，才能再次显现。",
+      "source_fragment": "27:reactivation"
+    },
+    "movement": {
+      "source_excerpt": "以附赠动作令灵体意识飘浮到其周围30尺内、你或它可见且未占据的空间；可穿过生物但不能穿过物件。",
+      "source_fragment": "27:movement"
+    },
+    "owner-death-expiry": {
+      "source_excerpt": "你死亡时，显现将停止。",
+      "source_fragment": "27:owner-death-expiry"
+    },
+    "owner-dismissal-expiry": {
+      "source_excerpt": "你可以以一个附赠动作将灵体意识驱散。",
+      "source_fragment": "27:owner-dismissal-expiry"
+    },
+    "proficiency-bonus-uses": {
+      "source_excerpt": "每天如此施法的次数等于你的熟练加值次；完成一次长休后恢复所有已消耗使用次数。",
+      "source_fragment": "27:pb-uses"
+    },
+    "remote-spell-origin": {
+      "source_excerpt": "你在自己的回合内施放法师法术时，可以使用灵体意识的感官，如同身处它所在空间一样释放该法术。",
+      "source_fragment": "27:remote-origin"
+    },
+    "spectral-object-form": {
+      "source_excerpt": "灵体意识无形、不占据空间，周围半径10尺发出微光，并可呈现为灵体卷宗、文字摞或历史学者。",
+      "source_fragment": "27:form"
+    },
+    "spellbook-destruction-expiry": {
+      "source_excerpt": "若觉醒魔法书被摧毁，显现将停止。",
+      "source_fragment": "27:source-destruction-expiry"
+    },
+    "telepathic-sharing": {
+      "source_excerpt": "用心灵感应将它所看见和听到的信息分享给你，无需动作。",
+      "source_fragment": "27:telepathy"
     }
   },
   "clauses": [
@@ -15,13 +59,13 @@
       "action_economy": "none",
       "activation": "automatic",
       "audit": {
-        "reviewed_by": "codex-manual-review-2026-08-13-round-XXXIII",
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
         "source": "authored_ir",
-        "source_boundary": "spectral-object-lifecycle",
-        "source_excerpt": "*第6级书士会**特性*\n你能将你觉醒法术书中的意识召唤出来。当你持有该法术书时，你可以以一个附赠动作令书中的意识显现为一个微型的灵体物件，使其悬浮于距离你60尺以内且未被占据的、由你选择的空间中。",
-        "decision": "The spectral object is represented by the generic entity.lifecycle.v1 contract; its sensory profile remains blocked until the generic entity sensory consumer is production-closed."
+        "source_boundary": "activation-source-and-initial-placement",
+        "source_excerpt": "持有觉醒法术书；以附赠动作显现为微型灵体物件，位于距离你60尺以内且未被占据的所选空间。",
+        "source_fragment": "27:activation"
       },
-      "clause_id": "spectral-object-lifecycle",
+      "clause_id": "activation-source-and-initial-placement",
       "conditions": [],
       "duration": "advancement_persistent",
       "effects": [
@@ -29,21 +73,13 @@
           "operator": "configure_entity_lifecycle",
           "parameters": {
             "entity_type": "spectral_object",
-            "source_binding": "feature_source",
-            "max_entries": 1,
-            "expires_on_owner_death": true,
             "initial_placement": {
-              "max_distance_ft": 60,
               "destination_unoccupied": true,
+              "max_distance_ft": 60,
               "source_object_held": true
             },
-            "termination_reasons": [
-              "dispel_magic",
-              "source_object_destroyed",
-              "owner_died",
-              "owner_dismissed",
-              "distance_expired"
-            ]
+            "max_entries": 1,
+            "source_binding": "feature_source"
           }
         }
       ],
@@ -62,78 +98,35 @@
       "visibility": "owner"
     },
     {
-      "action_economy": "none",
+      "action_economy": "bonus_action",
       "activation": "automatic",
       "audit": {
-        "reviewed_by": "codex-source-clause-audit-2026-08-13",
-        "source": "authoritative_source_html",
-        "source_boundary": "proficiency-bonus-uses",
-        "source_excerpt": "每天能如此施法的次数等于你的熟练加值次，完成一次长休后，你恢复所有已消耗的使用次数。",
-        "decision": "Use the shared Character.resources consumer; maximum is resolved from the authoritative character proficiency bonus."
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "spectral-object-form",
+        "source_excerpt": "灵体意识无形、不占据空间，周围半径10尺发出微光，并可呈现为灵体卷宗、文字摞或历史学者。",
+        "source_fragment": "27:form"
       },
-      "clause_id": "proficiency-bonus-uses",
+      "clause_id": "spectral-object-form",
       "conditions": [],
-      "activation": "automatic",
       "duration": "advancement_persistent",
       "effects": [
         {
-          "operator": "set_resource_profile",
+          "operator": "configure_entity_senses",
           "parameters": {
-            "resource_key": "entity_sensory_spell_uses",
-            "resource_kind": "uses",
-            "die_size": 2,
-            "max_formula": "proficiency_bonus",
-            "recovery_events": [
-              {"rest": "long_rest", "operation": "set_to_max"}
-            ]
-          }
-        }
-      ],
-      "expiry": null,
-      "frequency": "per_day",
-      "persistence": "character.resources",
-      "required_inputs": [],
-      "resource_costs": [],
-      "resource_recovery": [
-        {
-          "key": "entity_sensory_spell_uses",
-          "operation": "set_to_max",
-          "amount": null,
-          "parameters": {"rest": "long_rest"}
-        }
-      ],
-      "stacking": null,
-      "targeting": {"kind": "self", "parameters": {}},
-      "trigger": "advancement_confirmed",
-      "visibility": "owner"
-    },
-    {
-      "action_economy": "none",
-      "activation": "automatic",
-      "audit": {
-        "reviewed_by": "codex-source-clause-audit-2026-08-13",
-        "source": "authoritative_source_html",
-        "source_boundary": "termination-events",
-        "source_excerpt": "若遇到以下情况之一，灵体意识的显现将会停止：与你的距离超过300尺、被某人施展了解除魔法、觉醒魔法书被摧毁、你死亡时、或是你以一个附赠动作将其驱散。",
-        "decision": "Termination is represented by the shared lifecycle terminate event and typed reason enum."
-      },
-      "clause_id": "termination-events",
-      "conditions": [],
-      "activation": "automatic",
-      "duration": "advancement_persistent",
-      "effects": [
-        {
-          "operator": "configure_entity_lifecycle",
-          "parameters": {
-            "entity_type": "spectral_object",
-            "source_binding": "feature_source",
-            "termination_reasons": [
-              "dispel_magic",
-              "source_object_destroyed",
-              "owner_died",
-              "owner_dismissed",
-              "distance_expired"
-            ]
+            "entity_binding": "entity_lifecycle",
+            "form": {
+              "appearance": [
+                "spectral dossier",
+                "stack of writing",
+                "historical scholar"
+              ],
+              "intangible": true,
+              "occupies_space": false
+            },
+            "senses": {
+              "light_radius_ft": 10
+            }
           }
         }
       ],
@@ -144,19 +137,101 @@
       "resource_costs": [],
       "resource_recovery": [],
       "stacking": null,
-      "targeting": {"kind": "self", "parameters": {}},
-      "trigger": "advancement_confirmed",
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "explicit_activation",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "bonus_action",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "entity-senses",
+        "source_excerpt": "显现时能够听音视物，并具有60尺黑暗视觉。",
+        "source_fragment": "27:senses"
+      },
+      "clause_id": "entity-senses",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "configure_entity_senses",
+          "parameters": {
+            "entity_binding": "entity_lifecycle",
+            "senses": {
+              "darkvision_ft": 60,
+              "hearing": true
+            }
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "explicit_activation",
       "visibility": "owner"
     },
     {
       "action_economy": "none",
       "activation": "automatic",
       "audit": {
-        "reviewed_by": "codex-manual-review-2026-08-13-round-XXXIII",
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "telepathic-sharing",
+        "source_excerpt": "用心灵感应将它所看见和听到的信息分享给你，无需动作。",
+        "source_fragment": "27:telepathy"
+      },
+      "clause_id": "telepathic-sharing",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "share_authorized_sensory_information",
+          "parameters": {
+            "entity_binding": "entity_lifecycle",
+            "information_kind": "authorized_entity_senses",
+            "language_required": false,
+            "range_ft": 300,
+            "response_required": false,
+            "visibility": "owner"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "explicit_activation",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
         "source": "authored_ir",
         "source_boundary": "remote-spell-origin",
-        "source_excerpt": "*第6级书士会**特性*\n每当你在自己的回合内施放法师法术时，你可以使用灵体意识的感官、如同身处它所在的空间一样释放该法术。",
-        "decision": "The remote cast origin is represented by generic remote.spell.origin.v1 and is authorized only by the feature-owned lifecycle snapshot; spell economy and entity sensory state remain separate blockers."
+        "source_excerpt": "你在自己的回合内施放法师法术时，可以使用灵体意识的感官，如同身处它所在空间一样释放该法术。",
+        "source_fragment": "27:remote-origin"
       },
       "clause_id": "remote-spell-origin",
       "conditions": [],
@@ -165,10 +240,10 @@
         {
           "operator": "configure_remote_spell_origin",
           "parameters": {
-            "origin_kind": "entity",
             "origin_binding": "entity_lifecycle",
-            "target_kind": "one_creature",
-            "require_line_of_effect": true
+            "origin_kind": "entity",
+            "require_line_of_effect": true,
+            "target_kind": "one_creature"
           }
         }
       ],
@@ -187,95 +262,110 @@
       "visibility": "owner"
     },
     {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "proficiency-bonus-uses",
+        "source_excerpt": "每天如此施法的次数等于你的熟练加值次；完成一次长休后恢复所有已消耗使用次数。",
+        "source_fragment": "27:pb-uses"
+      },
+      "clause_id": "proficiency-bonus-uses",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "set_resource_profile",
+          "parameters": {
+            "die_size": 2,
+            "max_formula": "proficiency_bonus",
+            "recovery_events": [
+              {
+                "operation": "set_to_max",
+                "rest": "long_rest"
+              }
+            ],
+            "resource_key": "entity_sensory_spell_uses",
+            "resource_kind": "uses"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    },
+    {
       "action_economy": "bonus_action",
       "activation": "automatic",
       "audit": {
         "reviewed_by": "codex-manual-review-2026-08-12-round-II",
         "source": "authored_ir",
-        "source_boundary": "mind-sight",
-        "source_excerpt": "*第6级书士会**特性*\n你能将你觉醒法术书中的意识召唤出来。当你持有该法术书时，你可以以一个附赠动作令书中的意识显现为一个微型的灵体物件，使其悬浮于距离你60尺以内且未被占据的、由你选择的空间中。这一灵体意识是无形的，不会占据其空间，并会在其周围半径10尺范围内发出微光光照。它看上去如同一本灵体卷宗、一摞文字、或是一位历史中的学者（由你选择）。\n显现时，该灵体意识能够听音视物，并具有60尺的黑暗视觉。它能用心灵感应将它所看见和听到的信息分享给你（无需动作）。\n每当你在自己的回合内施放法师法术时，你可以使用灵体意识的感官、如同身处它所在的空间一样释放该法术。你每天能如此施法的次数等于你的熟练加值次，完成一次长休后，你恢复所有已消耗的使用次数。\n以一个附赠动作，你可以令灵体意识飘浮到其周围30尺内、你或它可见且未占据空间。灵体意识可以穿过生物但不能穿过物件。\n若遇到以下情况之一，灵体意识的显现将会停止：与你的距离超过300尺、被某人施展了解除魔法Dispel Magic 、觉醒魔法书被摧毁、你死亡时、或是你以一个附赠动作将其驱散。\n显现过灵体意识后，你必须完成一次长休、或是消耗一枚任意环位的法术位，才能再次显现它。"
+        "source_boundary": "movement",
+        "source_excerpt": "以附赠动作令灵体意识飘浮到其周围30尺内、你或它可见且未占据的空间；可穿过生物但不能穿过物件。",
+        "source_fragment": "27:movement"
       },
-      "clause_id": "mind-sight",
+      "clause_id": "movement",
       "conditions": [],
-      "duration": "ten_minutes",
+      "duration": "advancement_persistent",
       "effects": [
         {
-          "operator": "configure_entity_senses",
+          "operator": "configure_entity_spatial",
           "parameters": {
+            "cannot_cross_objects": true,
+            "cell_size_ft": 5,
             "entity_binding": "entity_lifecycle",
-            "senses": {
-              "hearing": true,
-              "darkvision_ft": 60,
-              "light_radius_ft": 10
-            },
-            "form": {
-              "intangible": true,
-              "occupies_space": false,
-              "appearance": [
-                "spectral dossier",
-                "stack of writing",
-                "historical scholar"
-              ]
-            }
+            "expiry_distance_ft": 300,
+            "max_move_ft": 30,
+            "requires_owner_visibility": true,
+            "requires_unoccupied_destination": true
           }
-        },
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "explicit_activation",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "distance-expiry",
+        "source_excerpt": "若与你的距离超过300尺，显现将停止。",
+        "source_fragment": "27:distance-expiry"
+      },
+      "clause_id": "distance-expiry",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
         {
           "operator": "configure_entity_spatial",
           "parameters": {
             "entity_binding": "entity_lifecycle",
-            "max_move_ft": 30,
             "expiry_distance_ft": 300,
-            "cell_size_ft": 5,
-            "requires_owner_visibility": true,
-            "requires_unoccupied_destination": true,
-            "cannot_cross_objects": true
-          }
-        }
-      ],
-      "expiry": null,
-      "frequency": null,
-      "persistence": "character.feature_runtime",
-      "required_inputs": [],
-      "resource_costs": [],
-      "resource_recovery": [],
-      "stacking": null,
-      "targeting": {
-        "kind": "self",
-        "parameters": {}
-      },
-      "trigger": "explicit_activation",
-      "visibility": "owner"
-    },
-    {
-      "action_economy": "none",
-      "activation": "automatic",
-      "audit": {
-        "reviewed_by": "codex-source-clause-audit-2026-08-13",
-        "source": "authoritative_source_html",
-        "source_boundary": "spectral-object-form",
-        "source_excerpt": "这一灵体意识是无形的，不会占据其空间，并会在其周围半径10尺范围内发出微光光照。它看上去如同一本灵体卷宗、一摞文字、或是一位历史中的学者（由你选择）。",
-        "decision": "Typed entity form is persisted alongside the sensory profile; production promotion remains gated by the entity.senses capability status."
-      },
-      "clause_id": "spectral-object-form",
-      "conditions": [],
-      "duration": "ten_minutes",
-      "effects": [
-        {
-          "operator": "configure_entity_senses",
-          "parameters": {
-            "entity_binding": "entity_lifecycle",
-            "senses": {
-              "light_radius_ft": 10
-            },
-            "form": {
-              "intangible": true,
-              "occupies_space": false,
-              "appearance": [
-                "spectral dossier",
-                "stack of writing",
-                "historical scholar"
-              ]
-            }
+            "max_move_ft": 30
           }
         }
       ],
@@ -299,22 +389,22 @@
       "audit": {
         "reviewed_by": "codex-manual-review-2026-08-12-round-II",
         "source": "authored_ir",
-        "source_boundary": "shared-information",
-        "source_excerpt": "*第6级书士会**特性*\n你能将你觉醒法术书中的意识召唤出来。当你持有该法术书时，你可以以一个附赠动作令书中的意识显现为一个微型的灵体物件，使其悬浮于距离你60尺以内且未被占据的、由你选择的空间中。这一灵体意识是无形的，不会占据其空间，并会在其周围半径10尺范围内发出微光光照。它看上去如同一本灵体卷宗、一摞文字、或是一位历史中的学者（由你选择）。\n显现时，该灵体意识能够听音视物，并具有60尺的黑暗视觉。它能用心灵感应将它所看见和听到的信息分享给你（无需动作）。\n每当你在自己的回合内施放法师法术时，你可以使用灵体意识的感官、如同身处它所在的空间一样释放该法术。你每天能如此施法的次数等于你的熟练加值次，完成一次长休后，你恢复所有已消耗的使用次数。\n以一个附赠动作，你可以令灵体意识飘浮到其周围30尺内、你或它可见且未占据空间。灵体意识可以穿过生物但不能穿过物件。\n若遇到以下情况之一，灵体意识的显现将会停止：与你的距离超过300尺、被某人施展了解除魔法Dispel Magic 、觉醒魔法书被摧毁、你死亡时、或是你以一个附赠动作将其驱散。\n显现过灵体意识后，你必须完成一次长休、或是消耗一枚任意环位的法术位，才能再次显现它。"
+        "source_boundary": "dispel-magic-expiry",
+        "source_excerpt": "若被某人施展了解除魔法 Dispel Magic，显现将停止。",
+        "source_fragment": "27:dispel-expiry"
       },
-      "clause_id": "shared-information",
+      "clause_id": "dispel-magic-expiry",
       "conditions": [],
-      "duration": "ten_minutes",
+      "duration": "advancement_persistent",
       "effects": [
         {
-          "operator": "share_authorized_sensory_information",
+          "operator": "configure_entity_lifecycle",
           "parameters": {
-            "entity_binding": "entity_lifecycle",
-            "information_kind": "authorized_entity_senses",
-            "range_ft": 300,
-            "visibility": "owner",
-            "language_required": false,
-            "response_required": false
+            "entity_type": "spectral_object",
+            "source_binding": "feature_source",
+            "termination_reasons": [
+              "dispel_magic"
+            ]
           }
         }
       ],
@@ -329,29 +419,147 @@
         "kind": "self",
         "parameters": {}
       },
-      "trigger": "explicit_activation",
+      "trigger": "advancement_confirmed",
       "visibility": "owner"
     },
     {
-      "action_economy": "bonus_action",
+      "action_economy": "none",
       "activation": "automatic",
       "audit": {
-        "reviewed_by": "codex-manual-review-2026-08-13-round-XXXVI",
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
         "source": "authored_ir",
-        "source_boundary": "spell-slot-reactivation",
-        "source_excerpt": "*第6级书士会**特性* 显现过灵体意识后，你必须完成一次长休、或是消耗一枚任意环位的法术位，才能再次显现它。",
-        "decision": "The reactivation payment is represented by the generic spell.slot.reactivation.v1 contract; its production resource transaction remains partial."
+        "source_boundary": "spellbook-destruction-expiry",
+        "source_excerpt": "若觉醒魔法书被摧毁，显现将停止。",
+        "source_fragment": "27:source-destruction-expiry"
       },
-      "clause_id": "spell-slot-reactivation",
+      "clause_id": "spellbook-destruction-expiry",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "configure_entity_lifecycle",
+          "parameters": {
+            "entity_type": "spectral_object",
+            "source_binding": "feature_source",
+            "termination_reasons": [
+              "source_object_destroyed"
+            ]
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "owner-death-expiry",
+        "source_excerpt": "你死亡时，显现将停止。",
+        "source_fragment": "27:owner-death-expiry"
+      },
+      "clause_id": "owner-death-expiry",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "configure_entity_lifecycle",
+          "parameters": {
+            "entity_type": "spectral_object",
+            "expires_on_owner_death": true,
+            "source_binding": "feature_source",
+            "termination_reasons": [
+              "owner_died"
+            ]
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "owner-dismissal-expiry",
+        "source_excerpt": "你可以以一个附赠动作将灵体意识驱散。",
+        "source_fragment": "27:owner-dismissal-expiry"
+      },
+      "clause_id": "owner-dismissal-expiry",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "configure_entity_lifecycle",
+          "parameters": {
+            "entity_type": "spectral_object",
+            "source_binding": "feature_source",
+            "termination_reasons": [
+              "owner_dismissed"
+            ]
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "long-rest-reactivation",
+        "source_excerpt": "显现过灵体意识后，必须完成一次长休或消耗一枚任意环位法术位，才能再次显现。",
+        "source_fragment": "27:reactivation"
+      },
+      "clause_id": "long-rest-reactivation",
       "conditions": [],
       "duration": "advancement_persistent",
       "effects": [
         {
           "operator": "configure_spell_slot_reactivation",
           "parameters": {
+            "activation_limit": 1,
             "entity_binding": "entity_lifecycle",
-            "spell_slot_resource_prefix": "spell_slots_",
-            "activation_limit": 1
+            "spell_slot_resource_prefix": "spell_slots_"
           }
         }
       ],
@@ -387,11 +595,8 @@
   },
   "manual_decisions": {
     "isolated_runtime_only": true,
-    "operator_mapping": "generic_entity_lifecycle_and_remote_origin_consumers",
-    "unmodeled_source_terms": [
-      "entity sensory profile consumer",
-      "entity movement and 300-foot separation expiry"
-    ]
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
   },
   "namespace": "content.tashas-cauldron",
   "pack_id": "tashas-cauldron",
@@ -417,8 +622,62 @@
   "ruleset_version": "2014",
   "schema_version": "feature-ir-1",
   "source_book": "塔莎的万事坩埚",
-  "source_completeness": "incomplete",
+  "source_completeness": "complete",
   "source_evidence": {
+    "clause_boundaries": {
+      "activation-source-and-initial-placement": {
+        "source_excerpt": "持有觉醒法术书；以附赠动作显现为微型灵体物件，位于距离你60尺以内且未被占据的所选空间。",
+        "source_fragment": "27:activation"
+      },
+      "dispel-magic-expiry": {
+        "source_excerpt": "若被某人施展了解除魔法 Dispel Magic，显现将停止。",
+        "source_fragment": "27:dispel-expiry"
+      },
+      "distance-expiry": {
+        "source_excerpt": "若与你的距离超过300尺，显现将停止。",
+        "source_fragment": "27:distance-expiry"
+      },
+      "entity-senses": {
+        "source_excerpt": "显现时能够听音视物，并具有60尺黑暗视觉。",
+        "source_fragment": "27:senses"
+      },
+      "long-rest-reactivation": {
+        "source_excerpt": "显现过灵体意识后，必须完成一次长休或消耗一枚任意环位法术位，才能再次显现。",
+        "source_fragment": "27:reactivation"
+      },
+      "movement": {
+        "source_excerpt": "以附赠动作令灵体意识飘浮到其周围30尺内、你或它可见且未占据的空间；可穿过生物但不能穿过物件。",
+        "source_fragment": "27:movement"
+      },
+      "owner-death-expiry": {
+        "source_excerpt": "你死亡时，显现将停止。",
+        "source_fragment": "27:owner-death-expiry"
+      },
+      "owner-dismissal-expiry": {
+        "source_excerpt": "你可以以一个附赠动作将灵体意识驱散。",
+        "source_fragment": "27:owner-dismissal-expiry"
+      },
+      "proficiency-bonus-uses": {
+        "source_excerpt": "每天如此施法的次数等于你的熟练加值次；完成一次长休后恢复所有已消耗使用次数。",
+        "source_fragment": "27:pb-uses"
+      },
+      "remote-spell-origin": {
+        "source_excerpt": "你在自己的回合内施放法师法术时，可以使用灵体意识的感官，如同身处它所在空间一样释放该法术。",
+        "source_fragment": "27:remote-origin"
+      },
+      "spectral-object-form": {
+        "source_excerpt": "灵体意识无形、不占据空间，周围半径10尺发出微光，并可呈现为灵体卷宗、文字摞或历史学者。",
+        "source_fragment": "27:form"
+      },
+      "spellbook-destruction-expiry": {
+        "source_excerpt": "若觉醒魔法书被摧毁，显现将停止。",
+        "source_fragment": "27:source-destruction-expiry"
+      },
+      "telepathic-sharing": {
+        "source_excerpt": "用心灵感应将它所看见和听到的信息分享给你，无需动作。",
+        "source_fragment": "27:telepathy"
+      }
+    },
     "source_excerpt": "*第6级书士会**特性*\n你能将你觉醒法术书中的意识召唤出来。当你持有该法术书时，你可以以一个附赠动作令书中的意识显现为一个微型的灵体物件，使其悬浮于距离你60尺以内且未被占据的、由你选择的空间中。这一灵体意识是无形的，不会占据其空间，并会在其周围半径10尺范围内发出微光光照。它看上去如同一本灵体卷宗、一摞文字、或是一位历史中的学者（由你选择）。\n显现时，该灵体意识能够听音视物，并具有60尺的黑暗视觉。它能用心灵感应将它所看见和听到的信息分享给你（无需动作）。\n每当你在自己的回合内施放法师法术时，你可以使用灵体意识的感官、如同身处它所在的空间一样释放该法术。你每天能如此施法的次数等于你的熟练加值次，完成一次长休后，你恢复所有已消耗的使用次数。\n以一个附赠动作，你可以令灵体意识飘浮到其周围30尺内、你或它可见且未占据空间。灵体意识可以穿过生物但不能穿过物件。\n若遇到以下情况之一，灵体意识的显现将会停止：与你的距离超过300尺、被某人施展了解除魔法Dispel Magic 、觉醒魔法书被摧毁、你死亡时、或是你以一个附赠动作将其驱散。\n显现过灵体意识后，你必须完成一次长休、或是消耗一枚任意环位的法术位，才能再次显现它。",
     "source_fragment": "27",
     "source_path": "塔莎的万事坩埚/玩家选项/职业/法师（TCE）/书士会.html",

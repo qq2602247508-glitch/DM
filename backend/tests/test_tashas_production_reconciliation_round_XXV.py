@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from dnd_dm_assistant.application.content_ir_production_evidence import (
@@ -75,10 +76,10 @@ def test_current_content_and_item_layers_reconcile_without_double_counting() -> 
             "authored_typed_ir": 106,
             "compile_full": 105,
             "runtime_preview_full": 105,
-            "production_full": 101,
+                "production_full": 102,
             "dm_assisted": 2,
-            "game_usable": 103,
-            "compile_only": 2,
+                "game_usable": 104,
+                "compile_only": 1,
             "manual_authoring": 303,
         "dm_reference": 107,
     }
@@ -113,3 +114,36 @@ def test_current_content_and_item_layers_reconcile_without_double_counting() -> 
         validated["registered_production_full"] + validated["dm_assisted"]
     )
     assert validated["status_layers"]["game_usable"] == 40
+
+
+def test_reconciliation_counts_are_dynamic_and_wrong_projection_fails() -> None:
+    migration = build_migration(ROOT)
+    projection = {
+        key: migration[key]
+        for key in (
+            "authored_typed_ir",
+            "compile_full",
+            "runtime_preview_full",
+            "production_full",
+            "dm_assisted",
+            "game_usable",
+            "compile_only",
+            "manual_authoring",
+        )
+    }
+    assert projection["production_full"] == 102
+    assert projection["game_usable"] == 104
+    assert projection["compile_only"] == 1
+    wrong = dict(projection)
+    wrong["production_full"] += 1
+    assert wrong != projection
+    assert wrong["production_full"] != migration["production_full"]
+
+    result = json.loads(
+        (
+            ROOT / "reports/tashas-production-reconciliation-round-XXV-2026-08-12.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert result["checks"]["baseline_after_delta_relation"] is True
+    assert result["counts"]["after"]["tasha"]["production_full"] == projection["production_full"]
+    assert result["counts"]["delta"]["tasha"]["production_full"] == 1
