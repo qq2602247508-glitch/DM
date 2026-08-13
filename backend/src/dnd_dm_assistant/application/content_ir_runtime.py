@@ -157,6 +157,11 @@ class ContentIRRuntimeService:
             value = runtime.get(section)
             if isinstance(value, Mapping):
                 blocks[section] = [dict(value)]
+        spell_list_expansions = runtime.get("spell_list_expansions")
+        if isinstance(spell_list_expansions, list) and spell_list_expansions:
+            blocks["spell_list_expansions"] = [
+                dict(item) for item in spell_list_expansions if isinstance(item, Mapping)
+            ]
         entity_lifecycles = runtime.get("entity_lifecycles")
         if isinstance(entity_lifecycles, list) and entity_lifecycles:
             blocks["entity_lifecycles"] = [
@@ -179,6 +184,32 @@ class ContentIRRuntimeService:
             execution = block.get("runtime_execution")
             if not isinstance(execution, Mapping) or _text(execution.get("status")) != "ready":
                 raise ValueError("advancement runtime block is not execution-ready")
+        expansion_blocks = blocks.get("spell_list_expansions", [])
+        for block in expansion_blocks:
+            if _text(block.get("resolution_kind")) != "spell_list_expansion":
+                raise ValueError("spell list expansion has an invalid resolution kind")
+            provenance = block.get("source_provenance")
+            if not isinstance(provenance, Mapping):
+                raise ValueError("spell list expansion source provenance is required")
+            if not _text(provenance.get("source_record_id")) or not _text(
+                provenance.get("source_fingerprint")
+            ):
+                raise ValueError("spell list expansion source provenance is required")
+            if _text(provenance.get("source_record_id")) != _text(
+                runtime.get("source_record_id")
+            ):
+                raise ValueError("spell list expansion provenance does not match runtime")
+            runtime_fingerprint = _text(runtime.get("source_fingerprint"))
+            if runtime_fingerprint and _text(provenance.get("source_fingerprint")) != runtime_fingerprint:
+                raise ValueError("spell list expansion provenance does not match runtime")
+            if _text(block.get("selection_mode")) != "available_to_learn":
+                raise ValueError("spell list expansion must remain available-to-learn access")
+            common = block.get("common_spell_ids")
+            options = block.get("selection_options")
+            if not isinstance(common, list) or not common or len(set(common)) != len(common):
+                raise ValueError("spell list expansion common spells must be unique and non-empty")
+            if not isinstance(options, Mapping) or not options:
+                raise ValueError("spell list expansion selection options are required")
         consumers = resolve_production_consumers(
             content_kind="advancement",
             runtime_schema_version="feature-runtime-1",
@@ -440,6 +471,12 @@ class ContentIRRuntimeService:
                 ]
                 prior_records.append(lifecycle_record)
                 feature_runtime["entity_lifecycles"] = prior_records
+                feature_entry["runtime"] = feature_runtime
+            if blocks.get("spell_list_expansions"):
+                feature_runtime = dict(feature_entry["runtime"])
+                feature_runtime["spell_list_expansions"] = [
+                    deepcopy(item) for item in blocks["spell_list_expansions"]
+                ]
                 feature_entry["runtime"] = feature_runtime
             features = [
                 item

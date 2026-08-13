@@ -1,0 +1,140 @@
+{
+  "class_name": "邪术师",
+  "clause_boundaries": {
+    "expanded-spell-list": {
+      "source_excerpt": "**扩展法术列表 Expanded Spell List**\n*第1级巨灵宗主特性*\n当你学习一个魔契师法术时，你的巨灵宗主赐予你将以下法术加入魔契师法术列表进行选择的权力，且除了全巨灵共用的法术列表外，另一组为你提供的法术与祂们的类型有关：土巨灵dao、气巨灵djinni、火巨灵eferrti、或水巨灵marid\n\n| 法术环阶 | 全巨灵法术 | 土巨灵法术 | 气巨灵法术 | 火巨灵法术 | 水巨灵法术 |\n| --- | --- | --- | --- | --- | --- |\n| 一环 | 侦测善恶detect evil and good | 庇护术sanctuary | 雷鸣波thunderwave | 燃烧之手burning hands | 云雾术fog cloud |\n| 二环 | 魅影之力phantasmal force | 荆棘丛生spike growth | 造风术gust of wind | 灼热射线scorching ray | 朦胧术blur |\n| 三环 | 创造食粮create food and water | 融身入石meld into stone | 风墙术wind wall | 火球术fireball | 雪雨暴sleet storm |\n| 四环 | 魅影杀手phantasmal killer | 塑石术stone shape | 高等隐形术greater invisibility | 火焰护盾fire shield | 操控水体control of water |\n| 五环 | 造物术creation | 石墙术wall of stone | 伪装术seeming | 焰击术flame strike | 寒冰锥cone of cold |\n| 九环 | 祈愿术wish | —— | —— | —— | —— |"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-13-round-XXXIV",
+        "source": "authored_ir",
+        "source_boundary": "expanded-spell-list",
+        "source_excerpt": "**扩展法术列表 Expanded Spell List**\n*第1级巨灵宗主特性*\n当你学习一个魔契师法术时，你的巨灵宗主赐予你将以下法术加入魔契师法术列表进行选择的权力，且除了全巨灵共用的法术列表外，另一组为你提供的法术与祂们的类型有关：土巨灵dao、气巨灵djinni、火巨灵eferrti、或水巨灵marid"
+      },
+      "clause_id": "expanded-spell-list",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "configure_spell_list_expansion",
+          "parameters": {
+            "casting_ability": "charisma",
+            "common_spell_ids": [
+              "detect_evil_and_good",
+              "phantasmal_force",
+              "create_food_and_water",
+              "phantasmal_killer",
+              "creation",
+              "wish"
+            ],
+            "selection_key": "genie_type",
+            "selection_options": {
+              "dao": [
+                "sanctuary",
+                "spike_growth",
+                "meld_into_stone",
+                "stone_shape",
+                "wall_of_stone"
+              ],
+              "djinni": [
+                "thunderwave",
+                "gust_of_wind",
+                "wind_wall",
+                "greater_invisibility",
+                "seeming"
+              ],
+              "efreeti": [
+                "burning_hands",
+                "scorching_ray",
+                "fireball",
+                "fire_shield",
+                "flame_strike"
+              ],
+              "marid": [
+                "fog_cloud",
+                "blur",
+                "sleet_storm",
+                "control_of_water",
+                "cone_of_cold"
+              ]
+            },
+            "source_class": "warlock"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": "replace_same_source",
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "e81b718b2ee8728e75cf77c2f00c33312a283a9e12d3654d9bb377a64ec745c7"
+  },
+  "dependencies": [],
+  "evidence": [
+    "**扩展法术列表 Expanded Spell List**\n*第1级巨灵宗主特性*\n当你学习一个魔契师法术时，你的巨灵宗主赐予你将以下法术加入魔契师法术列表进行选择的权力，且除了全巨灵共用的法术列表外，另一组为你提供的法术与祂们的类型有关：土巨灵dao、气巨灵djinni、火巨灵eferrti、或水巨灵marid"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.genie-expanded-spell-list",
+  "kind": "feature",
+  "level": 1,
+  "localized_names": {
+    "zh-CN": "扩展法术列表"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": false,
+    "operator_mapping": "generic_spell_list_expansion_consumer",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-13-round-XXXIV",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "**扩展法术列表 Expanded Spell List**\n*第1级巨灵宗主特性*\n当你学习一个魔契师法术时，你的巨灵宗主赐予你将以下法术加入魔契师法术列表进行选择的权力，且除了全巨灵共用的法术列表外，另一组为你提供的法术与祂们的类型有关：土巨灵dao、气巨灵djinni、火巨灵eferrti、或水巨灵marid",
+    "source_fragment": "blockquote:42",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/巨灵宗主.html",
+    "source_record_id": "98620543cf94e974361c6567"
+  },
+  "source_fingerprint": "e81b718b2ee8728e75cf77c2f00c33312a283a9e12d3654d9bb377a64ec745c7",
+  "source_name": "扩展法术列表",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/巨灵宗主.html",
+  "source_record_id": "98620543cf94e974361c6567",
+  "source_trust": "authored_ir",
+  "subclass_name": "巨灵宗主"
+}

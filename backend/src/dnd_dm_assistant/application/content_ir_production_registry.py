@@ -202,7 +202,12 @@ _CONSUMERS: dict[str, dict[str, Any]] = {
     "advancement_service.character_growth.v1": {
         "content_kind": "advancement",
         "runtime_schema_version": "feature-runtime-1",
-        "clause_types": ("advancement", "proficiencies", "prepared_spell_list"),
+        "clause_types": (
+            "advancement",
+            "proficiencies",
+            "prepared_spell_list",
+            "spell_list_expansions",
+        ),
         "required_fields": ("character_id", "character_version", "runtime_id"),
         "required_services": ("advancement_service",),
         "transaction_boundary": "character_snapshot_and_operation_transaction",
@@ -501,6 +506,7 @@ def resolve_production_consumers(
             "prepared_spell_list",
             "resources",
             "entity_lifecycles",
+            "spell_list_expansions",
         }
         unknown = set(blocks) - allowed
         if unknown:

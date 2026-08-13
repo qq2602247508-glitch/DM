@@ -399,6 +399,14 @@ def default_capability_catalog() -> CapabilityCatalog:
             persisted_state="character.spells",
         ),
         _descriptor(
+            "advancement.spell_list_expansion",
+            "configure_spell_list_expansion",
+            consumer="advancement_service.spell_catalog_validator",
+            producer="advancement_service",
+            persisted_state="character.features",
+            evidence=("test_spell_list_expansion_runtime_contract",),
+        ),
+        _descriptor(
             "advancement.prepare_spell",
             "prepare_spell",
             consumer="advancement_service.spell_registry",

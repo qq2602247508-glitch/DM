@@ -512,6 +512,7 @@ _RUNTIME_SECTION_BY_OPERATOR = {
     "grant_proficiency": "proficiencies",
     "grant_language": "proficiencies",
     "grant_spell": "advancement",
+    "configure_spell_list_expansion": "spell_list_expansions",
     "prepare_spell": "prepared_spell_list",
     "restore_resource": "resources",
     "set_resource_profile": "resources",
@@ -570,6 +571,10 @@ def materialize_runtime_definition(
             dict(effect.to_dict()) for effect in clause.effects
         ]
     definition: dict[str, Any] = {
+        "source_record_id": spec.source_record_id,
+        "source_fingerprint": spec.source_fingerprint,
+        "source_book": spec.source_book,
+        "source_path": spec.source_path,
         "combat_start": {"modifiers": [], "defenses": [], "movement_modes": []},
         "spell_context": [],
         "resources": {},
@@ -578,6 +583,7 @@ def materialize_runtime_definition(
         "attack_riders": [],
         "proficiencies": [],
         "advancement": None,
+        "spell_list_expansions": [],
         "prepared_spell_list": None,
         "entity_lifecycles": [],
         "entity_senses": [],
@@ -819,6 +825,8 @@ def materialize_runtime_definition(
                 if existing.get(key) != entry.get(key):
                     merged.pop(key, None)
             definition["advancement"] = merged
+        elif section == "spell_list_expansions":
+            definition["spell_list_expansions"].append(entry)
         elif section == "prepared_spell_list":
             existing = definition["prepared_spell_list"]
             if existing is None:

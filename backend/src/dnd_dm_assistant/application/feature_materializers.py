@@ -178,6 +178,52 @@ def _materialize_spell(context: MaterializerContext) -> MaterializedBlock:
     return MaterializedBlock("advancement", entry)
 
 
+def _materialize_spell_list_expansion(context: MaterializerContext) -> MaterializedBlock:
+    params = context.parameters
+    common = params["common_spell_ids"]
+    options = params["selection_options"]
+    if not isinstance(common, list) or not common or any(
+        not isinstance(item, str) or not item.strip() for item in common
+    ):
+        raise MaterializerError(
+            "spell list expansion common_spell_ids must be a non-empty string array"
+        )
+    if len(set(common)) != len(common):
+        raise MaterializerError("spell list expansion common_spell_ids must be unique")
+    if not isinstance(options, Mapping) or not options:
+        raise MaterializerError("spell list expansion selection_options must be a non-empty object")
+    normalized_options: dict[str, list[str]] = {}
+    for raw_key, raw_values in options.items():
+        key = str(raw_key).strip()
+        if not key or not isinstance(raw_values, list) or not raw_values:
+            raise MaterializerError("spell list expansion options must map to non-empty arrays")
+        values = [item.strip() for item in raw_values if isinstance(item, str) and item.strip()]
+        if len(values) != len(raw_values) or len(set(values)) != len(values):
+            raise MaterializerError("spell list expansion option values must be unique strings")
+        normalized_options[key] = values
+    entry = context.base(kind="spell_list_expansion")
+    entry.update(
+        {
+            "resolution_kind": "spell_list_expansion",
+            "source_class": str(params["source_class"]),
+            "casting_ability": str(params["casting_ability"]),
+            "selection_key": str(params["selection_key"]),
+            "common_spell_ids": list(common),
+            "selection_options": normalized_options,
+            "selection_mode": "available_to_learn",
+            "source_provenance": {
+                "source_record_id": context.spec.source_record_id,
+                "source_fingerprint": str(context.spec.source_fingerprint or ""),
+                "source_book": context.spec.source_book,
+                "source_path": context.spec.source_path,
+            },
+        }
+    )
+    if not entry["source_provenance"]["source_fingerprint"]:
+        raise MaterializerError("spell list expansion requires a source fingerprint")
+    return MaterializedBlock("spell_list_expansions", entry)
+
+
 def _materialize_prepare_spell(context: MaterializerContext) -> MaterializedBlock:
     params = context.parameters
     entry = context.base(kind="always_prepared_spell_list")
@@ -940,6 +986,7 @@ def default_materializer_registry() -> MaterializerRegistry:
         "advancement.proficiency": _materialize_proficiency,
         "advancement.language": _materialize_language,
         "advancement.spell": _materialize_spell,
+        "advancement.spell_list_expansion": _materialize_spell_list_expansion,
         "advancement.prepare_spell": _materialize_prepare_spell,
         "resource.lifecycle": _materialize_resource,
         "resource.profile": _materialize_resource_profile,
