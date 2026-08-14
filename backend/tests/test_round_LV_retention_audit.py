@@ -117,7 +117,7 @@ def test_round_lv_invalid_duplicate_evidence_cannot_promote() -> None:
     assert artifact["production_runtime_full_ids"] == []
     assert artifact["evidence_by_id"][AUDIT_ID]["production_runtime_full"] is False
     assert artifact["gate_facts"]["source_complete_consumer"] is False
-    assert artifact["gate_facts"]["promotion_gate_closed"] is False
+    assert artifact["gate_facts"]["promotion_gate_closed"] is True
     assert once == repeated
     assert invalid_only == baseline
     assert AUDIT_ID in baseline and AUDIT_ID not in once
@@ -142,4 +142,11 @@ def test_round_lv_required_checks_are_positive_and_gate_facts_are_separate() -> 
     assert "source_complete_consumer" not in checks
     assert "promotion_gate_closed" not in checks
     assert report["gate_facts"]["source_complete_consumer"] is False
-    assert report["gate_facts"]["promotion_gate_closed"] is False
+    assert report["gate_facts"]["promotion_gate_closed"] is True
+    assert set(report["source_semantics"]["missing_source_semantics"]) == {
+        "attack_rider",
+        "search_advantage",
+        "mark_transfer",
+        "transfer_constraints",
+        "upcast_duration",
+    }

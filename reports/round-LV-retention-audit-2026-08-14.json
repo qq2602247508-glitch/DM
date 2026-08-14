@@ -35,7 +35,7 @@
   "evidence_mechanism": "source-bound SpellSpec compile, real generic registry resolution, strict evidence loader, and set-derived projection",
   "focused_test": "backend/tests/test_round_LV_retention_audit.py",
   "gate_facts": {
-    "promotion_gate_closed": false,
+    "promotion_gate_closed": true,
     "source_complete_consumer": false
   },
   "historical_artifact_sha256": {
@@ -723,7 +723,7 @@
       "sha256": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
     }
   },
-  "report_fingerprint": "9af8a6bdebeded9ee70203bb4819f44980410dbf9e1e4c307056f2c4345b4ded",
+  "report_fingerprint": "41d6c542a583c392ab1546e6e24836821ce374b4109d3eece354ceaabf000f0a",
   "required_check_keys": [
     "source_bound_compile",
     "actual_generic_consumer_probe",
@@ -891,7 +891,8 @@
       "attack_rider",
       "search_advantage",
       "mark_transfer",
-      "transfer_constraints"
+      "transfer_constraints",
+      "upcast_duration"
     ],
     "rows": [
       {
@@ -919,10 +920,10 @@
         "source_present": true
       },
       {
-        "closed": true,
-        "runtime_present": true,
+        "closed": false,
+        "runtime_present": false,
         "semantic": "upcast_duration",
-        "source_present": false
+        "source_present": true
       }
     ]
   }

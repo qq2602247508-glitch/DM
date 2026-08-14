@@ -93,7 +93,7 @@
     }
   },
   "gate_facts": {
-    "promotion_gate_closed": false,
+    "promotion_gate_closed": true,
     "source_complete_consumer": false
   },
   "name_branch_scan": {

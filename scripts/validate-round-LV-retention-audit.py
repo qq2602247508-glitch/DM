@@ -78,6 +78,7 @@ def _consumer_probe(blocks: dict[str, Any]) -> dict[str, Any]:
 
 def _source_semantics(authored: dict[str, Any], blocks: dict[str, Any]) -> dict[str, Any]:
     source_text = str((authored.get("source_evidence") or {}).get("source_text") or "")
+    normalized_source_text = "".join(source_text.split())
     semantic_specs = (
         {
             "id": "attack_rider",
@@ -107,8 +108,11 @@ def _source_semantics(authored: dict[str, Any], blocks: dict[str, Any]) -> dict[
     )
     rows = []
     for spec in semantic_specs:
-        source_present = all(marker in source_text for marker in spec["source_markers"])
-        runtime_present = any(key in blocks for key in spec["runtime_keys"])
+        source_present = all(
+            "".join(marker.split()) in normalized_source_text
+            for marker in spec["source_markers"]
+        )
+        runtime_present = any(bool(blocks.get(key)) for key in spec["runtime_keys"])
         rows.append(
             {
                 "semantic": spec["id"],
@@ -270,8 +274,7 @@ def build_report() -> dict[str, Any]:
         },
         "gate_facts": {
             "source_complete_consumer": not semantics["consumer_gap_detected"],
-            "promotion_gate_closed": not semantics["consumer_gap_detected"]
-            and bool(probe["resolved_consumers"]),
+            "promotion_gate_closed": semantics["consumer_gap_detected"],
         },
         "name_branch_scan": name_scan,
     }
