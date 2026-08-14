@@ -153,10 +153,14 @@ def _setup_spell(client: TestClient, runtime: dict[str, Any], level: int) -> dic
 def _spell_body(scene: dict[str, Any], *, key: str, total: int, multi: bool = True) -> dict[str, Any]:
     target = scene["target"]
     second = scene["second_target"]
-    target_ids = [second["id"]] if multi else []
-    target_versions = {target["id"]: target["version"]}
-    if multi:
-        target_versions[second["id"]] = second["version"]
+    # ``all_in_area`` is source-complete: submit the authoritative actor plus
+    # every in-area combatant, including in the scaling/save probes.
+    target_ids = [target["id"], second["id"]]
+    target_versions = {
+        scene["actor"]["id"]: scene["actor"]["version"],
+        target["id"]: target["version"],
+        second["id"]: second["version"],
+    }
     return {
         "content_kind": "spell",
         "runtime_id": SPELL_ID,
@@ -168,7 +172,7 @@ def _spell_body(scene: dict[str, Any], *, key: str, total: int, multi: bool = Tr
         "combat_id": scene["combat"]["id"],
         "actor_combatant_id": scene["actor"]["id"],
         "actor_version": scene["actor"]["version"],
-        "target_combatant_id": target["id"],
+        "target_combatant_id": scene["actor"]["id"],
         "target_combatant_ids": target_ids,
         "target_versions": target_versions,
         "area_shape": "sphere",
@@ -177,8 +181,9 @@ def _spell_body(scene: dict[str, Any], *, key: str, total: int, multi: bool = Tr
         "area_anchor_col": 2,
         "resolution_total": total,
         "save_succeeded_by_target": {
+            scene["actor"]["id"]: False,
             target["id"]: False,
-            **({second["id"]: False} if multi else {}),
+            second["id"]: False,
         },
         "idempotency_key": key,
     }
@@ -224,6 +229,9 @@ def _run_production_loop(client: TestClient, runtime: dict[str, Any]) -> dict[st
     target_after = client.get(
         f"{scene['base']}/combats/{scene['combat']['id']}/combatants/{scene['target']['id']}"
     ).json()
+    actor_after = client.get(
+        f"{scene['base']}/combats/{scene['combat']['id']}/combatants/{scene['actor']['id']}"
+    ).json()
     second_after = client.get(
         f"{scene['base']}/combats/{scene['combat']['id']}/combatants/{scene['second_target']['id']}"
     ).json()
@@ -258,6 +266,7 @@ def _run_production_loop(client: TestClient, runtime: dict[str, Any]) -> dict[st
         "preview_amounts": _combat_amounts(preview),
         "confirmed_target_hp": target_after["hp"],
         "confirmed_second_target_hp": second_after["hp"],
+        "confirmed_actor_hp": actor_after["hp"],
         "target_version_advanced": int(target_after["version"]) > int(scene["target"]["version"]),
         "second_target_version_advanced": int(second_after["version"]) > int(scene["second_target"]["version"]),
         "stale_target_cas_status": stale_response.status_code,
@@ -305,7 +314,7 @@ def _run_save_success_preview(client: TestClient, runtime: dict[str, Any]) -> bo
     response = client.post(f"{scene['base']}/content-ir/runtime/preview", json=body)
     if response.status_code != 200:
         raise AssertionError(response.text)
-    return _combat_amounts(response.json()) == [0]
+    return _combat_amounts(response.json()) == [0, 0, 0]
 
 
 def _run_rollback_probe(
@@ -405,19 +414,20 @@ def main() -> int:
         and production["confirm_status"] == 200
         and production["replay_status"] == 200,
         "production_runtime_full": production["production_runtime_full"],
-        "two_area_targets_damage": production["preview_amounts"] == [8, 8]
+        "three_area_targets_damage": production["preview_amounts"] == [8, 8, 8]
         and production["confirmed_target_hp"] == 92
-        and production["confirmed_second_target_hp"] == 92,
+        and production["confirmed_second_target_hp"] == 92
+        and production["confirmed_actor_hp"] == 12,
         "replay_idempotent": production["replay_already_applied"],
         "target_cas_rejected": production["stale_target_cas_status"] == 409,
         "operation_transaction_persisted": production["operation_transaction"],
         "save_success_no_damage": save_success_zero_damage,
         "cantrip_scaling_levels": scaling
         == [
-            {**scaling[0], "resolved_amounts": [4]},
-            {**scaling[1], "resolved_amounts": [8]},
-            {**scaling[2], "resolved_amounts": [12]},
-            {**scaling[3], "resolved_amounts": [16]},
+            {**scaling[0], "resolved_amounts": [4, 4, 4]},
+            {**scaling[1], "resolved_amounts": [8, 8, 8]},
+            {**scaling[2], "resolved_amounts": [12, 12, 12]},
+            {**scaling[3], "resolved_amounts": [16, 16, 16]},
         ],
         "rollback_restored_character": rollback_restored,
     }

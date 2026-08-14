@@ -16,6 +16,7 @@
     "duplicate_invalid_set_idempotent": true,
     "each_selected_id_removed_once": true,
     "exact_area_membership": true,
+    "exact_without_runtime_contract_enforced": true,
     "extra_outside_rejected": true,
     "final_loader_acceptance": true,
     "generic_consumers_present": true,
@@ -25,10 +26,12 @@
     "name_branch_count": 0,
     "name_branch_free": true,
     "omitted_in_area_rejected_before_payment": true,
+    "omitted_without_runtime_contract_rejected": true,
     "operation_transaction_action_binding": true,
     "operation_transactions_persisted": true,
     "outside_area_untouched": true,
     "payload_drift_rejected": true,
+    "payment_receipts_are_per_probe": true,
     "preview_confirm_replay": true,
     "production_runtime_full": true,
     "production_union_semantics_proven": true,
@@ -45,7 +48,8 @@
     "strict_loader_rejects_nonproduction_row": true,
     "target_cas_rejected": true,
     "unrelated_compile_only_ids_unchanged": true,
-    "unrelated_production_ids_unchanged": true
+    "unrelated_production_ids_unchanged": true,
+    "untrusted_area_flags_cannot_disable_actor": true
   },
   "evidence_by_id": {
     "core-phb-2024:spell:d84dec64befac8db7294e0f1": {
@@ -106,9 +110,439 @@
           "text": "{\"schema_version\":\"content-ir-runtime-preview-1\",\"runtime_id\":\"core-phb-2024:spell:d84dec64befac8db7294e0f1\",\"runtime_source\":{\"source_record_id\":\"d84dec64befac8db7294e0f1\",\"source_path\":\"玩家手册2024/法术详述/0环.htm\",\"source_book\":\"玩家手册 2024\",\"source_fingerprint\":\"a313aa1a2445b55284185910142d31d1cc7b4ca3a1de4aae96b0400bab3e5af4\",\"source_trust\":\"authored_ir\"},\"compile_status\":\"full\",\"runtime_preview_full\":true,\"spell_preview\":{\"character_id\":\"stable-id\",\"spell\":{\"id\":\"stable-id\",\"created_at\":\"stable-time\",\"updated_at\":\"stable-time\",\"version\":1,\"campaign_id\":\"stable-id\",\"character_id\":\"stable-id\",\"name\":\"酸液飞溅\",\"spell_level\":0,\"source_reference\":\"PHB 2024\",\"metadata_json\":{\"content_ir_runtime\":{\"kind\":\"spell\",\"runtime_schema_version\":\"spell-runtime-1\",\"spell_id\":\"core-phb-2024:spell:d84dec64befac8db7294e0f1\",\"name\":\"酸液飞溅\",\"level\":0,\"school\":\"塑能\",\"casting_time\":\"action\",\"range\":\"60 feet\",\"target\":\"5-foot sphere\",\"components\":\"V,S\",\"duration\":\"instant\",\"concentration\":false,\"resolution\":{\"target_selection\":[{\"clause_id\":\"target\",\"count\":\"all_in_area\",\"evidence_ref\":\"5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害\",\"kind\":\"area\",\"range\":\"60 feet\",\"shape\":\"sphere\",\"size_ft\":5,\"type\":\"target_selection\",\"visibility\":\"visible\"}],\"attack_roll\":[],\"saving_throw\":[{\"action_economy\":\"action\",\"clause_id\":\"save\",\"evidence_ref\":\"5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害\",\"half_on_success\":false,\"range\":\"60 feet\",\"save_ability\":\"dexterity\",\"target\":\"area\",\"trigger\":\"spell_cast\",\"type\":\"saving_throw\"}],\"effects\":[{\"applies_to\":\"save\",\"clause_id\":\"damage\",\"damage_type\":\"acid\",\"evidence_ref\":\"5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害\",\"expression\":\"1d6\",\"on_failure\":\"full\",\"on_success\":\"none\",\"target\":\"area\",\"trigger\":\"saving_throw\",\"type\":\"damage\"},{\"clause_id\":\"area\",\"evidence_ref\":\"5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害\",\"origin\":\"chosen_point\",\"range\":\"60 feet\",\"shape\":\"sphere\",\"size_ft\":5,\"target\":\"area\",\"type\":\"area\"}],\"duration\":[],\"concentration\":[],\"upcast\":[{\"applies_to\":\"damage\",\"clause_id\":\"upcast\",\"evidence_ref\":\"戏法强化：5级2d6、11级3d6、17级4d6\",\"increments\":1,\"per_slot\":null,\"progression\":[{\"character_level\":5,\"expression\":\"2d6\"},{\"character_level\":11,\"expression\":\"3d6\"},{\"character_level\":17,\"expression\":\"4d6\"}],\"type\":\"upcast\"}],\"communication_route\":[],\"communication_capability\":[],\"illusion_lifecycle\":[],\"object_effect_lifecycle\":[]},\"source\":{\"source_record_id\":\"d84dec64befac8db7294e0f1\",\"source_path\":\"玩家手册2024/法术详述/0环.htm\",\"source_book\":\"玩家手册 2024\",\"source_fingerprint\":\"a313aa1a2445b55284185910142d31d1cc7b4ca3a1de4aae96b0400bab3e5af4\",\"source_trust\":\"authored_ir\"},\"execution_status\":\"ready\"}}},\"slot_level\":0,\"ritual\":false,\"slot_before\":0,\"slot_after\":0,\"free_cast\":false,\"free_cast_resource_key\":null,\"free_cast_before\":0,\"free_cast_after\":0,\"payment_override\":false,\"payment_resource_key\":null,\"payment_cost\":0,\"payment_before\":0,\"spell_context\":{\"component_override\":null,\"components_ignored\":false,\"payment_override\":null,\"payment_resource_key\":null,\"payment_cost\":0,\"payment_before\":0,\"payment_after\":0},\"concentration\":false,\"focus_equipment_id\":null,\"rule_reference\":\"PHB 2024\",\"preview_token\":\"stable-token\"},\"combat_preview\":{\"before\":{\"hp\":100,\"max_hp\":100,\"max_hp_reduction\":0,\"temporary_hp\":0,\"version\":1},\"after\":{\"hp\":92,\"max_hp\":100,\"max_hp_reduction\":0,\"temporary_hp\":0,\"version\":2},\"result\":{\"original_damage\":8,\"adjusted_damage\":8,\"damage_type\":\"acid\",\"modifier\":\"normal\",\"temporary_hp_lost\":0,\"hp_lost\":8,\"remaining_temporary_hp\":0,\"remaining_hp\":92,\"unapplied_damage\":0,\"explanation\":\"8 点强酸伤害 → HP 扣除 8\"},\"concentration_check_dc\":null},\"area_membership\":{\"shape\":\"sphere\",\"size_ft\":5,\"anchor\":{\"row\":2,\"col\":14,\"height_ft\":0},\"anchor_range_ft\":60,\"maximum_range_ft\":60,\"include_actor\":true,\"requires_line_of_sight\":true,\"target_ids\":[\"stable-id\"],\"geometry\":{\"stable-id\":{\"grid_position\":{\"row\":2,\"col\":14},\"distance_ft\":60,\"line_of_sight\":true,\"line_of_sight_mode\":\"2d\",\"line_of_sight_pair\":{\"from\":{\"row\":2,\"col\":2},\"to\":{\"row\":2,\"col\":14}}}},\"validated_by\":\"CombatEngineService.validate_exact_area_target_ids\"},\"production_contract\":{\"content_kind\":\"spell\",\"known_spell_id\":\"stable-id\",\"action_cost\":\"action\",\"requires_target\":true,\"requires_resolution_input\":true,\"requires_cas\":true,\"requires_idempotency\":true,\"caster_level\":5,\"spell_context\":{},\"consumers\":[\"combat_engine.area_damage.v1\",\"combat_engine.damage_heal.v1\",\"spell.cantrip_scaling.v1\"],\"area_batch\":false,\"defense\":null,\"timed_modifier\":null,\"communication_route\":null,\"communication_capability\":null,\"illusion_lifecycle\":null,\"object_effect_lifecycle\":null,\"summon\":null,\"remote_spell_origin\":null},\"preview_token\":\"stable-token\"}"
         },
         "boundary_60ft_status": 200,
+        "exact_without_runtime_contract": {
+          "detail": null,
+          "membership": {
+            "anchor": {
+              "col": 2,
+              "height_ft": 0,
+              "row": 2
+            },
+            "anchor_range_ft": 0,
+            "geometry": {
+              "stable-id-0": {
+                "distance_ft": 0,
+                "grid_position": {
+                  "col": 2,
+                  "row": 2
+                },
+                "line_of_sight": true,
+                "line_of_sight_mode": "2d",
+                "line_of_sight_pair": {
+                  "from": {
+                    "col": 2,
+                    "row": 2
+                  },
+                  "to": {
+                    "col": 2,
+                    "row": 2
+                  }
+                }
+              },
+              "stable-id-1": {
+                "distance_ft": 5,
+                "grid_position": {
+                  "col": 2,
+                  "row": 3
+                },
+                "line_of_sight": true,
+                "line_of_sight_mode": "2d",
+                "line_of_sight_pair": {
+                  "from": {
+                    "col": 2,
+                    "row": 2
+                  },
+                  "to": {
+                    "col": 2,
+                    "row": 3
+                  }
+                }
+              },
+              "stable-id-2": {
+                "distance_ft": 5,
+                "grid_position": {
+                  "col": 3,
+                  "row": 2
+                },
+                "line_of_sight": true,
+                "line_of_sight_mode": "2d",
+                "line_of_sight_pair": {
+                  "from": {
+                    "col": 2,
+                    "row": 2
+                  },
+                  "to": {
+                    "col": 3,
+                    "row": 2
+                  }
+                }
+              }
+            },
+            "include_actor": true,
+            "maximum_range_ft": 60,
+            "requires_line_of_sight": true,
+            "shape": "sphere",
+            "size_ft": 5,
+            "target_ids": [
+              "stable-id",
+              "stable-id",
+              "stable-id"
+            ],
+            "validated_by": "CombatEngineService.validate_exact_area_target_ids"
+          },
+          "status": 200,
+          "submitted_target_ids": [
+            "stable-id",
+            "stable-id",
+            "stable-id"
+          ],
+          "text": "{\"schema_version\":\"content-ir-runtime-preview-1\",\"runtime_id\":\"core-phb-2024:spell:d84dec64befac8db7294e0f1\",\"runtime_source\":{\"source_record_id\":\"d84dec64befac8db7294e0f1\",\"source_path\":\"玩家手册2024/法术详述/0环.htm\",\"source_book\":\"玩家手册 2024\",\"source_fingerprint\":\"a313aa1a2445b55284185910142d31d1cc7b4ca3a1de4aae96b0400bab3e5af4\",\"source_trust\":\"authored_ir\"},\"compile_status\":\"full\",\"runtime_preview_full\":true,\"spell_preview\":{\"character_id\":\"stable-id\",\"spell\":{\"id\":\"stable-id\",\"created_at\":\"stable-time\",\"updated_at\":\"stable-time\",\"version\":1,\"campaign_id\":\"stable-id\",\"character_id\":\"stable-id\",\"name\":\"酸液飞溅\",\"spell_level\":0,\"source_reference\":\"PHB 2024\",\"metadata_json\":{\"content_ir_runtime\":{\"kind\":\"spell\",\"runtime_schema_version\":\"spell-runtime-1\",\"spell_id\":\"core-phb-2024:spell:d84dec64befac8db7294e0f1\",\"name\":\"酸液飞溅\",\"level\":0,\"school\":\"塑能\",\"casting_time\":\"action\",\"range\":\"60 feet\",\"target\":\"5-foot sphere\",\"components\":\"V,S\",\"duration\":\"instant\",\"concentration\":false,\"resolution\":{\"target_selection\":[{\"clause_id\":\"target\",\"count\":\"all_in_area\",\"evidence_ref\":\"5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害\",\"kind\":\"area\",\"range\":\"60 feet\",\"shape\":\"sphere\",\"size_ft\":5,\"type\":\"target_selection\",\"visibility\":\"visible\"}],\"attack_roll\":[],\"saving_throw\":[{\"action_economy\":\"action\",\"clause_id\":\"save\",\"evidence_ref\":\"5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害\",\"half_on_success\":false,\"range\":\"60 feet\",\"save_ability\":\"dexterity\",\"target\":\"area\",\"trigger\":\"spell_cast\",\"type\":\"saving_throw\"}],\"effects\":[{\"applies_to\":\"save\",\"clause_id\":\"damage\",\"damage_type\":\"acid\",\"evidence_ref\":\"5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害\",\"expression\":\"1d6\",\"on_failure\":\"full\",\"on_success\":\"none\",\"target\":\"area\",\"trigger\":\"saving_throw\",\"type\":\"damage\"},{\"clause_id\":\"area\",\"evidence_ref\":\"5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害\",\"origin\":\"chosen_point\",\"range\":\"60 feet\",\"shape\":\"sphere\",\"size_ft\":5,\"target\":\"area\",\"type\":\"area\"}],\"duration\":[],\"concentration\":[],\"upcast\":[{\"applies_to\":\"damage\",\"clause_id\":\"upcast\",\"evidence_ref\":\"戏法强化：5级2d6、11级3d6、17级4d6\",\"increments\":1,\"per_slot\":null,\"progression\":[{\"character_level\":5,\"expression\":\"2d6\"},{\"character_level\":11,\"expression\":\"3d6\"},{\"character_level\":17,\"expression\":\"4d6\"}],\"type\":\"upcast\"}],\"communication_route\":[],\"communication_capability\":[],\"illusion_lifecycle\":[],\"object_effect_lifecycle\":[]},\"source\":{\"source_record_id\":\"d84dec64befac8db7294e0f1\",\"source_path\":\"玩家手册2024/法术详述/0环.htm\",\"source_book\":\"玩家手册 2024\",\"source_fingerprint\":\"a313aa1a2445b55284185910142d31d1cc7b4ca3a1de4aae96b0400bab3e5af4\",\"source_trust\":\"authored_ir\"},\"execution_status\":\"ready\"}}},\"slot_level\":0,\"ritual\":false,\"slot_before\":0,\"slot_after\":0,\"free_cast\":false,\"free_cast_resource_key\":null,\"free_cast_before\":0,\"free_cast_after\":0,\"payment_override\":false,\"payment_resource_key\":null,\"payment_cost\":0,\"payment_before\":0,\"spell_context\":{\"component_override\":null,\"components_ignored\":false,\"payment_override\":null,\"payment_resource_key\":null,\"payment_cost\":0,\"payment_before\":0,\"payment_after\":0},\"concentration\":false,\"focus_equipment_id\":null,\"rule_reference\":\"PHB 2024\",\"preview_token\":\"stable-token\"},\"combat_preview\":[{\"before\":{\"hp\":20,\"max_hp\":20,\"max_hp_reduction\":0,\"temporary_hp\":0,\"version\":1},\"after\":{\"hp\":12,\"max_hp\":20,\"max_hp_reduction\":0,\"temporary_hp\":0,\"version\":2},\"result\":{\"original_damage\":8,\"adjusted_damage\":8,\"damage_type\":\"acid\",\"modifier\":\"normal\",\"temporary_hp_lost\":0,\"hp_lost\":8,\"remaining_temporary_hp\":0,\"remaining_hp\":12,\"unapplied_damage\":0,\"explanation\":\"8 点强酸伤害 → HP 扣除 8\"},\"concentration_check_dc\":null},{\"before\":{\"hp\":100,\"max_hp\":100,\"max_hp_reduction\":0,\"temporary_hp\":0,\"version\":1},\"after\":{\"hp\":92,\"max_hp\":100,\"max_hp_reduction\":0,\"temporary_hp\":0,\"version\":2},\"result\":{\"original_damage\":8,\"adjusted_damage\":8,\"damage_type\":\"acid\",\"modifier\":\"normal\",\"temporary_hp_lost\":0,\"hp_lost\":8,\"remaining_temporary_hp\":0,\"remaining_hp\":92,\"unapplied_damage\":0,\"explanation\":\"8 点强酸伤害 → HP 扣除 8\"},\"concentration_check_dc\":null},{\"before\":{\"hp\":100,\"max_hp\":100,\"max_hp_reduction\":0,\"temporary_hp\":0,\"version\":1},\"after\":{\"hp\":92,\"max_hp\":100,\"max_hp_reduction\":0,\"temporary_hp\":0,\"version\":2},\"result\":{\"original_damage\":8,\"adjusted_damage\":8,\"damage_type\":\"acid\",\"modifier\":\"normal\",\"temporary_hp_lost\":0,\"hp_lost\":8,\"remaining_temporary_hp\":0,\"remaining_hp\":92,\"unapplied_damage\":0,\"explanation\":\"8 点强酸伤害 → HP 扣除 8\"},\"concentration_check_dc\":null}],\"area_membership\":{\"shape\":\"sphere\",\"size_ft\":5,\"anchor\":{\"row\":2,\"col\":2,\"height_ft\":0},\"anchor_range_ft\":0,\"maximum_range_ft\":60,\"include_actor\":true,\"requires_line_of_sight\":true,\"target_ids\":[\"stable-id\",\"stable-id\",\"stable-id\"],\"geometry\":{\"stable-id\":{\"grid_position\":{\"row\":2,\"col\":2},\"distance_ft\":0,\"line_of_sight\":true,\"line_of_sight_mode\":\"2d\",\"line_of_sight_pair\":{\"from\":{\"row\":2,\"col\":2},\"to\":{\"row\":2,\"col\":2}}},\"stable-id\":{\"grid_position\":{\"row\":2,\"col\":3},\"distance_ft\":5,\"line_of_sight\":true,\"line_of_sight_mode\":\"2d\",\"line_of_sight_pair\":{\"from\":{\"row\":2,\"col\":2},\"to\":{\"row\":2,\"col\":3}}},\"stable-id\":{\"grid_position\":{\"row\":3,\"col\":2},\"distance_ft\":5,\"line_of_sight\":true,\"line_of_sight_mode\":\"2d\",\"line_of_sight_pair\":{\"from\":{\"row\":2,\"col\":2},\"to\":{\"row\":3,\"col\":2}}}},\"validated_by\":\"CombatEngineService.validate_exact_area_target_ids\"},\"production_contract\":{\"content_kind\":\"spell\",\"known_spell_id\":\"stable-id\",\"action_cost\":\"action\",\"requires_target\":true,\"requires_resolution_input\":true,\"requires_cas\":true,\"requires_idempotency\":true,\"caster_level\":5,\"spell_context\":{},\"consumers\":[\"combat_engine.area_damage.v1\",\"combat_engine.damage_heal.v1\",\"spell.cantrip_scaling.v1\"],\"area_batch\":true,\"defense\":null,\"timed_modifier\":null,\"communication_route\":null,\"communication_capability\":null,\"illusion_lifecycle\":null,\"object_effect_lifecycle\":null,\"summon\":null,\"remote_spell_origin\":null},\"preview_token\":\"stable-token\"}"
+        },
         "extra_outside_status": 400,
         "omitted_before_payment": true,
         "omitted_in_area_status": 400,
+        "payment_receipts": {
+          "anchor_out_of_bounds": {
+            "after": {
+              "spell_slots": {
+                "1": {
+                  "current": 2,
+                  "max": 2
+                },
+                "2": {
+                  "current": 2,
+                  "max": 2
+                },
+                "3": {
+                  "current": 2,
+                  "max": 2
+                },
+                "4": {
+                  "current": 2,
+                  "max": 2
+                },
+                "5": {
+                  "current": 2,
+                  "max": 2
+                },
+                "6": {
+                  "current": 2,
+                  "max": 2
+                },
+                "7": {
+                  "current": 2,
+                  "max": 2
+                },
+                "8": {
+                  "current": 2,
+                  "max": 2
+                },
+                "9": {
+                  "current": 2,
+                  "max": 2
+                }
+              },
+              "version": 2
+            },
+            "before": {
+              "spell_slots": {
+                "1": {
+                  "current": 2,
+                  "max": 2
+                },
+                "2": {
+                  "current": 2,
+                  "max": 2
+                },
+                "3": {
+                  "current": 2,
+                  "max": 2
+                },
+                "4": {
+                  "current": 2,
+                  "max": 2
+                },
+                "5": {
+                  "current": 2,
+                  "max": 2
+                },
+                "6": {
+                  "current": 2,
+                  "max": 2
+                },
+                "7": {
+                  "current": 2,
+                  "max": 2
+                },
+                "8": {
+                  "current": 2,
+                  "max": 2
+                },
+                "9": {
+                  "current": 2,
+                  "max": 2
+                }
+              },
+              "version": 2
+            },
+            "unchanged": true
+          },
+          "extra_outside": {
+            "after": {
+              "spell_slots": {
+                "1": {
+                  "current": 2,
+                  "max": 2
+                },
+                "2": {
+                  "current": 2,
+                  "max": 2
+                },
+                "3": {
+                  "current": 2,
+                  "max": 2
+                },
+                "4": {
+                  "current": 2,
+                  "max": 2
+                },
+                "5": {
+                  "current": 2,
+                  "max": 2
+                },
+                "6": {
+                  "current": 2,
+                  "max": 2
+                },
+                "7": {
+                  "current": 2,
+                  "max": 2
+                },
+                "8": {
+                  "current": 2,
+                  "max": 2
+                },
+                "9": {
+                  "current": 2,
+                  "max": 2
+                }
+              },
+              "version": 2
+            },
+            "before": {
+              "spell_slots": {
+                "1": {
+                  "current": 2,
+                  "max": 2
+                },
+                "2": {
+                  "current": 2,
+                  "max": 2
+                },
+                "3": {
+                  "current": 2,
+                  "max": 2
+                },
+                "4": {
+                  "current": 2,
+                  "max": 2
+                },
+                "5": {
+                  "current": 2,
+                  "max": 2
+                },
+                "6": {
+                  "current": 2,
+                  "max": 2
+                },
+                "7": {
+                  "current": 2,
+                  "max": 2
+                },
+                "8": {
+                  "current": 2,
+                  "max": 2
+                },
+                "9": {
+                  "current": 2,
+                  "max": 2
+                }
+              },
+              "version": 2
+            },
+            "unchanged": true
+          },
+          "omitted": {
+            "after": {
+              "spell_slots": {
+                "1": {
+                  "current": 2,
+                  "max": 2
+                },
+                "2": {
+                  "current": 2,
+                  "max": 2
+                },
+                "3": {
+                  "current": 2,
+                  "max": 2
+                },
+                "4": {
+                  "current": 2,
+                  "max": 2
+                },
+                "5": {
+                  "current": 2,
+                  "max": 2
+                },
+                "6": {
+                  "current": 2,
+                  "max": 2
+                },
+                "7": {
+                  "current": 2,
+                  "max": 2
+                },
+                "8": {
+                  "current": 2,
+                  "max": 2
+                },
+                "9": {
+                  "current": 2,
+                  "max": 2
+                }
+              },
+              "version": 2
+            },
+            "before": {
+              "spell_slots": {
+                "1": {
+                  "current": 2,
+                  "max": 2
+                },
+                "2": {
+                  "current": 2,
+                  "max": 2
+                },
+                "3": {
+                  "current": 2,
+                  "max": 2
+                },
+                "4": {
+                  "current": 2,
+                  "max": 2
+                },
+                "5": {
+                  "current": 2,
+                  "max": 2
+                },
+                "6": {
+                  "current": 2,
+                  "max": 2
+                },
+                "7": {
+                  "current": 2,
+                  "max": 2
+                },
+                "8": {
+                  "current": 2,
+                  "max": 2
+                },
+                "9": {
+                  "current": 2,
+                  "max": 2
+                }
+              },
+              "version": 2
+            },
+            "unchanged": true
+          },
+          "too_far_65ft": {
+            "after": {
+              "spell_slots": {
+                "1": {
+                  "current": 2,
+                  "max": 2
+                },
+                "2": {
+                  "current": 2,
+                  "max": 2
+                },
+                "3": {
+                  "current": 2,
+                  "max": 2
+                },
+                "4": {
+                  "current": 2,
+                  "max": 2
+                },
+                "5": {
+                  "current": 2,
+                  "max": 2
+                },
+                "6": {
+                  "current": 2,
+                  "max": 2
+                },
+                "7": {
+                  "current": 2,
+                  "max": 2
+                },
+                "8": {
+                  "current": 2,
+                  "max": 2
+                },
+                "9": {
+                  "current": 2,
+                  "max": 2
+                }
+              },
+              "version": 2
+            },
+            "before": {
+              "spell_slots": {
+                "1": {
+                  "current": 2,
+                  "max": 2
+                },
+                "2": {
+                  "current": 2,
+                  "max": 2
+                },
+                "3": {
+                  "current": 2,
+                  "max": 2
+                },
+                "4": {
+                  "current": 2,
+                  "max": 2
+                },
+                "5": {
+                  "current": 2,
+                  "max": 2
+                },
+                "6": {
+                  "current": 2,
+                  "max": 2
+                },
+                "7": {
+                  "current": 2,
+                  "max": 2
+                },
+                "8": {
+                  "current": 2,
+                  "max": 2
+                },
+                "9": {
+                  "current": 2,
+                  "max": 2
+                }
+              },
+              "version": 2
+            },
+            "unchanged": true
+          }
+        },
         "rejection_payment_unchanged": {
           "anchor_out_of_bounds": true,
           "extra_outside": true,
@@ -123,7 +557,95 @@
           ],
           "text": "{\"code\":\"http_400\",\"message\":\"area anchor is 65 ft away, beyond the typed spell range of 60 ft\",\"details\":null,\"request_id\":\"stable-id\"}"
         },
-        "too_far_65ft_status": 400
+        "too_far_65ft_status": 400,
+        "untrusted_flags": {
+          "detail": null,
+          "membership": {
+            "anchor": {
+              "col": 2,
+              "height_ft": 0,
+              "row": 2
+            },
+            "anchor_range_ft": 0,
+            "geometry": {
+              "stable-id-0": {
+                "distance_ft": 0,
+                "grid_position": {
+                  "col": 2,
+                  "row": 2
+                },
+                "line_of_sight": true,
+                "line_of_sight_mode": "2d",
+                "line_of_sight_pair": {
+                  "from": {
+                    "col": 2,
+                    "row": 2
+                  },
+                  "to": {
+                    "col": 2,
+                    "row": 2
+                  }
+                }
+              },
+              "stable-id-1": {
+                "distance_ft": 5,
+                "grid_position": {
+                  "col": 2,
+                  "row": 3
+                },
+                "line_of_sight": true,
+                "line_of_sight_mode": "2d",
+                "line_of_sight_pair": {
+                  "from": {
+                    "col": 2,
+                    "row": 2
+                  },
+                  "to": {
+                    "col": 2,
+                    "row": 3
+                  }
+                }
+              },
+              "stable-id-2": {
+                "distance_ft": 5,
+                "grid_position": {
+                  "col": 3,
+                  "row": 2
+                },
+                "line_of_sight": true,
+                "line_of_sight_mode": "2d",
+                "line_of_sight_pair": {
+                  "from": {
+                    "col": 2,
+                    "row": 2
+                  },
+                  "to": {
+                    "col": 3,
+                    "row": 2
+                  }
+                }
+              }
+            },
+            "include_actor": true,
+            "maximum_range_ft": 60,
+            "requires_line_of_sight": true,
+            "shape": "sphere",
+            "size_ft": 5,
+            "target_ids": [
+              "stable-id",
+              "stable-id",
+              "stable-id"
+            ],
+            "validated_by": "CombatEngineService.validate_exact_area_target_ids"
+          },
+          "status": 200,
+          "submitted_target_ids": [
+            "stable-id",
+            "stable-id",
+            "stable-id"
+          ],
+          "text": "{\"schema_version\":\"content-ir-runtime-preview-1\",\"runtime_id\":\"core-phb-2024:spell:d84dec64befac8db7294e0f1\",\"runtime_source\":{\"source_record_id\":\"d84dec64befac8db7294e0f1\",\"source_path\":\"玩家手册2024/法术详述/0环.htm\",\"source_book\":\"玩家手册 2024\",\"source_fingerprint\":\"a313aa1a2445b55284185910142d31d1cc7b4ca3a1de4aae96b0400bab3e5af4\",\"source_trust\":\"authored_ir\"},\"compile_status\":\"full\",\"runtime_preview_full\":true,\"spell_preview\":{\"character_id\":\"stable-id\",\"spell\":{\"id\":\"stable-id\",\"created_at\":\"stable-time\",\"updated_at\":\"stable-time\",\"version\":1,\"campaign_id\":\"stable-id\",\"character_id\":\"stable-id\",\"name\":\"酸液飞溅\",\"spell_level\":0,\"source_reference\":\"PHB 2024\",\"metadata_json\":{\"content_ir_runtime\":{\"kind\":\"spell\",\"runtime_schema_version\":\"spell-runtime-1\",\"spell_id\":\"core-phb-2024:spell:d84dec64befac8db7294e0f1\",\"name\":\"酸液飞溅\",\"level\":0,\"school\":\"塑能\",\"casting_time\":\"action\",\"range\":\"60 feet\",\"target\":\"5-foot sphere\",\"components\":\"V,S\",\"duration\":\"instant\",\"concentration\":false,\"resolution\":{\"target_selection\":[{\"clause_id\":\"target\",\"count\":\"all_in_area\",\"evidence_ref\":\"5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害\",\"kind\":\"area\",\"range\":\"60 feet\",\"shape\":\"sphere\",\"size_ft\":5,\"type\":\"target_selection\",\"visibility\":\"visible\"}],\"attack_roll\":[],\"saving_throw\":[{\"action_economy\":\"action\",\"clause_id\":\"save\",\"evidence_ref\":\"5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害\",\"half_on_success\":false,\"range\":\"60 feet\",\"save_ability\":\"dexterity\",\"target\":\"area\",\"trigger\":\"spell_cast\",\"type\":\"saving_throw\"}],\"effects\":[{\"applies_to\":\"save\",\"clause_id\":\"damage\",\"damage_type\":\"acid\",\"evidence_ref\":\"5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害\",\"expression\":\"1d6\",\"on_failure\":\"full\",\"on_success\":\"none\",\"target\":\"area\",\"trigger\":\"saving_throw\",\"type\":\"damage\"},{\"clause_id\":\"area\",\"evidence_ref\":\"5尺球状范围内每名生物必须通过敏捷豁免，否则受到1d6点强酸伤害\",\"origin\":\"chosen_point\",\"range\":\"60 feet\",\"shape\":\"sphere\",\"size_ft\":5,\"target\":\"area\",\"type\":\"area\"}],\"duration\":[],\"concentration\":[],\"upcast\":[{\"applies_to\":\"damage\",\"clause_id\":\"upcast\",\"evidence_ref\":\"戏法强化：5级2d6、11级3d6、17级4d6\",\"increments\":1,\"per_slot\":null,\"progression\":[{\"character_level\":5,\"expression\":\"2d6\"},{\"character_level\":11,\"expression\":\"3d6\"},{\"character_level\":17,\"expression\":\"4d6\"}],\"type\":\"upcast\"}],\"communication_route\":[],\"communication_capability\":[],\"illusion_lifecycle\":[],\"object_effect_lifecycle\":[]},\"source\":{\"source_record_id\":\"d84dec64befac8db7294e0f1\",\"source_path\":\"玩家手册2024/法术详述/0环.htm\",\"source_book\":\"玩家手册 2024\",\"source_fingerprint\":\"a313aa1a2445b55284185910142d31d1cc7b4ca3a1de4aae96b0400bab3e5af4\",\"source_trust\":\"authored_ir\"},\"execution_status\":\"ready\"}}},\"slot_level\":0,\"ritual\":false,\"slot_before\":0,\"slot_after\":0,\"free_cast\":false,\"free_cast_resource_key\":null,\"free_cast_before\":0,\"free_cast_after\":0,\"payment_override\":false,\"payment_resource_key\":null,\"payment_cost\":0,\"payment_before\":0,\"spell_context\":{\"component_override\":null,\"components_ignored\":false,\"payment_override\":null,\"payment_resource_key\":null,\"payment_cost\":0,\"payment_before\":0,\"payment_after\":0},\"concentration\":false,\"focus_equipment_id\":null,\"rule_reference\":\"PHB 2024\",\"preview_token\":\"stable-token\"},\"combat_preview\":[{\"before\":{\"hp\":20,\"max_hp\":20,\"max_hp_reduction\":0,\"temporary_hp\":0,\"version\":1},\"after\":{\"hp\":12,\"max_hp\":20,\"max_hp_reduction\":0,\"temporary_hp\":0,\"version\":2},\"result\":{\"original_damage\":8,\"adjusted_damage\":8,\"damage_type\":\"acid\",\"modifier\":\"normal\",\"temporary_hp_lost\":0,\"hp_lost\":8,\"remaining_temporary_hp\":0,\"remaining_hp\":12,\"unapplied_damage\":0,\"explanation\":\"8 点强酸伤害 → HP 扣除 8\"},\"concentration_check_dc\":null},{\"before\":{\"hp\":100,\"max_hp\":100,\"max_hp_reduction\":0,\"temporary_hp\":0,\"version\":1},\"after\":{\"hp\":92,\"max_hp\":100,\"max_hp_reduction\":0,\"temporary_hp\":0,\"version\":2},\"result\":{\"original_damage\":8,\"adjusted_damage\":8,\"damage_type\":\"acid\",\"modifier\":\"normal\",\"temporary_hp_lost\":0,\"hp_lost\":8,\"remaining_temporary_hp\":0,\"remaining_hp\":92,\"unapplied_damage\":0,\"explanation\":\"8 点强酸伤害 → HP 扣除 8\"},\"concentration_check_dc\":null},{\"before\":{\"hp\":100,\"max_hp\":100,\"max_hp_reduction\":0,\"temporary_hp\":0,\"version\":1},\"after\":{\"hp\":92,\"max_hp\":100,\"max_hp_reduction\":0,\"temporary_hp\":0,\"version\":2},\"result\":{\"original_damage\":8,\"adjusted_damage\":8,\"damage_type\":\"acid\",\"modifier\":\"normal\",\"temporary_hp_lost\":0,\"hp_lost\":8,\"remaining_temporary_hp\":0,\"remaining_hp\":92,\"unapplied_damage\":0,\"explanation\":\"8 点强酸伤害 → HP 扣除 8\"},\"concentration_check_dc\":null}],\"area_membership\":{\"shape\":\"sphere\",\"size_ft\":5,\"anchor\":{\"row\":2,\"col\":2,\"height_ft\":0},\"anchor_range_ft\":0,\"maximum_range_ft\":60,\"include_actor\":true,\"requires_line_of_sight\":true,\"target_ids\":[\"stable-id\",\"stable-id\",\"stable-id\"],\"geometry\":{\"stable-id\":{\"grid_position\":{\"row\":2,\"col\":2},\"distance_ft\":0,\"line_of_sight\":true,\"line_of_sight_mode\":\"2d\",\"line_of_sight_pair\":{\"from\":{\"row\":2,\"col\":2},\"to\":{\"row\":2,\"col\":2}}},\"stable-id\":{\"grid_position\":{\"row\":2,\"col\":3},\"distance_ft\":5,\"line_of_sight\":true,\"line_of_sight_mode\":\"2d\",\"line_of_sight_pair\":{\"from\":{\"row\":2,\"col\":2},\"to\":{\"row\":2,\"col\":3}}},\"stable-id\":{\"grid_position\":{\"row\":3,\"col\":2},\"distance_ft\":5,\"line_of_sight\":true,\"line_of_sight_mode\":\"2d\",\"line_of_sight_pair\":{\"from\":{\"row\":2,\"col\":2},\"to\":{\"row\":3,\"col\":2}}}},\"validated_by\":\"CombatEngineService.validate_exact_area_target_ids\"},\"production_contract\":{\"content_kind\":\"spell\",\"known_spell_id\":\"stable-id\",\"action_cost\":\"action\",\"requires_target\":true,\"requires_resolution_input\":true,\"requires_cas\":true,\"requires_idempotency\":true,\"caster_level\":5,\"spell_context\":{},\"consumers\":[\"combat_engine.area_damage.v1\",\"combat_engine.damage_heal.v1\",\"spell.cantrip_scaling.v1\"],\"area_batch\":true,\"defense\":null,\"timed_modifier\":null,\"communication_route\":null,\"communication_capability\":null,\"illusion_lifecycle\":null,\"object_effect_lifecycle\":null,\"summon\":null,\"remote_spell_origin\":null},\"preview_token\":\"stable-token\"}"
+        }
       },
       "compile_status": "full",
       "consumer_ids": [
@@ -2384,11 +2906,15 @@
     "outside_area_untouched",
     "omitted_in_area_rejected_before_payment",
     "extra_outside_rejected",
+    "exact_without_runtime_contract_enforced",
+    "untrusted_area_flags_cannot_disable_actor",
+    "omitted_without_runtime_contract_rejected",
     "anchor_range_boundary_accepted",
     "anchor_range_too_far_rejected",
     "anchor_grid_bounds_rejected",
     "range_probe_membership_submissions_exact",
     "range_rejected_before_payment",
+    "payment_receipts_are_per_probe",
     "replay_idempotent",
     "target_cas_rejected",
     "operation_transactions_persisted",

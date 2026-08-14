@@ -53,6 +53,13 @@ def test_round_lvii_artifact_captures_generic_runtime_evidence() -> None:
     assert artifact["required_check_keys"] == report["required_check_keys"]
     assert all(artifact["checks"][key] is True for key in artifact["required_check_keys"])
     probes = artifact["evidence_by_id"][SPELL_ID]["area_probes"]
+    assert probes["exact_without_runtime_contract"]["status"] == 200
+    assert probes["exact_without_runtime_contract"]["submitted_target_ids"] == probes[
+        "exact_without_runtime_contract"
+    ]["membership"]["target_ids"]
+    assert probes["untrusted_flags"]["status"] == 200
+    assert probes["untrusted_flags"]["membership"]["include_actor"] is True
+    assert probes["omitted_in_area_status"] == 400
     assert probes["boundary_60ft"]["status"] == 200
     assert probes["boundary_60ft"]["submitted_target_ids"] == probes["boundary_60ft"][
         "membership"
@@ -67,6 +74,11 @@ def test_round_lvii_artifact_captures_generic_runtime_evidence() -> None:
         "omitted": True,
         "too_far_65ft": True,
     }
+    assert all(
+        set(receipt) == {"before", "after", "unchanged"}
+        and receipt["unchanged"] is True
+        for receipt in probes["payment_receipts"].values()
+    )
     assert report["before"]["production"] == 208
     assert report["before"]["compile_only"] == 27
     assert report["after"]["production"] == 209

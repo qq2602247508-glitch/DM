@@ -278,8 +278,7 @@ def _area_body(
         "area_size_ft": 5,
         "area_anchor_row": anchor_row,
         "area_anchor_col": anchor_col,
-        "area_include_actor": True,
-        "runtime_contract": {"exact_area_membership": True},
+        "area_include_actor": False,
         "resolution_total": total,
         "save_succeeded_by_target": save_by_target,
         "idempotency_key": key,
@@ -300,6 +299,24 @@ def _response_evidence(response: Any) -> dict[str, Any]:
         "status": response.status_code,
         "detail": detail,
         "text": response.text,
+    }
+
+
+def _payment_snapshot(character: dict[str, Any]) -> dict[str, Any]:
+    resources = character.get("resources")
+    resource_map = resources if isinstance(resources, dict) else {}
+    spellcasting = character.get("spellcasting")
+    spellcasting_map = spellcasting if isinstance(spellcasting, dict) else {}
+    slots = spellcasting_map.get("slots")
+    if not isinstance(slots, dict):
+        slots = {
+            key: value
+            for key, value in resource_map.items()
+            if str(key).startswith("spell_slots_")
+        }
+    return {
+        "version": character.get("version"),
+        "spell_slots": slots,
     }
 
 
@@ -505,6 +522,7 @@ def _run_area_boundary_and_rejection_probes(
             character_before = client.get(
                 f"{scene['base']}/characters/{scene['character']['id']}"
             ).json()
+            omitted_payment_before = _payment_snapshot(character_before)
             omitted = _area_body(
                 scene,
                 key="round-lvii-acid-splash-omitted-actor",
@@ -519,6 +537,8 @@ def _run_area_boundary_and_rejection_probes(
             character_after_omitted = client.get(
                 f"{scene['base']}/characters/{scene['character']['id']}"
             ).json()
+            omitted_payment_after = _payment_snapshot(character_after_omitted)
+            extra_payment_before = _payment_snapshot(character_after_omitted)
             extra = _area_body(
                 scene,
                 key="round-lvii-acid-splash-extra-outside",
@@ -537,11 +557,33 @@ def _run_area_boundary_and_rejection_probes(
                 f"{scene['base']}/content-ir/runtime/preview",
                 json=extra,
             )
+            extra_payment_after = _payment_snapshot(
+                client.get(
+                    f"{scene['base']}/characters/{scene['character']['id']}"
+                ).json()
+            )
+            exact_without_contract = _area_body(
+                scene,
+                key="round-lvii-acid-splash-no-contract-exact",
+                total=8,
+            )
+            exact_without_contract_response = client.post(
+                f"{scene['base']}/content-ir/runtime/preview",
+                json=exact_without_contract,
+            )
+            untrusted_flags = _area_body(
+                scene,
+                key="round-lvii-acid-splash-untrusted-flags",
+                total=8,
+            )
+            untrusted_flags["runtime_contract"] = None
+            untrusted_flags["area_include_actor"] = False
+            untrusted_flags_response = client.post(
+                f"{scene['base']}/content-ir/runtime/preview",
+                json=untrusted_flags,
+            )
             bounds = _setup_area_spell(client, runtime, 5)
             bounds_root = f"{bounds['base']}/combats/{bounds['combat']['id']}"
-            bounds_character_before = client.get(
-                f"{bounds['base']}/characters/{bounds['character']['id']}"
-            ).json()
             boundary_target = client.post(
                 f"{bounds_root}/combatants",
                 json={
@@ -596,9 +638,19 @@ def _run_area_boundary_and_rejection_probes(
             )
             too_far_body["target_versions"] = {too_far_target["id"]: too_far_target["version"]}
             too_far_body["save_succeeded_by_target"] = {too_far_target["id"]: False}
+            too_far_payment_before = _payment_snapshot(
+                client.get(
+                    f"{bounds['base']}/characters/{bounds['character']['id']}"
+                ).json()
+            )
             too_far_response = client.post(
                 f"{bounds['base']}/content-ir/runtime/preview",
                 json=too_far_body,
+            )
+            too_far_payment_after = _payment_snapshot(
+                client.get(
+                    f"{bounds['base']}/characters/{bounds['character']['id']}"
+                ).json()
             )
             out_of_bounds = _area_body(
                 bounds,
@@ -611,38 +663,75 @@ def _run_area_boundary_and_rejection_probes(
             )
             out_of_bounds["target_versions"] = {too_far_target["id"]: too_far_target["version"]}
             out_of_bounds["save_succeeded_by_target"] = {too_far_target["id"]: False}
+            out_of_bounds_payment_before = _payment_snapshot(
+                client.get(
+                    f"{bounds['base']}/characters/{bounds['character']['id']}"
+                ).json()
+            )
             out_of_bounds_response = client.post(
                 f"{bounds['base']}/content-ir/runtime/preview",
                 json=out_of_bounds,
             )
-            rejected_probes = (
-                ("omitted", omitted_response, omitted, character_before),
-                ("extra_outside", extra_response, extra, character_after_omitted),
-                ("too_far_65ft", too_far_response, too_far_body, bounds_character_before),
-                (
-                    "anchor_out_of_bounds",
-                    out_of_bounds_response,
-                    out_of_bounds,
-                    bounds_character_before,
-                ),
-            )
-            rejection_payment: dict[str, bool] = {}
-            for name, response, _, before_character in rejected_probes:
-                if before_character is None:
-                    continue
-                after_character = client.get(
-                    f"{scene['base']}/characters/{scene['character']['id']}"
+            out_of_bounds_payment_after = _payment_snapshot(
+                client.get(
+                    f"{bounds['base']}/characters/{bounds['character']['id']}"
                 ).json()
-                rejection_payment[name] = (
-                    after_character["version"] == before_character["version"]
-                )
+            )
+            payment_receipts = {
+                "omitted": {
+                    "before": omitted_payment_before,
+                    "after": omitted_payment_after,
+                    "unchanged": omitted_payment_before == omitted_payment_after,
+                },
+                "extra_outside": {
+                    "before": extra_payment_before,
+                    "after": extra_payment_after,
+                    "unchanged": extra_payment_before == extra_payment_after,
+                },
+                "too_far_65ft": {
+                    "before": too_far_payment_before,
+                    "after": too_far_payment_after,
+                    "unchanged": too_far_payment_before == too_far_payment_after,
+                },
+                "anchor_out_of_bounds": {
+                    "before": out_of_bounds_payment_before,
+                    "after": out_of_bounds_payment_after,
+                    "unchanged": (
+                        out_of_bounds_payment_before == out_of_bounds_payment_after
+                    ),
+                },
+            }
             return {
                 "omitted_in_area_status": omitted_response.status_code,
                 "omitted_before_payment": (
                     omitted_response.status_code == 400
-                    and character_after_omitted["version"] == character_before["version"]
+                    and payment_receipts["omitted"]["unchanged"]
                 ),
                 "extra_outside_status": extra_response.status_code,
+                "exact_without_runtime_contract": {
+                    **_response_evidence(exact_without_contract_response),
+                    "submitted_target_ids": [
+                        exact_without_contract["target_combatant_id"],
+                        *exact_without_contract["target_combatant_ids"],
+                    ],
+                    "membership": (
+                        exact_without_contract_response.json().get("area_membership")
+                        if exact_without_contract_response.status_code == 200
+                        else None
+                    ),
+                },
+                "untrusted_flags": {
+                    **_response_evidence(untrusted_flags_response),
+                    "submitted_target_ids": [
+                        untrusted_flags["target_combatant_id"],
+                        *untrusted_flags["target_combatant_ids"],
+                    ],
+                    "membership": (
+                        untrusted_flags_response.json().get("area_membership")
+                        if untrusted_flags_response.status_code == 200
+                        else None
+                    ),
+                },
                 "boundary_60ft": {
                     **_response_evidence(boundary_response),
                     "submitted_target_ids": [
@@ -672,7 +761,11 @@ def _run_area_boundary_and_rejection_probes(
                 "boundary_60ft_status": boundary_response.status_code,
                 "too_far_65ft_status": too_far_response.status_code,
                 "anchor_out_of_bounds_status": out_of_bounds_response.status_code,
-                "rejection_payment_unchanged": rejection_payment,
+                "rejection_payment_unchanged": {
+                    name: receipt["unchanged"]
+                    for name, receipt in payment_receipts.items()
+                },
+                "payment_receipts": payment_receipts,
             }
 
 
@@ -905,6 +998,20 @@ def main() -> int:
         ]
         is True,
         "extra_outside_rejected": area_probes["extra_outside_status"] == 400,
+        "exact_without_runtime_contract_enforced": (
+            area_probes["exact_without_runtime_contract"]["status"] == 200
+            and area_probes["exact_without_runtime_contract"]["submitted_target_ids"]
+            == area_probes["exact_without_runtime_contract"]["membership"]["target_ids"]
+        ),
+        "untrusted_area_flags_cannot_disable_actor": (
+            area_probes["untrusted_flags"]["status"] == 200
+            and area_probes["untrusted_flags"]["membership"]["include_actor"] is True
+            and area_probes["untrusted_flags"]["membership"]["target_ids"]
+            == area_probes["untrusted_flags"]["submitted_target_ids"]
+        ),
+        "omitted_without_runtime_contract_rejected": (
+            area_probes["omitted_in_area_status"] == 400
+        ),
         "anchor_range_boundary_accepted": (
             area_probes["boundary_60ft"]["status"] == 200
             and area_probes["boundary_60ft"]["submitted_target_ids"]
@@ -932,6 +1039,11 @@ def main() -> int:
         ),
         "range_rejected_before_payment": all(
             area_probes["rejection_payment_unchanged"].values()
+        ),
+        "payment_receipts_are_per_probe": all(
+            set(receipt) == {"before", "after", "unchanged"}
+            and receipt["unchanged"] is True
+            for receipt in area_probes["payment_receipts"].values()
         ),
         "replay_idempotent": production["replay_already_applied"] is True,
         "target_cas_rejected": production["stale_target_cas_status"] == 409,
