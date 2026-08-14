@@ -60,6 +60,7 @@ def test_round_lv_projection_retains_selected_id_and_unrelated_ids() -> None:
     historical_artifacts = {
         artifact_path,
         "data/content-ir/compiled/production-runtime-results-LVI.json",
+        "data/content-ir/compiled/production-runtime-results-LVII.json",
     }
     loaded_before = {
         content_id: row
@@ -79,7 +80,11 @@ def test_round_lv_projection_retains_selected_id_and_unrelated_ids() -> None:
             required_checks=("all_required_checks_passed",),
             require_name_branch_free=True,
         ).items()
-        if row["evidence_path"] != "data/content-ir/compiled/production-runtime-results-LVI.json"
+        if row["evidence_path"]
+        not in {
+            "data/content-ir/compiled/production-runtime-results-LVI.json",
+            "data/content-ir/compiled/production-runtime-results-LVII.json",
+        }
     }
     loaded_after_current = load_production_runtime_evidence(
         ROOT,
