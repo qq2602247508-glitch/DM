@@ -1,0 +1,165 @@
+{
+  "artifact_date": "2026-08-14",
+  "checks": {
+    "candidate_absent_from_loaded_production_evidence": true,
+    "formal_database_written": false,
+    "formal_registry_written": false,
+    "generic_registry_rejection_is_actual": true,
+    "historical_xliii_sha_exact": true,
+    "name_branch_count": 0,
+    "named_nodes": {
+      "test_round_li_candidates_compile_from_source_bound_ir": {
+        "command": [
+          "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+          "-m",
+          "pytest",
+          "-q",
+          "backend/tests/test_round_LI_utility_spell_retention.py::test_round_li_candidates_compile_from_source_bound_ir"
+        ],
+        "passed": true,
+        "returncode": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_sha256": "e965267b6e51fb6b651aa4a70a362def751f11025a31512de16bf72e245ca37a"
+      },
+      "test_round_li_generic_registry_rejects_incomplete_runtime": {
+        "command": [
+          "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+          "-m",
+          "pytest",
+          "-q",
+          "backend/tests/test_round_LI_utility_spell_retention.py::test_round_li_generic_registry_rejects_incomplete_runtime"
+        ],
+        "passed": true,
+        "returncode": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_sha256": "e965267b6e51fb6b651aa4a70a362def751f11025a31512de16bf72e245ca37a"
+      },
+      "test_round_li_projection_retains_both_candidates": {
+        "command": [
+          "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+          "-m",
+          "pytest",
+          "-q",
+          "backend/tests/test_round_LI_utility_spell_retention.py::test_round_li_projection_retains_both_candidates"
+        ],
+        "passed": true,
+        "returncode": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_sha256": "e965267b6e51fb6b651aa4a70a362def751f11025a31512de16bf72e245ca37a"
+      }
+    },
+    "projection_unchanged": true,
+    "protected_ollama_sha_exact": true,
+    "source_bound_compile": true
+  },
+  "content_kind": "spell",
+  "evidence_by_id": {
+    "core-phb-2024:spell:83b7d94b77f332dd71310bbe": {
+      "compile_status": "full",
+      "content_id": "core-phb-2024:spell:83b7d94b77f332dd71310bbe",
+      "decision": "retained_compile_only",
+      "generic_registry_error": "spell runtime has no registered executable consumer",
+      "hard_blockers": [
+        "no generic persistent illusion appearance envelope",
+        "no physical non-interaction inspection consumer",
+        "no Research/Investigation versus spell DC consumer",
+        "no illusion expiry receipt"
+      ],
+      "name": "Disguise Self",
+      "production_runtime_full": false,
+      "required_semantics": [
+        "self target and one-hour duration",
+        "appearance/clothing/armor/weapon illusion envelope",
+        "physical inspection passes through illusion",
+        "Research action plus Intelligence (Investigation) versus spell DC",
+        "effect termination and expiry receipt"
+      ],
+      "resolved_consumers": [],
+      "runtime_blocks": {
+        "attack_roll": [],
+        "communication_capability": [],
+        "communication_route": [],
+        "concentration": [],
+        "duration": [],
+        "effects": [],
+        "saving_throw": [],
+        "target_selection": [
+          {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "的影响范围由你决定。 此法术产生的变化无法应对物理检查。比如，你用此法术添了一顶帽子，那么现实物件会从帽子穿过去，且任何触碰帽子的人将摸不到任何东西。 如果一名生物想要分辨你是否易容，则必须使用一个研究动作研究你的外貌，并成功于一次对抗你法术豁免DC的智力（调查）检定。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          }
+        ],
+        "upcast": []
+      },
+      "source": {
+        "authored_path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-83b7d94b77f332dd71310bbe.json",
+        "source_fingerprint": "333f2d3a48232acf17b222fc2782505ff5f61a059a7ffe49c26ad86823caa0f4",
+        "source_path": "玩家手册2024/法术详述/1环.htm",
+        "source_record_id": "83b7d94b77f332dd71310bbe",
+        "source_text": "#### 易容术｜Disguise Self\n\n*一环 幻术（吟游诗人、术士、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**1小时\n你改变自身以及随身的衣物、护甲、武器等在你身上的所有物。该效应在法术终止时结束。肉眼看来你的身高可以有1尺的增减，体态可胖可瘦。你必须选择一个和你肢体基础排列方式一致的形态。此外，幻术的影响范围由你决定。\n此法术产生的变化无法应对物理检查。比如，你用此法术添了一顶帽子，那么现实物件会从帽子穿过去，且任何触碰帽子的人将摸不到任何东西。\n如果一名生物想要分辨你是否易容，则必须使用一个研究动作研究你的外貌，并成功于一次对抗你法术豁免DC的智力（调查）检定。"
+      },
+      "typed_clause_ids": [
+        "target"
+      ]
+    },
+    "core-phb-2024:spell:b9db026fa1853bca5b6f1c13": {
+      "compile_status": "full",
+      "content_id": "core-phb-2024:spell:b9db026fa1853bca5b6f1c13",
+      "decision": "retained_compile_only",
+      "generic_registry_error": "spell runtime has no registered executable consumer",
+      "hard_blockers": [
+        "no generic six-mode typed choice contract",
+        "no object/surface lifecycle with dismissal and expiry",
+        "no generic three-slot concurrent non-instant effect invariant"
+      ],
+      "name": "Prestidigitation",
+      "production_runtime_full": false,
+      "required_semantics": [
+        "10-foot typed object/surface target boundary",
+        "six selectable effect modes",
+        "instant sensory/fire/clean-or-soil modes",
+        "one-hour minor sensation and magic mark modes",
+        "minor creation until the caster's next turn ends",
+        "maximum three concurrent non-instant effects"
+      ],
+      "resolved_consumers": [],
+      "runtime_blocks": {
+        "attack_roll": [],
+        "communication_capability": [],
+        "communication_route": [],
+        "concentration": [],
+        "duration": [],
+        "effects": [],
+        "saving_throw": [],
+        "target_selection": [
+          {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": " Play。**你立即点燃或熄灭一根蜡烛、一根火把或一处小篝火。 > **清洁或弄脏Clean or > Soil。**你立即清洁或弄脏一个体积不大于1立方尺的物件。 > **次级感觉Minor > Sensation。**你使一个不大于1立方尺的非活体物质变冷、变暖或对其调味，持续1小时。 > **魔法印记Magic > Mark。**你在一个物件或一个表面上创造一块色斑，一个小印记，或者一个徽记，持续1小时。 > **次级造物Minor > Creation。**你创造出一个非魔法小饰品或一张虚幻图像，其大小不能超过你的手掌大小，它会持续存在至下个你的回合结束为止。一个小饰品不能造成伤害，也不值任何钱。",
+            "kind": "object",
+            "type": "target_selection",
+            "visibility": "visible"
+          }
+        ],
+        "upcast": []
+      },
+      "source": {
+        "authored_path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-b9db026fa1853bca5b6f1c13.json",
+        "source_fingerprint": "ac01a2d5259ee244017fc18a87ba7014451a505a4e196d260a6dbb2a06806dda",
+        "source_path": "玩家手册2024/法术详述/0环.htm",
+        "source_record_id": "b9db026fa1853bca5b6f1c13",
+        "source_text": "#### 魔法伎俩｜Prestidigitation\n\n*变化 戏法（吟游诗人、术士、魔契师、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**10尺\n**法术成分：**V、S\n**持续时间：**至多1小时\n你在施法距离内创造一个魔法效应。从下述效应中选择一项。如果你多次施展该法术，则可以同时维持至多三个不同的非即时效应。\n\n> **感官效应Sensory\n> Effect。**你创造一个立即生效的，无害的感官效应，比如一束火花，一阵风，微弱音乐或古怪的臭味。\n> **玩火Fire\n> Play。**你立即点燃或熄灭一根蜡烛、一根火把或一处小篝火。\n> **清洁或弄脏Clean or\n> Soil。**你立即清洁或弄脏一个体积不大于1立方尺的物件。\n> **次级感觉Minor\n> Sensation。**你使一个不大于1立方尺的非活体物质变冷、变暖或对其调味，持续1小时。\n> **魔法印记Magic\n> Mark。**你在一个物件或一个表面上创造一块色斑，一个小印记，或者一个徽记，持续1小时。\n> **次级造物Minor\n> Creation。**你创造出一个非魔法小饰品或一张虚幻图像，其大小不能超过你的手掌大小，它会持续存在至下个你的回合结束为止。一个小饰品不能造成伤害，也不值任何钱。"
+      },
+      "typed_clause_ids": [
+        "target"
+      ]
+    }
+  },
+  "production_runtime_full_ids": [],
+  "round_id": "round-LI",
+  "schema_version": "content-ir-production-runtime-results-LI-1"
+}

@@ -3515,3 +3515,15 @@ git diff --check
 - loader-derived canonical projection：`206 production / 32 compile-only / 111 unique compiled`。本轮不 promotion Disguise Self 或 Prestidigitation。
 - Protected untracked `backend/tests/integrations/`、`backend/tests/ollama.py` 未修改/未 staging；expected ollama SHA `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`。
 - no push；历史 Round XLIII report SHA 保持 `98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f`。
+# Round LI handoff — 2026-08-14
+
+- Decision: retain Disguise Self and Prestidigitation as compile-only; neither has an honest source-complete generic production consumer.
+- Baseline: `738e624260bb43575766a9cf73c42c360ec74310`.
+- Projection: `206 production / 32 compile-only / 111 unique compiled`; delta `0/0/0`.
+- Evidence: `data/content-ir/compiled/production-runtime-results-LI.json`.
+- Validator/report: `scripts/validate-round-LI-utility-spell-closure.py`, `reports/round-LI-utility-spell-closure-2026-08-14.json`.
+- Focused tests: `backend/tests/test_round_LI_utility_spell_retention.py`.
+- Real source-bound compile and generic registry resolution were run; both candidates fail closed with `spell runtime has no registered executable consumer`.
+- Protected `backend/tests/ollama.py` SHA: `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`.
+- Historical Round XLIII report SHA: `98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f`.
+- No push. Next viable work is a name-agnostic illusion lifecycle/inspection consumer or a name-agnostic multi-mode object-effect lifecycle consumer.

@@ -871,3 +871,13 @@ feature binding 与 spell-slot reactivation 仍保持 partial。
 - 证据：`data/content-ir/compiled/production-runtime-results-L.json`、`reports/round-L-speak-with-animals-production-2026-08-14.json`、`scripts/validate-round-L-speak-with-animals-production.py`、`backend/tests/test_round_L_speak_with_animals_runtime.py`。
 - canonical projection 自 generic loader 计算为 `206 production / 32 compile-only / 111 unique compiled`；Disguise Self 与 Prestidigitation 保持 compile-only。
 - 受保护路径未变，Round XLIII report SHA 保持；无 push。
+
+# 2026-08-14 Round LI：Disguise Self / Prestidigitation closure audit
+
+- 基线 `738e624260bb43575766a9cf73c42c360ec74310`；比较 Disguise Self 与 Prestidigitation，二者均保留 compile-only。
+- 两条 source-bound authored IR 均实际编译为 `full`，但 generic `resolve_production_consumers` 对两者均 fail closed：`spell runtime has no registered executable consumer`。
+- 未新增 runtime helper、name/ID dispatch、formal registry 写入或 campaign 数据写入；promotion delta `0/0/0`。
+- canonical projection 由 set-based loader/migration 重新推导为 `206 production / 32 compile-only / 111 unique compiled`。
+- 证据：`data/content-ir/compiled/production-runtime-results-LI.json`、`reports/round-LI-utility-spell-closure-2026-08-14.json`、`scripts/validate-round-LI-utility-spell-closure.py`、`backend/tests/test_round_LI_utility_spell_retention.py`。
+- hard blockers：Disguise Self 缺 generic illusion appearance/physical inspection/Investigation-vs-DC/expiry consumer；Prestidigitation 缺 six-mode choice/object-surface lifecycle/dismissal/three-slot concurrency consumer。
+- 受保护 SHA 与 Round XLIII historical SHA 保持；无 push。
