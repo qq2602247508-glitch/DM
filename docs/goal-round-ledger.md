@@ -896,10 +896,10 @@ feature binding 与 spell-slot reactivation 仍保持 partial。
   snapshot 与 transaction；Ruff、compileall、diff-check 通过。
 - generic loader-derived projection：`208 production / 30 compile-only /
   111 unique compiled`；promotion delta `+1/-1/0`。
-- full backend pytest `1135 passed, 1 warning`；Round LIII report SHA
+- full backend pytest `1143 passed, 1 warning`；Round LIII report SHA
   `27e7c05430d19929ed83c43876607512ca09fd69e08506ab98c13acae0068d42`，
   artifact SHA
-  `af454f6c25fde93294fdac50fce61c7c2fa149bc38f219f31d5605cc1b6ce79`。
+  `25e729bd382bd3af5ea64933e9280c718cf4ae9ffdd678c8ac83e8b765348bfd`。
 - 证据：`docs/round-LIII-prestidigitation-object-effect-2026-08-14.md`、
   `scripts/validate-round-LIII-prestidigitation-object-effect.py`、
   `reports/round-LIII-prestidigitation-object-effect-2026-08-14.json`、

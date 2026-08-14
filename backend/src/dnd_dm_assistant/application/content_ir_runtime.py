@@ -2826,7 +2826,7 @@ class ContentIRRuntimeService:
             "no_damage": bool(data.get("object_effect_no_damage")),
             "no_value": bool(data.get("object_effect_no_value")),
         }
-        return {
+        contract = {
             "spec": spec,
             "mode": _text(data.get("object_effect_mode")),
             "target_kind": target_kind,
@@ -2839,6 +2839,21 @@ class ContentIRRuntimeService:
             "actor_id": actor_id,
             "target_contract": target,
         }
+        apply_typed_spell_object_effect(
+            spec,
+            state={"version": 0, "object_effects": []},
+            expected_version=0,
+            now=_object_effect_runtime_now(),
+            mode=contract["mode"],
+            target_kind=contract["target_kind"],
+            target_id=contract["target_id"],
+            distance_ft=contract["distance_ft"],
+            size_cubic_ft=contract["size_cubic_ft"],
+            nonliving=contract["nonliving"],
+            payload=contract["payload"],
+            current_turn=contract["current_turn"],
+        )
+        return contract
 
     @staticmethod
     def _expire_spell_timed_modifiers(target: Combatant, now: datetime) -> None:

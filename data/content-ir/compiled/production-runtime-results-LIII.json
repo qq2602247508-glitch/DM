@@ -115,8 +115,8 @@
               "preview_token": "stable-token",
               "ritual": false,
               "rule_reference": "PHB 2024",
-              "slot_after": 2,
-              "slot_before": 2,
+              "slot_after": 4,
+              "slot_before": 4,
               "slot_level": 1,
               "spell": {
                 "campaign_id": "stable-id",
@@ -634,8 +634,8 @@
             "preview_token": "stable-token",
             "ritual": false,
             "rule_reference": "PHB 2024",
-            "slot_after": 2,
-            "slot_before": 2,
+            "slot_after": 4,
+            "slot_before": 4,
             "slot_level": 1,
             "spell": {
               "campaign_id": "stable-id",

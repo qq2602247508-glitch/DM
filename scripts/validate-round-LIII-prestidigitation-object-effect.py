@@ -91,6 +91,9 @@ def _run_named_nodes() -> dict[str, Any]:
         "test_round_liii_source_contract_has_all_six_modes_and_generic_registry",
         "test_round_liii_domain_validates_modes_size_expiry_slots_and_replay",
         "test_round_liii_api_receipt_snapshot_transaction_and_dismissal",
+        "test_round_liii_api_executes_each_source_mode",
+        "test_round_liii_api_rejects_mode_target_size_range_and_expiry",
+        "test_round_liii_api_enforces_three_noninstant_slots",
     )
     result: dict[str, Any] = {}
     for node in nodes:

@@ -3561,11 +3561,11 @@ git diff --check
   snapshot and `OperationTransaction`.
 - Projection from the generic loader: `208 production / 30 compile-only /
   111 unique compiled`.
-- Full backend pytest: `1135 passed, 1 warning`; Ruff, compileall, and
+- Full backend pytest: `1143 passed, 1 warning`; Ruff, compileall, and
   `git diff --check` pass. Report SHA:
   `27e7c05430d19929ed83c43876607512ca09fd69e08506ab98c13acae0068d42`;
   artifact SHA:
-  `af454f6c25fde93294fdac50fce61c7c2fa149bc38f219f31d5605cc1b6ce79`.
+  `25e729bd382bd3af5ea64933e9280c718cf4ae9ffdd678c8ac83e8b765348bfd`.
 - Evidence: Round LIII doc, validator, report, artifact, and focused test file.
 - Protected `backend/tests/ollama.py` SHA remains
   `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab`;

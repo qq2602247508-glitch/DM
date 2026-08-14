@@ -27,14 +27,14 @@ dismissal、最多三个不同非即时 effect、snapshot CAS、exact replay/pay
 
 ## Evidence and projection
 
-- Focused suite：`backend/tests/test_round_LIII_prestidigitation_object_effect.py`，3/3。
+- Focused suite：`backend/tests/test_round_LIII_prestidigitation_object_effect.py`，11/11。
 - Validator：`scripts/validate-round-LIII-prestidigitation-object-effect.py`。
 - Artifact：`data/content-ir/compiled/production-runtime-results-LIII.json`。
 - Report：`reports/round-LIII-prestidigitation-object-effect-2026-08-14.json`。
 - Loader-derived projection：`208 production / 30 compile-only / 111 unique compiled`。
 - Validator artifact/report 两次运行 byte-identical。
 - Report SHA-256：`27e7c05430d19929ed83c43876607512ca09fd69e08506ab98c13acae0068d42`。
-- Artifact SHA-256：`af454f6c25fde93294fdac50fce61c7c2fa149bc38f219f31d5605cc1b6ce79`。
+- Artifact SHA-256：`25e729bd382bd3af5ea64933e9280c718cf4ae9ffdd678c8ac83e8b765348bfd`。
 
 ## Gates and protection
 
@@ -43,4 +43,4 @@ Round XLIII historical report SHA 保持
 `backend/tests/ollama.py` SHA 保持
 `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab`；
 `backend/tests/integrations/` 未修改。无 push。
-全 backend pytest：`1135 passed, 1 warning`。
+全 backend pytest：`1143 passed, 1 warning`。

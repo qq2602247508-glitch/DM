@@ -213,7 +213,7 @@ def _setup(client: TestClient) -> dict[str, Any]:
             "level": 1,
             "hp": 10,
             "max_hp": 10,
-            "spellcasting": {"slots": {"1": {"current": 2, "max": 2}}},
+            "spellcasting": {"slots": {"1": {"current": 4, "max": 4}}},
         },
     ).json()
     known = client.post(
@@ -337,3 +337,169 @@ def test_round_liii_api_receipt_snapshot_transaction_and_dismissal(
             ]
     finally:
         engine.dispose()
+
+
+@pytest.mark.parametrize(
+    ("mode", "target_kind", "size", "extra"),
+    [
+        ("sensory_effect", "none", None, {"object_effect_sensory_kind": "spark"}),
+        (
+            "fire_play",
+            "fire_source",
+            None,
+            {
+                "object_effect_target_id": "torch-1",
+                "object_effect_fire_source": "torch",
+                "object_effect_operation": "ignite",
+            },
+        ),
+        ("clean_or_soil", "object", 1, {"object_effect_operation": "clean"}),
+        (
+            "minor_sensation",
+            "nonliving_material",
+            1,
+            {"object_effect_nonliving": True, "object_effect_sensation": "warm"},
+        ),
+        ("magic_mark", "surface", None, {"object_effect_mark_kind": "sigil"}),
+        (
+            "minor_creation",
+            "creation_space",
+            0.5,
+            {
+                "object_effect_creation_kind": "trinket",
+                "object_effect_nonmagical": True,
+                "object_effect_no_damage": True,
+                "object_effect_no_value": True,
+            },
+        ),
+    ],
+)
+def test_round_liii_api_executes_each_source_mode(
+    campaign_client: TestClient,
+    monkeypatch: Any,
+    mode: str,
+    target_kind: str,
+    size: float | None,
+    extra: dict[str, Any],
+) -> None:
+    monkeypatch.setenv("DND_DM_OBJECT_EFFECT_NOW", "2026-08-14T12:00:00+00:00")
+    scene = _setup(campaign_client)
+    body = {
+        **_body(scene, mode=mode, key=f"round-liii-mode-{mode}"),
+        "object_effect_target_kind": target_kind,
+        "object_effect_size_cubic_ft": size,
+        **extra,
+    }
+    preview = campaign_client.post(f"{scene['base']}/content-ir/runtime/preview", json=body)
+    assert preview.status_code == 200, preview.text
+    confirmed = campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/confirm",
+        json={**body, "preview_token": preview.json()["preview_token"]},
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    assert confirmed.json()["object_effect_receipt"]["mode"] == mode
+
+
+def test_round_liii_api_rejects_mode_target_size_range_and_expiry(
+    campaign_client: TestClient, monkeypatch: Any
+) -> None:
+    monkeypatch.setenv("DND_DM_OBJECT_EFFECT_NOW", "2026-08-14T12:00:00+00:00")
+    scene = _setup(campaign_client)
+    body = _body(scene, mode="magic_mark", key="round-liii-boundaries")
+    assert campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/preview",
+        json={**body, "object_effect_mode": "unsupported"},
+    ).status_code == 422
+    assert campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/preview",
+        json={**body, "object_effect_target_kind": "fire_source"},
+    ).status_code == 400
+    assert campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/preview",
+        json={
+            **body,
+            "object_effect_mode": "clean_or_soil",
+            "object_effect_target_kind": "object",
+            "object_effect_size_cubic_ft": 1.1,
+            "object_effect_operation": "clean",
+        },
+    ).status_code == 400
+    assert campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/preview",
+        json={**body, "object_effect_distance_ft": 11},
+    ).status_code == 400
+    preview = campaign_client.post(f"{scene['base']}/content-ir/runtime/preview", json=body).json()
+    confirmed = campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/confirm",
+        json={**body, "preview_token": preview["preview_token"]},
+    ).json()
+    monkeypatch.setenv("DND_DM_OBJECT_EFFECT_NOW", "2026-08-14T13:00:00+00:00")
+    expired = campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/object-effect/terminate",
+        json={
+            **body,
+            "actor_version": confirmed["actor_version_after"],
+            "object_effect_id": confirmed["object_effect_receipt"]["effect_id"],
+            "object_effect_termination_reason": "expiry",
+            "idempotency_key": "round-liii-expiry",
+        },
+    )
+    assert expired.status_code == 200, expired.text
+    assert expired.json()["object_effect_receipt"]["termination"] == "expiry"
+
+
+def test_round_liii_api_enforces_three_noninstant_slots(
+    campaign_client: TestClient, monkeypatch: Any
+) -> None:
+    monkeypatch.setenv("DND_DM_OBJECT_EFFECT_NOW", "2026-08-14T12:00:00+00:00")
+    scene = _setup(campaign_client)
+    current = scene
+    modes = (
+        (
+            "magic_mark",
+            {"object_effect_target_kind": "surface", "object_effect_mark_kind": "sigil"},
+        ),
+        (
+            "minor_sensation",
+            {
+                "object_effect_target_kind": "nonliving_material",
+                "object_effect_nonliving": True,
+                "object_effect_sensation": "warm",
+            },
+        ),
+        (
+            "minor_creation",
+            {
+                "object_effect_target_kind": "creation_space",
+                "object_effect_size_cubic_ft": 0.5,
+                "object_effect_creation_kind": "trinket",
+                "object_effect_nonmagical": True,
+                "object_effect_no_damage": True,
+                "object_effect_no_value": True,
+            },
+        ),
+    )
+    for index, (mode, extra) in enumerate(modes):
+        body = {
+            **_body(current, mode=mode, key=f"round-liii-slot-{index}"),
+            **extra,
+        }
+        preview = campaign_client.post(
+            f"{current['base']}/content-ir/runtime/preview", json=body
+        ).json()
+        result = campaign_client.post(
+            f"{current['base']}/content-ir/runtime/confirm",
+            json={**body, "preview_token": preview["preview_token"]},
+        )
+        assert result.status_code == 200, result.text
+        current = {
+            **current,
+            "character": {
+                **current["character"],
+                "version": result.json()["spell_cast"]["character_version_after"],
+            },
+            "actor": {
+                **current["actor"],
+                "version": result.json()["actor_version_after"],
+            },
+        }
