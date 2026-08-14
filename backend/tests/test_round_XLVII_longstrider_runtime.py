@@ -190,6 +190,86 @@ def test_longstrider_rejects_stale_target_cas_and_wrong_slot(campaign_client: An
     )
 
 
+def test_longstrider_rejects_wrong_runtime_cardinality_range_and_actor_cas(
+    campaign_client: Any,
+) -> None:
+    scene = _setup(campaign_client)
+    body = _body(scene, key="longstrider-round-xlvii-4", slot_level=1, target_indexes=[0])
+    assert campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/preview",
+        json={**body, "runtime_id": "core-phb-2024:spell:wrong"},
+    ).status_code == 400
+    assert campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/preview",
+        json={**_body(scene, key="longstrider-round-xlvii-5", slot_level=1, target_indexes=[0, 1])},
+    ).status_code == 400
+    far_target = scene["targets"][0]
+    moved = campaign_client.patch(
+        f"{scene['base']}/combats/{scene['combat']['id']}/combatants/{far_target['id']}",
+        json={
+            "version": far_target["version"],
+            "snapshot_json": {"grid_position": {"row": 5, "col": 20}},
+        },
+    )
+    assert moved.status_code == 200, moved.text
+    far_body = _body(scene, key="longstrider-round-xlvii-6", slot_level=1, target_indexes=[0])
+    far_body["target_version"] = moved.json()["version"]
+    far_body["target_versions"][far_target["id"]] = moved.json()["version"]
+    far_preview = campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/preview", json=far_body
+    )
+    assert far_preview.status_code == 200, far_preview.text
+    assert campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/confirm",
+        json={**far_body, "preview_token": far_preview.json()["preview_token"]},
+    ).status_code == 400
+    assert campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/preview",
+        json={**body, "actor_version": body["actor_version"] + 1},
+    ).status_code == 409
+
+
+def test_longstrider_rejects_all_target_stale_cas_and_expires_existing_modifier(
+    campaign_client: Any,
+) -> None:
+    scene = _setup(campaign_client)
+    body = _body(scene, key="longstrider-round-xlvii-7", slot_level=2, target_indexes=[0, 1])
+    stale = {**body, "target_versions": {**body["target_versions"], scene["targets"][1]["id"]: 99}}
+    assert campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/preview", json=stale
+    ).status_code == 409
+    target = scene["targets"][0]
+    seeded = campaign_client.patch(
+        f"{scene['base']}/combats/{scene['combat']['id']}/combatants/{target['id']}",
+        json={
+            "version": target["version"],
+            "speed_ft": 40,
+            "snapshot_json": {
+                "grid_position": {"row": 5, "col": 6},
+                "_typed_spell_base_speed_ft": 30,
+                "timed_spell_modifiers": [
+                    {
+                        "expires_at": "2026-08-13T11:00:00+00:00",
+                        "modifier": {"stat": "speed_ft", "value": 10},
+                    }
+                ],
+            },
+        },
+    )
+    assert seeded.status_code == 200, seeded.text
+    fresh = _body(scene, key="longstrider-round-xlvii-8", slot_level=1, target_indexes=[0])
+    fresh["target_version"] = seeded.json()["version"]
+    fresh["target_versions"][target["id"]] = seeded.json()["version"]
+    preview = campaign_client.post(f"{scene['base']}/content-ir/runtime/preview", json=fresh)
+    assert preview.status_code == 200, preview.text
+    confirmed = campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/confirm",
+        json={**fresh, "preview_token": preview.json()["preview_token"]},
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    assert confirmed.json()["timed_modifier_receipts"][0]["target_id"] == target["id"]
+
+
 def test_longstrider_registry_and_compiled_source_are_typed() -> None:
     runtime = _runtime()
     blocks = ContentIRRuntimeService._runtime_blocks(runtime)

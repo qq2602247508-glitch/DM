@@ -3433,26 +3433,20 @@ git diff --check
 - Counts unchanged: project `203 production / 35 compile-only / 111 unique compiled`;
   promoted IDs empty; all five candidates retained compile-only.
 - Evidence: Round XLV doc, validator, report, and focused tests.
-## 2026-08-13 Round XLVII handoff: Longstrider source-complete production closure
+## 2026-08-13 Round XLVII repair handoff: Longstrider promotion withdrawn
 
 - Baseline HEAD for this round: `8148ec31f689935c3a10e0f8ae191a031044caa3`;
   implementation is local-only; do not push.
-- Promoted exactly
-  `core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb` (Longstrider) after deriving
-  source-complete evidence from the authored and compiled Content IR.
-- Added typed `timed_modifier` IR support and a real `ContentIRRuntimeService`
-  consumer using the existing `spell.timed_modifier.v1` seam. The path binds a
-  known spell, validates willing touch targets and range, performs actor/target
-  CAS, persists one-hour `speed_ft +10` modifiers with same-source replacement,
-  records operation receipts, and supports exact replay with payload-drift rejection.
-- Counts: project `203 production / 35 compile-only / 111 unique compiled` →
-  `204 / 34 / 111`.
-- Focused Round XLVII suite: `20 passed`; validator stdout double-run SHA-256
-  `788b0f048d052e6744028589a92ae93de22b0ee3e6bf095dd8f771d375ac3d16`;
-  report SHA-256
-  `59156a8c9740654c317fe6cce9cee091b23b63263e31c042c5216421d5acf6bf`;
-  `git diff --check` passed. Full Ruff, compileall, and backend pytest remain
-  required before final commit claim.
+- The claimed promotion is withdrawn. Longstrider remains compile-only because
+  the authoritative production evidence union does not include its ID.
+- The existing typed `timed_modifier` seam remains available, but its isolated
+  runtime evidence is not a production promotion receipt for Longstrider.
+- Counts remain `203 production / 35 compile-only / 111 unique compiled`;
+  the validator derives them from authoritative loaders, never arithmetic.
+- Focused Round XLVII suite: `22 passed`; behavioral coverage is mapped from
+  named pytest node return codes and unsupported claims remain false.
+- Validator stdout is byte-identical across two runs; `git diff --check`, Ruff,
+  compileall, and full backend pytest pass.
 - Protected `backend/tests/ollama.py` SHA remains
   `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`;
   protected integrations remain user-owned, untouched, untracked. No campaign/

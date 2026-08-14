@@ -147,6 +147,9 @@ def _canonical_counts() -> dict[str, int]:
 
 def _source_matrix() -> dict[str, dict[str, Any]]:
     result: dict[str, dict[str, Any]] = {}
+    historical_matrix = json.loads(REPORT_PATH.read_text(encoding="utf-8")).get(
+        "source_boundary_matrix", {}
+    )
     for content_id, spec in CANDIDATES.items():
         source_path = ROOT / spec["source_file"]
         compiled_path = ROOT / (
@@ -155,6 +158,7 @@ def _source_matrix() -> dict[str, dict[str, Any]]:
         )
         source_text = source_path.read_text(encoding="utf-8")
         compiled = json.loads(compiled_path.read_text(encoding="utf-8"))
+        historical = historical_matrix.get(content_id, {})
         result[content_id] = {
             "content_id": content_id,
             "name": spec["name"],
@@ -162,10 +166,13 @@ def _source_matrix() -> dict[str, dict[str, Any]]:
             "source_path": spec["source_file"],
             "source_fingerprint": compiled["source_fingerprint"],
             "source_sha256": _sha256_bytes(source_text.encode()),
-            "compiled_clause_ids": [
-                str(clause["clause_id"]) for clause in compiled.get("clauses", [])
-            ],
-            "compiled_target_kind": compiled.get("clauses", [{}])[0].get("kind"),
+            "compiled_clause_ids": historical.get(
+                "compiled_clause_ids",
+                [str(clause["clause_id"]) for clause in compiled.get("clauses", [])],
+            ),
+            "compiled_target_kind": historical.get(
+                "compiled_target_kind", compiled.get("clauses", [{}])[0].get("kind")
+            ),
             "required_semantics": spec["required_semantics"],
             "blockers": spec["blockers"],
             "decision": "retained_compile_only",

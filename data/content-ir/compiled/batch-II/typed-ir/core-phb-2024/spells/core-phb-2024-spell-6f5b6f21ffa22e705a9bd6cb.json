@@ -42,8 +42,7 @@
       "stacking": "replace_source",
       "stat": "speed_ft",
       "type": "timed_modifier",
-      "value": 10,
-      "evidence_ref": "你触碰一个生物，该目标的速度增加10尺，直至法术结束。"
+      "value": 10
     },
     {
       "applies_to": "target_selection",
