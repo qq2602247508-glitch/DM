@@ -5,6 +5,8 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
+import subprocess
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -154,3 +156,27 @@ def test_round_xlii_missing_production_evidence_fails_closed(
         for atom in build_migration(ROOT)["atoms"]
         if atom.get("content_id") == FEATURE_ID
     )["migration_status"] == "compile_only"
+
+
+def test_round_xlii_validator_subprocess_isolated_and_byte_identical(
+    tmp_path: Path,
+) -> None:
+    outputs = []
+    for index in (1, 2):
+        result_path = tmp_path / f"result-{index}.json"
+        report_path = tmp_path / f"report-{index}.json"
+        completed = subprocess.run(
+            [str(ROOT / "backend/.venv/bin/python"), str(VALIDATOR)],
+            cwd=ROOT,
+            env={
+                **os.environ,
+                "ROUND_XLII_RESULT_PATH": str(result_path),
+                "ROUND_XLII_REPORT_PATH": str(report_path),
+            },
+            capture_output=True,
+            check=False,
+        )
+        assert completed.returncode == 0, completed.stderr.decode()
+        outputs.append((completed.stdout, result_path.read_bytes(), report_path.read_bytes()))
+
+    assert outputs[0] == outputs[1]

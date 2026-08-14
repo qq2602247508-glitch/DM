@@ -4,7 +4,9 @@ import json
 from pathlib import Path
 
 from dnd_dm_assistant.application.content_ir_production_evidence import (
+    authoritative_compile_only_ids,
     load_production_runtime_evidence,
+    project_compile_only_ids,
 )
 from dnd_dm_assistant.application.tashas_whole_pack import (
     build_migration,
@@ -51,3 +53,49 @@ def test_round_xlviii_runtime_receipt_is_complete() -> None:
     assert receipt["persistence"]["receipts_have_source_provenance"] is True
     assert receipt["persistence"]["receipts_have_expiry"] is True
     assert receipt["transaction"]["operation_transaction_present"] is True
+
+
+def test_compile_only_projection_is_set_based_and_validated(tmp_path: Path) -> None:
+    compiled = tmp_path / "data/content-ir/compiled"
+    compiled.mkdir(parents=True)
+    valid = {
+        "round_id": "round-XLVIII",
+        "production_runtime_full_ids": [SPELL_ID, "unrelated:id"],
+        "compile_only_delta": -99,
+        "checks": {"all_required_checks_passed": True},
+        "evidence_by_id": {
+            SPELL_ID: {"production_runtime_full": True},
+            "unrelated:id": {"production_runtime_full": True},
+        },
+    }
+    (compiled / "production-runtime-results-a.json").write_text(
+        json.dumps(valid), encoding="utf-8"
+    )
+    (compiled / "production-runtime-results-b.json").write_text(
+        json.dumps(valid), encoding="utf-8"
+    )
+    (compiled / "production-runtime-results-invalid.json").write_text(
+        json.dumps(
+            {
+                "round_id": "round-XLVIII",
+                "production_runtime_full_ids": [SPELL_ID, "invalid:id"],
+                "compile_only_delta": -1000,
+                "checks": {"all_required_checks_passed": False},
+                "evidence_by_id": {
+                    SPELL_ID: {"production_runtime_full": True},
+                    "invalid:id": {"production_runtime_full": True},
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    loaded = load_production_runtime_evidence(
+        tmp_path, pack_id=None, round_id="round-XLVIII"
+    )
+    assert set(loaded) == {SPELL_ID, "unrelated:id"}
+    census = authoritative_compile_only_ids(ROOT)
+    assert len(census) == 35
+    assert len(project_compile_only_ids(census, loaded)) == 34
+    assert SPELL_ID not in project_compile_only_ids(census, loaded)
+    assert "unrelated:id" not in census

@@ -14,6 +14,7 @@ from alembic import command
 from alembic.config import Config
 from dnd_dm_assistant.api.app import create_app
 from dnd_dm_assistant.application.content_ir_production_evidence import (
+    authoritative_compile_only_ids,
     load_production_runtime_evidence,
 )
 from dnd_dm_assistant.application.content_ir_production_registry import (
@@ -308,7 +309,13 @@ def build() -> dict[str, Any]:
                 "current_project_production_full"
             ]
             == len(project_ids),
-            "migration_compile_only_delta": 1,
+            "compile_only_census_size": len(authoritative_compile_only_ids(ROOT)),
+            "compile_only_removed_ids": sorted(
+                authoritative_compile_only_ids(ROOT)
+                - set(migration["current_project_compile_only_ids"])
+            ),
+            "compile_only_before": len(authoritative_compile_only_ids(ROOT)),
+            "compile_only_after": len(migration["current_project_compile_only_ids"]),
         },
         "checks": {
             "source_provenance": True,

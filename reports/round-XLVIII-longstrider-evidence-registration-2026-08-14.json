@@ -1,6 +1,12 @@
 {
   "artifact_date": "2026-08-14",
   "canonical_projection": {
+    "compile_only_after": 34,
+    "compile_only_before": 35,
+    "compile_only_census_size": 35,
+    "compile_only_removed_ids": [
+      "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb"
+    ],
     "counts": {
       "compile_only": 34,
       "production": 204,
@@ -8,7 +14,6 @@
     },
     "longstrider_in_loaded_evidence": true,
     "longstrider_in_project_production_ids": true,
-    "migration_compile_only_delta": 1,
     "migration_projection_matches_project_union": true
   },
   "checks": {
@@ -31,7 +36,7 @@
   },
   "no_push": true,
   "promotion_decision": "promote",
-  "report_fingerprint": "5dcd134cf026d1f2982420b37d0d0087ca16271260dd9bae41fdcf677dcf78f2",
+  "report_fingerprint": "bde27ac573d71264020ba6f5cfaabcedb8887297e2817dca9e6fa2ca5b898185",
   "round_id": "round-XLVIII",
   "runtime_consumers": [
     "spell.timed_modifier.v1"

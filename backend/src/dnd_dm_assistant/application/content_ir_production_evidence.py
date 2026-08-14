@@ -13,25 +13,67 @@ from pathlib import Path
 from typing import Any
 
 
-def current_project_compile_only_count(repo_root: Path) -> int:
-    """Reconcile the canonical census with explicit evidence deltas."""
+def authoritative_compile_only_ids(repo_root: Path) -> set[str]:
+    """Return the immutable 2026-08-11 unique compile-only census.
 
-    baseline_path = repo_root / "reports" / "tashas-baseline-2026-08-11.json"
+    The census is derived from the authoritative blocker audit and the
+    authoritative batch-II unlock receipt.  It is intentionally an ID set:
+    report counts and receipt ``compile_only_delta`` fields are not inputs.
+    """
+
+    blocker_path = repo_root / "reports" / "content-ir-production-blocker-audit-II-2026-08-11.json"
+    unlock_path = repo_root / "reports" / "content-ir-production-runtime-batch-II-2026-08-11.json"
     try:
-        baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
-        count = int(baseline["compile_only"])
-    except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError):
-        count = 35
-    root = repo_root / "data" / "content-ir" / "compiled"
-    delta = 0
-    for path in sorted(root.rglob("production-runtime-results*.json")):
-        try:
-            value = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError, json.JSONDecodeError):
-            continue
-        if isinstance(value, Mapping):
-            delta += int(value.get("compile_only_delta") or 0)
-    return count + delta
+        blocker = json.loads(blocker_path.read_text(encoding="utf-8"))
+        unlocked = json.loads(unlock_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, json.JSONDecodeError):
+        return set()
+    entries = blocker.get("entries")
+    evidence = unlocked.get("evidence")
+    if not isinstance(entries, list) or not isinstance(evidence, list):
+        return set()
+    compile_only = {
+        str(entry["content_id"]).strip()
+        for entry in entries
+        if isinstance(entry, Mapping)
+        and entry.get("production_status") == "compile_only"
+        and str(entry.get("content_id") or "").strip()
+    }
+    unlocked_ids = {
+        str(row["content_id"]).strip()
+        for row in evidence
+        if isinstance(row, Mapping) and str(row.get("content_id") or "").strip()
+    }
+    return compile_only - unlocked_ids
+
+
+def project_compile_only_ids(
+    census_ids: Iterable[str],
+    validated_production_ids: Iterable[str],
+) -> set[str]:
+    """Remove each validated promotion from the census at most once."""
+
+    return {str(content_id).strip() for content_id in census_ids if str(content_id).strip()} - {
+        str(content_id).strip()
+        for content_id in validated_production_ids
+        if str(content_id).strip()
+    }
+
+
+def current_project_compile_only_ids(repo_root: Path) -> set[str]:
+    census = authoritative_compile_only_ids(repo_root)
+    evidence = load_production_runtime_evidence(
+        repo_root,
+        pack_id=None,
+        round_id="round-XLVIII",
+    )
+    return project_compile_only_ids(census, evidence)
+
+
+def current_project_compile_only_count(repo_root: Path) -> int:
+    """Return the current set-based compile-only projection."""
+
+    return len(current_project_compile_only_ids(repo_root))
 
 
 def _is_pack_content_id(content_id: str, pack_id: str | None) -> bool:
@@ -47,6 +89,7 @@ def load_production_runtime_evidence(
     content_kind: str | None = None,
     required_checks: Iterable[str] = (),
     require_name_branch_free: bool = False,
+    round_id: str | None = None,
 ) -> dict[str, dict[str, Any]]:
     """Load a deterministic, deduplicated set of persisted production IDs.
 
@@ -67,6 +110,8 @@ def load_production_runtime_evidence(
             continue
         if not isinstance(value, Mapping):
             continue
+        if round_id is not None and value.get("round_id") != round_id:
+            continue
         if content_kind is not None and value.get("content_kind") != content_kind:
             continue
         raw_ids = value.get("production_runtime_full_ids")
@@ -74,6 +119,9 @@ def load_production_runtime_evidence(
             continue
         checks = value.get("checks")
         checks = checks if isinstance(checks, Mapping) else {}
+        rows = value.get("evidence_by_id")
+        if not isinstance(rows, Mapping) or not checks:
+            continue
         if required and not all(bool(checks.get(check)) for check in required):
             continue
         if require_name_branch_free and checks.get("name_branch_count") != 0:
@@ -82,13 +130,18 @@ def load_production_runtime_evidence(
             content_id = str(raw_id).strip()
             if not content_id or not _is_pack_content_id(content_id, pack_id):
                 continue
-            row = (value.get("evidence_by_id") or {}).get(content_id)
-            row = dict(row) if isinstance(row, Mapping) else {}
+            row = rows.get(content_id)
+            if not isinstance(row, Mapping) or row.get("production_runtime_full") is False:
+                continue
+            if checks.get("all_required_checks_passed") is False:
+                continue
+            row = dict(row)
             evidence[content_id] = {
                 **row,
                 "content_id": content_id,
                 "content_kind": row.get("content_kind", value.get("content_kind")),
                 "schema_version": value.get("schema_version"),
+                "round_id": value.get("round_id"),
                 "checks": dict(checks),
                 "evidence_path": str(path.relative_to(repo_root)),
                 "production_runtime_full": True,

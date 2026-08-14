@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -25,8 +26,18 @@ FEATURE_PATH = ROOT / (
     "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/"
     "genie-bottled-respite.json"
 )
-RESULT_PATH = ROOT / "data/content-ir/compiled/production-runtime-results-XLII.json"
-REPORT_PATH = ROOT / "reports/tashas-feature-production-consumer-round-XLII-2026-08-13.json"
+RESULT_PATH = Path(
+    os.environ.get(
+        "ROUND_XLII_RESULT_PATH",
+        str(ROOT / "data/content-ir/compiled/production-runtime-results-XLII.json"),
+    )
+)
+REPORT_PATH = Path(
+    os.environ.get(
+        "ROUND_XLII_REPORT_PATH",
+        str(ROOT / "reports/tashas-feature-production-consumer-round-XLII-2026-08-13.json"),
+    )
+)
 BASELINE_PATH = ROOT / "reports/tashas-production-reconciliation-round-XXV-2026-08-12.json"
 EXPECTED_BASELINE_SHA256 = (
     "1ca123067fedbcf6e8592afc8272f1e6f935280d475658c45613e4545094f8c7"

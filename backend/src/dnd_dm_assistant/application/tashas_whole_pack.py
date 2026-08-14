@@ -21,6 +21,7 @@ from typing import Any
 
 from dnd_dm_assistant.application.content_ir_production_evidence import (
     current_project_compile_only_count,
+    current_project_compile_only_ids,
     load_production_runtime_evidence,
 )
 from dnd_dm_assistant.application.content_ir_workbench import load_records
@@ -1496,6 +1497,9 @@ def build_migration(repo_root: Path) -> dict[str, Any]:
         "matched_production_runtime_ids": matched_production_ids,
         "unmatched_production_runtime_ids": sorted(set(production) - set(matched_production_ids)),
         "current_project_compiled_unique": 111,
+        "current_project_compile_only_ids": sorted(
+            current_project_compile_only_ids(repo_root)
+        ),
         "current_project_compile_only": current_project_compile_only_count(repo_root),
         "current_project_production_registry_fingerprint": fingerprint(
             sorted(existing_project_production_ids(repo_root))
