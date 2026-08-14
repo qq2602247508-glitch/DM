@@ -10,7 +10,7 @@
   payload drift rejection、dismissal、persisted snapshot、receipt 与
   `OperationTransaction`。
 - Projection：`208 production / 30 compile-only / 111 unique compiled`.
-- Full backend pytest：`1135 passed, 1 warning`；Ruff、compileall、diff-check
+- Full backend pytest：`1143 passed, 1 warning`；Ruff、compileall、diff-check
   通过；validator artifact/report 双跑 byte-identical。
 - Evidence：Round LIII doc, validator, report, production-runtime artifact, and
   focused test file.
