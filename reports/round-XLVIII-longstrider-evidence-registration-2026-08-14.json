@@ -1,0 +1,76 @@
+{
+  "artifact_date": "2026-08-14",
+  "canonical_projection": {
+    "counts": {
+      "compile_only": 34,
+      "production": 204,
+      "unique_compiled": 111
+    },
+    "longstrider_in_loaded_evidence": true,
+    "longstrider_in_project_production_ids": true,
+    "migration_compile_only_delta": 1,
+    "migration_projection_matches_project_union": true
+  },
+  "checks": {
+    "cas": true,
+    "consumer_ids": true,
+    "evidence_loader_inclusion": true,
+    "persistence": true,
+    "preview_confirm_replay": true,
+    "projection_reconciliation": true,
+    "protected_boundary": true,
+    "source_provenance": true,
+    "transaction": true
+  },
+  "evidence_artifact": "data/content-ir/compiled/production-runtime-results-XLVIII.json",
+  "evidence_mechanism": "generic load_production_runtime_evidence production-runtime-results*.json loader",
+  "historical_preservation": {
+    "expected_round_xliii_report_sha256": "98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f",
+    "round_xliii_report_sha256": "98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f",
+    "round_xlvii_unchanged_by_this_round": true
+  },
+  "no_push": true,
+  "promotion_decision": "promote",
+  "report_fingerprint": "5dcd134cf026d1f2982420b37d0d0087ca16271260dd9bae41fdcf677dcf78f2",
+  "round_id": "round-XLVIII",
+  "runtime_consumers": [
+    "spell.timed_modifier.v1"
+  ],
+  "runtime_receipt": {
+    "cas": {
+      "actor_version_after": 2,
+      "target_versions_after": 2
+    },
+    "consumer": "spell.timed_modifier.v1",
+    "persistence": {
+      "modifier": {
+        "operation": "add",
+        "stat": "speed_ft",
+        "value": 10
+      },
+      "receipt_count": 2,
+      "receipts_have_expiry": true,
+      "receipts_have_source_provenance": true
+    },
+    "preview_confirm_replay": {
+      "confirm": true,
+      "preview": true,
+      "replay": true
+    },
+    "runtime_id": "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb",
+    "source": {
+      "source_fingerprint": "834e92d0104e26b08042388d344c97379f0274a935e10fd4953075ec9bd0a8b0",
+      "source_record_id": "6f5b6f21ffa22e705a9bd6cb"
+    },
+    "transaction": {
+      "operation_transaction_present": true
+    }
+  },
+  "schema_version": "round-XLVIII-longstrider-evidence-registration-1",
+  "source_bound_producer": {
+    "authored_path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-6f5b6f21ffa22e705a9bd6cb.json",
+    "compile_status": "full",
+    "source_fingerprint": "834e92d0104e26b08042388d344c97379f0274a935e10fd4953075ec9bd0a8b0",
+    "source_record_id": "6f5b6f21ffa22e705a9bd6cb"
+  }
+}

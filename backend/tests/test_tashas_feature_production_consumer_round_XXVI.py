@@ -67,7 +67,7 @@ def test_round_xxvi_receipt_matches_current_pack_projection() -> None:
     assert migration["compile_only"] == 0
     assert migration["content_id_funnel"]["relation_holds"] is True
     assert len(load_production_runtime_evidence(ROOT, pack_id=PACK_ID)) == 146
-    assert len(existing_project_production_ids(ROOT)) == 203
+    assert len(existing_project_production_ids(ROOT)) == 204
 
 
 def test_ambush_is_typed_as_two_generic_roll_intervention_clauses() -> None:

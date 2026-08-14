@@ -1,0 +1,71 @@
+{
+  "checks": {
+    "all_required_checks_passed": true,
+    "cas": true,
+    "formal_database_written": false,
+    "formal_registry_written": false,
+    "name_branch_count": 0,
+    "operation_transaction": true,
+    "preview_confirm_replay": true,
+    "protected_fingerprints_unchanged": true,
+    "source_provenance": true,
+    "typed_consumer": true
+  },
+  "compile_only_delta": -1,
+  "content_kind": "spell",
+  "evidence_by_id": {
+    "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb": {
+      "content_id": "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb",
+      "content_kind": "spell",
+      "production_runtime_full": true,
+      "runtime_receipt": {
+        "cas": {
+          "actor_version_after": 2,
+          "target_versions_after": 2
+        },
+        "consumer": "spell.timed_modifier.v1",
+        "persistence": {
+          "modifier": {
+            "operation": "add",
+            "stat": "speed_ft",
+            "value": 10
+          },
+          "receipt_count": 2,
+          "receipts_have_expiry": true,
+          "receipts_have_source_provenance": true
+        },
+        "preview_confirm_replay": {
+          "confirm": true,
+          "preview": true,
+          "replay": true
+        },
+        "runtime_id": "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb",
+        "source": {
+          "source_fingerprint": "834e92d0104e26b08042388d344c97379f0274a935e10fd4953075ec9bd0a8b0",
+          "source_record_id": "6f5b6f21ffa22e705a9bd6cb"
+        },
+        "transaction": {
+          "operation_transaction_present": true
+        }
+      },
+      "source": {
+        "authored_path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-6f5b6f21ffa22e705a9bd6cb.json",
+        "source_fingerprint": "834e92d0104e26b08042388d344c97379f0274a935e10fd4953075ec9bd0a8b0",
+        "source_path": "玩家手册2024/法术详述/1环.htm",
+        "source_record_id": "6f5b6f21ffa22e705a9bd6cb"
+      },
+      "typed_clause_ids": [
+        "target",
+        "duration",
+        "speed",
+        "upcast_targets"
+      ],
+      "typed_consumer": "spell.timed_modifier.v1"
+    }
+  },
+  "production_runtime_full_ids": [
+    "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb"
+  ],
+  "round_id": "round-XLVIII",
+  "schema_version": "content-ir-production-runtime-results-XLVIII-1"
+}

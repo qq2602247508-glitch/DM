@@ -3451,3 +3451,26 @@ git diff --check
   `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`;
   protected integrations remain user-owned, untouched, untracked. No campaign/
   character data, source corpus, 3D/UI, deletion, reset, checkout, clean or push.
+
+## 2026-08-14 Round XLVIII handoff: Longstrider evidence registered
+
+- Status: `registered_production_full`; local commit only, no push.
+- The generic `load_production_runtime_evidence()` loader now consumes
+  `data/content-ir/compiled/production-runtime-results-XLVIII.json`, generated
+  from a real isolated migrated SQLite Longstrider preview/confirm/replay
+  receipt. No loader ID special-case, name dispatch, fake receipt, or validator
+  count arithmetic was added.
+- Canonical counts: `204 production / 34 compile-only / 111 unique compiled`.
+  Longstrider is present in the authoritative evidence union, project production
+  IDs, and migration reconciliation.
+- Receipt gates: source provenance, `spell.timed_modifier.v1`, willing/range,
+  preview/confirm/replay, actor/target CAS, expiry/replacement persistence,
+  `OperationTransaction`, formal database/registry unchanged, and protected
+  boundary unchanged.
+- Evidence: Round XLVIII doc, validator, registration tests, production-runtime
+  artifact, and report. Validator stdout/report double-run is byte-identical.
+- Historical Round XLVII remains withdrawn and immutable. Round XLIII report SHA
+  remains `98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f`.
+- Protected `backend/tests/ollama.py` SHA remains
+  `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`;
+  `backend/tests/integrations/` remains untouched and untracked.

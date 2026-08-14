@@ -13,6 +13,27 @@ from pathlib import Path
 from typing import Any
 
 
+def current_project_compile_only_count(repo_root: Path) -> int:
+    """Reconcile the canonical census with explicit evidence deltas."""
+
+    baseline_path = repo_root / "reports" / "tashas-baseline-2026-08-11.json"
+    try:
+        baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+        count = int(baseline["compile_only"])
+    except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError):
+        count = 35
+    root = repo_root / "data" / "content-ir" / "compiled"
+    delta = 0
+    for path in sorted(root.rglob("production-runtime-results*.json")):
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError, json.JSONDecodeError):
+            continue
+        if isinstance(value, Mapping):
+            delta += int(value.get("compile_only_delta") or 0)
+    return count + delta
+
+
 def _is_pack_content_id(content_id: str, pack_id: str | None) -> bool:
     if pack_id is None:
         return True

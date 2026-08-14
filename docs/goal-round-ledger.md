@@ -1,5 +1,30 @@
 # Goal Round Ledger
 
+## Round XLVIII：Longstrider authoritative evidence registration
+
+日期：2026-08-14。当前状态：`registered_production_full`；local commit only，
+未 push。
+
+- 通过现有通用 `production-runtime-results*.json` evidence loader 注册
+  `core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb`；没有 loader ID 特判或 validator
+  计数修正。
+- 新 artifact 由真实隔离 SQLite runtime receipt 生成，覆盖 source provenance、
+  `spell.timed_modifier.v1`、preview/confirm/replay、willing/range、actor/target
+  CAS、expiry/replacement、persistence、`OperationTransaction` 与 protected
+  boundary。
+- Canonical projection 自然为 `204 production / 34 compile-only / 111 unique
+  compiled`；Longstrider 同时出现在 evidence union、project production IDs 和
+  migration reconciliation。
+- Evidence：`docs/round-XLVIII-longstrider-evidence-registration-2026-08-14.md`、
+  `scripts/validate-round-XLVIII-longstrider-evidence-registration.py`、
+  `backend/tests/test_round_XLVIII_longstrider_evidence_registration.py`、
+  `data/content-ir/compiled/production-runtime-results-XLVIII.json`、
+  `reports/round-XLVIII-longstrider-evidence-registration-2026-08-14.json`。
+- Round XLIII report SHA 保持
+  `98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f`；protected
+  `backend/tests/ollama.py` SHA 保持
+  `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`。无 push。
+
 本 Ledger 记录持续 Goal 的独立生产 Round。状态层严格区分：
 
 `compile_full → runtime_preview_full → isolated_runtime_validated → registered_production_full → game_usable`
