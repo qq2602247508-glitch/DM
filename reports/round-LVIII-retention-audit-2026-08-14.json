@@ -712,7 +712,13 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-63fb2360b8c30fb0419d9225.json",
+            "resolved_consumer_ids": [
+              "spell_economy.concentration.v1"
+            ],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "fcb7992acc5a74c50fc425aba3e1b58d0b2a0883e89a33b8a0225b8749c1f6a2",
@@ -816,7 +822,11 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-65b211e271db5fa11508dbbc.json",
+            "resolved_consumer_ids": [],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "07b9fc350a06cce07cab10e0a13e71eabb8604f2dfe95b1e78a4fb138019e7ce",
@@ -920,7 +930,11 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-6c07317bf4d16b92da3c8f55.json",
+            "resolved_consumer_ids": [],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "5c46c2c2522079e79fd94da4b91245fe9cbf8a41f101d6644829646db5abd10d",
@@ -1018,7 +1032,11 @@
         "duplicate_count": 2,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-82f220a9e3474d8fe1cafd8b.json",
+            "resolved_consumer_ids": [],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "97c0efdb8bda071a542a8110d4b1ef71fdce8c75010c4fb599c5ae8647471a8d",
@@ -1029,7 +1047,14 @@
             ]
           },
           {
+            "compile_status": "full",
+            "ignores_cover_required": true,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/core-2024/spells/spells/core-phb-2024-spell-82f220a9e3474d8fe1cafd8b.json",
+            "resolved_consumer_ids": [
+              "combat_engine.damage_heal.v1",
+              "spell.cantrip_scaling.v1"
+            ],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "97c0efdb8bda071a542a8110d4b1ef71fdce8c75010c4fb599c5ae8647471a8d",
@@ -1134,7 +1159,13 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-85595d634b480207249dd2ac.json",
+            "resolved_consumer_ids": [
+              "spell_economy.concentration.v1"
+            ],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "f4ff81d281b65372eb02e83f83d7e16f10508b1d2e5dd4e6cc869567e7d87061",
@@ -1241,7 +1272,13 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-90c12635dd6eca81ebe04449.json",
+            "resolved_consumer_ids": [
+              "spell_economy.concentration.v1"
+            ],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "cb4d3e1ac60410da7ce05ee2050ec12cda14efc1a4ffa6ada3eae469fad64bbc",
@@ -1341,7 +1378,13 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-9b29fbb72177f058bf1448ef.json",
+            "resolved_consumer_ids": [
+              "spell_economy.concentration.v1"
+            ],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "a5bff572e9d52b855dbc9b12b5206791dd02af1c2f11da6ec45b7293f0fe791d",
@@ -1434,7 +1477,11 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-9c4208ec038463dfd608ba9e.json",
+            "resolved_consumer_ids": [],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "a329dae402bdc50341761dc3a87d468b41ebe2b9671b4758dd682d5bd51263ca",
@@ -1541,7 +1588,13 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-a0c914f228b833357f0c2779.json",
+            "resolved_consumer_ids": [
+              "spell_economy.concentration.v1"
+            ],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "ffd79f68770e420d0188426cae94ed8431877bbd5e378981d8eef6d040646832",
@@ -1639,7 +1692,11 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-aa17c997419ff77ab783e003.json",
+            "resolved_consumer_ids": [],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "24a33cbd589c8d18ec943343369ea042beeec3c10429a1416f7659e51e3a62d1",
@@ -1739,7 +1796,11 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-ad887cac0fa7f6c2cf7c566f.json",
+            "resolved_consumer_ids": [],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "55d46d53518425bf7e3036cf1f1eed808b3901c4d828540dab7d557688b3bba4",
@@ -1846,7 +1907,13 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-c724eb95e2f08220d161e608.json",
+            "resolved_consumer_ids": [
+              "spell_economy.concentration.v1"
+            ],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "a6cc80b67a67d14a12e2ee392c93e59e22e9ed4bf2ae97aa14c1b1971ae40626",
@@ -1954,7 +2021,14 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-dccfb9fc9cd30b9fb8b627b0.json",
+            "resolved_consumer_ids": [
+              "combat_engine.damage_heal.v1",
+              "spell_economy.concentration.v1"
+            ],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "9fc0fff51f5b272cd9922d2d4106f1d8eed528288f9d60697bdb893a41cb2b60",
@@ -2060,7 +2134,11 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-ea1d170f71d30f4ddeb84f9e.json",
+            "resolved_consumer_ids": [],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "ef1c831141584e63a822f5fe56d46f0806ebe20e04f8799b78ec32ba3512532c",
@@ -2161,7 +2239,11 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-eaaa6893b004c177f8237eb0.json",
+            "resolved_consumer_ids": [],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "b2d81a3a6b992249a6290da9b114e444b82f115e4c73bf625c2d38742b9723a5",
@@ -2265,7 +2347,13 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-ed5371dd95cf605bf1c24cd3.json",
+            "resolved_consumer_ids": [
+              "spell_economy.concentration.v1"
+            ],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "0f37a79259e99153a834ee2d81965918b9b624710631862539f94522370b3c66",
@@ -2364,7 +2452,11 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-f0e1229e39b1dfb476f90c6b.json",
+            "resolved_consumer_ids": [],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "73d7dcdc95ce31c1c1308702be0bb53c8be28c381ef04dd37b9ef135fe3a6dcf",
@@ -2460,7 +2552,11 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-fa352b4b5b77382c47bad253.json",
+            "resolved_consumer_ids": [],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "a62bf93e71c3ef1ea0e2f81510031e969cbfb84fb0bacf78fda374264f07a291",
@@ -2560,7 +2656,13 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/fizbans-treasury/spells/fizbans-treasury-spell-843fb135e4cc8a1fb34c46be.json",
+            "resolved_consumer_ids": [
+              "spell_economy.concentration.v1"
+            ],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "d67ab7f538b593d54f8f53dbaabe3aaffb0f4919fa78965f3554386c25978564",
@@ -2660,7 +2762,11 @@
         "duplicate_count": 2,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/fizbans-treasury/spells/fizbans-treasury-spell-cadce71b1ba7a42354f785dc.json",
+            "resolved_consumer_ids": [],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "f3b275e265d656222d552e17bcc5d4a43c86e207b22e6cf5f9144b23d6727b5f",
@@ -2672,7 +2778,14 @@
             ]
           },
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/official-packs/fizbans-treasury/spells/spells/fizbans-treasury-spell-cadce71b1ba7a42354f785dc.json",
+            "resolved_consumer_ids": [
+              "combat_engine.area_damage.v1",
+              "combat_engine.damage_heal.v1"
+            ],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "f3b275e265d656222d552e17bcc5d4a43c86e207b22e6cf5f9144b23d6727b5f",
@@ -2777,7 +2890,11 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/xanathars-guide/spells/xanathars-guide-spell-5aa5cf7f93be0fa149fdcd62.json",
+            "resolved_consumer_ids": [],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "18c1099aded61d8852131ce7a96ba6274498cc45d5d076eb1149c6771f10185d",
@@ -2877,7 +2994,13 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/xanathars-guide/spells/xanathars-guide-spell-6d32a73dbc7bf6f5fac303bd.json",
+            "resolved_consumer_ids": [
+              "spell_economy.concentration.v1"
+            ],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "1a269911bd4ed778875429004f05923c6922b19d3f1c3dba1bd853230ea0b8ae",
@@ -2975,7 +3098,11 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/xanathars-guide/spells/xanathars-guide-spell-805cbf82765f6710391cc75f.json",
+            "resolved_consumer_ids": [],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "ce9fc32f61f0069e3006b73a41508ba423696abb6a249c453fafddbfeb1dc547",
@@ -3070,7 +3197,11 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/xanathars-guide/spells/xanathars-guide-spell-96d5c3265bc938448c4aef58.json",
+            "resolved_consumer_ids": [],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "b64ff721a1f209f3b625b158a6df852c3c5f092bdf41bcbf606aa5f44ca1b230",
@@ -3174,7 +3305,13 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/xanathars-guide/spells/xanathars-guide-spell-aadf89719f073bfca1fefb3a.json",
+            "resolved_consumer_ids": [
+              "spell_economy.concentration.v1"
+            ],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "f396ac922598331efc5045bf668f3f2bdf543b65f3cee8ce4c368fb26b6bb240",
@@ -3269,7 +3406,13 @@
         "duplicate_count": 1,
         "rows": [
           {
+            "compile_status": "full",
+            "ignores_cover_required": false,
+            "ignores_cover_runtime_consumed": false,
             "path": "data/content-ir/authored/batch-II/xanathars-guide/spells/xanathars-guide-spell-c9d315871dc96f3fed66c29b.json",
+            "resolved_consumer_ids": [
+              "spell_economy.concentration.v1"
+            ],
             "same_source_checksum": true,
             "same_source_fingerprint": true,
             "source_checksum": "d34ac1d55f4aba92c3a54b9f3eaafb45939c4279a158930e118e0809c6bd13ef",
@@ -3357,6 +3500,7 @@
     "production_union_unchanged": true,
     "projection_unchanged": true,
     "protected_ollama_sha_exact": true,
+    "sacred_flame_cover_gap_recorded": true,
     "sacred_flame_duplicate_conflict_recorded": true,
     "sacred_flame_not_promoted_without_authority_resolution": true,
     "unrelated_compile_only_ids_unchanged": true
@@ -4002,7 +4146,7 @@
       "sha256": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
     }
   },
-  "report_fingerprint": "80fca0e3b4aadf319fd764ec45c827d7c329a53a58ded8f6a768eb2c0a7b1a9e",
+  "report_fingerprint": "10bbc22285ad53b9ef192cdd5eba19d80c9319471adef8315f363c094fcbb76b",
   "required_check_keys": [
     "all_candidates_retained",
     "all_candidates_source_bound",
@@ -4019,6 +4163,7 @@
     "production_union_unchanged",
     "projection_unchanged",
     "protected_ollama_sha_exact",
+    "sacred_flame_cover_gap_recorded",
     "sacred_flame_duplicate_conflict_recorded",
     "sacred_flame_not_promoted_without_authority_resolution",
     "unrelated_compile_only_ids_unchanged"

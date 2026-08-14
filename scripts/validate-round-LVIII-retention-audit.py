@@ -4,8 +4,10 @@
 from __future__ import annotations
 
 import hashlib
+import inspect
 import json
 from collections import defaultdict
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -171,6 +173,15 @@ def _duplicate_evidence(
     canonical_value = json.loads(canonical_source.read_text(encoding="utf-8"))
     for path in duplicates.get(content_id, []):
         value = json.loads(path.read_text(encoding="utf-8"))
+        compiled, blocks = _runtime_blocks(value)
+        consumer_probe = _probe_consumers(blocks)
+        ignores_cover_required = any(
+            isinstance(clause, dict)
+            and clause.get("type") == "saving_throw"
+            and clause.get("ignores_cover") is True
+            for clause in value.get("clauses") or []
+        )
+        runtime_source = inspect.getsource(ContentIRRuntimeService._spell_commands)
         rows.append(
             {
                 "path": str(path.relative_to(ROOT)),
@@ -181,6 +192,13 @@ def _duplicate_evidence(
                     str(clause.get("type"))
                     for clause in value.get("clauses") or []
                     if isinstance(clause, dict) and clause.get("type")
+                ),
+                "compile_status": compiled.get("compile_status"),
+                "resolved_consumer_ids": consumer_probe["resolved_consumer_ids"],
+                "ignores_cover_required": ignores_cover_required,
+                "ignores_cover_runtime_consumed": (
+                    "ignores_cover" in runtime_source
+                    or "ignore_cover" in runtime_source
                 ),
                 "same_source_fingerprint": value.get("source_fingerprint")
                 == canonical_value.get("source_fingerprint"),
@@ -194,8 +212,10 @@ def _duplicate_evidence(
         "duplicate_count": len(rows),
         "rows": rows,
         "canonical_batch_II_path": str(canonical_source.relative_to(ROOT)),
-        "duplicate_authority_conflict": len(rows) > 1
-        and any(row["typed_clause_count"] > rows[0]["typed_clause_count"] for row in rows[1:]),
+        "duplicate_authority_conflict": len(
+            {row["typed_clause_count"] for row in rows}
+        )
+        > 1,
     }
 
 
@@ -268,6 +288,7 @@ def _candidate_rows(
 
 
 def build_report() -> dict[str, Any]:
+    artifact_date = REPORT_PATH.stem[-10:]
     authoritative = authoritative_compile_only_ids(ROOT)
     loaded = load_production_runtime_evidence(
         ROOT,
@@ -293,7 +314,11 @@ def build_report() -> dict[str, Any]:
         None,
     )
     checks: dict[str, Any] = {
-        "artifact_date_exact": True,
+        "artifact_date_exact": (
+            date.fromisoformat(artifact_date).isoformat() == artifact_date
+            and REPORT_PATH.name
+            == f"round-LVIII-retention-audit-{artifact_date}.json"
+        ),
         "candidate_set_is_authoritative": {row["content_id"] for row in candidates}
         == before_compile_only,
         "candidate_set_count_is_current": len(candidates) == len(before_compile_only),
@@ -327,6 +352,14 @@ def build_report() -> dict[str, Any]:
         "sacred_flame_not_promoted_without_authority_resolution": bool(
             selected_candidate
             and selected_candidate["decision"] == "retained_compile_only"
+        ),
+        "sacred_flame_cover_gap_recorded": bool(
+            selected_candidate
+            and any(
+                row["ignores_cover_required"]
+                and not row["ignores_cover_runtime_consumed"]
+                for row in selected_candidate["duplicate_evidence"]["rows"]
+            )
         ),
         "content_id_branch_free": all(
             not row["name_branch_scan"]["hits"]
@@ -384,7 +417,7 @@ def build_report() -> dict[str, Any]:
     return {
         "schema_version": "round-LVIII-retention-audit-1",
         "round_id": "round-LVIII",
-        "artifact_date": "2026-08-14",
+        "artifact_date": artifact_date,
         "decision": "retention_audit_no_promotion",
         "candidate_comparison": {
             "ranking_claim": False,
