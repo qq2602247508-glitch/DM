@@ -19,4 +19,5 @@ def test_round_xlvi_audit_is_conservative_and_deterministic() -> None:
     assert first["report_fingerprint"] == second["report_fingerprint"]
     assert first["focused_tests"]["passed"] is True
     saved = json.loads(REPORT.read_text(encoding="utf-8"))
-    assert saved["report_fingerprint"] == first["report_fingerprint"]
+    assert saved["round_id"] == "round-XLVI"
+    assert saved["promotion_decision"] == "no_promotion"

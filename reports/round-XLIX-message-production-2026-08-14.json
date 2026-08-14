@@ -1,0 +1,80 @@
+{
+  "artifact_date": "2026-08-14",
+  "canonical_projection": {
+    "compile_only_after": 33,
+    "compile_only_census_size": 35,
+    "counts": {
+      "compile_only": 33,
+      "production": 205,
+      "unique_compiled": 111
+    },
+    "message_in_loaded_evidence": true,
+    "message_in_project_production_ids": true,
+    "migration_projection_matches_project_union": true
+  },
+  "checks": {
+    "all_required_checks_passed": true,
+    "cas": true,
+    "evidence_loader_inclusion": true,
+    "formal_database_written": false,
+    "formal_registry_written": false,
+    "name_branch_count": 0,
+    "operation_transaction": true,
+    "preview_confirm_replay": true,
+    "projection_reconciliation": true,
+    "protected_fingerprints_unchanged": true,
+    "source_provenance": true,
+    "typed_consumer": true
+  },
+  "evidence_artifact": "data/content-ir/compiled/production-runtime-results-XLIX.json",
+  "evidence_mechanism": "generic load_production_runtime_evidence production-runtime-results*.json loader",
+  "historical_preservation": {
+    "expected_round_xliii_report_sha256": "98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f",
+    "round_xliii_report_sha256": "98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f"
+  },
+  "no_push": true,
+  "promotion_decision": "promote",
+  "report_fingerprint": "c65497a59ca36086df6f85321715ab97e8ae3b86709f456fd2881658021dfac3",
+  "round_id": "round-XLIX",
+  "runtime_consumers": [
+    "spell.communication.route.v1"
+  ],
+  "runtime_receipt": {
+    "cas": {
+      "actor_version_after": 2,
+      "target_version_after": 2
+    },
+    "communication": {
+      "delivered_to_target_only": true,
+      "distance_ft": 5,
+      "message_fingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "private_reply_to_sender": true,
+      "schema": "spell.communication.route.v1"
+    },
+    "consumer": "spell.communication.route.v1",
+    "preview_confirm_replay": {
+      "confirm": true,
+      "preview": true,
+      "replay": true
+    },
+    "source": {
+      "clause_id": "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c:communication_route",
+      "source_fingerprint": "a31360e68505c1721795f408c2ca955357f076a8c47f79c665fe9427fc357de6",
+      "source_record_id": "dd9cb25c63b7e13194c7d01c"
+    },
+    "transaction": {
+      "operation_transaction_present": true
+    }
+  },
+  "schema_version": "round-XLIX-message-production-1",
+  "source_bound_producer": {
+    "authored_path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-dd9cb25c63b7e13194c7d01c.json",
+    "compile_status": "full",
+    "source_fingerprint": "a31360e68505c1721795f408c2ca955357f076a8c47f79c665fe9427fc357de6",
+    "source_record_id": "dd9cb25c63b7e13194c7d01c",
+    "typed_clause_ids": [
+      "target",
+      "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c:communication_route"
+    ]
+  }
+}

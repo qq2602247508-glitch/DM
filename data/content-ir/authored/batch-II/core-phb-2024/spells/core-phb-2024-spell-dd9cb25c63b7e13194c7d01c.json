@@ -12,7 +12,8 @@
     }
   },
   "clause_identity": [
-    "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c:target"
+    "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c:target",
+    "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c:communication_route"
   ],
   "clauses": [
     {
@@ -22,6 +23,27 @@
       "kind": "one_creature",
       "type": "target_selection",
       "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "barrier_requires_familiarity": true,
+      "blocked_materials": [
+        "stone",
+        "metal",
+        "wood",
+        "lead"
+      ],
+      "clause_id": "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c:communication_route",
+      "duration": "立即",
+      "evidence_ref": "施法时间：**动作 **施法距离：**120尺 **法术成分：**S、M（一段铜线） **持续时间：**立即 你用指向施法距离内的一名生物并低声说出一段信息。该目标（且只有该目标）会听到这段信息，并且可以用只有你能听见的低语回复你。 你可以隔着固态物件施展此法术，但你必须熟悉法术目标并知晓其就在阻挡物后方。魔法性的沉默效应，1尺厚的石头、金属或木料，或是一片薄铅都可以阻挡此法术。",
+      "magical_silence_blocks": true,
+      "max_barrier_thickness_ft": 1,
+      "private_reply": true,
+      "range_ft": 120,
+      "requires_visibility_or_familiarity": true,
+      "resolution_kind": "private_communication_route",
+      "target_only": true,
+      "type": "communication_route"
     }
   ],
   "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",

@@ -64,6 +64,7 @@ _SPELL_CLAUSE_TYPES = frozenset(
         "spell_modifier",
         "timed_modifier",
         "target_selection",
+        "communication_route",
     }
 )
 _SPELL_CLAUSE_CAPABILITIES = {
@@ -299,6 +300,24 @@ _SPELL_CLAUSE_FIELDS = {
             "position_policy",
         }
     ),
+    "communication_route": frozenset(
+        {
+            "type",
+            "clause_id",
+            "action_economy",
+            "resolution_kind",
+            "range_ft",
+            "requires_visibility_or_familiarity",
+            "barrier_requires_familiarity",
+            "max_barrier_thickness_ft",
+            "blocked_materials",
+            "target_only",
+            "private_reply",
+            "magical_silence_blocks",
+            "duration",
+            "evidence_ref",
+        }
+    ),
 }
 _SPELL_CLAUSE_FIELDS = {
     clause_type: fields | frozenset({"evidence_ref"})
@@ -321,6 +340,7 @@ _SPELL_REQUIRED_FIELDS = {
     "spell_modifier": (("modifier",),),
     "timed_modifier": (("stat", "operation", "value", "duration_unit", "duration_value"),),
     "target_selection": (("kind",),),
+    "communication_route": (("resolution_kind",), ("range_ft",)),
 }
 _SPELL_TOP_LEVEL_FIELDS = frozenset(
     {
@@ -1153,6 +1173,7 @@ def _materialize_spell_runtime(
         "duration": [],
         "concentration": [],
         "upcast": [],
+        "communication_route": [],
     }
     for clause in ordered:
         clause_type = _text(clause.get("type"))
@@ -1168,6 +1189,7 @@ def _materialize_spell_runtime(
             "spell_modifier",
             "resource_effect",
             "summon_or_creation",
+            "communication_route",
         }:
             resolution["effects"].append(_jsonable(clause))
         else:

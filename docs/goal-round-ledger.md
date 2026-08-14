@@ -1,5 +1,34 @@
 # Goal Round Ledger
 
+## Round XLIX：Message source-complete production closure
+
+日期：2026-08-14。当前状态：`registered_production_full`；local commit only，
+未 push。
+
+- Message `core-phb-2024:spell:dd9cb25c63b7e13194c7d01c` now has a source-bound
+  authored/compiled `communication_route` clause and uses the existing generic
+  `spell.communication.route.v1` consumer. No spell-name/ID dispatch or isolated
+  seam was added.
+- Real API evidence covers known-spell persistence, preview, authoritative
+  scene range, visibility/familiarity, supported barrier materials and one-foot
+  thickness, target-only delivery, private reply, magical silence, confirm,
+  target snapshot persistence, actor/target CAS, `OperationTransaction`, replay,
+  and payload drift rejection.
+- Generic loader projection derives `205 production / 33 compile-only /
+  111 unique compiled`; Message is present in the evidence union and project
+  production IDs.
+- Evidence:
+  `docs/round-XLIX-message-production-2026-08-14.md`,
+  `scripts/validate-round-XLIX-message-production.py`,
+  `backend/tests/test_round_XLIX_message_runtime.py`,
+  `data/content-ir/compiled/production-runtime-results-XLIX.json`,
+  `reports/round-XLIX-message-production-2026-08-14.json`.
+- Validator stdout/report/artifact are byte-identical across two runs.
+  Round XLIII report SHA remains
+  `98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f`;
+  protected `backend/tests/ollama.py` remains
+  `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`.
+
 ## Round XLVIII：Longstrider authoritative evidence registration
 
 日期：2026-08-14。当前状态：`registered_production_full`；local commit only，

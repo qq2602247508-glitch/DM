@@ -55,6 +55,10 @@ from dnd_dm_assistant.domain.spell_slot_reactivation import (
 from dnd_dm_assistant.domain.telepathic_information import (
     share_authorized_sensory_information,
 )
+from dnd_dm_assistant.domain.typed_spell_communication_routes import (
+    TypedSpellCommunicationRouteSpec,
+    apply_typed_spell_communication_route,
+)
 from dnd_dm_assistant.domain.typed_spell_timed_modifiers import (
     TypedSpellTimedModifierSpec,
     apply_typed_spell_timed_modifier,
@@ -2519,6 +2523,85 @@ class ContentIRRuntimeService:
             "maximum_target_count": maximum,
         }
 
+    @classmethod
+    def _spell_communication_route_contract(
+        cls,
+        data: Mapping[str, Any],
+        blocks: Mapping[str, list[dict[str, Any]]],
+        *,
+        runtime_id: str,
+        runtime_source: Mapping[str, Any],
+    ) -> dict[str, Any] | None:
+        route = next(
+            (
+                cls._parameters(block)
+                for block in blocks.get("communication_route", [])
+                if cls._parameters(block).get("resolution_kind")
+                == "private_communication_route"
+            ),
+            None,
+        )
+        if route is None:
+            return None
+        targets = cls._runtime_target_ids(data)
+        target = cls._first_parameters(blocks, "target_selection")
+        if int(target.get("count") or 1) != 1 or len(targets) != 1:
+            raise ValueError("typed communication route requires exactly one target")
+        source_record_id = _text(runtime_source.get("source_record_id"))
+        source_fingerprint = _text(runtime_source.get("source_fingerprint"))
+        if not source_record_id or len(source_fingerprint) != 64:
+            raise ValueError("typed communication route requires source provenance")
+        target_versions = dict(data.get("target_versions") or {})
+        primary = _text(data.get("target_combatant_id"))
+        if primary:
+            submitted = int(data.get("target_version") or 0)
+            if primary in target_versions and int(target_versions[primary]) != submitted:
+                raise VersionConflict(
+                    "combatant", primary, int(target_versions[primary]), submitted
+                )
+            target_versions.setdefault(primary, submitted)
+        if any(int(target_versions.get(item) or 0) < 1 for item in targets):
+            raise ValueError("typed communication route requires target version")
+        visible = data.get("communication_visible")
+        if not isinstance(visible, bool):
+            raise ValueError("typed communication route requires explicit visibility")
+        message_fingerprint = _text(data.get("communication_message_fingerprint"))
+        if len(message_fingerprint) != 64:
+            raise ValueError("typed communication route requires message fingerprint")
+        barrier_present = bool(data.get("communication_barrier_present"))
+        barrier_thickness = int(data.get("communication_barrier_thickness_ft") or 0)
+        material = _text(data.get("communication_barrier_material")) or None
+        blocked_materials = tuple(str(item) for item in route.get("blocked_materials", []))
+        if barrier_present and material not in blocked_materials:
+            raise ValueError("typed communication route barrier material is not supported")
+        if not barrier_present and barrier_thickness:
+            raise ValueError("typed communication route has thickness without barrier")
+        return {
+            "content_id": runtime_id,
+            "source_record_id": source_record_id,
+            "source_fingerprint": source_fingerprint,
+            "clause_id": _text(route.get("clause_id")) or "communication_route",
+            "sender_id": _text(data.get("actor_combatant_id")),
+            "target_id": targets[0],
+            "target_version": int(target_versions[targets[0]]),
+            "range_ft": int(route.get("range_ft") or 0),
+            "visible": visible,
+            "familiar": bool(data.get("communication_familiar")),
+            "barrier_present": barrier_present,
+            "barrier_thickness_ft": barrier_thickness,
+            "barrier_material": material,
+            "sender_in_magical_silence": bool(
+                data.get("communication_sender_in_magical_silence")
+            ),
+            "target_in_magical_silence": bool(
+                data.get("communication_target_in_magical_silence")
+            ),
+            "message_fingerprint": message_fingerprint,
+            "target_only": bool(route.get("target_only", True)),
+            "private_reply": bool(route.get("private_reply", True)),
+            "magical_silence_blocks": bool(route.get("magical_silence_blocks", True)),
+        }
+
     @staticmethod
     def _expire_spell_timed_modifiers(target: Combatant, now: datetime) -> None:
         snapshot = dict(target.snapshot_json or {})
@@ -2675,6 +2758,139 @@ class ContentIRRuntimeService:
                 reason="source-bound Longstrider timed modifier confirmed",
                 source="combat",
                 confirmed_at=now,
+            )
+            session.add(operation)
+            session.flush()
+            output["operation_transaction_id"] = operation.id
+            operation.after_snapshot = output
+            return output
+
+    def _confirm_spell_communication_route(
+        self,
+        campaign_id: str,
+        data: Mapping[str, Any],
+        *,
+        key: str,
+        token: str,
+        preview: Mapping[str, Any],
+        contract: Mapping[str, Any],
+        spell_done: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        operation_key = f"content-ir:{key}:communication"
+        with Session(self.engine) as session, session.begin():
+            existing = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == campaign_id,
+                    OperationTransaction.idempotency_key == operation_key,
+                )
+            )
+            if existing is not None:
+                previous = dict(existing.after_snapshot or {})
+                if _text(previous.get("preview_token")) != token:
+                    raise ValueError("communication route operation replay payload does not match")
+                return {**previous, "already_applied": True}
+            if token != _text(preview.get("preview_token")):
+                raise VersionConflict("content runtime preview", key, 1, 2)
+            actor = session.get(Combatant, _text(data.get("actor_combatant_id")))
+            target = session.get(Combatant, _text(contract["target_id"]))
+            if actor is None or target is None or target.combat_id != actor.combat_id:
+                raise StateNotFoundError("typed communication route actor or target not found")
+            expected_actor_version = int(data.get("actor_version") or 0)
+            if actor.version != expected_actor_version:
+                raise VersionConflict(
+                    "combatant", actor.id, expected_actor_version, actor.version
+                )
+            expected_target_version = int(contract["target_version"])
+            if target.version != expected_target_version:
+                raise VersionConflict(
+                    "combatant", target.id, expected_target_version, target.version
+                )
+            combat = session.get(Combat, actor.combat_id)
+            if combat is None or not combat.scene_id:
+                raise StateNotFoundError("typed communication route combat scene not found")
+            spatial = SceneGridSpatialAuthority(
+                session, combat.scene_id, combat_id=combat.id
+            )
+            route_spec = TypedSpellCommunicationRouteSpec(
+                content_id=_text(contract["content_id"]),
+                source_record_id=_text(contract["source_record_id"]),
+                source_fingerprint=_text(contract["source_fingerprint"]),
+                clause_id=_text(contract["clause_id"]),
+                sender_id=actor.id,
+                target_id=target.id,
+                range_ft=int(contract["range_ft"]),
+                target_only=bool(contract["target_only"]),
+                private_reply=bool(contract["private_reply"]),
+                magical_silence_blocks=bool(contract["magical_silence_blocks"]),
+            )
+            target_snapshot = dict(target.snapshot_json or {})
+            route_state = {
+                "version": int(target_snapshot.get("communication_route_version") or 0),
+                "communication_routes": list(
+                    target_snapshot.get("communication_routes") or []
+                ),
+            }
+            updated_state, receipt = apply_typed_spell_communication_route(
+                route_spec,
+                state=route_state,
+                expected_version=route_state["version"],
+                distance_ft=spatial.distance_between(actor.id, target.id),
+                visible=bool(contract["visible"]),
+                familiar=bool(contract["familiar"]),
+                barrier_present=bool(contract["barrier_present"]),
+                barrier_thickness_ft=int(contract["barrier_thickness_ft"]),
+                sender_in_magical_silence=bool(contract["sender_in_magical_silence"]),
+                target_in_magical_silence=bool(contract["target_in_magical_silence"]),
+                message_fingerprint=_text(contract["message_fingerprint"]),
+            )
+            before = {
+                "actor": {"id": actor.id, "version": actor.version},
+                "target": {
+                    "id": target.id,
+                    "version": target.version,
+                    "snapshot_json": deepcopy(target.snapshot_json or {}),
+                },
+            }
+            target_snapshot["communication_route_version"] = updated_state["version"]
+            target_snapshot["communication_routes"] = updated_state["communication_routes"]
+            target.snapshot_json = target_snapshot
+            target.version += 1
+            actor.version += 1
+            output = {
+                "schema_version": PRODUCTION_SCHEMA,
+                "content_kind": "spell",
+                "runtime_id": _text(data.get("runtime_id")),
+                "production_runtime_full": True,
+                "preview_token": token,
+                "consumer": "spell.communication.route.v1",
+                "spell_cast": dict(spell_done),
+                "communication_route_receipt": receipt.as_dict(),
+                "communication": {
+                    "distance_ft": spatial.distance_between(actor.id, target.id),
+                    "visible": bool(contract["visible"]),
+                    "familiar": bool(contract["familiar"]),
+                    "barrier_present": bool(contract["barrier_present"]),
+                    "barrier_thickness_ft": int(contract["barrier_thickness_ft"]),
+                    "barrier_material": contract.get("barrier_material"),
+                    "target_only": True,
+                    "private_reply": True,
+                    "message_fingerprint": _text(contract["message_fingerprint"]),
+                },
+                "actor_combatant_id": actor.id,
+                "actor_version_after": actor.version,
+                "target_combatant_id": target.id,
+                "target_version_after": target.version,
+            }
+            operation = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="content_ir_communication_route",
+                idempotency_key=operation_key,
+                status="applied",
+                before_snapshot=before,
+                after_snapshot=output,
+                reason="source-bound spell communication route confirmed",
+                source="combat",
+                confirmed_at=datetime.now(UTC),
             )
             session.add(operation)
             session.flush()
@@ -3158,6 +3374,71 @@ class ContentIRRuntimeService:
                 runtime_source=runtime.get("source") if isinstance(runtime.get("source"), Mapping) else {},
                 runtime_level=int(runtime.get("level") or 0),
             )
+            communication_route_contract = self._spell_communication_route_contract(
+                execution_data,
+                blocks,
+                runtime_id=_text(runtime.get("spell_id")),
+                runtime_source=runtime.get("source")
+                if isinstance(runtime.get("source"), Mapping)
+                else {},
+            )
+            if communication_route_contract is not None:
+                route_target = session.get(
+                    Combatant, communication_route_contract["target_id"]
+                )
+                if route_target is None or route_target.combat_id != combat.id:
+                    raise StateNotFoundError("typed communication route target not found")
+                spatial = SceneGridSpatialAuthority(
+                    session, combat.scene_id, combat_id=combat.id
+                )
+                distance_ft = spatial.distance_between(actor.id, route_target.id)
+                submitted_distance = data.get("communication_distance_ft")
+                if (
+                    submitted_distance is not None
+                    and int(submitted_distance) != distance_ft
+                ):
+                    raise ValueError(
+                        "typed communication route distance does not match authoritative scene"
+                    )
+                route_spec = TypedSpellCommunicationRouteSpec(
+                    content_id=_text(communication_route_contract["content_id"]),
+                    source_record_id=_text(
+                        communication_route_contract["source_record_id"]
+                    ),
+                    source_fingerprint=_text(
+                        communication_route_contract["source_fingerprint"]
+                    ),
+                    clause_id=_text(communication_route_contract["clause_id"]),
+                    sender_id=actor.id,
+                    target_id=route_target.id,
+                    range_ft=int(communication_route_contract["range_ft"]),
+                    target_only=True,
+                    private_reply=True,
+                    magical_silence_blocks=True,
+                )
+                apply_typed_spell_communication_route(
+                    route_spec,
+                    state={"version": 0},
+                    expected_version=0,
+                    distance_ft=distance_ft,
+                    visible=bool(communication_route_contract["visible"]),
+                    familiar=bool(communication_route_contract["familiar"]),
+                    barrier_present=bool(
+                        communication_route_contract["barrier_present"]
+                    ),
+                    barrier_thickness_ft=int(
+                        communication_route_contract["barrier_thickness_ft"]
+                    ),
+                    sender_in_magical_silence=bool(
+                        communication_route_contract["sender_in_magical_silence"]
+                    ),
+                    target_in_magical_silence=bool(
+                        communication_route_contract["target_in_magical_silence"]
+                    ),
+                    message_fingerprint=_text(
+                        communication_route_contract["message_fingerprint"]
+                    ),
+                )
             if timed_modifier_contract is not None:
                 for target_id, expected_version in timed_modifier_contract["target_versions"].items():
                     target = session.get(Combatant, target_id)
@@ -3196,6 +3477,7 @@ class ContentIRRuntimeService:
                 None
                 if defense_contract is not None
                 or timed_modifier_contract is not None
+                or communication_route_contract is not None
                 or summon_contract is not None
                 else self._spell_commands(execution_data, blocks)
             )
@@ -3251,7 +3533,11 @@ class ContentIRRuntimeService:
                     "content_kind": "spell",
                     "known_spell_id": spell.id,
                     "action_cost": self._action_cost(blocks),
-                    "requires_target": commands is not None or summon_contract is not None,
+                    "requires_target": (
+                        commands is not None
+                        or summon_contract is not None
+                        or communication_route_contract is not None
+                    ),
                     "requires_resolution_input": commands is not None,
                     "requires_cas": True,
                     "requires_idempotency": True,
@@ -3261,6 +3547,7 @@ class ContentIRRuntimeService:
                     "area_batch": len(commands or []) > 1,
                     "defense": defense_contract,
                     "timed_modifier": timed_modifier_contract,
+                    "communication_route": communication_route_contract,
                     "summon": summon_preview,
                     "remote_spell_origin": self._remote_origin_receipt(remote_origin),
                 },
@@ -4355,8 +4642,31 @@ class ContentIRRuntimeService:
                         OperationTransaction.idempotency_key == f"content-ir:{key}:timed",
                     )
                 )
+            if existing is None:
+                existing = session.scalar(
+                    select(OperationTransaction).where(
+                        OperationTransaction.campaign_id == campaign_id,
+                        OperationTransaction.idempotency_key
+                        == f"content-ir:{key}:communication",
+                    )
+                )
             if existing is not None:
-                return {**dict(existing.after_snapshot or {}), "already_applied": True}
+                previous = dict(existing.after_snapshot or {})
+                if existing.idempotency_key.endswith(":communication"):
+                    communication = previous.get("communication")
+                    if (
+                        isinstance(communication, Mapping)
+                        and _text(communication.get("message_fingerprint"))
+                        != _text(data.get("communication_message_fingerprint"))
+                    ):
+                        raise ValueError(
+                            "communication route operation replay payload does not match"
+                        )
+                    if _text(previous.get("preview_token")) != _text(data.get("preview_token")):
+                        raise ValueError(
+                            "communication route operation replay payload does not match"
+                        )
+                return {**previous, "already_applied": True}
         preview = self.preview(campaign_id, data)
         token = _text(data.get("preview_token"))
         if token != _text(preview.get("preview_token")):
@@ -4532,6 +4842,14 @@ class ContentIRRuntimeService:
                 runtime_source=runtime.get("source") if isinstance(runtime.get("source"), Mapping) else {},
                 runtime_level=int(runtime.get("level") or 0),
             )
+            communication_route_contract = self._spell_communication_route_contract(
+                execution_data,
+                blocks,
+                runtime_id=_text(runtime.get("spell_id")),
+                runtime_source=runtime.get("source")
+                if isinstance(runtime.get("source"), Mapping)
+                else {},
+            )
             summon_contract = self._spell_summon_contract(
                 execution_data,
                 blocks,
@@ -4540,7 +4858,17 @@ class ContentIRRuntimeService:
                 runtime_level=int(runtime.get("level") or 0),
                 caster_level=int(character.level or 0),
             )
-            if timed_modifier_contract is not None:
+            if communication_route_contract is not None:
+                combat_done = self._confirm_spell_communication_route(
+                    campaign_id,
+                    data,
+                    key=key,
+                    token=token,
+                    preview=preview,
+                    contract=communication_route_contract,
+                    spell_done=spell_done,
+                )
+            elif timed_modifier_contract is not None:
                 combat_done = self._confirm_timed_spell_modifier(
                     campaign_id,
                     data,
@@ -4589,7 +4917,12 @@ class ContentIRRuntimeService:
                 )
             else:
                 commands = self._spell_commands(execution_data, blocks)
-            if timed_modifier_contract is not None or defense_contract is not None or summon_contract is not None:
+            if (
+                communication_route_contract is not None
+                or timed_modifier_contract is not None
+                or defense_contract is not None
+                or summon_contract is not None
+            ):
                 pass
             elif commands is not None:
                 if len(commands) == 1:
@@ -4646,7 +4979,7 @@ class ContentIRRuntimeService:
                 expected_character_version=expected_character_version,
             )
             raise
-        if timed_modifier_contract is not None:
+        if communication_route_contract is not None or timed_modifier_contract is not None:
             return dict(combat_done)
         output = {
             "schema_version": PRODUCTION_SCHEMA,

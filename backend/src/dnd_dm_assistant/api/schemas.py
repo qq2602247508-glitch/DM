@@ -2556,6 +2556,17 @@ class ContentIRRuntimeRequest(BaseModel):
     target_versions: dict[str, int] = Field(default_factory=dict, max_length=20)
     target_willing: bool | None = None
     target_willing_by_id: dict[str, bool] = Field(default_factory=dict, max_length=20)
+    communication_distance_ft: int | None = Field(default=None, ge=0, le=10_000)
+    communication_visible: bool | None = None
+    communication_familiar: bool = False
+    communication_barrier_present: bool = False
+    communication_barrier_thickness_ft: int = Field(default=0, ge=0, le=10_000)
+    communication_barrier_material: Literal["stone", "metal", "wood", "lead", "other"] | None = None
+    communication_sender_in_magical_silence: bool = False
+    communication_target_in_magical_silence: bool = False
+    communication_message_fingerprint: str | None = Field(
+        default=None, min_length=64, max_length=64
+    )
     origin_id: str | None = Field(default=None, min_length=1, max_length=36)
     summon_choice: str | None = Field(default=None, min_length=1, max_length=80)
     area_shape: Literal["cone", "line", "cube", "sphere", "cylinder"] | None = None

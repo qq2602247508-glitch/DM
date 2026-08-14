@@ -36,7 +36,9 @@ def test_round_xlviii_projection_reconciles_naturally() -> None:
         "compile_only": 34,
         "unique_compiled": 111,
     }
-    assert migration["current_project_production_full"] == 204
+    assert migration["current_project_production_full"] == len(
+        existing_project_production_ids(ROOT)
+    )
     assert report["canonical_projection"]["migration_projection_matches_project_union"] is True
     assert report["promotion_decision"] == "promote"
 

@@ -1,0 +1,65 @@
+{
+  "checks": {
+    "all_required_checks_passed": true,
+    "cas": true,
+    "formal_database_written": false,
+    "formal_registry_written": false,
+    "name_branch_count": 0,
+    "operation_transaction": true,
+    "preview_confirm_replay": true,
+    "protected_fingerprints_unchanged": true,
+    "source_provenance": true,
+    "typed_consumer": true
+  },
+  "content_kind": "spell",
+  "evidence_by_id": {
+    "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c": {
+      "content_id": "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c",
+      "content_kind": "spell",
+      "production_runtime_full": true,
+      "runtime_receipt": {
+        "cas": {
+          "actor_version_after": 2,
+          "target_version_after": 2
+        },
+        "communication": {
+          "delivered_to_target_only": true,
+          "distance_ft": 5,
+          "message_fingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "private_reply_to_sender": true,
+          "schema": "spell.communication.route.v1"
+        },
+        "consumer": "spell.communication.route.v1",
+        "preview_confirm_replay": {
+          "confirm": true,
+          "preview": true,
+          "replay": true
+        },
+        "source": {
+          "clause_id": "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c:communication_route",
+          "source_fingerprint": "a31360e68505c1721795f408c2ca955357f076a8c47f79c665fe9427fc357de6",
+          "source_record_id": "dd9cb25c63b7e13194c7d01c"
+        },
+        "transaction": {
+          "operation_transaction_present": true
+        }
+      },
+      "source": {
+        "authored_path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-dd9cb25c63b7e13194c7d01c.json",
+        "source_fingerprint": "a31360e68505c1721795f408c2ca955357f076a8c47f79c665fe9427fc357de6",
+        "source_path": "玩家手册2024/法术详述/0环.htm",
+        "source_record_id": "dd9cb25c63b7e13194c7d01c"
+      },
+      "typed_clause_ids": [
+        "target",
+        "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c:communication_route"
+      ],
+      "typed_consumer": "spell.communication.route.v1"
+    }
+  },
+  "production_runtime_full_ids": [
+    "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c"
+  ],
+  "round_id": "round-XLIX",
+  "schema_version": "content-ir-production-runtime-results-XLIX-1"
+}

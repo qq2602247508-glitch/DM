@@ -1,3 +1,34 @@
+## 2026-08-14 Round XLIX handoff: Message production closure
+
+- Baseline was `c6bc8c9`; implementation is local-only and must not be pushed.
+- Message `core-phb-2024:spell:dd9cb25c63b7e13194c7d01c` is now source-complete
+  through generic `spell.communication.route.v1`. The authored IR binds action,
+  120-foot range, one target, visibility/familiarity, solid-material barrier
+  semantics, one-foot thickness, target-only delivery, private reply,
+  instantaneous duration, and magical silence.
+- The real generic API path is known-spell persistence → preview → authoritative
+  route validation → spell confirm → persisted target route snapshot →
+  `OperationTransaction` → replay. It rejects out-of-range, missing
+  visibility/familiarity, thick/unsupported barriers, unfamiliar blocked targets,
+  silence, stale CAS, wrong runtime/target bindings, and message payload drift.
+- Evidence was registered through the generic
+  `production-runtime-results*.json` loader; no name/ID branch or count
+  arithmetic was added. Derived canonical counts are
+  `205 production / 33 compile-only / 111 unique compiled`.
+- Evidence:
+  `docs/round-XLIX-message-production-2026-08-14.md`,
+  `scripts/validate-round-XLIX-message-production.py`,
+  `backend/tests/test_round_XLIX_message_runtime.py`,
+  `data/content-ir/compiled/production-runtime-results-XLIX.json`,
+  `reports/round-XLIX-message-production-2026-08-14.json`.
+- Focused suite: `20 passed`; validator stdout, report, and artifact were
+  byte-identical across two runs. Round XLIII report SHA:
+  `98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f`.
+  Protected `backend/tests/ollama.py` SHA:
+  `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`.
+- No campaign/character persistent data, source corpus, 3D/UI, protected paths,
+  deletion, reset, checkout, clean, or push.
+
 ## 2026-08-13 Round XLIV typed spell target fan-out seam
 
 ## 2026-08-13 Round XLVI handoff: typed spell communication-route seam
