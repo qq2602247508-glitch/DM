@@ -1,0 +1,113 @@
+{
+  "artifact_date": "2026-08-14",
+  "checks": {
+    "all_required_checks_passed": true,
+    "focused_test": {
+      "command": [
+        "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "backend/tests/test_round_LII_illusion_lifecycle.py"
+      ],
+      "passed": true,
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "9fbdf8c5b5ddc91a45fe644bf53c556996b9072d4336b10e3dd6ac162046320c"
+    },
+    "formal_database_written": false,
+    "formal_registry_written": false,
+    "generic_registry_consumer_exact": true,
+    "historical_xliii_sha_exact": true,
+    "isolated_runtime_receipt_suite_passed": true,
+    "name_branch_count": 0,
+    "protected_ollama_sha_exact": true,
+    "source_bound_compile_full": true,
+    "source_fields_cover_physical_inspection_and_research_dc": true,
+    "source_fields_cover_target_duration_envelope_height_limb_area": true
+  },
+  "content_kind": "spell",
+  "evidence_by_id": {
+    "core-phb-2024:spell:83b7d94b77f332dd71310bbe": {
+      "authored_path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-83b7d94b77f332dd71310bbe.json",
+      "content_id": "core-phb-2024:spell:83b7d94b77f332dd71310bbe",
+      "content_kind": "spell",
+      "isolated_runtime_test": "backend/tests/test_round_LII_illusion_lifecycle.py",
+      "name": "易容术",
+      "production_runtime_full": true,
+      "required_semantics": [
+        "self target and one-hour duration",
+        "appearance/clothing/armor/weapon illusion envelope",
+        "height delta -1/0/+1 and preserved limb arrangement",
+        "caster-chosen illusion area",
+        "physical inspection passes through illusion",
+        "Research plus Intelligence (Investigation) against spell save DC",
+        "expiry and termination persistence"
+      ],
+      "resolved_consumers": [
+        "spell.illusion.lifecycle.v1"
+      ],
+      "runtime_blocks": {
+        "attack_roll": [],
+        "communication_capability": [],
+        "communication_route": [],
+        "concentration": [],
+        "duration": [
+          {
+            "clause_id": "duration",
+            "duration": "1 hour",
+            "type": "duration"
+          }
+        ],
+        "effects": [],
+        "illusion_lifecycle": [
+          {
+            "area_scope": "caster-chosen illusion envelope",
+            "body_shape": "variable",
+            "carried_envelope": [
+              "clothing",
+              "armor",
+              "weapons"
+            ],
+            "clause_id": "illusion_lifecycle",
+            "duration_unit": "hours",
+            "duration_value": 1,
+            "height_delta_ft": 1,
+            "height_delta_range_ft": [
+              -1,
+              1
+            ],
+            "investigation_skill": "intelligence_investigation",
+            "limb_arrangement": "preserve",
+            "physical_inspection": "passes_through",
+            "research_action": "research",
+            "resolution_kind": "illusion_lifecycle",
+            "save_dc": 10,
+            "target_scope": "self",
+            "type": "illusion_lifecycle"
+          }
+        ],
+        "saving_throw": [],
+        "target_selection": [
+          {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "的影响范围由你决定。 此法术产生的变化无法应对物理检查。比如，你用此法术添了一顶帽子，那么现实物件会从帽子穿过去，且任何触碰帽子的人将摸不到任何东西。 如果一名生物想要分辨你是否易容，则必须使用一个研究动作研究你的外貌，并成功于一次对抗你法术豁免DC的智力（调查）检定。",
+            "kind": "self",
+            "type": "target_selection",
+            "visibility": "visible"
+          }
+        ],
+        "upcast": []
+      },
+      "source_fingerprint": "333f2d3a48232acf17b222fc2782505ff5f61a059a7ffe49c26ad86823caa0f4",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "83b7d94b77f332dd71310bbe"
+    }
+  },
+  "production_runtime_full_ids": [
+    "core-phb-2024:spell:83b7d94b77f332dd71310bbe"
+  ],
+  "round_id": "round-LII",
+  "schema_version": "content-ir-production-runtime-results-LII-1"
+}

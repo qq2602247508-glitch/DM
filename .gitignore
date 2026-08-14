@@ -29,6 +29,7 @@ data/content-ir/*
 !/data/content-ir/compiled/
 data/content-ir/compiled/*
 !/data/content-ir/compiled/production-runtime-results-XLII.json
+!/data/content-ir/compiled/production-runtime-results-LII.json
 generated-content/
 source-checkouts/
 backend/generated-content/
@@ -67,6 +68,7 @@ reports/*
 reports/*
 !/reports/tashas-feature-production-consumer-round-XLII-2026-08-13.json
 !/reports/round-XLIII-typed-target-adjudication-2026-08-13.json
+!/reports/round-LII-illusion-lifecycle-2026-08-14.json
 tmp/
 temp/
 

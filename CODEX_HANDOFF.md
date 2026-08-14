@@ -1,3 +1,24 @@
+## 2026-08-14 Round LII handoff: generic illusion lifecycle / inspection
+
+- Baseline `951ef198533ae9378c638bd05f66ed1066ee9cb8`; local-only, no push.
+- Added name-independent `spell.illusion.lifecycle.v1` with typed appearance
+  envelope, self/one-hour boundary, height range, preserved limbs, chosen area,
+  physical inspection pass-through, Research/Investigation vs persisted spell DC,
+  expiry/termination, actor CAS, OperationTransaction and exact replay drift rejection.
+- Disguise Self `core-phb-2024:spell:83b7d94b77f332dd71310bbe` is promoted only
+  through generic loader evidence. Prestidigitation remains compile-only.
+- Projection from persisted generic evidence: `207 production / 31 compile-only /
+  111 unique compiled`.
+- Evidence: `docs/round-LII-illusion-lifecycle-2026-08-14.md`,
+  `scripts/validate-round-LII-illusion-lifecycle.py`,
+  `backend/tests/test_round_LII_illusion_lifecycle.py`,
+  `data/content-ir/compiled/production-runtime-results-LII.json`,
+  `reports/round-LII-illusion-lifecycle-2026-08-14.json`.
+- Focused suite `3 passed`; validator stdout/report/artifact byte-identical twice.
+- Final gates passed: changed-file Ruff, compileall, diff-check and backend full
+  pytest `1129 passed, 1 warning`. Protected `backend/tests/ollama.py` and
+  existing untracked integrations remain untouched.
+
 ## 2026-08-14 Round XLIX handoff: Message production closure
 
 - Baseline was `c6bc8c9`; implementation is local-only and must not be pushed.

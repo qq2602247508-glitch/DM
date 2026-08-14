@@ -881,3 +881,14 @@ feature binding 与 spell-slot reactivation 仍保持 partial。
 - 证据：`data/content-ir/compiled/production-runtime-results-LI.json`、`reports/round-LI-utility-spell-closure-2026-08-14.json`、`scripts/validate-round-LI-utility-spell-closure.py`、`backend/tests/test_round_LI_utility_spell_retention.py`。
 - hard blockers：Disguise Self 缺 generic illusion appearance/physical inspection/Investigation-vs-DC/expiry consumer；Prestidigitation 缺 six-mode choice/object-surface lifecycle/dismissal/three-slot concurrency consumer。
 - 受保护 SHA 与 Round XLIII historical SHA 保持；无 push。
+# 2026-08-14 — Round LII generic illusion lifecycle / inspection
+
+- Decision: promote Disguise Self only through generic `spell.illusion.lifecycle.v1`;
+  retain Prestidigitation compile-only.
+- Evidence: `docs/round-LII-illusion-lifecycle-2026-08-14.md`,
+  `scripts/validate-round-LII-illusion-lifecycle.py`,
+  `backend/tests/test_round_LII_illusion_lifecycle.py`,
+  `data/content-ir/compiled/production-runtime-results-LII.json`,
+  `reports/round-LII-illusion-lifecycle-2026-08-14.json`.
+- Projection: `207 production / 31 compile-only / 111 unique compiled`.
+- Validator stdout/report/artifact byte-identical twice; no push.
