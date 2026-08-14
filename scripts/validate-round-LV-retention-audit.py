@@ -76,6 +76,93 @@ def _consumer_probe(blocks: dict[str, Any]) -> dict[str, Any]:
     return {"resolved_consumers": consumers, "registry_error": error}
 
 
+def _source_semantics(authored: dict[str, Any], blocks: dict[str, Any]) -> dict[str, Any]:
+    source_text = str((authored.get("source_evidence") or {}).get("source_text") or "")
+    semantic_specs = (
+        {
+            "id": "attack_rider",
+            "source_markers": ("额外造成1d6", "攻击检定命中"),
+            "runtime_keys": ("attack_rider", "damage"),
+        },
+        {
+            "id": "search_advantage",
+            "source_markers": ("察觉或求生", "具有优势"),
+            "runtime_keys": ("skill_check_modifier", "search_advantage"),
+        },
+        {
+            "id": "mark_transfer",
+            "source_markers": ("HP 降至 0", "转移"),
+            "runtime_keys": ("mark_transfer", "target_transfer"),
+        },
+        {
+            "id": "transfer_constraints",
+            "source_markers": ("施法距离内", "可见生物"),
+            "runtime_keys": ("transfer_constraints",),
+        },
+        {
+            "id": "upcast_duration",
+            "source_markers": ("升环施法", "8小时", "24小时"),
+            "runtime_keys": ("upcast", "duration"),
+        },
+    )
+    rows = []
+    for spec in semantic_specs:
+        source_present = all(marker in source_text for marker in spec["source_markers"])
+        runtime_present = any(key in blocks for key in spec["runtime_keys"])
+        rows.append(
+            {
+                "semantic": spec["id"],
+                "source_present": source_present,
+                "runtime_present": runtime_present,
+                "closed": not source_present or runtime_present,
+            }
+        )
+    return {
+        "rows": rows,
+        "missing_source_semantics": [
+            row["semantic"] for row in rows if row["source_present"] and not row["runtime_present"]
+        ],
+        "consumer_gap_detected": any(
+            row["source_present"] and not row["runtime_present"] for row in rows
+        ),
+    }
+
+
+def _name_branch_scan(authored: dict[str, Any]) -> dict[str, Any]:
+    patterns = {
+        "content_id": AUDIT_ID,
+        "source_name": str(authored.get("name") or ""),
+    }
+    hits = []
+    for path in sorted((ROOT / "backend/src").rglob("*.py")):
+        text = path.read_text(encoding="utf-8")
+        for label, pattern in patterns.items():
+            if pattern and pattern in text:
+                hits.append({"path": str(path.relative_to(ROOT)), "kind": label})
+    return {"patterns": patterns, "hits": hits, "name_branch_count": len(hits)}
+
+
+def _set_idempotency(
+    authoritative: set[str], loaded: dict[str, dict[str, Any]]
+) -> dict[str, Any]:
+    baseline = project_compile_only_ids(authoritative, loaded)
+    once = project_compile_only_ids(authoritative, [*loaded, AUDIT_ID])
+    repeated = project_compile_only_ids(
+        authoritative,
+        [*loaded, AUDIT_ID, AUDIT_ID, "", "invalid:id", AUDIT_ID],
+    )
+    invalid_only = project_compile_only_ids(authoritative, [*loaded, "", "invalid:id"])
+    return {
+        "baseline": baseline,
+        "once_selected": once,
+        "repeated_selected_with_invalid": repeated,
+        "invalid_only": invalid_only,
+        "duplicate_selected_is_idempotent": once == repeated,
+        "invalid_and_blank_are_noops": baseline == invalid_only,
+        "selected_removed_once": AUDIT_ID in baseline and AUDIT_ID not in once,
+    }
+
+
 def _named_nodes() -> dict[str, Any]:
     nodes = (
         "test_round_lv_source_bound_compile_and_consumer_gap",
@@ -122,6 +209,9 @@ def build_report() -> dict[str, Any]:
         "visible target and range validation for the transfer",
         "upcast concentration duration of 8 hours or 24 hours",
     ]
+    semantics = _source_semantics(authored, blocks)
+    name_scan = _name_branch_scan(authored)
+    idempotency = _set_idempotency(authoritative, loaded)
     blockers = [
         "spell_economy.concentration.v1 only covers spell-slot/concentration state",
         "no source-complete attack rider consumer bound to the marked target",
@@ -168,20 +258,22 @@ def build_report() -> dict[str, Any]:
             "source_bound_compile": selected_evidence["compile_status"] == "full",
             "actual_generic_consumer_probe": probe["resolved_consumers"]
             == ["spell_economy.concentration.v1"],
-            "source_complete_consumer": False,
-            "promotion_gate_closed": False,
+            "consumer_gap_detected": semantics["consumer_gap_detected"],
             "selected_id_authoritative": AUDIT_ID in authoritative,
             "selected_id_not_promoted": AUDIT_ID not in loaded,
-            "name_branch_count": 0,
-            "formal_database_written": False,
             "protected_ollama_sha_exact": protected["backend/tests/ollama.py"]["sha256"]
             == EXPECTED_OLLAMA_SHA,
             "historical_xliii_sha_exact": _sha256(
                 (ROOT / "reports/round-XLIII-typed-target-adjudication-2026-08-13.json").read_bytes()
             )
             == EXPECTED_XLIII_SHA,
-            "all_required_checks_passed": True,
         },
+        "gate_facts": {
+            "source_complete_consumer": not semantics["consumer_gap_detected"],
+            "promotion_gate_closed": not semantics["consumer_gap_detected"]
+            and bool(probe["resolved_consumers"]),
+        },
+        "name_branch_scan": name_scan,
     }
     RESULTS.write_text(
         json.dumps(artifact, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
@@ -202,6 +294,19 @@ def build_report() -> dict[str, Any]:
     after_compile_only = project_compile_only_ids(authoritative, after_loaded)
     after_production = set(existing_project_production_ids(ROOT))
     migration = build_migration(ROOT)
+    persisted_artifact = json.loads(RESULTS.read_text(encoding="utf-8"))
+    strict_row_rejected = (
+        AUDIT_ID not in after_loaded
+        and AUDIT_ID not in persisted_artifact["production_runtime_full_ids"]
+        and persisted_artifact["evidence_by_id"][AUDIT_ID]["production_runtime_full"]
+        is False
+    )
+    production_before_fingerprint = _sha256(
+        json.dumps(sorted(before_production), separators=(",", ":")).encode()
+    )
+    production_after_fingerprint = _sha256(
+        json.dumps(sorted(after_production), separators=(",", ":")).encode()
+    )
     checks = {
         **artifact["checks"],
         "projection_unchanged": before_compile_only == after_compile_only
@@ -211,10 +316,41 @@ def build_report() -> dict[str, Any]:
         == (after_compile_only - {AUDIT_ID}),
         "production_union_deduplicated": len(after_production)
         == len(set(after_production)),
+        "production_union_fingerprint_unchanged": production_before_fingerprint
+        == production_after_fingerprint,
         "migration_projection_matches_sets": set(migration["current_project_compile_only_ids"])
         == after_compile_only,
-        "all_required_checks_passed": True,
+        "strict_loader_rejects_nonproduction_row": strict_row_rejected,
+        "duplicate_invalid_set_idempotent": idempotency["duplicate_selected_is_idempotent"]
+        and idempotency["invalid_and_blank_are_noops"]
+        and idempotency["selected_removed_once"],
     }
+    required_keys = (
+        "source_bound_compile",
+        "actual_generic_consumer_probe",
+        "consumer_gap_detected",
+        "selected_id_authoritative",
+        "selected_id_not_promoted",
+        "projection_unchanged",
+        "selected_id_retained",
+        "unrelated_ids_unchanged",
+        "production_union_deduplicated",
+        "production_union_fingerprint_unchanged",
+        "migration_projection_matches_sets",
+        "strict_loader_rejects_nonproduction_row",
+        "duplicate_invalid_set_idempotent",
+        "focused_nodes_passed",
+        "protected_ollama_sha_exact",
+        "historical_xliii_sha_exact",
+    )
+    checks["all_required_checks_passed"] = all(
+        checks.get(key) is True for key in required_keys
+    )
+    artifact["checks"] = checks
+    RESULTS.write_text(
+        json.dumps(artifact, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     report = {
         "schema_version": "round-LV-retention-audit-1",
         "round_id": "round-LV",
@@ -222,9 +358,16 @@ def build_report() -> dict[str, Any]:
         "baseline_commit": "530fb1e62b0dc88416fcf91183b6312297c7a98f",
         "decision": "retain_selected_compile_only",
         "selected_content_ids": [AUDIT_ID],
-        "selection_reason": "highest-confidence near-seam candidate, rejected because concentration-only consumer is not source-complete",
+        "selection_reason": "selected near-seam candidate, rejected because concentration-only consumer is not source-complete",
         "source_clause_requirements": source_requirements,
+        "source_semantics": semantics,
         "source_bound_blockers": blockers,
+        "name_branch_scan": name_scan,
+        "set_idempotency": {
+            key: sorted(value) if isinstance(value, set) else value
+            for key, value in idempotency.items()
+        },
+        "required_check_keys": required_keys,
         "candidate_evidence_artifact": str(RESULTS.relative_to(ROOT)),
         "focused_test": FOCUSED_TEST,
         "evidence_mechanism": "source-bound SpellSpec compile, real generic registry resolution, strict evidence loader, and set-derived projection",
@@ -245,6 +388,7 @@ def build_report() -> dict[str, Any]:
             "unique_compiled": migration["current_project_compiled_unique"],
         },
         "checks": checks,
+        "gate_facts": artifact["gate_facts"],
         "named_nodes": nodes,
         "protected_fingerprints": protected,
         "historical_artifact_sha256": {

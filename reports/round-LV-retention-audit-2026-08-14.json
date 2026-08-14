@@ -15,28 +15,45 @@
   "checks": {
     "actual_generic_consumer_probe": true,
     "all_required_checks_passed": true,
+    "consumer_gap_detected": true,
+    "duplicate_invalid_set_idempotent": true,
     "focused_nodes_passed": true,
-    "formal_database_written": false,
     "historical_xliii_sha_exact": true,
     "migration_projection_matches_sets": true,
-    "name_branch_count": 0,
     "production_union_deduplicated": true,
+    "production_union_fingerprint_unchanged": true,
     "projection_unchanged": true,
-    "promotion_gate_closed": false,
     "protected_ollama_sha_exact": true,
     "selected_id_authoritative": true,
     "selected_id_not_promoted": true,
     "selected_id_retained": true,
     "source_bound_compile": true,
-    "source_complete_consumer": false,
+    "strict_loader_rejects_nonproduction_row": true,
     "unrelated_ids_unchanged": true
   },
   "decision": "retain_selected_compile_only",
   "evidence_mechanism": "source-bound SpellSpec compile, real generic registry resolution, strict evidence loader, and set-derived projection",
   "focused_test": "backend/tests/test_round_LV_retention_audit.py",
+  "gate_facts": {
+    "promotion_gate_closed": false,
+    "source_complete_consumer": false
+  },
   "historical_artifact_sha256": {
     "backend_tests_ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3",
     "round_xliii_report": "98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f"
+  },
+  "name_branch_scan": {
+    "hits": [
+      {
+        "kind": "source_name",
+        "path": "backend/src/dnd_dm_assistant/domain/feature_runtime.py"
+      }
+    ],
+    "name_branch_count": 1,
+    "patterns": {
+      "content_id": "core-phb-2024:spell:63fb2360b8c30fb0419d9225",
+      "source_name": "猎人印记"
+    }
   },
   "named_nodes": {
     "test_round_lv_invalid_duplicate_evidence_cannot_promote": {
@@ -706,13 +723,154 @@
       "sha256": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
     }
   },
-  "report_fingerprint": "8426396489635d423862f945121bdb8c51ec0342cb33b70e1e48436ac78a4bb6",
+  "report_fingerprint": "9af8a6bdebeded9ee70203bb4819f44980410dbf9e1e4c307056f2c4345b4ded",
+  "required_check_keys": [
+    "source_bound_compile",
+    "actual_generic_consumer_probe",
+    "consumer_gap_detected",
+    "selected_id_authoritative",
+    "selected_id_not_promoted",
+    "projection_unchanged",
+    "selected_id_retained",
+    "unrelated_ids_unchanged",
+    "production_union_deduplicated",
+    "production_union_fingerprint_unchanged",
+    "migration_projection_matches_sets",
+    "strict_loader_rejects_nonproduction_row",
+    "duplicate_invalid_set_idempotent",
+    "focused_nodes_passed",
+    "protected_ollama_sha_exact",
+    "historical_xliii_sha_exact"
+  ],
   "round_id": "round-LV",
   "schema_version": "round-LV-retention-audit-1",
   "selected_content_ids": [
     "core-phb-2024:spell:63fb2360b8c30fb0419d9225"
   ],
-  "selection_reason": "highest-confidence near-seam candidate, rejected because concentration-only consumer is not source-complete",
+  "selection_reason": "selected near-seam candidate, rejected because concentration-only consumer is not source-complete",
+  "set_idempotency": {
+    "baseline": [
+      "core-phb-2024:spell:63fb2360b8c30fb0419d9225",
+      "core-phb-2024:spell:65b211e271db5fa11508dbbc",
+      "core-phb-2024:spell:6c07317bf4d16b92da3c8f55",
+      "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b",
+      "core-phb-2024:spell:85595d634b480207249dd2ac",
+      "core-phb-2024:spell:90c12635dd6eca81ebe04449",
+      "core-phb-2024:spell:9b29fbb72177f058bf1448ef",
+      "core-phb-2024:spell:9c4208ec038463dfd608ba9e",
+      "core-phb-2024:spell:a0c914f228b833357f0c2779",
+      "core-phb-2024:spell:aa17c997419ff77ab783e003",
+      "core-phb-2024:spell:ad887cac0fa7f6c2cf7c566f",
+      "core-phb-2024:spell:c724eb95e2f08220d161e608",
+      "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+      "core-phb-2024:spell:dccfb9fc9cd30b9fb8b627b0",
+      "core-phb-2024:spell:ea1d170f71d30f4ddeb84f9e",
+      "core-phb-2024:spell:eaaa6893b004c177f8237eb0",
+      "core-phb-2024:spell:ed5371dd95cf605bf1c24cd3",
+      "core-phb-2024:spell:f0e1229e39b1dfb476f90c6b",
+      "core-phb-2024:spell:fa352b4b5b77382c47bad253",
+      "fizbans-treasury:spell:843fb135e4cc8a1fb34c46be",
+      "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+      "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
+      "xanathars-guide:spell:5aa5cf7f93be0fa149fdcd62",
+      "xanathars-guide:spell:6d32a73dbc7bf6f5fac303bd",
+      "xanathars-guide:spell:805cbf82765f6710391cc75f",
+      "xanathars-guide:spell:96d5c3265bc938448c4aef58",
+      "xanathars-guide:spell:aadf89719f073bfca1fefb3a",
+      "xanathars-guide:spell:c9d315871dc96f3fed66c29b"
+    ],
+    "duplicate_selected_is_idempotent": true,
+    "invalid_and_blank_are_noops": true,
+    "invalid_only": [
+      "core-phb-2024:spell:63fb2360b8c30fb0419d9225",
+      "core-phb-2024:spell:65b211e271db5fa11508dbbc",
+      "core-phb-2024:spell:6c07317bf4d16b92da3c8f55",
+      "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b",
+      "core-phb-2024:spell:85595d634b480207249dd2ac",
+      "core-phb-2024:spell:90c12635dd6eca81ebe04449",
+      "core-phb-2024:spell:9b29fbb72177f058bf1448ef",
+      "core-phb-2024:spell:9c4208ec038463dfd608ba9e",
+      "core-phb-2024:spell:a0c914f228b833357f0c2779",
+      "core-phb-2024:spell:aa17c997419ff77ab783e003",
+      "core-phb-2024:spell:ad887cac0fa7f6c2cf7c566f",
+      "core-phb-2024:spell:c724eb95e2f08220d161e608",
+      "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+      "core-phb-2024:spell:dccfb9fc9cd30b9fb8b627b0",
+      "core-phb-2024:spell:ea1d170f71d30f4ddeb84f9e",
+      "core-phb-2024:spell:eaaa6893b004c177f8237eb0",
+      "core-phb-2024:spell:ed5371dd95cf605bf1c24cd3",
+      "core-phb-2024:spell:f0e1229e39b1dfb476f90c6b",
+      "core-phb-2024:spell:fa352b4b5b77382c47bad253",
+      "fizbans-treasury:spell:843fb135e4cc8a1fb34c46be",
+      "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+      "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
+      "xanathars-guide:spell:5aa5cf7f93be0fa149fdcd62",
+      "xanathars-guide:spell:6d32a73dbc7bf6f5fac303bd",
+      "xanathars-guide:spell:805cbf82765f6710391cc75f",
+      "xanathars-guide:spell:96d5c3265bc938448c4aef58",
+      "xanathars-guide:spell:aadf89719f073bfca1fefb3a",
+      "xanathars-guide:spell:c9d315871dc96f3fed66c29b"
+    ],
+    "once_selected": [
+      "core-phb-2024:spell:65b211e271db5fa11508dbbc",
+      "core-phb-2024:spell:6c07317bf4d16b92da3c8f55",
+      "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b",
+      "core-phb-2024:spell:85595d634b480207249dd2ac",
+      "core-phb-2024:spell:90c12635dd6eca81ebe04449",
+      "core-phb-2024:spell:9b29fbb72177f058bf1448ef",
+      "core-phb-2024:spell:9c4208ec038463dfd608ba9e",
+      "core-phb-2024:spell:a0c914f228b833357f0c2779",
+      "core-phb-2024:spell:aa17c997419ff77ab783e003",
+      "core-phb-2024:spell:ad887cac0fa7f6c2cf7c566f",
+      "core-phb-2024:spell:c724eb95e2f08220d161e608",
+      "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+      "core-phb-2024:spell:dccfb9fc9cd30b9fb8b627b0",
+      "core-phb-2024:spell:ea1d170f71d30f4ddeb84f9e",
+      "core-phb-2024:spell:eaaa6893b004c177f8237eb0",
+      "core-phb-2024:spell:ed5371dd95cf605bf1c24cd3",
+      "core-phb-2024:spell:f0e1229e39b1dfb476f90c6b",
+      "core-phb-2024:spell:fa352b4b5b77382c47bad253",
+      "fizbans-treasury:spell:843fb135e4cc8a1fb34c46be",
+      "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+      "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
+      "xanathars-guide:spell:5aa5cf7f93be0fa149fdcd62",
+      "xanathars-guide:spell:6d32a73dbc7bf6f5fac303bd",
+      "xanathars-guide:spell:805cbf82765f6710391cc75f",
+      "xanathars-guide:spell:96d5c3265bc938448c4aef58",
+      "xanathars-guide:spell:aadf89719f073bfca1fefb3a",
+      "xanathars-guide:spell:c9d315871dc96f3fed66c29b"
+    ],
+    "repeated_selected_with_invalid": [
+      "core-phb-2024:spell:65b211e271db5fa11508dbbc",
+      "core-phb-2024:spell:6c07317bf4d16b92da3c8f55",
+      "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b",
+      "core-phb-2024:spell:85595d634b480207249dd2ac",
+      "core-phb-2024:spell:90c12635dd6eca81ebe04449",
+      "core-phb-2024:spell:9b29fbb72177f058bf1448ef",
+      "core-phb-2024:spell:9c4208ec038463dfd608ba9e",
+      "core-phb-2024:spell:a0c914f228b833357f0c2779",
+      "core-phb-2024:spell:aa17c997419ff77ab783e003",
+      "core-phb-2024:spell:ad887cac0fa7f6c2cf7c566f",
+      "core-phb-2024:spell:c724eb95e2f08220d161e608",
+      "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+      "core-phb-2024:spell:dccfb9fc9cd30b9fb8b627b0",
+      "core-phb-2024:spell:ea1d170f71d30f4ddeb84f9e",
+      "core-phb-2024:spell:eaaa6893b004c177f8237eb0",
+      "core-phb-2024:spell:ed5371dd95cf605bf1c24cd3",
+      "core-phb-2024:spell:f0e1229e39b1dfb476f90c6b",
+      "core-phb-2024:spell:fa352b4b5b77382c47bad253",
+      "fizbans-treasury:spell:843fb135e4cc8a1fb34c46be",
+      "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+      "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
+      "xanathars-guide:spell:5aa5cf7f93be0fa149fdcd62",
+      "xanathars-guide:spell:6d32a73dbc7bf6f5fac303bd",
+      "xanathars-guide:spell:805cbf82765f6710391cc75f",
+      "xanathars-guide:spell:96d5c3265bc938448c4aef58",
+      "xanathars-guide:spell:aadf89719f073bfca1fefb3a",
+      "xanathars-guide:spell:c9d315871dc96f3fed66c29b"
+    ],
+    "selected_removed_once": true
+  },
   "source_bound_blockers": [
     "spell_economy.concentration.v1 only covers spell-slot/concentration state",
     "no source-complete attack rider consumer bound to the marked target",
@@ -726,5 +884,46 @@
     "bonus-action transfer after the marked target reaches 0 HP",
     "visible target and range validation for the transfer",
     "upcast concentration duration of 8 hours or 24 hours"
-  ]
+  ],
+  "source_semantics": {
+    "consumer_gap_detected": true,
+    "missing_source_semantics": [
+      "attack_rider",
+      "search_advantage",
+      "mark_transfer",
+      "transfer_constraints"
+    ],
+    "rows": [
+      {
+        "closed": false,
+        "runtime_present": false,
+        "semantic": "attack_rider",
+        "source_present": true
+      },
+      {
+        "closed": false,
+        "runtime_present": false,
+        "semantic": "search_advantage",
+        "source_present": true
+      },
+      {
+        "closed": false,
+        "runtime_present": false,
+        "semantic": "mark_transfer",
+        "source_present": true
+      },
+      {
+        "closed": false,
+        "runtime_present": false,
+        "semantic": "transfer_constraints",
+        "source_present": true
+      },
+      {
+        "closed": true,
+        "runtime_present": true,
+        "semantic": "upcast_duration",
+        "source_present": false
+      }
+    ]
+  }
 }

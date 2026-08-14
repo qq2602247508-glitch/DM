@@ -3,16 +3,21 @@
   "checks": {
     "actual_generic_consumer_probe": true,
     "all_required_checks_passed": true,
+    "consumer_gap_detected": true,
+    "duplicate_invalid_set_idempotent": true,
     "focused_nodes_passed": true,
-    "formal_database_written": false,
     "historical_xliii_sha_exact": true,
-    "name_branch_count": 0,
-    "promotion_gate_closed": false,
+    "migration_projection_matches_sets": true,
+    "production_union_deduplicated": true,
+    "production_union_fingerprint_unchanged": true,
+    "projection_unchanged": true,
     "protected_ollama_sha_exact": true,
     "selected_id_authoritative": true,
     "selected_id_not_promoted": true,
+    "selected_id_retained": true,
     "source_bound_compile": true,
-    "source_complete_consumer": false
+    "strict_loader_rejects_nonproduction_row": true,
+    "unrelated_ids_unchanged": true
   },
   "content_kind": "spell",
   "evidence_by_id": {
@@ -85,6 +90,23 @@
         "concentration",
         "target_selection"
       ]
+    }
+  },
+  "gate_facts": {
+    "promotion_gate_closed": false,
+    "source_complete_consumer": false
+  },
+  "name_branch_scan": {
+    "hits": [
+      {
+        "kind": "source_name",
+        "path": "backend/src/dnd_dm_assistant/domain/feature_runtime.py"
+      }
+    ],
+    "name_branch_count": 1,
+    "patterns": {
+      "content_id": "core-phb-2024:spell:63fb2360b8c30fb0419d9225",
+      "source_name": "猎人印记"
     }
   },
   "production_runtime_full_ids": [],
