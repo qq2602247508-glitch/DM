@@ -1,0 +1,184 @@
+{
+  "all_required_checks_passed": true,
+  "artifact_date": "2026-08-14",
+  "baseline_commit": "eec42902554ba4e085c43ca4e1d47aa15cff8bcd",
+  "canonical_projection": {
+    "after": {
+      "compile_only": 30,
+      "production": 208,
+      "unique_compiled": 111
+    },
+    "expected": {
+      "compile_only": 30,
+      "production": 208,
+      "unique_compiled": 111
+    }
+  },
+  "checks": {
+    "all_required_checks_passed": true,
+    "generic_consumer_only": true,
+    "historical_xliii_sha": true,
+    "isolated_receipt_snapshot_transaction": true,
+    "name_branch_count": 0,
+    "named_nodes": true,
+    "protected_ollama_sha": true,
+    "six_modes_present": true,
+    "source_compile_full": true
+  },
+  "decision": "promote_prestidigitation_through_generic_object_effect_lifecycle",
+  "evidence_artifact": "data/content-ir/compiled/production-runtime-results-LIII.json",
+  "evidence_mechanism": "source-bound SpellSpec compile, named focused nodes, isolated migrated SQLite API receipt with persisted snapshot and OperationTransaction",
+  "historical_artifact_sha256": {
+    "backend_tests_ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3",
+    "round_xliii_report": "98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f"
+  },
+  "no_push": true,
+  "protected_fingerprints": {
+    "backend/tests/integrations/": {
+      "exists": true,
+      "files": [
+        {
+          "path": "backend/tests/integrations/__init__.py",
+          "sha256": "6ce04916a68d2104f8bce9b463cdcfa2e2587d7c539066b53900e21f44c2c107"
+        },
+        {
+          "path": "backend/tests/integrations/__pycache__/__init__.cpython-312.pyc",
+          "sha256": "ad7447a8930adc1be4b1c13b724fd24be491899c2f718a552c716d9f2c69b02c"
+        },
+        {
+          "path": "backend/tests/integrations/__pycache__/__init__.cpython-314.pyc",
+          "sha256": "16c56843431bc501eeae84552a1a1c34cd9b4efff43186c9d603a5e8adfd9c7d"
+        },
+        {
+          "path": "backend/tests/integrations/__pycache__/ollama.cpython-312.pyc",
+          "sha256": "97b0036c435bfa0d406c1e2ebf107bb8b128fb693ebfb04260933aa6209ecea7"
+        },
+        {
+          "path": "backend/tests/integrations/__pycache__/ollama.cpython-314.pyc",
+          "sha256": "f1faf3e445fd7360f6ca92fde400e38b71f1f3a6f785537c8c3ba68993641c73"
+        },
+        {
+          "path": "backend/tests/integrations/__pycache__/qdrant_store.cpython-312.pyc",
+          "sha256": "6bc14222a74f728c3069c7e94a0dcde5f88138306318c162bc8b43e8a8aba433"
+        },
+        {
+          "path": "backend/tests/integrations/__pycache__/qdrant_store.cpython-314.pyc",
+          "sha256": "2e3f9526ee63c50d827f6a5b2c2270445304cde0898983e8582c2a06a354d4dd"
+        },
+        {
+          "path": "backend/tests/integrations/__pycache__/runtime.cpython-312.pyc",
+          "sha256": "804a278d962979486c80c271dc3cf8c5407d9352baf61be76d91eede6b7867f4"
+        },
+        {
+          "path": "backend/tests/integrations/__pycache__/runtime.cpython-314.pyc",
+          "sha256": "5650977952f4aa562201ed397710ce5313c1f6bce62ef5725bf3e90789d0a169"
+        },
+        {
+          "path": "backend/tests/integrations/content/__init__.py",
+          "sha256": "01af14c2dcdc051f7a8f9ef6d549614f7fa6a9d564042063a5562898163de799"
+        },
+        {
+          "path": "backend/tests/integrations/content/__pycache__/__init__.cpython-312.pyc",
+          "sha256": "05ad7fbb6c225f78e2e41d980d66a396f1bf060f830e2607dd707b71db686d84"
+        },
+        {
+          "path": "backend/tests/integrations/content/__pycache__/__init__.cpython-314.pyc",
+          "sha256": "1829dbbc6bc0e1d889bab839c5277864500e7461d754673936d7346dd10c06a0"
+        },
+        {
+          "path": "backend/tests/integrations/content/__pycache__/classification.cpython-312.pyc",
+          "sha256": "625f6a3615f44079f2818f76bfcb6d2ceb6a0b22b1a7279902111e58dcdd4ba6"
+        },
+        {
+          "path": "backend/tests/integrations/content/__pycache__/classification.cpython-314.pyc",
+          "sha256": "93d675f51cf1253cf900c9fe839d4b8e2dbb11b6c6eaab1d7f0e24b8fd493c5d"
+        },
+        {
+          "path": "backend/tests/integrations/content/__pycache__/fetcher.cpython-312.pyc",
+          "sha256": "55dcf13f7e4cfd762775a8bb66cdb441064c6c7929ad71a912c25e85033eb26d"
+        },
+        {
+          "path": "backend/tests/integrations/content/__pycache__/fetcher.cpython-314.pyc",
+          "sha256": "82657dde1563dce2347f4ec3153ec18d7e66bb78365936bdb37de415fd8531e9"
+        },
+        {
+          "path": "backend/tests/integrations/content/__pycache__/navigation.cpython-312.pyc",
+          "sha256": "2a9a0e97e7a8399d89cc9d75fea6fabae70190c0b9633f4254f5bba8617f536b"
+        },
+        {
+          "path": "backend/tests/integrations/content/__pycache__/navigation.cpython-314.pyc",
+          "sha256": "799900a2463bb95655cf45eecda35d418e815a0465dac6e8a6ef30a31b07e177"
+        },
+        {
+          "path": "backend/tests/integrations/content/__pycache__/parser.cpython-312.pyc",
+          "sha256": "384bc064102187c3c9bceda2f92af804e71e367aa4fc470e7297461470e18ca4"
+        },
+        {
+          "path": "backend/tests/integrations/content/__pycache__/parser.cpython-314.pyc",
+          "sha256": "218252702fc82a0d3162b3b726c21e62fa45e0f9ed7532a11d2b193e5428b98e"
+        },
+        {
+          "path": "backend/tests/integrations/content/__pycache__/repository.cpython-312.pyc",
+          "sha256": "c256d2fce1ea6a4fca43f68b381c9dd50f7e5c27eeef660e23433cc3a4a0d2d7"
+        },
+        {
+          "path": "backend/tests/integrations/content/__pycache__/repository.cpython-314.pyc",
+          "sha256": "35f20fcd81a078f22d478d6e076cb3d5bc884db6ccc22dfb74e86a23ca2901fb"
+        },
+        {
+          "path": "backend/tests/integrations/content/__pycache__/url_policy.cpython-312.pyc",
+          "sha256": "ee61a4f32ef76aa65a7b12f0a3993e442edfbc10f2f4f28950224271f84f6b2e"
+        },
+        {
+          "path": "backend/tests/integrations/content/__pycache__/url_policy.cpython-314.pyc",
+          "sha256": "f3fc384651d47ba7720700f12b354cb0523322c0d582b9bea90a20546c00e1f1"
+        },
+        {
+          "path": "backend/tests/integrations/content/classification.py",
+          "sha256": "5c7413be2e4545ebeebdabf57d36c5ebebd092a8c62cda244686e5ae318ac165"
+        },
+        {
+          "path": "backend/tests/integrations/content/fetcher.py",
+          "sha256": "23e46c451b6ccb28d3522f6217d47a2c11c8c8e9107fa4749ebe527fd695285c"
+        },
+        {
+          "path": "backend/tests/integrations/content/navigation.py",
+          "sha256": "8531449d1d6629914152f01629879c876f735f060a0076f88bdea25bc49d6109"
+        },
+        {
+          "path": "backend/tests/integrations/content/parser.py",
+          "sha256": "aed06d5a1eaff01047f799407f77e2d1b38861b9ddb1da914daf7b1e5fbc88d7"
+        },
+        {
+          "path": "backend/tests/integrations/content/repository.py",
+          "sha256": "bd2fbfbd50c0d20d25408c8e6ca13854e7a686ce0821c0998bca4e841c499c8b"
+        },
+        {
+          "path": "backend/tests/integrations/content/url_policy.py",
+          "sha256": "7237c187158aac82078cb11266b755b3329f66c87c584a10bba29e9c8ab1c48e"
+        },
+        {
+          "path": "backend/tests/integrations/ollama.py",
+          "sha256": "945069ad06b2f6248bc5e5874c4563caa59f301e681087bc4b07ac7bf78c2857"
+        },
+        {
+          "path": "backend/tests/integrations/qdrant_store.py",
+          "sha256": "89fe68687c968dfa0677ab69b3e56314531aff80a295a7ca4c8093cb83950955"
+        },
+        {
+          "path": "backend/tests/integrations/runtime.py",
+          "sha256": "82d92d313c0399faa28230bb81ade3ce2912d46eaa7c671d2c27b8f44734c41e"
+        }
+      ],
+      "manifest_sha256": "a0c105fa872ae4ede649693b2640009f6dc65d3addfb4813b28866a3e6f7d08d"
+    },
+    "backend/tests/ollama.py": {
+      "exists": true,
+      "sha256": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+    }
+  },
+  "report_fingerprint": "ea086c5aeeceaffe2955ac5ff0dcc716bd7343d0581ce2106b510e54f9ad663b",
+  "round_id": "round-LIII",
+  "schema_version": "round-LIII-prestidigitation-object-effect-1",
+  "selected_consumer": "spell.object_effect.lifecycle.v1"
+}

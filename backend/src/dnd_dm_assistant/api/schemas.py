@@ -2587,6 +2587,38 @@ class ContentIRRuntimeRequest(BaseModel):
     illusion_research_action: Literal["research"] | None = None
     illusion_investigation_total: int | None = Field(default=None, ge=-100, le=1000)
     illusion_termination_reason: Literal["expiry", "terminate"] | None = None
+    object_effect_mode: Literal[
+        "sensory_effect",
+        "fire_play",
+        "clean_or_soil",
+        "minor_sensation",
+        "magic_mark",
+        "minor_creation",
+    ] | None = None
+    object_effect_target_kind: Literal[
+        "none",
+        "object",
+        "surface",
+        "fire_source",
+        "nonliving_material",
+        "creation_space",
+    ] | None = None
+    object_effect_target_id: str | None = Field(default=None, max_length=200)
+    object_effect_distance_ft: int | None = Field(default=None, ge=0, le=10_000)
+    object_effect_size_cubic_ft: float | None = Field(default=None, ge=0, le=100)
+    object_effect_nonliving: bool = False
+    object_effect_sensory_kind: str | None = Field(default=None, max_length=80)
+    object_effect_fire_source: Literal["candle", "torch", "small_campfire"] | None = None
+    object_effect_operation: Literal["ignite", "extinguish", "clean", "soil"] | None = None
+    object_effect_sensation: Literal["warm", "cool", "season"] | None = None
+    object_effect_mark_kind: str | None = Field(default=None, max_length=80)
+    object_effect_creation_kind: Literal["trinket", "illusory_image"] | None = None
+    object_effect_nonmagical: bool = False
+    object_effect_no_damage: bool = False
+    object_effect_no_value: bool = False
+    object_effect_current_turn: int = Field(default=0, ge=0, le=1_000_000)
+    object_effect_termination_reason: Literal["dismiss", "expiry"] | None = None
+    object_effect_id: str | None = Field(default=None, max_length=300)
     origin_id: str | None = Field(default=None, min_length=1, max_length=36)
     summon_choice: str | None = Field(default=None, min_length=1, max_length=80)
     area_shape: Literal["cone", "line", "cube", "sphere", "cylinder"] | None = None

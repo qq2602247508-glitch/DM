@@ -9,10 +9,16 @@
       "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
       "source_excerpt": " Play。**你立即点燃或熄灭一根蜡烛、一根火把或一处小篝火。 > **清洁或弄脏Clean or > Soil。**你立即清洁或弄脏一个体积不大于1立方尺的物件。 > **次级感觉Minor > Sensation。**你使一个不大于1立方尺的非活体物质变冷、变暖或对其调味，持续1小时。 > **魔法印记Magic > Mark。**你在一个物件或一个表面上创造一块色斑，一个小印记，或者一个徽记，持续1小时。 > **次级造物Minor > Creation。**你创造出一个非魔法小饰品或一张虚幻图像，其大小不能超过你的手掌大小，它会持续存在至下个你的回合结束为止。一个小饰品不能造成伤害，也不值任何钱。",
       "source_heading": "魔法伎俩"
+    },
+    "object_effect_lifecycle": {
+      "boundary_rule": "one authored clause maps to the complete quoted effect-selection paragraph",
+      "source_excerpt": "你在施法距离内创造一个魔法效应。从下述效应中选择一项。如果你多次施展该法术，则可以同时维持至多三个不同的非即时效应。",
+      "source_heading": "魔法伎俩"
     }
   },
   "clause_identity": [
-    "core-phb-2024:spell:b9db026fa1853bca5b6f1c13:target"
+    "core-phb-2024:spell:b9db026fa1853bca5b6f1c13:target",
+    "core-phb-2024:spell:b9db026fa1853bca5b6f1c13:object_effect_lifecycle"
   ],
   "clauses": [
     {
@@ -22,6 +28,65 @@
       "kind": "object",
       "type": "target_selection",
       "visibility": "visible"
+    },
+    {
+      "clause_id": "object_effect_lifecycle",
+      "type": "object_effect_lifecycle",
+      "resolution_kind": "object_effect_lifecycle",
+      "range_ft": 10,
+      "max_concurrent_noninstant": 3,
+      "modes": [
+        {
+          "mode": "sensory_effect",
+          "lifecycle": "instant",
+          "target_kinds": ["none"],
+          "harmless": true
+        },
+        {
+          "mode": "fire_play",
+          "lifecycle": "instant",
+          "target_kinds": ["fire_source"],
+          "fire_sources": ["candle", "torch", "small_campfire"],
+          "operations": ["ignite", "extinguish"]
+        },
+        {
+          "mode": "clean_or_soil",
+          "lifecycle": "instant",
+          "target_kinds": ["object"],
+          "max_size_cubic_ft": 1,
+          "operations": ["clean", "soil"]
+        },
+        {
+          "mode": "minor_sensation",
+          "lifecycle": "timed",
+          "target_kinds": ["nonliving_material"],
+          "max_size_cubic_ft": 1,
+          "nonliving": true,
+          "sensations": ["warm", "cool", "season"],
+          "duration_unit": "hours",
+          "duration_value": 1
+        },
+        {
+          "mode": "magic_mark",
+          "lifecycle": "timed",
+          "target_kinds": ["object", "surface"],
+          "mark_kinds": ["stain", "small_mark", "sigil"],
+          "duration_unit": "hours",
+          "duration_value": 1
+        },
+        {
+          "mode": "minor_creation",
+          "lifecycle": "timed",
+          "target_kinds": ["creation_space"],
+          "creation_kinds": ["trinket", "illusory_image"],
+          "max_size": "palm",
+          "duration_unit": "next_turn_end",
+          "nonmagical": true,
+          "no_damage": true,
+          "no_value": true
+        }
+      ],
+      "evidence_ref": "object_effect_lifecycle: source effect-selection paragraph"
     }
   ],
   "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",

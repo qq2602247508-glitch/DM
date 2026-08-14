@@ -70,6 +70,11 @@ from dnd_dm_assistant.domain.typed_spell_illusion_lifecycle import (
     inspect_typed_spell_illusion,
     terminate_typed_spell_illusion,
 )
+from dnd_dm_assistant.domain.typed_spell_object_effect_lifecycle import (
+    TypedSpellObjectEffectSpec,
+    apply_typed_spell_object_effect,
+    terminate_typed_spell_object_effect,
+)
 from dnd_dm_assistant.domain.typed_spell_timed_modifiers import (
     TypedSpellTimedModifierSpec,
     apply_typed_spell_timed_modifier,
@@ -118,6 +123,17 @@ def _illusion_runtime_now() -> datetime:
             value = datetime.fromisoformat(fixed)
         except ValueError as exc:
             raise ValueError("DND_DM_ILLUSION_NOW must be an ISO-8601 datetime") from exc
+        return value.astimezone(UTC) if value.tzinfo else value.replace(tzinfo=UTC)
+    return datetime.now(UTC)
+
+
+def _object_effect_runtime_now() -> datetime:
+    fixed = os.environ.get("DND_DM_OBJECT_EFFECT_NOW", "").strip()
+    if fixed:
+        try:
+            value = datetime.fromisoformat(fixed)
+        except ValueError as exc:
+            raise ValueError("DND_DM_OBJECT_EFFECT_NOW must be an ISO-8601 datetime") from exc
         return value.astimezone(UTC) if value.tzinfo else value.replace(tzinfo=UTC)
     return datetime.now(UTC)
 
@@ -2763,6 +2779,67 @@ class ContentIRRuntimeService:
         )
         return {"spec": spec, "target_version": int(data.get("actor_version") or 0)}
 
+    @classmethod
+    def _spell_object_effect_contract(
+        cls,
+        data: Mapping[str, Any],
+        blocks: Mapping[str, list[dict[str, Any]]],
+        *,
+        runtime_id: str,
+        runtime_source: Mapping[str, Any],
+        actor_id: str,
+    ) -> dict[str, Any] | None:
+        clauses = [
+            cls._parameters(block)
+            for block in blocks.get("object_effect_lifecycle", [])
+            if cls._parameters(block).get("resolution_kind") == "object_effect_lifecycle"
+        ]
+        if not clauses:
+            return None
+        if len(clauses) != 1:
+            raise ValueError("typed object effect runtime requires exactly one lifecycle contract")
+        clause = clauses[0]
+        target = cls._first_parameters(blocks, "target_selection")
+        source_record_id = _text(runtime_source.get("source_record_id"))
+        source_fingerprint = _text(runtime_source.get("source_fingerprint"))
+        if not source_record_id or len(source_fingerprint) != 64:
+            raise ValueError("typed object effect runtime requires source provenance")
+        spec = TypedSpellObjectEffectSpec(
+            content_id=runtime_id,
+            source_record_id=source_record_id,
+            source_fingerprint=source_fingerprint,
+            clause_id=_text(clause.get("clause_id")) or "object_effect_lifecycle",
+            source_id=runtime_id,
+            range_ft=int(clause.get("range_ft") or 0),
+            max_concurrent_noninstant=int(clause.get("max_concurrent_noninstant") or 0),
+            modes=tuple(dict(item) for item in clause.get("modes", []) if isinstance(item, Mapping)),
+        )
+        target_kind = _text(data.get("object_effect_target_kind") or "none")
+        payload = {
+            "sensory_kind": data.get("object_effect_sensory_kind"),
+            "fire_source": data.get("object_effect_fire_source"),
+            "operation": data.get("object_effect_operation"),
+            "sensation": data.get("object_effect_sensation"),
+            "mark_kind": data.get("object_effect_mark_kind"),
+            "creation_kind": data.get("object_effect_creation_kind"),
+            "nonmagical": bool(data.get("object_effect_nonmagical")),
+            "no_damage": bool(data.get("object_effect_no_damage")),
+            "no_value": bool(data.get("object_effect_no_value")),
+        }
+        return {
+            "spec": spec,
+            "mode": _text(data.get("object_effect_mode")),
+            "target_kind": target_kind,
+            "target_id": _text(data.get("object_effect_target_id")) or None,
+            "distance_ft": int(data.get("object_effect_distance_ft") or 0),
+            "size_cubic_ft": data.get("object_effect_size_cubic_ft"),
+            "nonliving": bool(data.get("object_effect_nonliving")),
+            "payload": payload,
+            "current_turn": int(data.get("object_effect_current_turn") or 0),
+            "actor_id": actor_id,
+            "target_contract": target,
+        }
+
     @staticmethod
     def _expire_spell_timed_modifiers(target: Combatant, now: datetime) -> None:
         snapshot = dict(target.snapshot_json or {})
@@ -3675,6 +3752,15 @@ class ContentIRRuntimeService:
                 else {},
                 actor_id=actor.id,
             )
+            object_effect_contract = self._spell_object_effect_contract(
+                execution_data,
+                blocks,
+                runtime_id=_text(runtime.get("spell_id")),
+                runtime_source=runtime.get("source")
+                if isinstance(runtime.get("source"), Mapping)
+                else {},
+                actor_id=actor.id,
+            )
             if communication_route_contract is not None:
                 route_target = session.get(
                     Combatant, communication_route_contract["target_id"]
@@ -3789,6 +3875,7 @@ class ContentIRRuntimeService:
                 or communication_route_contract is not None
                 or communication_capability_contract is not None
                 or illusion_contract is not None
+                or object_effect_contract is not None
                 or summon_contract is not None
                 else self._spell_commands(execution_data, blocks)
             )
@@ -3872,6 +3959,19 @@ class ContentIRRuntimeService:
                             },
                         }
                         if illusion_contract is not None
+                        else None
+                    ),
+                    "object_effect_lifecycle": (
+                        {
+                            **object_effect_contract["spec"].as_dict(),
+                            "selected_mode": object_effect_contract["mode"],
+                            "target_kind": object_effect_contract["target_kind"],
+                            "target_id": object_effect_contract["target_id"],
+                            "distance_ft": object_effect_contract["distance_ft"],
+                            "size_cubic_ft": object_effect_contract["size_cubic_ft"],
+                            "current_turn": object_effect_contract["current_turn"],
+                        }
+                        if object_effect_contract is not None
                         else None
                     ),
                     "summon": summon_preview,
@@ -5153,6 +5253,174 @@ class ContentIRRuntimeService:
             operation.after_snapshot = dict(output)
             return output
 
+    def _confirm_spell_object_effect(
+        self,
+        campaign_id: str,
+        data: Mapping[str, Any],
+        *,
+        key: str,
+        token: str,
+        contract: Mapping[str, Any],
+        spell_done: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        with Session(self.engine) as session, session.begin():
+            operation_key = f"content-ir:{key}:object-effect"
+            existing = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == campaign_id,
+                    OperationTransaction.idempotency_key == operation_key,
+                )
+            )
+            if existing is not None:
+                previous = dict(existing.after_snapshot or {})
+                if _text(previous.get("preview_token")) != token:
+                    raise ValueError("object effect operation replay payload does not match")
+                return {**previous, "already_applied": True}
+            actor = session.get(Combatant, _text(data.get("actor_combatant_id")))
+            if actor is None:
+                raise StateNotFoundError("object effect actor not found")
+            expected = int(data.get("actor_version") or 0)
+            if actor.version != expected:
+                raise VersionConflict("combatant", actor.id, expected, actor.version)
+            before = {
+                "actor": {
+                    "id": actor.id,
+                    "version": actor.version,
+                    "snapshot_json": deepcopy(actor.snapshot_json or {}),
+                }
+            }
+            snapshot = dict(actor.snapshot_json or {})
+            state = {
+                "version": int(snapshot.get("object_effect_version") or 0),
+                "object_effects": list(snapshot.get("object_effects") or []),
+            }
+            updated, receipt = apply_typed_spell_object_effect(
+                contract["spec"],
+                state=state,
+                expected_version=state["version"],
+                now=_object_effect_runtime_now(),
+                mode=_text(contract["mode"]),
+                target_kind=_text(contract["target_kind"]),
+                target_id=contract.get("target_id"),
+                distance_ft=int(contract["distance_ft"]),
+                size_cubic_ft=contract.get("size_cubic_ft"),
+                nonliving=bool(contract["nonliving"]),
+                payload=contract["payload"],
+                current_turn=int(contract["current_turn"]),
+            )
+            snapshot["object_effect_version"] = updated["version"]
+            snapshot["object_effects"] = updated["object_effects"]
+            actor.snapshot_json = snapshot
+            actor.version += 1
+            output = {
+                "schema_version": PRODUCTION_SCHEMA,
+                "runtime_id": _text(data.get("runtime_id")),
+                "production_runtime_full": True,
+                "preview_token": token,
+                "consumer": "spell.object_effect.lifecycle.v1",
+                "spell_cast": dict(spell_done),
+                "object_effect_receipt": receipt.as_dict(),
+                "object_effect_payload": {
+                    "mode": contract["mode"],
+                    "target_kind": contract["target_kind"],
+                    "target_id": contract.get("target_id"),
+                    "distance_ft": contract["distance_ft"],
+                    "size_cubic_ft": contract.get("size_cubic_ft"),
+                    **dict(contract["payload"]),
+                    "current_turn": contract["current_turn"],
+                },
+                "actor_combatant_id": actor.id,
+                "actor_version_after": actor.version,
+                "persisted_snapshot": {
+                    "object_effect_version": snapshot["object_effect_version"],
+                    "object_effects": snapshot["object_effects"],
+                },
+            }
+            operation = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="content_ir_object_effect_lifecycle",
+                idempotency_key=operation_key,
+                status="applied",
+                before_snapshot=before,
+                after_snapshot=output,
+                reason="source-bound generic object effect lifecycle confirmed",
+                source="combat",
+                confirmed_at=datetime.now(UTC),
+            )
+            session.add(operation)
+            session.flush()
+            output["operation_transaction_id"] = operation.id
+            operation.after_snapshot = dict(output)
+            return output
+
+    def terminate_spell_object_effect(
+        self, campaign_id: str, data: Mapping[str, Any]
+    ) -> dict[str, Any]:
+        key = _text(data.get("idempotency_key"))
+        if len(key) < 8:
+            raise ValueError("object effect termination idempotency_key is required")
+        with Session(self.engine) as session, session.begin():
+            operation_key = f"content-ir:{key}:object-effect-termination"
+            existing = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == campaign_id,
+                    OperationTransaction.idempotency_key == operation_key,
+                )
+            )
+            if existing is not None:
+                return {**dict(existing.after_snapshot or {}), "already_applied": True}
+            actor = session.get(Combatant, _text(data.get("actor_combatant_id")))
+            combat = session.get(Combat, actor.combat_id) if actor is not None else None
+            if actor is None or combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("object effect actor not found")
+            expected = int(data.get("actor_version") or 0)
+            if actor.version != expected:
+                raise VersionConflict("combatant", actor.id, expected, actor.version)
+            snapshot = dict(actor.snapshot_json or {})
+            state = {
+                "version": int(snapshot.get("object_effect_version") or 0),
+                "object_effects": list(snapshot.get("object_effects") or []),
+            }
+            updated, receipt = terminate_typed_spell_object_effect(
+                state,
+                expected_version=state["version"],
+                effect_id=_text(data.get("object_effect_id")),
+                reason=_text(data.get("object_effect_termination_reason")),
+                now=_object_effect_runtime_now(),
+                current_turn=int(data.get("object_effect_current_turn") or 0),
+            )
+            snapshot["object_effect_version"] = updated["version"]
+            snapshot["object_effects"] = updated["object_effects"]
+            actor.snapshot_json = snapshot
+            actor.version += 1
+            output = {
+                "schema_version": PRODUCTION_SCHEMA,
+                "consumer": "spell.object_effect.lifecycle.v1",
+                "actor_combatant_id": actor.id,
+                "actor_version_after": actor.version,
+                "object_effect_receipt": receipt.as_dict(),
+                "persisted_snapshot": {
+                    "object_effect_version": snapshot["object_effect_version"],
+                    "object_effects": snapshot["object_effects"],
+                },
+            }
+            operation = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="content_ir_object_effect_termination",
+                idempotency_key=operation_key,
+                status="applied",
+                before_snapshot={"actor_version": expected},
+                after_snapshot=output,
+                reason="explicit object effect lifecycle termination",
+                source="combat",
+                confirmed_at=datetime.now(UTC),
+            )
+            session.add(operation)
+            session.flush()
+            output["operation_transaction_id"] = operation.id
+            operation.after_snapshot = dict(output)
+            return output
+
     def confirm(self, campaign_id: str, data: dict[str, Any]) -> dict[str, Any]:
         if _text(data.get("content_kind")) == "advancement":
             return self._confirm_advancement(campaign_id, data)
@@ -5197,6 +5465,14 @@ class ContentIRRuntimeService:
                         == f"content-ir:{key}:illusion",
                     )
                 )
+            if existing is None:
+                existing = session.scalar(
+                    select(OperationTransaction).where(
+                        OperationTransaction.campaign_id == campaign_id,
+                        OperationTransaction.idempotency_key
+                        == f"content-ir:{key}:object-effect",
+                    )
+                )
             if existing is not None:
                 previous = dict(existing.after_snapshot or {})
                 if existing.idempotency_key.endswith(":illusion"):
@@ -5213,6 +5489,48 @@ class ContentIRRuntimeService:
                     }
                     if not isinstance(prior, Mapping) or submitted != prior:
                         raise ValueError("illusion operation replay payload does not match")
+                if existing.idempotency_key.endswith(":object-effect"):
+                    if _text(previous.get("preview_token")) != _text(data.get("preview_token")):
+                        raise ValueError("object effect operation replay payload does not match")
+                    prior = previous.get("object_effect_payload")
+                    submitted = {
+                        "mode": data.get("object_effect_mode"),
+                        "target_kind": data.get("object_effect_target_kind"),
+                        "target_id": data.get("object_effect_target_id"),
+                        "distance_ft": data.get("object_effect_distance_ft"),
+                        "size_cubic_ft": data.get("object_effect_size_cubic_ft"),
+                        "sensory_kind": data.get("object_effect_sensory_kind"),
+                        "fire_source": data.get("object_effect_fire_source"),
+                        "operation": data.get("object_effect_operation"),
+                        "sensation": data.get("object_effect_sensation"),
+                        "mark_kind": data.get("object_effect_mark_kind"),
+                        "creation_kind": data.get("object_effect_creation_kind"),
+                        "nonmagical": bool(data.get("object_effect_nonmagical")),
+                        "no_damage": bool(data.get("object_effect_no_damage")),
+                        "no_value": bool(data.get("object_effect_no_value")),
+                        "current_turn": data.get("object_effect_current_turn"),
+                    }
+                    if not isinstance(prior, Mapping):
+                        raise ValueError("object effect operation replay payload is incomplete")
+                    normalized_prior = {
+                        "mode": prior.get("mode"),
+                        "target_kind": prior.get("target_kind"),
+                        "target_id": prior.get("target_id"),
+                        "distance_ft": prior.get("distance_ft"),
+                        "size_cubic_ft": prior.get("size_cubic_ft"),
+                        "sensory_kind": prior.get("sensory_kind"),
+                        "fire_source": prior.get("fire_source"),
+                        "operation": prior.get("operation"),
+                        "sensation": prior.get("sensation"),
+                        "mark_kind": prior.get("mark_kind"),
+                        "creation_kind": prior.get("creation_kind"),
+                        "nonmagical": prior.get("nonmagical"),
+                        "no_damage": prior.get("no_damage"),
+                        "no_value": prior.get("no_value"),
+                        "current_turn": prior.get("current_turn"),
+                    }
+                    if submitted != normalized_prior:
+                        raise ValueError("object effect operation replay payload does not match")
                 if existing.idempotency_key.endswith(":communication"):
                     communication = previous.get("communication")
                     if (
@@ -5474,6 +5792,15 @@ class ContentIRRuntimeService:
                 else {},
                 actor_id=_text(data.get("actor_combatant_id")),
             )
+            object_effect_contract = self._spell_object_effect_contract(
+                execution_data,
+                blocks,
+                runtime_id=_text(runtime.get("spell_id")),
+                runtime_source=runtime.get("source")
+                if isinstance(runtime.get("source"), Mapping)
+                else {},
+                actor_id=_text(data.get("actor_combatant_id")),
+            )
             summon_contract = self._spell_summon_contract(
                 execution_data,
                 blocks,
@@ -5499,6 +5826,15 @@ class ContentIRRuntimeService:
                     key=key,
                     token=token,
                     contract=illusion_contract,
+                    spell_done=spell_done,
+                )
+            elif object_effect_contract is not None:
+                combat_done = self._confirm_spell_object_effect(
+                    campaign_id,
+                    data,
+                    key=key,
+                    token=token,
+                    contract=object_effect_contract,
                     spell_done=spell_done,
                 )
             elif communication_route_contract is not None:
@@ -5567,6 +5903,7 @@ class ContentIRRuntimeService:
                 or defense_contract is not None
                 or summon_contract is not None
                 or illusion_contract is not None
+                or object_effect_contract is not None
             ):
                 pass
             elif commands is not None:
@@ -5629,6 +5966,7 @@ class ContentIRRuntimeService:
             or communication_route_contract is not None
             or timed_modifier_contract is not None
             or illusion_contract is not None
+            or object_effect_contract is not None
         ):
             return dict(combat_done)
         output = {
@@ -5637,7 +5975,9 @@ class ContentIRRuntimeService:
             "production_runtime_full": True,
             "preview_token": token,
             "consumer": (
-                "spell.timed_modifier.v1"
+                "spell.object_effect.lifecycle.v1"
+                if object_effect_contract is not None
+                else "spell.timed_modifier.v1"
                 if timed_modifier_contract is not None
                 else "spell.defense.v1"
                 if defense_contract is not None

@@ -142,6 +142,33 @@ _CONSUMERS: dict[str, dict[str, Any]] = {
         "idempotency_scope": "campaign_content_ir_and_spell_cast",
         "snapshot_effects": ("illusion_envelope", "inspection", "expiry", "termination", "audit"),
     },
+    "spell.object_effect.lifecycle.v1": {
+        "content_kind": "spell",
+        "runtime_schema_version": "spell-runtime-1",
+        "clause_types": ("object_effect_lifecycle", "target_selection"),
+        "required_fields": (
+            "character_id",
+            "character_version",
+            "known_spell_id",
+            "slot_level",
+            "actor_combatant_id",
+            "actor_version",
+            "object_effect_mode",
+            "object_effect_target_kind",
+            "object_effect_distance_ft",
+        ),
+        "required_services": ("combat_engine.object_effect_lifecycle",),
+        "transaction_boundary": "spell_cast_with_object_effect_lifecycle_and_rollback_boundary",
+        "cas_entities": ("character", "actor_combatant"),
+        "idempotency_scope": "campaign_content_ir_and_spell_cast",
+        "snapshot_effects": (
+            "object_effects",
+            "expiry",
+            "dismissal",
+            "three_slot_concurrency",
+            "audit",
+        ),
+    },
     "combat_engine.condition_lifecycle.v1": {
         "content_kind": "spell_or_feature",
         "runtime_schema_version": "spell-runtime-1|feature-runtime-1",
@@ -517,6 +544,7 @@ _ALLOWED_SPELL_BLOCKS = {
     "communication_route",
     "communication_capability",
     "illusion_lifecycle",
+    "object_effect_lifecycle",
 }
 
 _ALLOWED_ITEM_CLAUSES = {
@@ -634,6 +662,17 @@ def resolve_production_consumers(
             if illusion.get("resolution_kind") != "illusion_lifecycle":
                 raise ValueError("unsupported illusion lifecycle resolution")
             resolved.append("spell.illusion.lifecycle.v1")
+        if blocks.get("object_effect_lifecycle"):
+            if not blocks.get("target_selection"):
+                raise ValueError("object effect lifecycle requires typed target")
+            if len(blocks["object_effect_lifecycle"]) != 1:
+                raise ValueError(
+                    "spell runtime requires exactly one object effect lifecycle contract"
+                )
+            object_effect = blocks["object_effect_lifecycle"][0]
+            if object_effect.get("resolution_kind") != "object_effect_lifecycle":
+                raise ValueError("unsupported object effect lifecycle resolution")
+            resolved.append("spell.object_effect.lifecycle.v1")
         if _has_effect(blocks, "summon_or_creation"):
             if not blocks.get("target_selection"):
                 raise ValueError("summon runtime requires a typed target selection")

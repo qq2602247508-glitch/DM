@@ -3548,3 +3548,26 @@ git diff --check
 - Protected `backend/tests/ollama.py` SHA: `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`.
 - Historical Round XLIII report SHA: `98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f`.
 - No push. Next viable work is a name-agnostic illusion lifecycle/inspection consumer or a name-agnostic multi-mode object-effect lifecycle consumer.
+
+## 2026-08-14 Round LIII: Prestidigitation generic object-effect lifecycle
+
+- Status: `registered_production_full`; baseline
+  `eec42902554ba4e085c43ca4e1d47aa15cff8bcd`; local-only, no push.
+- Selected consumer: `spell.object_effect.lifecycle.v1`. Source IR now carries six
+  explicit modes, and the runtime has no spell-name/ID dispatch.
+- Real behavior: typed mode choice, 10-foot object/surface range, size and
+  nonliving/harmless checks, immediate/timed/next-turn expiry, three-slot
+  non-instant concurrency, dismissal, CAS, replay drift rejection, persisted
+  snapshot and `OperationTransaction`.
+- Projection from the generic loader: `208 production / 30 compile-only /
+  111 unique compiled`.
+- Full backend pytest: `1135 passed, 1 warning`; Ruff, compileall, and
+  `git diff --check` pass. Report SHA:
+  `27e7c05430d19929ed83c43876607512ca09fd69e08506ab98c13acae0068d42`;
+  artifact SHA:
+  `af454f6c25fde93294fdac50fce61c7c2fa149bc38f219f31d5605cc1b6ce79`.
+- Evidence: Round LIII doc, validator, report, artifact, and focused test file.
+- Protected `backend/tests/ollama.py` SHA remains
+  `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab`;
+  Round XLIII report SHA remains
+  `98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f`.

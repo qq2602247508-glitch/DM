@@ -881,6 +881,31 @@ feature binding 与 spell-slot reactivation 仍保持 partial。
 - 证据：`data/content-ir/compiled/production-runtime-results-LI.json`、`reports/round-LI-utility-spell-closure-2026-08-14.json`、`scripts/validate-round-LI-utility-spell-closure.py`、`backend/tests/test_round_LI_utility_spell_retention.py`。
 - hard blockers：Disguise Self 缺 generic illusion appearance/physical inspection/Investigation-vs-DC/expiry consumer；Prestidigitation 缺 six-mode choice/object-surface lifecycle/dismissal/three-slot concurrency consumer。
 - 受保护 SHA 与 Round XLIII historical SHA 保持；无 push。
+
+## 2026-08-14 Round LIII：Prestidigitation generic object-effect lifecycle
+
+- 基线 `eec42902554ba4e085c43ca4e1d47aa15cff8bcd`；选择名称无关的
+  `spell.object_effect.lifecycle.v1`，不使用 spell-name/ID dispatch。
+- source-bound IR 显式覆盖六种模式：sensory、fire play、clean/soil、minor
+  sensation、magic mark、minor creation；同时冻结 10-foot range、object/surface
+  target、1 cubic foot/palm size、nonliving/harmless、one-hour/next-turn expiry。
+- generic consumer 真实接入 preview → confirm → spell rollback boundary →
+  actor snapshot CAS → `OperationTransaction` → exact replay/payload-drift；
+  支持 dismissal、expiry 与最多三个不同非即时 effect。
+- focused `3/3`；validator 在 isolated migrated SQLite 中序列化真实 receipt、
+  snapshot 与 transaction；Ruff、compileall、diff-check 通过。
+- generic loader-derived projection：`208 production / 30 compile-only /
+  111 unique compiled`；promotion delta `+1/-1/0`。
+- full backend pytest `1135 passed, 1 warning`；Round LIII report SHA
+  `27e7c05430d19929ed83c43876607512ca09fd69e08506ab98c13acae0068d42`，
+  artifact SHA
+  `af454f6c25fde93294fdac50fce61c7c2fa149bc38f219f31d5605cc1b6ce79`。
+- 证据：`docs/round-LIII-prestidigitation-object-effect-2026-08-14.md`、
+  `scripts/validate-round-LIII-prestidigitation-object-effect.py`、
+  `reports/round-LIII-prestidigitation-object-effect-2026-08-14.json`、
+  `data/content-ir/compiled/production-runtime-results-LIII.json`、
+  `backend/tests/test_round_LIII_prestidigitation_object_effect.py`。
+- protected SHA 与 Round XLIII historical SHA 保持；无 push。
 # 2026-08-14 — Round LII generic illusion lifecycle / inspection
 
 - Decision: promote Disguise Self only through generic `spell.illusion.lifecycle.v1`;

@@ -1,0 +1,961 @@
+{
+  "artifact_date": "2026-08-14",
+  "checks": {
+    "all_required_checks_passed": true,
+    "generic_consumer_only": true,
+    "historical_xliii_sha": true,
+    "isolated_receipt_snapshot_transaction": true,
+    "name_branch_count": 0,
+    "named_nodes": true,
+    "protected_ollama_sha": true,
+    "six_modes_present": true,
+    "source_compile_full": true
+  },
+  "content_kind": "spell",
+  "evidence_by_id": {
+    "core-phb-2024:spell:b9db026fa1853bca5b6f1c13": {
+      "authored_path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-b9db026fa1853bca5b6f1c13.json",
+      "content_id": "core-phb-2024:spell:b9db026fa1853bca5b6f1c13",
+      "content_kind": "spell",
+      "isolated_api_receipt": {
+        "operation_transaction": {
+          "after_snapshot": {
+            "actor_combatant_id": "stable-id",
+            "actor_version_after": 2,
+            "consumer": "spell.object_effect.lifecycle.v1",
+            "object_effect_payload": {
+              "creation_kind": null,
+              "current_turn": 0,
+              "distance_ft": 10,
+              "fire_source": null,
+              "mark_kind": "sigil",
+              "mode": "magic_mark",
+              "no_damage": false,
+              "no_value": false,
+              "nonmagical": false,
+              "operation": "clean",
+              "sensation": null,
+              "sensory_kind": null,
+              "size_cubic_ft": 1.0,
+              "target_id": "stable-id",
+              "target_kind": "object"
+            },
+            "object_effect_receipt": {
+              "clause_id": "stable-id",
+              "content_id": "stable-id",
+              "effect_id": "stable-id",
+              "expires_at": "stable-time",
+              "expires_turn": null,
+              "lifecycle": "timed",
+              "mode": "magic_mark",
+              "replayed": false,
+              "request_fingerprint": "stable-token",
+              "schema": "spell.object_effect.lifecycle.v1",
+              "source_fingerprint": "stable-token",
+              "source_record_id": "stable-id",
+              "state_version_after": 1,
+              "state_version_before": 0,
+              "termination": null
+            },
+            "persisted_snapshot": {
+              "object_effect_version": 1,
+              "object_effects": [
+                {
+                  "clause_id": "stable-id",
+                  "content_id": "stable-id",
+                  "distance_ft": 10,
+                  "effect_id": "stable-id",
+                  "expires_at": "stable-time",
+                  "expires_turn": null,
+                  "lifecycle": "timed",
+                  "mode": "magic_mark",
+                  "nonliving": false,
+                  "payload": {
+                    "creation_kind": null,
+                    "fire_source": null,
+                    "mark_kind": "sigil",
+                    "no_damage": false,
+                    "no_value": false,
+                    "nonmagical": false,
+                    "operation": "clean",
+                    "sensation": null,
+                    "sensory_kind": null
+                  },
+                  "size_cubic_ft": 1.0,
+                  "source_fingerprint": "stable-token",
+                  "source_record_id": "stable-id",
+                  "started_at": "stable-time",
+                  "target_id": "stable-id",
+                  "target_kind": "object",
+                  "termination": null
+                }
+              ]
+            },
+            "preview_token": "stable-token",
+            "production_runtime_full": true,
+            "runtime_id": "stable-id",
+            "schema_version": "content-ir-production-runtime-1",
+            "spell_cast": {
+              "after_concentration": null,
+              "before_concentration": null,
+              "character_id": "stable-id",
+              "character_version_after": 3,
+              "character_version_before": 2,
+              "concentration": false,
+              "confirmed": true,
+              "focus_equipment_id": "stable-id",
+              "free_cast": false,
+              "free_cast_after": 0,
+              "free_cast_before": 0,
+              "free_cast_resource_key": null,
+              "payment_before": 0,
+              "payment_cost": 0,
+              "payment_override": false,
+              "payment_resource_key": null,
+              "preview_token": "stable-token",
+              "ritual": false,
+              "rule_reference": "PHB 2024",
+              "slot_after": 2,
+              "slot_before": 2,
+              "slot_level": 1,
+              "spell": {
+                "campaign_id": "stable-id",
+                "character_id": "stable-id",
+                "created_at": "stable-time",
+                "id": "stable-id",
+                "metadata_json": {
+                  "content_ir_runtime": {
+                    "casting_time": "动作",
+                    "components": null,
+                    "concentration": false,
+                    "duration": "至多1小时",
+                    "execution_status": "ready",
+                    "kind": "spell",
+                    "level": 0,
+                    "name": "魔法伎俩",
+                    "range": "10尺",
+                    "resolution": {
+                      "attack_roll": [],
+                      "communication_capability": [],
+                      "communication_route": [],
+                      "concentration": [],
+                      "duration": [],
+                      "effects": [],
+                      "illusion_lifecycle": [],
+                      "object_effect_lifecycle": [
+                        {
+                          "clause_id": "stable-id",
+                          "evidence_ref": "object_effect_lifecycle: source effect-selection paragraph",
+                          "max_concurrent_noninstant": 3,
+                          "modes": [
+                            {
+                              "harmless": true,
+                              "lifecycle": "instant",
+                              "mode": "sensory_effect",
+                              "target_kinds": [
+                                "none"
+                              ]
+                            },
+                            {
+                              "fire_sources": [
+                                "candle",
+                                "torch",
+                                "small_campfire"
+                              ],
+                              "lifecycle": "instant",
+                              "mode": "fire_play",
+                              "operations": [
+                                "ignite",
+                                "extinguish"
+                              ],
+                              "target_kinds": [
+                                "fire_source"
+                              ]
+                            },
+                            {
+                              "lifecycle": "instant",
+                              "max_size_cubic_ft": 1,
+                              "mode": "clean_or_soil",
+                              "operations": [
+                                "clean",
+                                "soil"
+                              ],
+                              "target_kinds": [
+                                "object"
+                              ]
+                            },
+                            {
+                              "duration_unit": "hours",
+                              "duration_value": 1,
+                              "lifecycle": "timed",
+                              "max_size_cubic_ft": 1,
+                              "mode": "minor_sensation",
+                              "nonliving": true,
+                              "sensations": [
+                                "warm",
+                                "cool",
+                                "season"
+                              ],
+                              "target_kinds": [
+                                "nonliving_material"
+                              ]
+                            },
+                            {
+                              "duration_unit": "hours",
+                              "duration_value": 1,
+                              "lifecycle": "timed",
+                              "mark_kinds": [
+                                "stain",
+                                "small_mark",
+                                "sigil"
+                              ],
+                              "mode": "magic_mark",
+                              "target_kinds": [
+                                "object",
+                                "surface"
+                              ]
+                            },
+                            {
+                              "creation_kinds": [
+                                "trinket",
+                                "illusory_image"
+                              ],
+                              "duration_unit": "next_turn_end",
+                              "lifecycle": "timed",
+                              "max_size": "palm",
+                              "mode": "minor_creation",
+                              "no_damage": true,
+                              "no_value": true,
+                              "nonmagical": true,
+                              "target_kinds": [
+                                "creation_space"
+                              ]
+                            }
+                          ],
+                          "range_ft": 10,
+                          "resolution_kind": "object_effect_lifecycle",
+                          "type": "object_effect_lifecycle"
+                        }
+                      ],
+                      "saving_throw": [],
+                      "target_selection": [
+                        {
+                          "clause_id": "stable-id",
+                          "count": 1,
+                          "evidence_ref": " Play。**你立即点燃或熄灭一根蜡烛、一根火把或一处小篝火。 > **清洁或弄脏Clean or > Soil。**你立即清洁或弄脏一个体积不大于1立方尺的物件。 > **次级感觉Minor > Sensation。**你使一个不大于1立方尺的非活体物质变冷、变暖或对其调味，持续1小时。 > **魔法印记Magic > Mark。**你在一个物件或一个表面上创造一块色斑，一个小印记，或者一个徽记，持续1小时。 > **次级造物Minor > Creation。**你创造出一个非魔法小饰品或一张虚幻图像，其大小不能超过你的手掌大小，它会持续存在至下个你的回合结束为止。一个小饰品不能造成伤害，也不值任何钱。",
+                          "kind": "object",
+                          "type": "target_selection",
+                          "visibility": "visible"
+                        }
+                      ],
+                      "upcast": []
+                    },
+                    "runtime_schema_version": "spell-runtime-1",
+                    "school": "变化",
+                    "source": {
+                      "source_book": "玩家手册 2024",
+                      "source_fingerprint": "stable-token",
+                      "source_path": "玩家手册2024/法术详述/0环.htm",
+                      "source_record_id": "stable-id",
+                      "source_trust": "authored_ir"
+                    },
+                    "spell_id": "stable-id",
+                    "target": null
+                  }
+                },
+                "name": "魔法伎俩",
+                "source_reference": "PHB 2024",
+                "spell_level": 0,
+                "updated_at": "stable-time",
+                "version": 1
+              },
+              "spell_context": {
+                "component_override": null,
+                "components_ignored": false,
+                "payment_after": 0,
+                "payment_before": 0,
+                "payment_cost": 0,
+                "payment_override": null,
+                "payment_resource_key": null
+              }
+            }
+          },
+          "before_snapshot": {
+            "actor": {
+              "id": "stable-id",
+              "snapshot_json": {
+                "combat_start_state": {
+                  "concentration": {},
+                  "conditions": [],
+                  "hp": 10,
+                  "is_active": true,
+                  "max_hp_reduction": 0,
+                  "snapshot_json": {
+                    "combat_start_state": {
+                      "concentration": {},
+                      "conditions": [],
+                      "hp": 10,
+                      "is_active": true,
+                      "max_hp_reduction": 0,
+                      "temporary_hp": 0
+                    },
+                    "feature_runtime": {
+                      "actions": {},
+                      "attack_riders": [],
+                      "combat_start": {
+                        "attack_action_count": 1,
+                        "attack_slot_replacements": [],
+                        "defenses": [],
+                        "modifiers": [],
+                        "movement_modes": []
+                      },
+                      "dm_only": [],
+                      "feature_block_schema_version": "1.0",
+                      "feature_blocks": [],
+                      "feature_contracts": [],
+                      "proficiencies": [],
+                      "progression": {
+                        "class_levels": {},
+                        "proficiency_bonus": 2,
+                        "spell_slots": {},
+                        "total_level": 1
+                      },
+                      "resources": {},
+                      "schema_version": "1.2",
+                      "spellcasting": [],
+                      "triggers": []
+                    },
+                    "grid_position": {
+                      "col": 5,
+                      "row": 5
+                    }
+                  },
+                  "temporary_hp": 0
+                },
+                "feature_runtime": {
+                  "actions": {},
+                  "attack_riders": [],
+                  "combat_start": {
+                    "attack_action_count": 1,
+                    "attack_slot_replacements": [],
+                    "defenses": [],
+                    "modifiers": [],
+                    "movement_modes": []
+                  },
+                  "dm_only": [],
+                  "feature_block_schema_version": "1.0",
+                  "feature_blocks": [],
+                  "feature_contracts": [],
+                  "proficiencies": [],
+                  "progression": {
+                    "class_levels": {},
+                    "proficiency_bonus": 2,
+                    "spell_slots": {},
+                    "total_level": 1
+                  },
+                  "resources": {},
+                  "schema_version": "1.2",
+                  "spellcasting": [],
+                  "triggers": []
+                },
+                "grid_position": {
+                  "col": 5,
+                  "row": 5
+                }
+              },
+              "version": 1
+            }
+          },
+          "id": "stable-id",
+          "idempotency_key": "content-ir:round-liii-validator:object-effect",
+          "operation_type": "content_ir_object_effect_lifecycle",
+          "status": "applied"
+        },
+        "persisted_snapshot": {
+          "combat_start_state": {
+            "concentration": {},
+            "conditions": [],
+            "hp": 10,
+            "is_active": true,
+            "max_hp_reduction": 0,
+            "snapshot_json": {
+              "combat_start_state": {
+                "concentration": {},
+                "conditions": [],
+                "hp": 10,
+                "is_active": true,
+                "max_hp_reduction": 0,
+                "temporary_hp": 0
+              },
+              "feature_runtime": {
+                "actions": {},
+                "attack_riders": [],
+                "combat_start": {
+                  "attack_action_count": 1,
+                  "attack_slot_replacements": [],
+                  "defenses": [],
+                  "modifiers": [],
+                  "movement_modes": []
+                },
+                "dm_only": [],
+                "feature_block_schema_version": "1.0",
+                "feature_blocks": [],
+                "feature_contracts": [],
+                "proficiencies": [],
+                "progression": {
+                  "class_levels": {},
+                  "proficiency_bonus": 2,
+                  "spell_slots": {},
+                  "total_level": 1
+                },
+                "resources": {},
+                "schema_version": "1.2",
+                "spellcasting": [],
+                "triggers": []
+              },
+              "grid_position": {
+                "col": 5,
+                "row": 5
+              }
+            },
+            "temporary_hp": 0
+          },
+          "feature_runtime": {
+            "actions": {},
+            "attack_riders": [],
+            "combat_start": {
+              "attack_action_count": 1,
+              "attack_slot_replacements": [],
+              "defenses": [],
+              "modifiers": [],
+              "movement_modes": []
+            },
+            "dm_only": [],
+            "feature_block_schema_version": "1.0",
+            "feature_blocks": [],
+            "feature_contracts": [],
+            "proficiencies": [],
+            "progression": {
+              "class_levels": {},
+              "proficiency_bonus": 2,
+              "spell_slots": {},
+              "total_level": 1
+            },
+            "resources": {},
+            "schema_version": "1.2",
+            "spellcasting": [],
+            "triggers": []
+          },
+          "grid_position": {
+            "col": 5,
+            "row": 5
+          },
+          "object_effect_version": 1,
+          "object_effects": [
+            {
+              "clause_id": "stable-id",
+              "content_id": "stable-id",
+              "distance_ft": 10,
+              "effect_id": "stable-id",
+              "expires_at": "stable-time",
+              "expires_turn": null,
+              "lifecycle": "timed",
+              "mode": "magic_mark",
+              "nonliving": false,
+              "payload": {
+                "creation_kind": null,
+                "fire_source": null,
+                "mark_kind": "sigil",
+                "no_damage": false,
+                "no_value": false,
+                "nonmagical": false,
+                "operation": "clean",
+                "sensation": null,
+                "sensory_kind": null
+              },
+              "size_cubic_ft": 1.0,
+              "source_fingerprint": "stable-token",
+              "source_record_id": "stable-id",
+              "started_at": "stable-time",
+              "target_id": "stable-id",
+              "target_kind": "object",
+              "termination": null
+            }
+          ]
+        },
+        "preview": {
+          "combat_preview": null,
+          "compile_status": "full",
+          "preview_token": "stable-token",
+          "production_contract": {
+            "action_cost": "none",
+            "area_batch": false,
+            "caster_level": 1,
+            "communication_capability": null,
+            "communication_route": null,
+            "consumers": [
+              "spell.object_effect.lifecycle.v1"
+            ],
+            "content_kind": "spell",
+            "defense": null,
+            "illusion_lifecycle": null,
+            "known_spell_id": "stable-id",
+            "object_effect_lifecycle": {
+              "clause_id": "stable-id",
+              "content_id": "stable-id",
+              "current_turn": 0,
+              "distance_ft": 10,
+              "max_concurrent_noninstant": 3,
+              "modes": [
+                {
+                  "harmless": true,
+                  "lifecycle": "instant",
+                  "mode": "sensory_effect",
+                  "target_kinds": [
+                    "none"
+                  ]
+                },
+                {
+                  "fire_sources": [
+                    "candle",
+                    "torch",
+                    "small_campfire"
+                  ],
+                  "lifecycle": "instant",
+                  "mode": "fire_play",
+                  "operations": [
+                    "ignite",
+                    "extinguish"
+                  ],
+                  "target_kinds": [
+                    "fire_source"
+                  ]
+                },
+                {
+                  "lifecycle": "instant",
+                  "max_size_cubic_ft": 1,
+                  "mode": "clean_or_soil",
+                  "operations": [
+                    "clean",
+                    "soil"
+                  ],
+                  "target_kinds": [
+                    "object"
+                  ]
+                },
+                {
+                  "duration_unit": "hours",
+                  "duration_value": 1,
+                  "lifecycle": "timed",
+                  "max_size_cubic_ft": 1,
+                  "mode": "minor_sensation",
+                  "nonliving": true,
+                  "sensations": [
+                    "warm",
+                    "cool",
+                    "season"
+                  ],
+                  "target_kinds": [
+                    "nonliving_material"
+                  ]
+                },
+                {
+                  "duration_unit": "hours",
+                  "duration_value": 1,
+                  "lifecycle": "timed",
+                  "mark_kinds": [
+                    "stain",
+                    "small_mark",
+                    "sigil"
+                  ],
+                  "mode": "magic_mark",
+                  "target_kinds": [
+                    "object",
+                    "surface"
+                  ]
+                },
+                {
+                  "creation_kinds": [
+                    "trinket",
+                    "illusory_image"
+                  ],
+                  "duration_unit": "next_turn_end",
+                  "lifecycle": "timed",
+                  "max_size": "palm",
+                  "mode": "minor_creation",
+                  "no_damage": true,
+                  "no_value": true,
+                  "nonmagical": true,
+                  "target_kinds": [
+                    "creation_space"
+                  ]
+                }
+              ],
+              "range_ft": 10,
+              "selected_mode": "magic_mark",
+              "size_cubic_ft": 1.0,
+              "source_fingerprint": "stable-token",
+              "source_id": "stable-id",
+              "source_record_id": "stable-id",
+              "target_id": "stable-id",
+              "target_kind": "object"
+            },
+            "remote_spell_origin": null,
+            "requires_cas": true,
+            "requires_idempotency": true,
+            "requires_resolution_input": false,
+            "requires_target": false,
+            "spell_context": {},
+            "summon": null,
+            "timed_modifier": null
+          },
+          "runtime_id": "stable-id",
+          "runtime_preview_full": true,
+          "runtime_source": {
+            "source_book": "玩家手册 2024",
+            "source_fingerprint": "stable-token",
+            "source_path": "玩家手册2024/法术详述/0环.htm",
+            "source_record_id": "stable-id",
+            "source_trust": "authored_ir"
+          },
+          "schema_version": "content-ir-runtime-preview-1",
+          "spell_preview": {
+            "character_id": "stable-id",
+            "concentration": false,
+            "focus_equipment_id": "stable-id",
+            "free_cast": false,
+            "free_cast_after": 0,
+            "free_cast_before": 0,
+            "free_cast_resource_key": null,
+            "payment_before": 0,
+            "payment_cost": 0,
+            "payment_override": false,
+            "payment_resource_key": null,
+            "preview_token": "stable-token",
+            "ritual": false,
+            "rule_reference": "PHB 2024",
+            "slot_after": 2,
+            "slot_before": 2,
+            "slot_level": 1,
+            "spell": {
+              "campaign_id": "stable-id",
+              "character_id": "stable-id",
+              "created_at": "stable-time",
+              "id": "stable-id",
+              "metadata_json": {
+                "content_ir_runtime": {
+                  "casting_time": "动作",
+                  "components": null,
+                  "concentration": false,
+                  "duration": "至多1小时",
+                  "execution_status": "ready",
+                  "kind": "spell",
+                  "level": 0,
+                  "name": "魔法伎俩",
+                  "range": "10尺",
+                  "resolution": {
+                    "attack_roll": [],
+                    "communication_capability": [],
+                    "communication_route": [],
+                    "concentration": [],
+                    "duration": [],
+                    "effects": [],
+                    "illusion_lifecycle": [],
+                    "object_effect_lifecycle": [
+                      {
+                        "clause_id": "stable-id",
+                        "evidence_ref": "object_effect_lifecycle: source effect-selection paragraph",
+                        "max_concurrent_noninstant": 3,
+                        "modes": [
+                          {
+                            "harmless": true,
+                            "lifecycle": "instant",
+                            "mode": "sensory_effect",
+                            "target_kinds": [
+                              "none"
+                            ]
+                          },
+                          {
+                            "fire_sources": [
+                              "candle",
+                              "torch",
+                              "small_campfire"
+                            ],
+                            "lifecycle": "instant",
+                            "mode": "fire_play",
+                            "operations": [
+                              "ignite",
+                              "extinguish"
+                            ],
+                            "target_kinds": [
+                              "fire_source"
+                            ]
+                          },
+                          {
+                            "lifecycle": "instant",
+                            "max_size_cubic_ft": 1,
+                            "mode": "clean_or_soil",
+                            "operations": [
+                              "clean",
+                              "soil"
+                            ],
+                            "target_kinds": [
+                              "object"
+                            ]
+                          },
+                          {
+                            "duration_unit": "hours",
+                            "duration_value": 1,
+                            "lifecycle": "timed",
+                            "max_size_cubic_ft": 1,
+                            "mode": "minor_sensation",
+                            "nonliving": true,
+                            "sensations": [
+                              "warm",
+                              "cool",
+                              "season"
+                            ],
+                            "target_kinds": [
+                              "nonliving_material"
+                            ]
+                          },
+                          {
+                            "duration_unit": "hours",
+                            "duration_value": 1,
+                            "lifecycle": "timed",
+                            "mark_kinds": [
+                              "stain",
+                              "small_mark",
+                              "sigil"
+                            ],
+                            "mode": "magic_mark",
+                            "target_kinds": [
+                              "object",
+                              "surface"
+                            ]
+                          },
+                          {
+                            "creation_kinds": [
+                              "trinket",
+                              "illusory_image"
+                            ],
+                            "duration_unit": "next_turn_end",
+                            "lifecycle": "timed",
+                            "max_size": "palm",
+                            "mode": "minor_creation",
+                            "no_damage": true,
+                            "no_value": true,
+                            "nonmagical": true,
+                            "target_kinds": [
+                              "creation_space"
+                            ]
+                          }
+                        ],
+                        "range_ft": 10,
+                        "resolution_kind": "object_effect_lifecycle",
+                        "type": "object_effect_lifecycle"
+                      }
+                    ],
+                    "saving_throw": [],
+                    "target_selection": [
+                      {
+                        "clause_id": "stable-id",
+                        "count": 1,
+                        "evidence_ref": " Play。**你立即点燃或熄灭一根蜡烛、一根火把或一处小篝火。 > **清洁或弄脏Clean or > Soil。**你立即清洁或弄脏一个体积不大于1立方尺的物件。 > **次级感觉Minor > Sensation。**你使一个不大于1立方尺的非活体物质变冷、变暖或对其调味，持续1小时。 > **魔法印记Magic > Mark。**你在一个物件或一个表面上创造一块色斑，一个小印记，或者一个徽记，持续1小时。 > **次级造物Minor > Creation。**你创造出一个非魔法小饰品或一张虚幻图像，其大小不能超过你的手掌大小，它会持续存在至下个你的回合结束为止。一个小饰品不能造成伤害，也不值任何钱。",
+                        "kind": "object",
+                        "type": "target_selection",
+                        "visibility": "visible"
+                      }
+                    ],
+                    "upcast": []
+                  },
+                  "runtime_schema_version": "spell-runtime-1",
+                  "school": "变化",
+                  "source": {
+                    "source_book": "玩家手册 2024",
+                    "source_fingerprint": "stable-token",
+                    "source_path": "玩家手册2024/法术详述/0环.htm",
+                    "source_record_id": "stable-id",
+                    "source_trust": "authored_ir"
+                  },
+                  "spell_id": "stable-id",
+                  "target": null
+                }
+              },
+              "name": "魔法伎俩",
+              "source_reference": "PHB 2024",
+              "spell_level": 0,
+              "updated_at": "stable-time",
+              "version": 1
+            },
+            "spell_context": {
+              "component_override": null,
+              "components_ignored": false,
+              "payment_after": 0,
+              "payment_before": 0,
+              "payment_cost": 0,
+              "payment_override": null,
+              "payment_resource_key": null
+            }
+          }
+        },
+        "receipt": {
+          "clause_id": "stable-id",
+          "content_id": "stable-id",
+          "effect_id": "stable-id",
+          "expires_at": "stable-time",
+          "expires_turn": null,
+          "lifecycle": "timed",
+          "mode": "magic_mark",
+          "replayed": false,
+          "request_fingerprint": "stable-token",
+          "schema": "spell.object_effect.lifecycle.v1",
+          "source_fingerprint": "stable-token",
+          "source_record_id": "stable-id",
+          "state_version_after": 1,
+          "state_version_before": 0,
+          "termination": null
+        }
+      },
+      "isolated_runtime_test": "backend/tests/test_round_LIII_prestidigitation_object_effect.py",
+      "name": "魔法伎俩",
+      "production_runtime_full": true,
+      "required_semantics": [
+        "10-foot typed object/surface target and range",
+        "six typed modes",
+        "instant sensory/fire/clean-or-soil effects",
+        "one-hour minor sensation and magic mark",
+        "next-turn-end minor creation",
+        "three concurrent non-instant effect slots",
+        "CAS, replay drift, dismissal, snapshot, and OperationTransaction"
+      ],
+      "resolved_consumers": [
+        "spell.object_effect.lifecycle.v1"
+      ],
+      "runtime_blocks": {
+        "attack_roll": [],
+        "communication_capability": [],
+        "communication_route": [],
+        "concentration": [],
+        "duration": [],
+        "effects": [],
+        "illusion_lifecycle": [],
+        "object_effect_lifecycle": [
+          {
+            "clause_id": "object_effect_lifecycle",
+            "evidence_ref": "object_effect_lifecycle: source effect-selection paragraph",
+            "max_concurrent_noninstant": 3,
+            "modes": [
+              {
+                "harmless": true,
+                "lifecycle": "instant",
+                "mode": "sensory_effect",
+                "target_kinds": [
+                  "none"
+                ]
+              },
+              {
+                "fire_sources": [
+                  "candle",
+                  "torch",
+                  "small_campfire"
+                ],
+                "lifecycle": "instant",
+                "mode": "fire_play",
+                "operations": [
+                  "ignite",
+                  "extinguish"
+                ],
+                "target_kinds": [
+                  "fire_source"
+                ]
+              },
+              {
+                "lifecycle": "instant",
+                "max_size_cubic_ft": 1,
+                "mode": "clean_or_soil",
+                "operations": [
+                  "clean",
+                  "soil"
+                ],
+                "target_kinds": [
+                  "object"
+                ]
+              },
+              {
+                "duration_unit": "hours",
+                "duration_value": 1,
+                "lifecycle": "timed",
+                "max_size_cubic_ft": 1,
+                "mode": "minor_sensation",
+                "nonliving": true,
+                "sensations": [
+                  "warm",
+                  "cool",
+                  "season"
+                ],
+                "target_kinds": [
+                  "nonliving_material"
+                ]
+              },
+              {
+                "duration_unit": "hours",
+                "duration_value": 1,
+                "lifecycle": "timed",
+                "mark_kinds": [
+                  "stain",
+                  "small_mark",
+                  "sigil"
+                ],
+                "mode": "magic_mark",
+                "target_kinds": [
+                  "object",
+                  "surface"
+                ]
+              },
+              {
+                "creation_kinds": [
+                  "trinket",
+                  "illusory_image"
+                ],
+                "duration_unit": "next_turn_end",
+                "lifecycle": "timed",
+                "max_size": "palm",
+                "mode": "minor_creation",
+                "no_damage": true,
+                "no_value": true,
+                "nonmagical": true,
+                "target_kinds": [
+                  "creation_space"
+                ]
+              }
+            ],
+            "range_ft": 10,
+            "resolution_kind": "object_effect_lifecycle",
+            "type": "object_effect_lifecycle"
+          }
+        ],
+        "saving_throw": [],
+        "target_selection": [
+          {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": " Play。**你立即点燃或熄灭一根蜡烛、一根火把或一处小篝火。 > **清洁或弄脏Clean or > Soil。**你立即清洁或弄脏一个体积不大于1立方尺的物件。 > **次级感觉Minor > Sensation。**你使一个不大于1立方尺的非活体物质变冷、变暖或对其调味，持续1小时。 > **魔法印记Magic > Mark。**你在一个物件或一个表面上创造一块色斑，一个小印记，或者一个徽记，持续1小时。 > **次级造物Minor > Creation。**你创造出一个非魔法小饰品或一张虚幻图像，其大小不能超过你的手掌大小，它会持续存在至下个你的回合结束为止。一个小饰品不能造成伤害，也不值任何钱。",
+            "kind": "object",
+            "type": "target_selection",
+            "visibility": "visible"
+          }
+        ],
+        "upcast": []
+      },
+      "source_fingerprint": "ac01a2d5259ee244017fc18a87ba7014451a505a4e196d260a6dbb2a06806dda",
+      "source_path": "玩家手册2024/法术详述/0环.htm",
+      "source_record_id": "b9db026fa1853bca5b6f1c13"
+    }
+  },
+  "production_runtime_full_ids": [
+    "core-phb-2024:spell:b9db026fa1853bca5b6f1c13"
+  ],
+  "round_id": "round-LIII",
+  "schema_version": "content-ir-production-runtime-results-LIII-1"
+}

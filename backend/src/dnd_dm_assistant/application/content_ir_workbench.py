@@ -67,6 +67,7 @@ _SPELL_CLAUSE_TYPES = frozenset(
         "communication_route",
         "communication_capability",
         "illusion_lifecycle",
+        "object_effect_lifecycle",
     }
 )
 _SPELL_CLAUSE_CAPABILITIES = {
@@ -353,6 +354,17 @@ _SPELL_CLAUSE_FIELDS = {
             "research_action",
             "investigation_skill",
             "save_dc",
+            "evidence_ref",
+        }
+    ),
+    "object_effect_lifecycle": frozenset(
+        {
+            "type",
+            "clause_id",
+            "resolution_kind",
+            "range_ft",
+            "max_concurrent_noninstant",
+            "modes",
             "evidence_ref",
         }
     ),
@@ -1216,6 +1228,30 @@ def _spell_clause_errors(
                 errors.append(f"clause:{index}:summon_position_must_be_unoccupied")
             if _text(clause.get("visibility")).lower() != "visible":
                 errors.append(f"clause:{index}:summon_position_must_be_visible")
+    if strict and clause_type == "object_effect_lifecycle":
+        if _text(clause.get("resolution_kind")) != "object_effect_lifecycle":
+            errors.append(f"clause:{index}:unsupported_object_effect_resolution")
+        if clause.get("range_ft") != 10:
+            errors.append(f"clause:{index}:object_effect_range_must_be_ten")
+        if clause.get("max_concurrent_noninstant") != 3:
+            errors.append(f"clause:{index}:object_effect_concurrency_must_be_three")
+        modes = clause.get("modes")
+        if not isinstance(modes, list) or len(modes) != 6:
+            errors.append(f"clause:{index}:object_effect_requires_six_modes")
+        else:
+            expected_modes = {
+                "sensory_effect",
+                "fire_play",
+                "clean_or_soil",
+                "minor_sensation",
+                "magic_mark",
+                "minor_creation",
+            }
+            actual_modes = {
+                _text(item.get("mode")) for item in modes if isinstance(item, Mapping)
+            }
+            if actual_modes != expected_modes:
+                errors.append(f"clause:{index}:object_effect_modes_are_not_source_complete")
     return tuple(errors)
 
 
@@ -1237,6 +1273,7 @@ def _materialize_spell_runtime(
         "communication_route": [],
         "communication_capability": [],
         "illusion_lifecycle": [],
+        "object_effect_lifecycle": [],
     }
     for clause in ordered:
         clause_type = _text(clause.get("type"))

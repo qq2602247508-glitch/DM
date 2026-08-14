@@ -3,8 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
 from dnd_dm_assistant.application.content_ir_production_evidence import (
     authoritative_compile_only_ids,
     load_production_runtime_evidence,
@@ -49,7 +47,7 @@ def test_round_li_candidates_compile_from_source_bound_ir() -> None:
         ]
 
 
-def test_round_li_generic_registry_rejects_incomplete_runtime() -> None:
+def test_round_li_generic_registry_resolves_current_generic_consumers() -> None:
     for content_id in CANDIDATE_IDS:
         _authored, compiled = _compiled(content_id)
         blocks = ContentIRRuntimeService._runtime_blocks(
@@ -65,12 +63,14 @@ def test_round_li_generic_registry_rejects_incomplete_runtime() -> None:
                 "spell.illusion.lifecycle.v1"
             ]
             continue
-        with pytest.raises(ValueError, match="spell runtime has no registered executable consumer"):
-            resolve_production_consumers(
-                content_kind="spell",
-                runtime_schema_version="spell-runtime-1",
-                blocks=blocks,
-            )
+        consumers = resolve_production_consumers(
+            content_kind="spell",
+            runtime_schema_version="spell-runtime-1",
+            blocks=blocks,
+        )
+        assert [item["consumer_id"] for item in consumers] == [
+            "spell.object_effect.lifecycle.v1"
+        ]
 
 
 def test_round_li_projection_retains_both_candidates() -> None:
@@ -87,6 +87,6 @@ def test_round_li_projection_retains_both_candidates() -> None:
         "production": len(loaded),
         "compile_only": len(compile_only),
         "unique_compiled": int(migration["current_project_compiled_unique"]),
-    } == {"production": 207, "compile_only": 31, "unique_compiled": 111}
+    } == {"production": 208, "compile_only": 30, "unique_compiled": 111}
     assert DISGUISE_SELF_ID in validated
-    assert CANDIDATE_IDS[1] not in validated
+    assert CANDIDATE_IDS[1] in validated
