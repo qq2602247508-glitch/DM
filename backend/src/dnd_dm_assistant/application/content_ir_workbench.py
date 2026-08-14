@@ -66,6 +66,7 @@ _SPELL_CLAUSE_TYPES = frozenset(
         "target_selection",
         "communication_route",
         "communication_capability",
+        "illusion_lifecycle",
     }
 )
 _SPELL_CLAUSE_CAPABILITIES = {
@@ -334,6 +335,27 @@ _SPELL_CLAUSE_FIELDS = {
             "evidence_ref",
         }
     ),
+    "illusion_lifecycle": frozenset(
+        {
+            "type",
+            "clause_id",
+            "resolution_kind",
+            "target_scope",
+            "duration_unit",
+            "duration_value",
+            "height_delta_ft",
+            "height_delta_range_ft",
+            "body_shape",
+            "limb_arrangement",
+            "carried_envelope",
+            "area_scope",
+            "physical_inspection",
+            "research_action",
+            "investigation_skill",
+            "save_dc",
+            "evidence_ref",
+        }
+    ),
 }
 _SPELL_CLAUSE_FIELDS = {
     clause_type: fields | frozenset({"evidence_ref"})
@@ -365,6 +387,20 @@ _SPELL_REQUIRED_FIELDS = {
         ("influence_action_skills",),
         ("information_scope",),
         ("recent_observation_hours",),
+    ),
+    "illusion_lifecycle": (
+        ("resolution_kind",),
+        ("target_scope",),
+        ("duration_unit", "duration_value"),
+        ("height_delta_ft",),
+        ("body_shape",),
+        ("limb_arrangement",),
+        ("carried_envelope",),
+        ("area_scope",),
+        ("physical_inspection",),
+        ("research_action",),
+        ("investigation_skill",),
+        ("save_dc",),
     ),
 }
 _SPELL_TOP_LEVEL_FIELDS = frozenset(
@@ -1200,6 +1236,7 @@ def _materialize_spell_runtime(
         "upcast": [],
         "communication_route": [],
         "communication_capability": [],
+        "illusion_lifecycle": [],
     }
     for clause in ordered:
         clause_type = _text(clause.get("type"))

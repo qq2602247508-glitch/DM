@@ -124,6 +124,24 @@ _CONSUMERS: dict[str, dict[str, Any]] = {
             "audit",
         ),
     },
+    "spell.illusion.lifecycle.v1": {
+        "content_kind": "spell",
+        "runtime_schema_version": "spell-runtime-1",
+        "clause_types": ("illusion_lifecycle", "target_selection", "duration"),
+        "required_fields": (
+            "character_id",
+            "character_version",
+            "known_spell_id",
+            "slot_level",
+            "actor_combatant_id",
+            "actor_version",
+        ),
+        "required_services": ("combat_engine.illusion_lifecycle",),
+        "transaction_boundary": "spell_cast_with_illusion_lifecycle_and_rollback_boundary",
+        "cas_entities": ("character", "actor_combatant"),
+        "idempotency_scope": "campaign_content_ir_and_spell_cast",
+        "snapshot_effects": ("illusion_envelope", "inspection", "expiry", "termination", "audit"),
+    },
     "combat_engine.condition_lifecycle.v1": {
         "content_kind": "spell_or_feature",
         "runtime_schema_version": "spell-runtime-1|feature-runtime-1",
@@ -498,6 +516,7 @@ _ALLOWED_SPELL_BLOCKS = {
     "spell_origins",
     "communication_route",
     "communication_capability",
+    "illusion_lifecycle",
 }
 
 _ALLOWED_ITEM_CLAUSES = {
@@ -606,6 +625,15 @@ def resolve_production_consumers(
             if capability.get("resolution_kind") != "beast_communication_capability":
                 raise ValueError("unsupported communication capability resolution")
             resolved.append("spell.communication.capability.v1")
+        if blocks.get("illusion_lifecycle"):
+            if not blocks.get("target_selection") or not blocks.get("duration"):
+                raise ValueError("illusion lifecycle requires typed target and duration")
+            if len(blocks["illusion_lifecycle"]) != 1:
+                raise ValueError("spell runtime requires exactly one illusion lifecycle contract")
+            illusion = blocks["illusion_lifecycle"][0]
+            if illusion.get("resolution_kind") != "illusion_lifecycle":
+                raise ValueError("unsupported illusion lifecycle resolution")
+            resolved.append("spell.illusion.lifecycle.v1")
         if _has_effect(blocks, "summon_or_creation"):
             if not blocks.get("target_selection"):
                 raise ValueError("summon runtime requires a typed target selection")

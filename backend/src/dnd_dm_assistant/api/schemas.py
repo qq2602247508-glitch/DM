@@ -2576,6 +2576,16 @@ class ContentIRRuntimeRequest(BaseModel):
         "surroundings_and_monsters"
     ] | None = None
     communication_observation_age_hours: int | None = Field(default=None, ge=0, le=10_000)
+    illusion_save_dc: int | None = Field(default=None, ge=1, le=50)
+    illusion_height_delta_ft: int | None = Field(default=None, ge=-1, le=1)
+    illusion_body_shape: str | None = Field(default=None, min_length=1, max_length=100)
+    illusion_limb_arrangement: Literal["preserve"] | None = None
+    illusion_carried_envelope: list[Literal["clothing", "armor", "weapons"]] = Field(
+        default_factory=list, max_length=3
+    )
+    illusion_area_scope: str | None = Field(default=None, min_length=1, max_length=200)
+    illusion_research_action: Literal["research"] | None = None
+    illusion_investigation_total: int | None = Field(default=None, ge=-100, le=1000)
     origin_id: str | None = Field(default=None, min_length=1, max_length=36)
     summon_choice: str | None = Field(default=None, min_length=1, max_length=80)
     area_shape: Literal["cone", "line", "cube", "sphere", "cylinder"] | None = None

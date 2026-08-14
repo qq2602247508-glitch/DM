@@ -12,16 +12,48 @@
     }
   },
   "clause_identity": [
-    "core-phb-2024:spell:83b7d94b77f332dd71310bbe:target"
+    "core-phb-2024:spell:83b7d94b77f332dd71310bbe:target",
+    "core-phb-2024:spell:83b7d94b77f332dd71310bbe:duration",
+    "core-phb-2024:spell:83b7d94b77f332dd71310bbe:illusion_lifecycle"
   ],
   "clauses": [
     {
       "clause_id": "target",
       "count": 1,
       "evidence_ref": "的影响范围由你决定。 此法术产生的变化无法应对物理检查。比如，你用此法术添了一顶帽子，那么现实物件会从帽子穿过去，且任何触碰帽子的人将摸不到任何东西。 如果一名生物想要分辨你是否易容，则必须使用一个研究动作研究你的外貌，并成功于一次对抗你法术豁免DC的智力（调查）检定。",
-      "kind": "one_creature",
+      "kind": "self",
       "type": "target_selection",
       "visibility": "visible"
+    },
+    {
+      "clause_id": "duration",
+      "duration": "1 hour",
+      "type": "duration"
+    },
+    {
+      "area_scope": "caster-chosen illusion envelope",
+      "body_shape": "variable",
+      "carried_envelope": [
+        "clothing",
+        "armor",
+        "weapons"
+      ],
+      "clause_id": "illusion_lifecycle",
+      "duration_unit": "hours",
+      "duration_value": 1,
+      "height_delta_ft": 1,
+      "height_delta_range_ft": [
+        -1,
+        1
+      ],
+      "investigation_skill": "intelligence_investigation",
+      "limb_arrangement": "preserve",
+      "physical_inspection": "passes_through",
+      "research_action": "research",
+      "resolution_kind": "illusion_lifecycle",
+      "save_dc": 10,
+      "target_scope": "self",
+      "type": "illusion_lifecycle"
     }
   ],
   "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",

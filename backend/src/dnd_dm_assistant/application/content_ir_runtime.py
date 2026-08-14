@@ -63,6 +63,11 @@ from dnd_dm_assistant.domain.typed_spell_communication_routes import (
     TypedSpellCommunicationRouteSpec,
     apply_typed_spell_communication_route,
 )
+from dnd_dm_assistant.domain.typed_spell_illusion_lifecycle import (
+    TypedSpellIllusionSpec,
+    apply_typed_spell_illusion,
+    inspect_typed_spell_illusion,
+)
 from dnd_dm_assistant.domain.typed_spell_timed_modifiers import (
     TypedSpellTimedModifierSpec,
     apply_typed_spell_timed_modifier,
@@ -2685,6 +2690,66 @@ class ContentIRRuntimeService:
             "observation_age_hours": int(observation_age),
         }
 
+    @classmethod
+    def _spell_illusion_contract(
+        cls,
+        data: Mapping[str, Any],
+        blocks: Mapping[str, list[dict[str, Any]]],
+        *,
+        runtime_id: str,
+        runtime_source: Mapping[str, Any],
+        actor_id: str,
+    ) -> dict[str, Any] | None:
+        clauses = [
+            cls._parameters(block)
+            for block in blocks.get("illusion_lifecycle", [])
+            if cls._parameters(block).get("resolution_kind") == "illusion_lifecycle"
+        ]
+        if not clauses:
+            return None
+        if len(clauses) != 1:
+            raise ValueError("typed illusion runtime requires exactly one lifecycle contract")
+        clause = clauses[0]
+        target = cls._first_parameters(blocks, "target_selection")
+        duration = cls._first_parameters(blocks, "duration")
+        if _text(target.get("kind")).lower() != "self":
+            raise ValueError("typed illusion runtime requires self target")
+        if clause.get("height_delta_range_ft") != [-1, 1]:
+            raise ValueError("typed illusion runtime requires a -1/+1 height range")
+        source_record_id = _text(runtime_source.get("source_record_id"))
+        source_fingerprint = _text(runtime_source.get("source_fingerprint"))
+        if not source_record_id or len(source_fingerprint) != 64:
+            raise ValueError("typed illusion runtime requires source provenance")
+        spec = TypedSpellIllusionSpec(
+            content_id=runtime_id,
+            source_record_id=source_record_id,
+            source_fingerprint=source_fingerprint,
+            clause_id=_text(clause.get("clause_id")) or "illusion_lifecycle",
+            source_id=runtime_id,
+            target_id=actor_id,
+            target_scope=_text(clause.get("target_scope")),
+            duration_unit=_text(clause.get("duration_unit") or duration.get("duration_unit")),
+            duration_value=int(clause.get("duration_value") or duration.get("duration_value") or 0),
+            height_delta_ft=int(
+                data.get("illusion_height_delta_ft", clause.get("height_delta_ft"))
+            ),
+            body_shape=_text(data.get("illusion_body_shape") or clause.get("body_shape")),
+            limb_arrangement=_text(
+                data.get("illusion_limb_arrangement") or clause.get("limb_arrangement")
+            ),
+            carried_envelope=tuple(
+                data.get("illusion_carried_envelope")
+                or clause.get("carried_envelope")
+                or ()
+            ),
+            area_scope=_text(data.get("illusion_area_scope") or clause.get("area_scope")),
+            physical_inspection=_text(clause.get("physical_inspection")),
+            research_action=_text(clause.get("research_action")),
+            investigation_skill=_text(clause.get("investigation_skill")),
+            save_dc=int(data.get("illusion_save_dc") or clause.get("save_dc") or 0),
+        )
+        return {"spec": spec, "target_version": int(data.get("actor_version") or 0)}
+
     @staticmethod
     def _expire_spell_timed_modifiers(target: Combatant, now: datetime) -> None:
         snapshot = dict(target.snapshot_json or {})
@@ -3588,6 +3653,15 @@ class ContentIRRuntimeService:
                 if isinstance(runtime.get("source"), Mapping)
                 else {},
             )
+            illusion_contract = self._spell_illusion_contract(
+                execution_data,
+                blocks,
+                runtime_id=_text(runtime.get("spell_id")),
+                runtime_source=runtime.get("source")
+                if isinstance(runtime.get("source"), Mapping)
+                else {},
+                actor_id=actor.id,
+            )
             if communication_route_contract is not None:
                 route_target = session.get(
                     Combatant, communication_route_contract["target_id"]
@@ -3701,6 +3775,7 @@ class ContentIRRuntimeService:
                 or timed_modifier_contract is not None
                 or communication_route_contract is not None
                 or communication_capability_contract is not None
+                or illusion_contract is not None
                 or summon_contract is not None
                 else self._spell_commands(execution_data, blocks)
             )
@@ -3773,6 +3848,19 @@ class ContentIRRuntimeService:
                     "timed_modifier": timed_modifier_contract,
                     "communication_route": communication_route_contract,
                     "communication_capability": communication_capability_contract,
+                    "illusion_lifecycle": (
+                        {
+                            **illusion_contract["spec"].as_dict(),
+                            "physical_inspection_result": "passes_through",
+                            "inspection_protocol": {
+                                "action": "research",
+                                "skill": "intelligence_investigation",
+                                "save_dc": illusion_contract["spec"].save_dc,
+                            },
+                        }
+                        if illusion_contract is not None
+                        else None
+                    ),
                     "summon": summon_preview,
                     "remote_spell_origin": self._remote_origin_receipt(remote_origin),
                 },
@@ -4847,6 +4935,114 @@ class ContentIRRuntimeService:
         self._record_operation(campaign_id, key, output)
         return output
 
+    def _confirm_spell_illusion(
+        self,
+        campaign_id: str,
+        data: Mapping[str, Any],
+        *,
+        key: str,
+        token: str,
+        contract: Mapping[str, Any],
+        spell_done: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        with Session(self.engine) as session, session.begin():
+            operation_key = f"content-ir:{key}:illusion"
+            existing = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == campaign_id,
+                    OperationTransaction.idempotency_key == operation_key,
+                )
+            )
+            if existing is not None:
+                previous = dict(existing.after_snapshot or {})
+                if _text(previous.get("preview_token")) != token:
+                    raise ValueError("illusion operation replay payload does not match")
+                prior = previous.get("illusion_payload")
+                submitted = {
+                    "save_dc": data.get("illusion_save_dc"),
+                    "height_delta_ft": data.get("illusion_height_delta_ft"),
+                    "body_shape": data.get("illusion_body_shape"),
+                    "limb_arrangement": data.get("illusion_limb_arrangement"),
+                    "carried_envelope": data.get("illusion_carried_envelope"),
+                    "area_scope": data.get("illusion_area_scope"),
+                }
+                if not isinstance(prior, Mapping) or submitted != prior:
+                    raise ValueError("illusion operation replay payload does not match")
+                return {**previous, "already_applied": True}
+            actor = session.get(Combatant, _text(data.get("actor_combatant_id")))
+            if actor is None:
+                raise StateNotFoundError("illusion actor not found")
+            expected = int(data.get("actor_version") or 0)
+            if actor.version != expected:
+                raise VersionConflict("combatant", actor.id, expected, actor.version)
+            before = {
+                "actor": {
+                    "id": actor.id,
+                    "version": actor.version,
+                    "snapshot_json": deepcopy(actor.snapshot_json or {}),
+                }
+            }
+            snapshot = dict(actor.snapshot_json or {})
+            state = {
+                "version": int(snapshot.get("illusion_version") or 0),
+                "illusion_envelopes": list(snapshot.get("illusion_envelopes") or []),
+            }
+            updated, receipt = apply_typed_spell_illusion(
+                contract["spec"],
+                state=state,
+                expected_version=state["version"],
+                now=datetime.now(UTC),
+            )
+            snapshot["illusion_version"] = updated["version"]
+            snapshot["illusion_envelopes"] = updated["illusion_envelopes"]
+            actor.snapshot_json = snapshot
+            actor.version += 1
+            inspection = None
+            if data.get("illusion_investigation_total") is not None:
+                inspection = inspect_typed_spell_illusion(
+                    updated,
+                    illusion_id=receipt.illusion_id,
+                    research_action=_text(data.get("illusion_research_action")) or "research",
+                    investigation_total=int(data["illusion_investigation_total"]),
+                    now=datetime.now(UTC),
+                )
+            output = {
+                "schema_version": PRODUCTION_SCHEMA,
+                "runtime_id": _text(data.get("runtime_id")),
+                "production_runtime_full": True,
+                "preview_token": token,
+                "consumer": "spell.illusion.lifecycle.v1",
+                "spell_cast": dict(spell_done),
+                "illusion_receipt": receipt.as_dict(),
+                "illusion_payload": {
+                    "save_dc": contract["spec"].save_dc,
+                    "height_delta_ft": contract["spec"].height_delta_ft,
+                    "body_shape": contract["spec"].body_shape,
+                    "limb_arrangement": contract["spec"].limb_arrangement,
+                    "carried_envelope": list(contract["spec"].carried_envelope),
+                    "area_scope": contract["spec"].area_scope,
+                },
+                "inspection": inspection,
+                "actor_combatant_id": actor.id,
+                "actor_version_after": actor.version,
+            }
+            operation = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="content_ir_illusion_lifecycle",
+                idempotency_key=operation_key,
+                status="applied",
+                before_snapshot=before,
+                after_snapshot=output,
+                reason="source-bound generic illusion lifecycle confirmed",
+                source="combat",
+                confirmed_at=datetime.now(UTC),
+            )
+            session.add(operation)
+            session.flush()
+            output["operation_transaction_id"] = operation.id
+            operation.after_snapshot = dict(output)
+            return output
+
     def confirm(self, campaign_id: str, data: dict[str, Any]) -> dict[str, Any]:
         if _text(data.get("content_kind")) == "advancement":
             return self._confirm_advancement(campaign_id, data)
@@ -4883,8 +5079,30 @@ class ContentIRRuntimeService:
                         == f"content-ir:{key}:capability",
                     )
                 )
+            if existing is None:
+                existing = session.scalar(
+                    select(OperationTransaction).where(
+                        OperationTransaction.campaign_id == campaign_id,
+                        OperationTransaction.idempotency_key
+                        == f"content-ir:{key}:illusion",
+                    )
+                )
             if existing is not None:
                 previous = dict(existing.after_snapshot or {})
+                if existing.idempotency_key.endswith(":illusion"):
+                    if _text(previous.get("preview_token")) != _text(data.get("preview_token")):
+                        raise ValueError("illusion operation replay payload does not match")
+                    prior = previous.get("illusion_payload")
+                    submitted = {
+                        "save_dc": data.get("illusion_save_dc"),
+                        "height_delta_ft": data.get("illusion_height_delta_ft"),
+                        "body_shape": data.get("illusion_body_shape"),
+                        "limb_arrangement": data.get("illusion_limb_arrangement"),
+                        "carried_envelope": data.get("illusion_carried_envelope"),
+                        "area_scope": data.get("illusion_area_scope"),
+                    }
+                    if not isinstance(prior, Mapping) or submitted != prior:
+                        raise ValueError("illusion operation replay payload does not match")
                 if existing.idempotency_key.endswith(":communication"):
                     communication = previous.get("communication")
                     if (
@@ -5137,6 +5355,15 @@ class ContentIRRuntimeService:
                 if isinstance(runtime.get("source"), Mapping)
                 else {},
             )
+            illusion_contract = self._spell_illusion_contract(
+                execution_data,
+                blocks,
+                runtime_id=_text(runtime.get("spell_id")),
+                runtime_source=runtime.get("source")
+                if isinstance(runtime.get("source"), Mapping)
+                else {},
+                actor_id=_text(data.get("actor_combatant_id")),
+            )
             summon_contract = self._spell_summon_contract(
                 execution_data,
                 blocks,
@@ -5153,6 +5380,15 @@ class ContentIRRuntimeService:
                     token=token,
                     preview=preview,
                     contract=communication_capability_contract,
+                    spell_done=spell_done,
+                )
+            elif illusion_contract is not None:
+                combat_done = self._confirm_spell_illusion(
+                    campaign_id,
+                    data,
+                    key=key,
+                    token=token,
+                    contract=illusion_contract,
                     spell_done=spell_done,
                 )
             elif communication_route_contract is not None:
@@ -5220,6 +5456,7 @@ class ContentIRRuntimeService:
                 or timed_modifier_contract is not None
                 or defense_contract is not None
                 or summon_contract is not None
+                or illusion_contract is not None
             ):
                 pass
             elif commands is not None:
@@ -5281,6 +5518,7 @@ class ContentIRRuntimeService:
             communication_capability_contract is not None
             or communication_route_contract is not None
             or timed_modifier_contract is not None
+            or illusion_contract is not None
         ):
             return dict(combat_done)
         output = {
