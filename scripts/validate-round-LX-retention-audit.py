@@ -8,6 +8,7 @@ import json
 import runpy
 import subprocess
 import sys
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -94,8 +95,12 @@ def build_report() -> dict[str, Any]:
     migration = LX["build_migration"](ROOT)
     after_compile_only = set(before_compile_only)
     after_production = set(before_production)
+    artifact_date = REPORT_PATH.stem[-10:]
     checks: dict[str, Any] = {
-        "artifact_date_exact": REPORT_PATH.name == "round-LX-retention-audit-2026-08-14.json",
+        "artifact_date_exact": (
+            date.fromisoformat(artifact_date).isoformat() == artifact_date
+            and REPORT_PATH.name == f"round-LX-retention-audit-{artifact_date}.json"
+        ),
         "accepted_head_is_ancestor": subprocess.run(
             ["git", "merge-base", "--is-ancestor", "062e07d", "HEAD"],
             cwd=ROOT,
@@ -141,7 +146,10 @@ def build_report() -> dict[str, Any]:
         "historical_xxii_sha_exact": _sha(HISTORICAL_XXII) == EXPECTED_XXII_SHA,
         "historical_xliii_sha_exact": _sha(HISTORICAL_XLIII) == EXPECTED_XLIII_SHA,
     }
-    checks["all_required_checks_passed"] = all(checks.values())
+    required_check_keys = sorted(checks)
+    checks["all_required_checks_passed"] = all(
+        checks[key] is True for key in required_check_keys
+    )
     before = {
         "production": len(before_production),
         "compile_only": len(before_compile_only),
@@ -155,7 +163,7 @@ def build_report() -> dict[str, Any]:
     return {
         "schema_version": "round-LX-retention-audit-1",
         "round_id": "round-LX",
-        "artifact_date": "2026-08-14",
+        "artifact_date": artifact_date,
         "decision": "retention_audit_no_promotion",
         "candidate_comparison": {
             "selection_basis": (
@@ -203,7 +211,7 @@ def build_report() -> dict[str, Any]:
             ),
         ],
         "checks": checks,
-        "required_check_keys": sorted(checks),
+        "required_check_keys": required_check_keys,
         "protected_fingerprints": LX["protected_path_fingerprints"](ROOT),
         "historical_artifacts": {
             str(HISTORICAL_XXII.relative_to(ROOT)): EXPECTED_XXII_SHA,

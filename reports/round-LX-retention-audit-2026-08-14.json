@@ -1972,7 +1972,6 @@
     "accepted_head_is_ancestor",
     "all_candidates_retained",
     "all_candidates_source_bound",
-    "all_required_checks_passed",
     "artifact_date_exact",
     "candidate_set_count_is_current",
     "candidate_set_is_authoritative",

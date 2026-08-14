@@ -4,18 +4,39 @@ import json
 import runpy
 from pathlib import Path
 
+from dnd_dm_assistant.application.content_ir_production_evidence import (
+    authoritative_compile_only_ids,
+    load_production_runtime_evidence,
+    project_compile_only_ids,
+)
+from dnd_dm_assistant.application.tashas_whole_pack import (
+    build_migration,
+    existing_project_production_ids,
+)
+
 ROOT = Path(__file__).resolve().parents[2]
 
 
 def test_round_lx_retention_audit_is_dynamic_and_source_bound() -> None:
     module = runpy.run_path(str(ROOT / "scripts/validate-round-LX-retention-audit.py"))
     report = module["build_report"]()
+    loaded = load_production_runtime_evidence(
+        ROOT,
+        pack_id=None,
+        required_checks=("all_required_checks_passed",),
+        require_name_branch_free=True,
+    )
+    compile_only = project_compile_only_ids(
+        authoritative_compile_only_ids(ROOT), loaded
+    )
+    production = existing_project_production_ids(ROOT)
+    migration = build_migration(ROOT)
     assert report["decision"] == "retention_audit_no_promotion"
     assert report["all_required_checks_passed"] is True
     assert report["before"] == {
-        "production": 209,
-        "compile_only": 26,
-        "unique_compiled": 111,
+        "production": len(production),
+        "compile_only": len(compile_only),
+        "unique_compiled": int(migration["current_project_compiled_unique"]),
     }
     assert report["after"] == report["before"]
     assert report["count_delta"] == {"production": 0, "compile_only": 0, "unique_compiled": 0}
