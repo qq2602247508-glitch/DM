@@ -62,7 +62,10 @@ def test_compile_only_projection_is_set_based_and_validated(tmp_path: Path) -> N
         "round_id": "round-XLVIII",
         "production_runtime_full_ids": [SPELL_ID, "unrelated:id"],
         "compile_only_delta": -99,
-        "checks": {"all_required_checks_passed": True},
+        "checks": {
+            "all_required_checks_passed": True,
+            "name_branch_count": 0,
+        },
         "evidence_by_id": {
             SPELL_ID: {"production_runtime_full": True},
             "unrelated:id": {"production_runtime_full": True},
@@ -72,7 +75,7 @@ def test_compile_only_projection_is_set_based_and_validated(tmp_path: Path) -> N
         json.dumps(valid), encoding="utf-8"
     )
     (compiled / "production-runtime-results-b.json").write_text(
-        json.dumps(valid), encoding="utf-8"
+        json.dumps({**valid, "round_id": "round-XLIX"}), encoding="utf-8"
     )
     (compiled / "production-runtime-results-invalid.json").write_text(
         json.dumps(
@@ -91,7 +94,10 @@ def test_compile_only_projection_is_set_based_and_validated(tmp_path: Path) -> N
     )
 
     loaded = load_production_runtime_evidence(
-        tmp_path, pack_id=None, round_id="round-XLVIII"
+        tmp_path,
+        pack_id=None,
+        required_checks=("all_required_checks_passed",),
+        require_name_branch_free=True,
     )
     assert set(loaded) == {SPELL_ID, "unrelated:id"}
     census = authoritative_compile_only_ids(ROOT)

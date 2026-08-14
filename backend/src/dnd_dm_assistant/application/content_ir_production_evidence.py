@@ -65,7 +65,8 @@ def current_project_compile_only_ids(repo_root: Path) -> set[str]:
     evidence = load_production_runtime_evidence(
         repo_root,
         pack_id=None,
-        round_id="round-XLVIII",
+        required_checks=("all_required_checks_passed",),
+        require_name_branch_free=True,
     )
     return project_compile_only_ids(census, evidence)
 
