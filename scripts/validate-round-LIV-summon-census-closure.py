@@ -24,12 +24,17 @@ from dnd_dm_assistant.application.content_ir_production_evidence import (
     load_production_runtime_evidence,
     project_compile_only_ids,
 )
+from dnd_dm_assistant.application.content_ir_production_registry import (
+    resolve_production_consumers,
+)
 from dnd_dm_assistant.application.content_ir_workbench import (
     SpellSpec,
     compile_spell_spec,
 )
+from dnd_dm_assistant.application.tashas_whole_pack import build_migration
 from dnd_dm_assistant.config import Settings
 from dnd_dm_assistant.infrastructure.database.models import (
+    CombatAction,
     Combatant,
     OperationTransaction,
 )
@@ -134,6 +139,7 @@ def _protected_ok() -> bool:
 
 def _census() -> dict[str, Any]:
     current_artifact = str(RESULT_PATH.relative_to(ROOT))
+    authoritative_ids = authoritative_compile_only_ids(ROOT)
     historical_evidence = {
         content_id: row
         for content_id, row in load_production_runtime_evidence(
@@ -146,7 +152,7 @@ def _census() -> dict[str, Any]:
     }
     ids = sorted(
         project_compile_only_ids(
-            authoritative_compile_only_ids(ROOT),
+            authoritative_ids,
             historical_evidence,
         )
     )
@@ -185,7 +191,8 @@ def _census() -> dict[str, Any]:
     for row in rows:
         groups.setdefault(row["semantic_group"], []).append(row["content_id"])
     return {
-        "authoritative_census_size": len(ids),
+        "authoritative_census_size": len(authoritative_ids),
+        "remaining_compile_only_size": len(ids),
         "remaining_compile_only_ids": ids,
         "rows": rows,
         "groups": [
@@ -204,22 +211,120 @@ def _census() -> dict[str, Any]:
     }
 
 
+def _strong_evidence(*, include_current: bool) -> dict[str, dict[str, Any]]:
+    current_artifact = str(RESULT_PATH.relative_to(ROOT))
+    return {
+        content_id: row
+        for content_id, row in load_production_runtime_evidence(
+            ROOT,
+            pack_id=None,
+            required_checks=("all_required_checks_passed",),
+            require_name_branch_free=True,
+        ).items()
+        if (row.get("evidence_path") == current_artifact) is include_current
+    }
+
+
+def _occupied_probe(client: TestClient, helpers: Any) -> dict[str, Any]:
+    spell_id = SUMMON_IDS[1]
+    scene = helpers._setup(client, spell_id)
+    body = helpers._body(
+        scene,
+        key="round-liv-occupied",
+        choice="land",
+        row=8,
+        col=8,
+    )
+    before = client.get(
+        f"{scene['base']}/characters/{scene['character']['id']}"
+    ).json()
+    response = client.post(
+        f"{scene['base']}/content-ir/runtime/preview",
+        json=body,
+    )
+    after = client.get(
+        f"{scene['base']}/characters/{scene['character']['id']}"
+    ).json()
+    before_slot = before["spellcasting"]["slots"]["2"]["current"]
+    after_slot = after["spellcasting"]["slots"]["2"]["current"]
+    return {
+        "status": response.status_code,
+        "rejected_as_occupied": response.status_code == 400
+        and "occupied" in response.text,
+        "slot_before": before_slot,
+        "slot_after": after_slot,
+        "no_payment": before_slot == after_slot,
+    }
+
+
+def _payload_drift_probe(client: TestClient, helpers: Any) -> dict[str, Any]:
+    spell_id = SUMMON_IDS[1]
+    scene = helpers._setup(client, spell_id)
+    body = helpers._body(
+        scene,
+        key="round-liv-payload-drift",
+        choice="land",
+        row=10,
+        col=10,
+    )
+    preview = client.post(
+        f"{scene['base']}/content-ir/runtime/preview",
+        json=body,
+    )
+    if preview.status_code != 200:
+        return {"preview_status": preview.status_code, "rejected": False}
+    drifted = {**body, "summon_choice": "air", "preview_token": preview.json()["preview_token"]}
+    response = client.post(
+        f"{scene['base']}/content-ir/runtime/confirm",
+        json=drifted,
+    )
+    return {
+        "preview_status": preview.status_code,
+        "confirm_status": response.status_code,
+        "rejected": response.status_code in {400, 409},
+    }
+
+
+def _stale_cas_probe(client: TestClient, helpers: Any) -> dict[str, Any]:
+    spell_id = SUMMON_IDS[1]
+    scene = helpers._setup(client, spell_id)
+    body = helpers._body(
+        scene,
+        key="round-liv-stale-cas",
+        choice="land",
+        row=10,
+        col=10,
+    )
+    preview = client.post(
+        f"{scene['base']}/content-ir/runtime/preview",
+        json=body,
+    )
+    if preview.status_code != 200:
+        return {"preview_status": preview.status_code, "rejected": False}
+    changed = client.patch(
+        f"{scene['base']}/combats/{scene['combat']['id']}/combatants/{scene['actor']['id']}",
+        json={"action_available": False, "version": scene["actor"]["version"]},
+    )
+    response = client.post(
+        f"{scene['base']}/content-ir/runtime/confirm",
+        json={**body, "preview_token": preview.json()["preview_token"]},
+    )
+    return {
+        "preview_status": preview.status_code,
+        "mutation_status": changed.status_code,
+        "confirm_status": response.status_code,
+        "rejected": response.status_code in {400, 409},
+        "mentions_version": "version" in response.text.lower()
+        or "action" in response.text.lower(),
+    }
+
+
 def _isolated_receipts() -> tuple[dict[str, Any], dict[str, bool]]:
     helpers = _load_old_helpers()
     records = helpers._load_records()
     test_helpers = helpers._load_test_helpers()
     evidence: dict[str, Any] = {}
-    checks = {
-        "source_provenance": True,
-        "source_bound_compile_full": True,
-        "generic_consumer_exact": True,
-        "isolated_preview_confirm_replay": True,
-        "isolated_snapshot_transaction": True,
-        "occupied_position_rejected_before_payment": True,
-        "source_concentration_lifecycle": True,
-        "spell_slot_rollback": True,
-        "default_behavior_executed": True,
-    }
+    checks: dict[str, bool] = {}
     with tempfile.TemporaryDirectory(prefix="round-liv-summon-") as directory:
         database_url = f"sqlite:///{Path(directory) / 'isolated.db'}"
         os.environ["DND_DM_DATABASE_URL"] = database_url
@@ -248,12 +353,6 @@ def _isolated_receipts() -> tuple[dict[str, Any], dict[str, bool]]:
                     f"{scene['base']}/content-ir/runtime/confirm",
                     json={**body, "preview_token": preview.json()["preview_token"]},
                 )
-                checks["isolated_preview_confirm_replay"] &= (
-                    preview.status_code == 200
-                    and confirmed.status_code == 200
-                    and replay.status_code == 200
-                    and replay.json().get("already_applied") is True
-                )
                 result = confirmed.json()
                 engine = create_engine(database_url)
                 with Session(engine) as session:
@@ -266,8 +365,41 @@ def _isolated_receipts() -> tuple[dict[str, Any], dict[str, bool]]:
                             == f"content-ir:{body['idempotency_key']}:summon"
                         )
                     )
-                    checks["isolated_snapshot_transaction"] &= (
-                        actor is not None and operation is not None
+                    action = session.scalar(
+                        select(CombatAction).where(
+                            CombatAction.idempotency_key
+                            == f"content-ir:{body['idempotency_key']}:summon"
+                        )
+                    )
+                    operation_bound = (
+                        actor is not None
+                        and operation is not None
+                        and action is not None
+                        and action.transaction_id == operation.id
+                    )
+                    spell_record = _compiled_record_checks(record)
+                    runtime_checks = {
+                        **spell_record,
+                        "preview_confirm_replay": (
+                            preview.status_code == 200
+                            and confirmed.status_code == 200
+                            and replay.status_code == 200
+                            and replay.json().get("already_applied") is True
+                            and result.get("production_runtime_full") is True
+                        ),
+                        "operation_transaction_binding": operation_bound,
+                    }
+                    checks.update(
+                        {
+                            f"{content_id}:source_bound": spell_record["source_bound"],
+                            f"{content_id}:generic_consumer": spell_record[
+                                "generic_consumer"
+                            ],
+                            f"{content_id}:preview_confirm_replay": runtime_checks[
+                                "preview_confirm_replay"
+                            ],
+                            f"{content_id}:operation_transaction_binding": operation_bound,
+                        }
                     )
                     evidence[content_id] = {
                         "content_id": content_id,
@@ -301,13 +433,115 @@ def _isolated_receipts() -> tuple[dict[str, Any], dict[str, bool]]:
                                 else None,
                             }
                         ),
+                        "combat_action": _stable(
+                            {
+                                "id": action.id if action else None,
+                                "transaction_id": action.transaction_id
+                                if action
+                                else None,
+                                "idempotency_key": action.idempotency_key
+                                if action
+                                else None,
+                            }
+                        ),
+                        "source_snapshot": _stable(
+                            {
+                                "combatant_id": actor.id if actor else None,
+                                "version": actor.version if actor else None,
+                                "snapshot_json": actor.snapshot_json if actor else None,
+                            }
+                        ),
+                        "checks": runtime_checks,
                     }
+            occupied = _occupied_probe(client, test_helpers)
+            payload_drift = _payload_drift_probe(client, test_helpers)
+            stale_cas = _stale_cas_probe(client, test_helpers)
+            source_lifecycle = helpers._run_source_lifecycle_probe(client, test_helpers)
+            rollback = helpers._run_rollback_probe(client, test_helpers)
+            spell_runs = {
+                content_id: helpers._run_spell(
+                    client,
+                    test_helpers,
+                    content_id,
+                    records[content_id],
+                    key_suffix=(
+                        "beast"
+                        if content_id.endswith("54c8c29188db1442473d9dc1")
+                        else "undead"
+                    ),
+                )
+                for content_id in SUMMON_IDS
+            }
+            default_behavior = {
+                content_id: row["default_behavior"]
+                for content_id, row in spell_runs.items()
+            }
+            checks.update(
+                {
+                    "occupied_position_rejected_before_payment": (
+                        occupied["rejected_as_occupied"] and occupied["no_payment"]
+                    ),
+                    "payload_drift_rejected": payload_drift["rejected"],
+                    "stale_cas_rejected": (
+                        stale_cas["rejected"] and stale_cas["mentions_version"]
+                    ),
+                    "source_concentration_lifecycle": bool(source_lifecycle),
+                    "spell_slot_rollback": bool(rollback),
+                    "default_behavior_executed": all(
+                        item["status"] == "applied"
+                        and item["on_no_command"] == "dodge"
+                        and item["dodge_applied"]
+                        and item["movement_status"] == "applied"
+                        and item["moved_ft"] > 0
+                        and item["action_available_after"] is False
+                        and item["position_changed"]
+                        for item in default_behavior.values()
+                    ),
+                }
+            )
+            evidence["_probes"] = {
+                "occupied_position": occupied,
+                "payload_drift": payload_drift,
+                "stale_cas": stale_cas,
+                "source_concentration_lifecycle": {"passed": bool(source_lifecycle)},
+                "spell_slot_rollback": {"passed": bool(rollback)},
+                "default_behavior": _stable(default_behavior),
+            }
     return evidence, checks
+
+
+def _compiled_record_checks(record: dict[str, Any]) -> dict[str, bool]:
+    authored = record["authored"]
+    compiled = record["compiled"]
+    blocks = record["blocks"]
+    consumers = [
+        item["consumer_id"]
+        for item in resolve_production_consumers(
+            content_kind="spell",
+            runtime_schema_version="spell-runtime-1",
+            blocks=blocks,
+        )
+    ]
+    return {
+        "source_bound": (
+            authored.get("source_record_id") == authored.get("source_provenance", {}).get(
+                "source_record_id", authored.get("source_record_id")
+            )
+            and bool(authored.get("source_fingerprint"))
+            and bool(authored.get("source_path"))
+            and bool(authored.get("source_provenance", {}).get("source_checksum"))
+            and bool(authored.get("source_evidence", {}).get("source_text"))
+        ),
+        "compile_full": compiled.get("compile_status") == "full",
+        "generic_consumer": consumers
+        == ["spell.summon.v1", "spell_economy.concentration.v1"],
+    }
 
 
 def main() -> int:
     census = _census()
     evidence, checks = _isolated_receipts()
+    probes = evidence.pop("_probes")
     checks["source_provenance"] = all(
         row["source_complete"] and row["compile_status"] == "full"
         for row in census["rows"]
@@ -315,16 +549,90 @@ def main() -> int:
     )
     checks["source_bound_compile_full"] = checks["source_provenance"]
     checks["generic_consumer_exact"] = set(evidence) == set(SUMMON_IDS)
+    authoritative = authoritative_compile_only_ids(ROOT)
+    prior_strong = _strong_evidence(include_current=False)
+    prior_strong_ids = set(prior_strong)
+    current_strong_ids = set(evidence)
+    before_compile_only = project_compile_only_ids(authoritative, prior_strong_ids)
+    after_compile_only = project_compile_only_ids(
+        authoritative,
+        prior_strong_ids | current_strong_ids,
+    )
+    production_before = {
+        content_id
+        for content_id, row in load_production_runtime_evidence(
+            ROOT, pack_id=None
+        ).items()
+        if row.get("evidence_path") != str(RESULT_PATH.relative_to(ROOT))
+    }
+    production_after = set(
+        load_production_runtime_evidence(ROOT, pack_id=None)
+    )
+    migration = build_migration(ROOT)
+    unique_compiled = int(migration["current_project_compiled_unique"])
+    code_paths = (
+        ROOT / "backend/src/dnd_dm_assistant/application/content_ir_runtime.py",
+        ROOT
+        / "backend/src/dnd_dm_assistant/application/content_ir_production_registry.py",
+        ROOT / "backend/src/dnd_dm_assistant/infrastructure/database/combat_service.py",
+    )
+    code_text = "\n".join(path.read_text(encoding="utf-8") for path in code_paths)
+    name_branch_count = sum(
+        code_text.count(marker)
+        for marker in (
+            "Summon Beast",
+            "Summon Undead",
+            "54c8c29188db1442473d9dc1",
+            "083419d9de551806a5ca9748",
+        )
+    )
+    checks.update(
+        {
+            "authoritative_ids_present": set(SUMMON_IDS).issubset(authoritative),
+            "already_in_production_union": set(SUMMON_IDS).issubset(production_before),
+            "absent_from_prior_strong_evidence": not (
+                set(SUMMON_IDS) & prior_strong_ids
+            ),
+            "current_strong_evidence_exactly_adds_candidates": (
+                current_strong_ids == set(SUMMON_IDS)
+            ),
+            "each_candidate_removed_once": (
+                before_compile_only - after_compile_only == set(SUMMON_IDS)
+                and after_compile_only - before_compile_only == set()
+            ),
+            "duplicate_invalid_evidence_is_set_idempotent": (
+                project_compile_only_ids(
+                    authoritative,
+                    list(prior_strong_ids)
+                    + list(SUMMON_IDS)
+                    + list(SUMMON_IDS)
+                    + ["", "invalid-content-id"],
+                )
+                == after_compile_only
+            ),
+            "unrelated_compile_only_ids_unchanged": (
+                (before_compile_only - set(SUMMON_IDS))
+                == (after_compile_only - set())
+            ),
+            "unrelated_production_ids_unchanged": production_before == production_after,
+            "name_branch_free": name_branch_count == 0,
+            "current_evidence_rows_source_bound": all(
+                row.get("production_runtime_full") is True
+                and row.get("content_id") in SUMMON_IDS
+                and row.get("source", {}).get("source_record_id")
+                for row in evidence.values()
+            ),
+        }
+    )
     checks["protected_ollama_sha_exact"] = _protected_ok()
     checks["historical_xliii_sha_exact"] = _sha(
         ROOT / "reports/round-XLIII-typed-target-adjudication-2026-08-13.json"
     ) == XLIII_SHA
     checks["all_required_checks_passed"] = all(checks.values())
-    loaded = load_production_runtime_evidence(ROOT, pack_id=None)
     before = {
-        "production": len(loaded),
-        "compile_only": len(census["remaining_compile_only_ids"]),
-        "unique_compiled": 111,
+        "production": len(production_before),
+        "compile_only": len(before_compile_only),
+        "unique_compiled": unique_compiled,
     }
     produced_ids = list(SUMMON_IDS) if checks["all_required_checks_passed"] else []
     result = {
@@ -336,16 +644,16 @@ def main() -> int:
         "evidence_by_id": evidence if produced_ids else {},
         "checks": {
             **checks,
-            "name_branch_count": 0,
+            "name_branch_count": name_branch_count,
             "formal_database_written": False,
             "formal_registry_written": False,
         },
         "all_required_checks_passed": checks["all_required_checks_passed"],
     }
     after = {
-        "production": len(set(loaded) | set(produced_ids)),
-        "compile_only": before["compile_only"] - len(produced_ids),
-        "unique_compiled": before["unique_compiled"],
+        "production": len(production_after),
+        "compile_only": len(after_compile_only),
+        "unique_compiled": unique_compiled,
     }
     report = {
         "schema_version": "round-LIV-summon-census-closure-1",
@@ -365,6 +673,15 @@ def main() -> int:
         "census": census,
         "before": before,
         "after": after,
+        "projection_sets": {
+            "prior_strong_production_ids": sorted(prior_strong_ids),
+            "current_strong_production_ids": sorted(current_strong_ids),
+            "before_compile_only_ids": sorted(before_compile_only),
+            "after_compile_only_ids": sorted(after_compile_only),
+            "production_before_ids": sorted(production_before),
+            "production_after_ids": sorted(production_after),
+        },
+        "probe_results": probes,
         "production_runtime_full_ids": produced_ids,
         "checks": result["checks"],
         "evidence_artifact": str(RESULT_PATH.relative_to(ROOT)),
@@ -373,6 +690,31 @@ def main() -> int:
         "protected_ollama_sha256": OLLAMA_SHA,
         "no_push": True,
     }
+    RESULT_PATH.write_text(
+        json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    REPORT_PATH.write_text(
+        json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    loaded_current = load_production_runtime_evidence(
+        ROOT,
+        pack_id=None,
+        required_checks=("all_required_checks_passed",),
+        require_name_branch_free=True,
+    )
+    checks["current_loader_acceptance"] = set(SUMMON_IDS).issubset(loaded_current)
+    checks["all_required_checks_passed"] = all(
+        value for key, value in checks.items() if key != "all_required_checks_passed"
+    )
+    result["checks"] = {**checks, "name_branch_count": name_branch_count}
+    result["all_required_checks_passed"] = checks["all_required_checks_passed"]
+    report["checks"] = result["checks"]
+    report["after"] = after
+    report["production_runtime_full_ids"] = (
+        list(SUMMON_IDS) if checks["all_required_checks_passed"] else []
+    )
     RESULT_PATH.write_text(
         json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",

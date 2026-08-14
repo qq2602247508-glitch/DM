@@ -2,25 +2,54 @@
   "all_required_checks_passed": true,
   "artifact_date": "2026-08-14",
   "checks": {
+    "absent_from_prior_strong_evidence": true,
     "all_required_checks_passed": true,
+    "already_in_production_union": true,
+    "authoritative_ids_present": true,
+    "current_evidence_rows_source_bound": true,
+    "current_loader_acceptance": true,
+    "current_strong_evidence_exactly_adds_candidates": true,
     "default_behavior_executed": true,
-    "formal_database_written": false,
-    "formal_registry_written": false,
+    "duplicate_invalid_evidence_is_set_idempotent": true,
+    "each_candidate_removed_once": true,
     "generic_consumer_exact": true,
     "historical_xliii_sha_exact": true,
-    "isolated_preview_confirm_replay": true,
-    "isolated_snapshot_transaction": true,
     "name_branch_count": 0,
+    "name_branch_free": true,
     "occupied_position_rejected_before_payment": true,
+    "payload_drift_rejected": true,
     "protected_ollama_sha_exact": true,
     "source_bound_compile_full": true,
     "source_concentration_lifecycle": true,
     "source_provenance": true,
-    "spell_slot_rollback": true
+    "spell_slot_rollback": true,
+    "stale_cas_rejected": true,
+    "tashas-cauldron:spell:083419d9de551806a5ca9748:generic_consumer": true,
+    "tashas-cauldron:spell:083419d9de551806a5ca9748:operation_transaction_binding": true,
+    "tashas-cauldron:spell:083419d9de551806a5ca9748:preview_confirm_replay": true,
+    "tashas-cauldron:spell:083419d9de551806a5ca9748:source_bound": true,
+    "tashas-cauldron:spell:54c8c29188db1442473d9dc1:generic_consumer": true,
+    "tashas-cauldron:spell:54c8c29188db1442473d9dc1:operation_transaction_binding": true,
+    "tashas-cauldron:spell:54c8c29188db1442473d9dc1:preview_confirm_replay": true,
+    "tashas-cauldron:spell:54c8c29188db1442473d9dc1:source_bound": true,
+    "unrelated_compile_only_ids_unchanged": true,
+    "unrelated_production_ids_unchanged": true
   },
   "content_kind": "spell",
   "evidence_by_id": {
     "tashas-cauldron:spell:083419d9de551806a5ca9748": {
+      "checks": {
+        "compile_full": true,
+        "generic_consumer": true,
+        "operation_transaction_binding": true,
+        "preview_confirm_replay": true,
+        "source_bound": true
+      },
+      "combat_action": {
+        "id": "stable-id",
+        "idempotency_key": "content-ir:round-liv-083419d9de551806a5ca9748:summon",
+        "transaction_id": "stable-id"
+      },
       "confirm_receipt": {
         "combat": {
           "action": {
@@ -3700,9 +3729,105 @@
         "source_fingerprint": "f051639e10dfdc7e9d340120f61a8c2bb3cd942f767a6d07da361717f178a5d8",
         "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
         "source_record_id": "083419d9de551806a5ca9748"
+      },
+      "source_snapshot": {
+        "combatant_id": "stable-id",
+        "snapshot_json": {
+          "combat_start_state": {
+            "concentration": {},
+            "conditions": [],
+            "hp": 40,
+            "is_active": true,
+            "max_hp_reduction": 0,
+            "snapshot_json": {
+              "combat_start_state": {
+                "concentration": {},
+                "conditions": [],
+                "hp": 40,
+                "is_active": true,
+                "max_hp_reduction": 0,
+                "temporary_hp": 0
+              },
+              "feature_runtime": {
+                "actions": {},
+                "attack_riders": [],
+                "combat_start": {
+                  "attack_action_count": 1,
+                  "attack_slot_replacements": [],
+                  "defenses": [],
+                  "modifiers": [],
+                  "movement_modes": []
+                },
+                "dm_only": [],
+                "feature_block_schema_version": "1.0",
+                "feature_blocks": [],
+                "feature_contracts": [],
+                "proficiencies": [],
+                "progression": {
+                  "class_levels": {},
+                  "proficiency_bonus": 3,
+                  "spell_slots": {},
+                  "total_level": 5
+                },
+                "resources": {},
+                "schema_version": "1.2",
+                "spellcasting": [],
+                "triggers": []
+              },
+              "grid_position": {
+                "col": 8,
+                "row": 8
+              }
+            },
+            "temporary_hp": 0
+          },
+          "feature_runtime": {
+            "actions": {},
+            "attack_riders": [],
+            "combat_start": {
+              "attack_action_count": 1,
+              "attack_slot_replacements": [],
+              "defenses": [],
+              "modifiers": [],
+              "movement_modes": []
+            },
+            "dm_only": [],
+            "feature_block_schema_version": "1.0",
+            "feature_blocks": [],
+            "feature_contracts": [],
+            "proficiencies": [],
+            "progression": {
+              "class_levels": {},
+              "proficiency_bonus": 3,
+              "spell_slots": {},
+              "total_level": 5
+            },
+            "resources": {},
+            "schema_version": "1.2",
+            "spellcasting": [],
+            "triggers": []
+          },
+          "grid_position": {
+            "col": 8,
+            "row": 8
+          }
+        },
+        "version": 3
       }
     },
     "tashas-cauldron:spell:54c8c29188db1442473d9dc1": {
+      "checks": {
+        "compile_full": true,
+        "generic_consumer": true,
+        "operation_transaction_binding": true,
+        "preview_confirm_replay": true,
+        "source_bound": true
+      },
+      "combat_action": {
+        "id": "stable-id",
+        "idempotency_key": "content-ir:round-liv-54c8c29188db1442473d9dc1:summon",
+        "transaction_id": "stable-id"
+      },
       "confirm_receipt": {
         "combat": {
           "action": {
@@ -7325,6 +7450,90 @@
         "source_fingerprint": "f57b0e2559fd8a0edbef3ef77cf0ead4daa815a664e1c412bd7e26a337961d50",
         "source_path": "塔莎的万事坩埚/法术/法术详述/2环.html",
         "source_record_id": "54c8c29188db1442473d9dc1"
+      },
+      "source_snapshot": {
+        "combatant_id": "stable-id",
+        "snapshot_json": {
+          "combat_start_state": {
+            "concentration": {},
+            "conditions": [],
+            "hp": 40,
+            "is_active": true,
+            "max_hp_reduction": 0,
+            "snapshot_json": {
+              "combat_start_state": {
+                "concentration": {},
+                "conditions": [],
+                "hp": 40,
+                "is_active": true,
+                "max_hp_reduction": 0,
+                "temporary_hp": 0
+              },
+              "feature_runtime": {
+                "actions": {},
+                "attack_riders": [],
+                "combat_start": {
+                  "attack_action_count": 1,
+                  "attack_slot_replacements": [],
+                  "defenses": [],
+                  "modifiers": [],
+                  "movement_modes": []
+                },
+                "dm_only": [],
+                "feature_block_schema_version": "1.0",
+                "feature_blocks": [],
+                "feature_contracts": [],
+                "proficiencies": [],
+                "progression": {
+                  "class_levels": {},
+                  "proficiency_bonus": 3,
+                  "spell_slots": {},
+                  "total_level": 5
+                },
+                "resources": {},
+                "schema_version": "1.2",
+                "spellcasting": [],
+                "triggers": []
+              },
+              "grid_position": {
+                "col": 8,
+                "row": 8
+              }
+            },
+            "temporary_hp": 0
+          },
+          "feature_runtime": {
+            "actions": {},
+            "attack_riders": [],
+            "combat_start": {
+              "attack_action_count": 1,
+              "attack_slot_replacements": [],
+              "defenses": [],
+              "modifiers": [],
+              "movement_modes": []
+            },
+            "dm_only": [],
+            "feature_block_schema_version": "1.0",
+            "feature_blocks": [],
+            "feature_contracts": [],
+            "proficiencies": [],
+            "progression": {
+              "class_levels": {},
+              "proficiency_bonus": 3,
+              "spell_slots": {},
+              "total_level": 5
+            },
+            "resources": {},
+            "schema_version": "1.2",
+            "spellcasting": [],
+            "triggers": []
+          },
+          "grid_position": {
+            "col": 8,
+            "row": 8
+          }
+        },
+        "version": 3
       }
     }
   },

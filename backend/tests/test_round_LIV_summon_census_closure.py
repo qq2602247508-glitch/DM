@@ -1,7 +1,12 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
+
+from dnd_dm_assistant.application.content_ir_production_evidence import (
+    load_production_runtime_evidence,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 SPEC = importlib.util.spec_from_file_location(
@@ -15,7 +20,8 @@ SPEC.loader.exec_module(MODULE)
 
 def test_round_liv_census_has_30_remaining_ids_and_summon_cluster() -> None:
     census = MODULE._census()
-    assert census["authoritative_census_size"] == 30
+    assert census["authoritative_census_size"] == 35
+    assert census["remaining_compile_only_size"] == 30
     assert set(MODULE.SUMMON_IDS).issubset(census["remaining_compile_only_ids"])
     summon_group = next(
         item
@@ -33,3 +39,31 @@ def test_round_liv_summon_source_is_complete_and_compiles_full() -> None:
         assert rows[content_id]["source_complete"] is True
         assert rows[content_id]["compile_status"] == "full"
         assert rows[content_id]["source_bound_blockers"] == []
+
+
+def test_round_liv_projection_and_transaction_evidence_are_set_derived() -> None:
+    report = json.loads(
+        (
+            ROOT
+            / "reports/round-LIV-summon-census-closure-2026-08-14.json"
+        ).read_text(encoding="utf-8")
+    )
+    before_ids = set(report["projection_sets"]["before_compile_only_ids"])
+    after_ids = set(report["projection_sets"]["after_compile_only_ids"])
+    assert report["before"]["compile_only"] == len(before_ids)
+    assert report["after"]["compile_only"] == len(after_ids)
+    assert before_ids - after_ids == set(MODULE.SUMMON_IDS)
+    assert after_ids - before_ids == set()
+    assert report["projection_sets"]["production_before_ids"] == report[
+        "projection_sets"
+    ]["production_after_ids"]
+    loaded = load_production_runtime_evidence(
+        ROOT,
+        pack_id=None,
+        required_checks=("all_required_checks_passed",),
+        require_name_branch_free=True,
+    )
+    assert set(MODULE.SUMMON_IDS).issubset(loaded)
+    for content_id in MODULE.SUMMON_IDS:
+        assert content_id in report["chosen_content_ids"]
+        assert report["checks"][f"{content_id}:operation_transaction_binding"] is True

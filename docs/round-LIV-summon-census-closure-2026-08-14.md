@@ -5,7 +5,7 @@
 
 ## 决策
 
-权威项目 census 在移除当前 generic production evidence 后剩余 30 条
+权威 35-ID census 在移除历史 strong production evidence 后剩余 30 条
 compile-only。最高置信度簇是：
 
 - `tashas-cauldron:spell:54c8c29188db1442473d9dc1`：野兽召唤术；
@@ -14,8 +14,9 @@ compile-only。最高置信度簇是：
 两条均为 source-complete、四条 typed clause，并共享既有名称无关
 `spell.summon.v1`。Round XXIV 已有真实临时 SQLite 的 preview/confirm/replay、
 位置占用拒绝、stat block/HP/AC scaling、共享先攻、默认行为、专注/源生命周期、
-spell-slot rollback、CAS 与持久化交易证据；本轮只按当前 production evidence
-loader 契约重新登记这份真实证据。
+spell-slot rollback、CAS 与持久化交易证据；本轮重新执行这些 API probes，并记录
+payload drift、stale CAS、snapshot、`OperationTransaction` 与
+`CombatAction.transaction_id` 绑定，再按当前 production evidence loader 契约登记。
 
 其余 28 条在报告 census 中按精确 source-bound shape 分组；它们保留各自的
 视觉移动/调查、伤害/豁免、条件生命周期、标记转移、区域/仪式、检测/防御、
