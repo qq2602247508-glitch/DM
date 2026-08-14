@@ -75,7 +75,7 @@ def focused() -> dict[str, Any]:
     result = subprocess.run(command, cwd=ROOT, text=True, capture_output=True, check=False)
     match = re.search(r"(\d+)\s+passed", f"{result.stdout}\n{result.stderr}")
     if match is None and result.returncode == 0:
-        match = re.search(r"(\.+)\s+\[%", result.stdout)
+        match = re.search(r"(?m)^(\.+)\s+\[\s*100%\]\s*$", result.stdout)
     return {
         "command": command,
         "returncode": result.returncode,
