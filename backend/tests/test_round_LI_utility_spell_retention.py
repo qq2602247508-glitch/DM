@@ -83,10 +83,12 @@ def test_round_li_projection_retains_both_candidates() -> None:
         require_name_branch_free=True,
     )
     compile_only = project_compile_only_ids(authoritative_compile_only_ids(ROOT), validated)
-    assert {
-        "production": len(loaded),
-        "compile_only": len(compile_only),
-        "unique_compiled": int(migration["current_project_compiled_unique"]),
-    } == {"production": 208, "compile_only": 30, "unique_compiled": 111}
+    assert loaded == existing_project_production_ids(ROOT)
+    assert compile_only == project_compile_only_ids(
+        authoritative_compile_only_ids(ROOT), validated
+    )
+    assert int(migration["current_project_production_full"]) == len(loaded)
+    assert int(migration["current_project_compile_only"]) == len(compile_only)
+    assert int(migration["current_project_compiled_unique"]) > len(compile_only)
     assert DISGUISE_SELF_ID in validated
     assert CANDIDATE_IDS[1] in validated

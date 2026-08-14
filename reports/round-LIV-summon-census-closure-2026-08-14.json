@@ -1,0 +1,1014 @@
+{
+  "after": {
+    "compile_only": 28,
+    "production": 208,
+    "unique_compiled": 111
+  },
+  "artifact_date": "2026-08-14",
+  "baseline_commit": "46eb58ee3bbd4dc96050a48f0b7fd562fa3946e4",
+  "before": {
+    "compile_only": 30,
+    "production": 208,
+    "unique_compiled": 111
+  },
+  "candidate_comparison": {
+    "excluded_candidates": "All other remaining rows retain source-bound shape-specific blockers listed in census rows.",
+    "selection_basis": [
+      "source-complete typed clauses",
+      "existing generic spell.summon.v1 consumer",
+      "real isolated API receipt, snapshot, transaction, CAS/replay and rollback evidence"
+    ]
+  },
+  "census": {
+    "authoritative_census_size": 30,
+    "groups": [
+      {
+        "content_ids": [
+          "fizbans-treasury:spell:cadce71b1ba7a42354f785dc"
+        ],
+        "member_count": 1,
+        "semantic_group": "area.cone_save_condition",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "core-phb-2024:spell:ea1d170f71d30f4ddeb84f9e"
+        ],
+        "member_count": 1,
+        "semantic_group": "area.light_effect",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "core-phb-2024:spell:9c4208ec038463dfd608ba9e"
+        ],
+        "member_count": 1,
+        "semantic_group": "area.multi_mode_elemental",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "core-phb-2024:spell:6c07317bf4d16b92da3c8f55"
+        ],
+        "member_count": 1,
+        "semantic_group": "area.object_purification",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "core-phb-2024:spell:9b29fbb72177f058bf1448ef"
+        ],
+        "member_count": 1,
+        "semantic_group": "concentration.area_lifecycle",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "xanathars-guide:spell:6d32a73dbc7bf6f5fac303bd"
+        ],
+        "member_count": 1,
+        "semantic_group": "concentration.beast_bond",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "core-phb-2024:spell:c724eb95e2f08220d161e608"
+        ],
+        "member_count": 1,
+        "semantic_group": "concentration.debuff",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "fizbans-treasury:spell:843fb135e4cc8a1fb34c46be",
+          "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3"
+        ],
+        "member_count": 2,
+        "semantic_group": "concentration.defense_modifier",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "core-phb-2024:spell:ed5371dd95cf605bf1c24cd3"
+        ],
+        "member_count": 1,
+        "semantic_group": "concentration.duel_target",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "core-phb-2024:spell:63fb2360b8c30fb0419d9225"
+        ],
+        "member_count": 1,
+        "semantic_group": "concentration.mark_transfer",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "xanathars-guide:spell:c9d315871dc96f3fed66c29b"
+        ],
+        "member_count": 1,
+        "semantic_group": "concentration.movement",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "xanathars-guide:spell:aadf89719f073bfca1fefb3a"
+        ],
+        "member_count": 1,
+        "semantic_group": "concentration.remote_message",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "core-phb-2024:spell:a0c914f228b833357f0c2779"
+        ],
+        "member_count": 1,
+        "semantic_group": "concentration.resistance",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "core-phb-2024:spell:90c12635dd6eca81ebe04449"
+        ],
+        "member_count": 1,
+        "semantic_group": "concentration.sense_detection",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "core-phb-2024:spell:ad887cac0fa7f6c2cf7c566f"
+        ],
+        "member_count": 1,
+        "semantic_group": "condition.area_save",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "core-phb-2024:spell:eaaa6893b004c177f8237eb0"
+        ],
+        "member_count": 1,
+        "semantic_group": "condition.duration_save",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "core-phb-2024:spell:85595d634b480207249dd2ac"
+        ],
+        "member_count": 1,
+        "semantic_group": "condition.lifecycle_save",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "core-phb-2024:spell:aa17c997419ff77ab783e003"
+        ],
+        "member_count": 1,
+        "semantic_group": "condition.lifecycle_trigger",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "core-phb-2024:spell:d84dec64befac8db7294e0f1"
+        ],
+        "member_count": 1,
+        "semantic_group": "damage.area_save.scaling",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "core-phb-2024:spell:dccfb9fc9cd30b9fb8b627b0"
+        ],
+        "member_count": 1,
+        "semantic_group": "damage.attack_concentration",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "xanathars-guide:spell:5aa5cf7f93be0fa149fdcd62"
+        ],
+        "member_count": 1,
+        "semantic_group": "damage.attack_or_save.condition",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "core-phb-2024:spell:fa352b4b5b77382c47bad253"
+        ],
+        "member_count": 1,
+        "semantic_group": "damage.cantrip_scaling",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b"
+        ],
+        "member_count": 1,
+        "semantic_group": "damage.save.cover_bypass.scaling",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "core-phb-2024:spell:65b211e271db5fa11508dbbc"
+        ],
+        "member_count": 1,
+        "semantic_group": "illusion.visual_movement_inspection",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "xanathars-guide:spell:96d5c3265bc938448c4aef58"
+        ],
+        "member_count": 1,
+        "semantic_group": "ritual.ceremony_choice",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "xanathars-guide:spell:805cbf82765f6710391cc75f"
+        ],
+        "member_count": 1,
+        "semantic_group": "ritual.trap_trigger",
+        "shared_consumer": null
+      },
+      {
+        "content_ids": [
+          "tashas-cauldron:spell:083419d9de551806a5ca9748",
+          "tashas-cauldron:spell:54c8c29188db1442473d9dc1"
+        ],
+        "member_count": 2,
+        "semantic_group": "summon.stat_block.lifecycle",
+        "shared_consumer": "spell.summon.v1"
+      },
+      {
+        "content_ids": [
+          "core-phb-2024:spell:f0e1229e39b1dfb476f90c6b"
+        ],
+        "member_count": 1,
+        "semantic_group": "unclassified",
+        "shared_consumer": null
+      }
+    ],
+    "remaining_compile_only_ids": [
+      "core-phb-2024:spell:63fb2360b8c30fb0419d9225",
+      "core-phb-2024:spell:65b211e271db5fa11508dbbc",
+      "core-phb-2024:spell:6c07317bf4d16b92da3c8f55",
+      "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b",
+      "core-phb-2024:spell:85595d634b480207249dd2ac",
+      "core-phb-2024:spell:90c12635dd6eca81ebe04449",
+      "core-phb-2024:spell:9b29fbb72177f058bf1448ef",
+      "core-phb-2024:spell:9c4208ec038463dfd608ba9e",
+      "core-phb-2024:spell:a0c914f228b833357f0c2779",
+      "core-phb-2024:spell:aa17c997419ff77ab783e003",
+      "core-phb-2024:spell:ad887cac0fa7f6c2cf7c566f",
+      "core-phb-2024:spell:c724eb95e2f08220d161e608",
+      "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+      "core-phb-2024:spell:dccfb9fc9cd30b9fb8b627b0",
+      "core-phb-2024:spell:ea1d170f71d30f4ddeb84f9e",
+      "core-phb-2024:spell:eaaa6893b004c177f8237eb0",
+      "core-phb-2024:spell:ed5371dd95cf605bf1c24cd3",
+      "core-phb-2024:spell:f0e1229e39b1dfb476f90c6b",
+      "core-phb-2024:spell:fa352b4b5b77382c47bad253",
+      "fizbans-treasury:spell:843fb135e4cc8a1fb34c46be",
+      "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+      "tashas-cauldron:spell:083419d9de551806a5ca9748",
+      "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
+      "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
+      "xanathars-guide:spell:5aa5cf7f93be0fa149fdcd62",
+      "xanathars-guide:spell:6d32a73dbc7bf6f5fac303bd",
+      "xanathars-guide:spell:805cbf82765f6710391cc75f",
+      "xanathars-guide:spell:96d5c3265bc938448c4aef58",
+      "xanathars-guide:spell:aadf89719f073bfca1fefb3a",
+      "xanathars-guide:spell:c9d315871dc96f3fed66c29b"
+    ],
+    "rows": [
+      {
+        "clause_types": [
+          "concentration",
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "core-phb-2024:spell:63fb2360b8c30fb0419d9225",
+        "name": "猎人印记",
+        "pack_id": "core-phb-2024",
+        "semantic_group": "concentration.mark_transfer",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "fcb7992acc5a74c50fc425aba3e1b58d0b2a0883e89a33b8a0225b8749c1f6a2",
+        "source_complete": true,
+        "source_fingerprint": "ca3493ac1ff56d892d8da3ed717ae7b04e2d1a2b274d2653ce7798873dae0ebe",
+        "source_path": "玩家手册2024/法术详述/1环.htm",
+        "source_record_id": "63fb2360b8c30fb0419d9225",
+        "typed_clause_ids": [
+          "core-phb-2024:spell:63fb2360b8c30fb0419d9225:target",
+          "core-phb-2024:spell:63fb2360b8c30fb0419d9225:concentration"
+        ]
+      },
+      {
+        "clause_types": [
+          "area",
+          "concentration",
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "core-phb-2024:spell:65b211e271db5fa11508dbbc",
+        "name": "无声幻影",
+        "pack_id": "core-phb-2024",
+        "semantic_group": "illusion.visual_movement_inspection",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "07b9fc350a06cce07cab10e0a13e71eabb8604f2dfe95b1e78a4fb138019e7ce",
+        "source_complete": true,
+        "source_fingerprint": "596eb2057580fbf9f54ca470d5b9bbc1a10db7bcee7f3e615051dccdf0a02106",
+        "source_path": "玩家手册2024/法术详述/1环.htm",
+        "source_record_id": "65b211e271db5fa11508dbbc",
+        "typed_clause_ids": [
+          "core-phb-2024:spell:65b211e271db5fa11508dbbc:target",
+          "core-phb-2024:spell:65b211e271db5fa11508dbbc:concentration",
+          "core-phb-2024:spell:65b211e271db5fa11508dbbc:area"
+        ]
+      },
+      {
+        "clause_types": [
+          "area",
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "core-phb-2024:spell:6c07317bf4d16b92da3c8f55",
+        "name": "净化饮食",
+        "pack_id": "core-phb-2024",
+        "semantic_group": "area.object_purification",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "5c46c2c2522079e79fd94da4b91245fe9cbf8a41f101d6644829646db5abd10d",
+        "source_complete": true,
+        "source_fingerprint": "1f7de824cfb8b337d3232aa13fa7443337c8d8417b450e221f8cb23f38bb7f4a",
+        "source_path": "玩家手册2024/法术详述/1环.htm",
+        "source_record_id": "6c07317bf4d16b92da3c8f55",
+        "typed_clause_ids": [
+          "core-phb-2024:spell:6c07317bf4d16b92da3c8f55:target",
+          "core-phb-2024:spell:6c07317bf4d16b92da3c8f55:area"
+        ]
+      },
+      {
+        "clause_types": [
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b",
+        "name": "圣火术",
+        "pack_id": "core-phb-2024",
+        "semantic_group": "damage.save.cover_bypass.scaling",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "97c0efdb8bda071a542a8110d4b1ef71fdce8c75010c4fb599c5ae8647471a8d",
+        "source_complete": true,
+        "source_fingerprint": "3b5d93b6755939c7caf839d96dcb32e7fcc2d8839b5551ea7ec6afd115874b38",
+        "source_path": "玩家手册2024/法术详述/0环.htm",
+        "source_record_id": "82f220a9e3474d8fe1cafd8b",
+        "typed_clause_ids": [
+          "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b:target"
+        ]
+      },
+      {
+        "clause_types": [
+          "apply_condition",
+          "concentration",
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "core-phb-2024:spell:85595d634b480207249dd2ac",
+        "name": "塔莎狂笑术",
+        "pack_id": "core-phb-2024",
+        "semantic_group": "condition.lifecycle_save",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "f4ff81d281b65372eb02e83f83d7e16f10508b1d2e5dd4e6cc869567e7d87061",
+        "source_complete": true,
+        "source_fingerprint": "f9dbd04fb5822db7475cdbc538bc7160a9eaa47753a708df371cb76b4e716a57",
+        "source_path": "玩家手册2024/法术详述/1环.htm",
+        "source_record_id": "85595d634b480207249dd2ac",
+        "typed_clause_ids": [
+          "core-phb-2024:spell:85595d634b480207249dd2ac:target",
+          "core-phb-2024:spell:85595d634b480207249dd2ac:condition-0",
+          "core-phb-2024:spell:85595d634b480207249dd2ac:concentration"
+        ]
+      },
+      {
+        "clause_types": [
+          "concentration",
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "core-phb-2024:spell:90c12635dd6eca81ebe04449",
+        "name": "侦测毒性和疾病",
+        "pack_id": "core-phb-2024",
+        "semantic_group": "concentration.sense_detection",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "cb4d3e1ac60410da7ce05ee2050ec12cda14efc1a4ffa6ada3eae469fad64bbc",
+        "source_complete": true,
+        "source_fingerprint": "9432616781fb2789dfdbfdb26555c03ad602878b1ff7361e38f64f61bcf32bbd",
+        "source_path": "玩家手册2024/法术详述/1环.htm",
+        "source_record_id": "90c12635dd6eca81ebe04449",
+        "typed_clause_ids": [
+          "core-phb-2024:spell:90c12635dd6eca81ebe04449:target",
+          "core-phb-2024:spell:90c12635dd6eca81ebe04449:concentration"
+        ]
+      },
+      {
+        "clause_types": [
+          "concentration"
+        ],
+        "compile_status": "full",
+        "content_id": "core-phb-2024:spell:9b29fbb72177f058bf1448ef",
+        "name": "云雾术",
+        "pack_id": "core-phb-2024",
+        "semantic_group": "concentration.area_lifecycle",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "a5bff572e9d52b855dbc9b12b5206791dd02af1c2f11da6ec45b7293f0fe791d",
+        "source_complete": true,
+        "source_fingerprint": "388fecf879aacfccf9b16d962a6d27f0ecab3c053d7cb420e8d878a406161c4e",
+        "source_path": "玩家手册2024/法术详述/1环.htm",
+        "source_record_id": "9b29fbb72177f058bf1448ef",
+        "typed_clause_ids": [
+          "core-phb-2024:spell:9b29fbb72177f058bf1448ef:concentration"
+        ]
+      },
+      {
+        "clause_types": [
+          "area",
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "core-phb-2024:spell:9c4208ec038463dfd608ba9e",
+        "name": "四象法门",
+        "pack_id": "core-phb-2024",
+        "semantic_group": "area.multi_mode_elemental",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "a329dae402bdc50341761dc3a87d468b41ebe2b9671b4758dd682d5bd51263ca",
+        "source_complete": true,
+        "source_fingerprint": "70fb324f9b9be7245fc240b742430922792817645cb8cecf451f7663ec6d4330",
+        "source_path": "玩家手册2024/法术详述/0环.htm",
+        "source_record_id": "9c4208ec038463dfd608ba9e",
+        "typed_clause_ids": [
+          "core-phb-2024:spell:9c4208ec038463dfd608ba9e:target",
+          "core-phb-2024:spell:9c4208ec038463dfd608ba9e:area"
+        ]
+      },
+      {
+        "clause_types": [
+          "concentration",
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "core-phb-2024:spell:a0c914f228b833357f0c2779",
+        "name": "抵抗术",
+        "pack_id": "core-phb-2024",
+        "semantic_group": "concentration.resistance",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "ffd79f68770e420d0188426cae94ed8431877bbd5e378981d8eef6d040646832",
+        "source_complete": true,
+        "source_fingerprint": "59187b0505b844c08bb7e5f19d25b0cd77ef156889ee4ed84969608ddc70d4d9",
+        "source_path": "玩家手册2024/法术详述/0环.htm",
+        "source_record_id": "a0c914f228b833357f0c2779",
+        "typed_clause_ids": [
+          "core-phb-2024:spell:a0c914f228b833357f0c2779:target",
+          "core-phb-2024:spell:a0c914f228b833357f0c2779:concentration"
+        ]
+      },
+      {
+        "clause_types": [
+          "apply_condition",
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "core-phb-2024:spell:aa17c997419ff77ab783e003",
+        "name": "激愤斩",
+        "pack_id": "core-phb-2024",
+        "semantic_group": "condition.lifecycle_trigger",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "24a33cbd589c8d18ec943343369ea042beeec3c10429a1416f7659e51e3a62d1",
+        "source_complete": true,
+        "source_fingerprint": "118e3a84c07885451c830b4517fd0de4b0b1a4094eddbbd0a7bd740be901acd9",
+        "source_path": "玩家手册2024/法术详述/1环.htm",
+        "source_record_id": "aa17c997419ff77ab783e003",
+        "typed_clause_ids": [
+          "core-phb-2024:spell:aa17c997419ff77ab783e003:target",
+          "core-phb-2024:spell:aa17c997419ff77ab783e003:condition-0"
+        ]
+      },
+      {
+        "clause_types": [
+          "apply_condition",
+          "area",
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "core-phb-2024:spell:ad887cac0fa7f6c2cf7c566f",
+        "name": "七彩喷射",
+        "pack_id": "core-phb-2024",
+        "semantic_group": "condition.area_save",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "55d46d53518425bf7e3036cf1f1eed808b3901c4d828540dab7d557688b3bba4",
+        "source_complete": true,
+        "source_fingerprint": "63eaf8f87c8de26223c6bc486463dcaa6d32c9aaf78c78082a3451e28d59cac0",
+        "source_path": "玩家手册2024/法术详述/1环.htm",
+        "source_record_id": "ad887cac0fa7f6c2cf7c566f",
+        "typed_clause_ids": [
+          "core-phb-2024:spell:ad887cac0fa7f6c2cf7c566f:target",
+          "core-phb-2024:spell:ad887cac0fa7f6c2cf7c566f:condition-0",
+          "core-phb-2024:spell:ad887cac0fa7f6c2cf7c566f:area"
+        ]
+      },
+      {
+        "clause_types": [
+          "concentration",
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "core-phb-2024:spell:c724eb95e2f08220d161e608",
+        "name": "灾祸术",
+        "pack_id": "core-phb-2024",
+        "semantic_group": "concentration.debuff",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "a6cc80b67a67d14a12e2ee392c93e59e22e9ed4bf2ae97aa14c1b1971ae40626",
+        "source_complete": true,
+        "source_fingerprint": "fd373d24aafae214d2e0b69a63c316321d5fe5f9c1360f76450740ffdd9c575a",
+        "source_path": "玩家手册2024/法术详述/1环.htm",
+        "source_record_id": "c724eb95e2f08220d161e608",
+        "typed_clause_ids": [
+          "core-phb-2024:spell:c724eb95e2f08220d161e608:target",
+          "core-phb-2024:spell:c724eb95e2f08220d161e608:concentration"
+        ]
+      },
+      {
+        "clause_types": [
+          "area",
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+        "name": "酸液飞溅",
+        "pack_id": "core-phb-2024",
+        "semantic_group": "damage.area_save.scaling",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "2986ab82214995fdcfec0f0bee9d6ee1be705c1409fcfb0260dc836b9ea76ccd",
+        "source_complete": true,
+        "source_fingerprint": "a313aa1a2445b55284185910142d31d1cc7b4ca3a1de4aae96b0400bab3e5af4",
+        "source_path": "玩家手册2024/法术详述/0环.htm",
+        "source_record_id": "d84dec64befac8db7294e0f1",
+        "typed_clause_ids": [
+          "core-phb-2024:spell:d84dec64befac8db7294e0f1:target",
+          "core-phb-2024:spell:d84dec64befac8db7294e0f1:area"
+        ]
+      },
+      {
+        "clause_types": [
+          "attack_roll",
+          "concentration",
+          "damage",
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "core-phb-2024:spell:dccfb9fc9cd30b9fb8b627b0",
+        "name": "巫术箭",
+        "pack_id": "core-phb-2024",
+        "semantic_group": "damage.attack_concentration",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "9fc0fff51f5b272cd9922d2d4106f1d8eed528288f9d60697bdb893a41cb2b60",
+        "source_complete": true,
+        "source_fingerprint": "f9d3c3ec9c0610a705df9ee50f5d41bdbecdc989e2587120789e5ad1f0f7f6c6",
+        "source_path": "玩家手册2024/法术详述/1环.htm",
+        "source_record_id": "dccfb9fc9cd30b9fb8b627b0",
+        "typed_clause_ids": [
+          "core-phb-2024:spell:dccfb9fc9cd30b9fb8b627b0:target",
+          "core-phb-2024:spell:dccfb9fc9cd30b9fb8b627b0:attack",
+          "core-phb-2024:spell:dccfb9fc9cd30b9fb8b627b0:damage",
+          "core-phb-2024:spell:dccfb9fc9cd30b9fb8b627b0:concentration"
+        ]
+      },
+      {
+        "clause_types": [
+          "area",
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "core-phb-2024:spell:ea1d170f71d30f4ddeb84f9e",
+        "name": "光耀祷词",
+        "pack_id": "core-phb-2024",
+        "semantic_group": "area.light_effect",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "ef1c831141584e63a822f5fe56d46f0806ebe20e04f8799b78ec32ba3512532c",
+        "source_complete": true,
+        "source_fingerprint": "cacdec4167b90c9cfafc793625d1b215d27eff29e18ec88171ef5b20eb0bffae",
+        "source_path": "玩家手册2024/法术详述/0环.htm",
+        "source_record_id": "ea1d170f71d30f4ddeb84f9e",
+        "typed_clause_ids": [
+          "core-phb-2024:spell:ea1d170f71d30f4ddeb84f9e:target",
+          "core-phb-2024:spell:ea1d170f71d30f4ddeb84f9e:area"
+        ]
+      },
+      {
+        "clause_types": [
+          "apply_condition",
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "core-phb-2024:spell:eaaa6893b004c177f8237eb0",
+        "name": "化兽为友",
+        "pack_id": "core-phb-2024",
+        "semantic_group": "condition.duration_save",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "b2d81a3a6b992249a6290da9b114e444b82f115e4c73bf625c2d38742b9723a5",
+        "source_complete": true,
+        "source_fingerprint": "63f53cf060c03dc893657f1155a47ed1c524275aa25191dbd6bc631f479aacb6",
+        "source_path": "玩家手册2024/法术详述/1环.htm",
+        "source_record_id": "eaaa6893b004c177f8237eb0",
+        "typed_clause_ids": [
+          "core-phb-2024:spell:eaaa6893b004c177f8237eb0:target",
+          "core-phb-2024:spell:eaaa6893b004c177f8237eb0:condition-0"
+        ]
+      },
+      {
+        "clause_types": [
+          "concentration",
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "core-phb-2024:spell:ed5371dd95cf605bf1c24cd3",
+        "name": "强令对决",
+        "pack_id": "core-phb-2024",
+        "semantic_group": "concentration.duel_target",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "0f37a79259e99153a834ee2d81965918b9b624710631862539f94522370b3c66",
+        "source_complete": true,
+        "source_fingerprint": "6a747d6744356da4b593443f7cbafc326091b7e05dd5e0ee78b558548791963f",
+        "source_path": "玩家手册2024/法术详述/1环.htm",
+        "source_record_id": "ed5371dd95cf605bf1c24cd3",
+        "typed_clause_ids": [
+          "core-phb-2024:spell:ed5371dd95cf605bf1c24cd3:target",
+          "core-phb-2024:spell:ed5371dd95cf605bf1c24cd3:concentration"
+        ]
+      },
+      {
+        "clause_types": [
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "core-phb-2024:spell:f0e1229e39b1dfb476f90c6b",
+        "name": "庇护术",
+        "pack_id": "core-phb-2024",
+        "semantic_group": "unclassified",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "73d7dcdc95ce31c1c1308702be0bb53c8be28c381ef04dd37b9ef135fe3a6dcf",
+        "source_complete": true,
+        "source_fingerprint": "44f60ddec39a46ccd408e95285abc4ed08e0f519098d2969d1e0df5d5973fa37",
+        "source_path": "玩家手册2024/法术详述/1环.htm",
+        "source_record_id": "f0e1229e39b1dfb476f90c6b",
+        "typed_clause_ids": [
+          "core-phb-2024:spell:f0e1229e39b1dfb476f90c6b:target"
+        ]
+      },
+      {
+        "clause_types": [
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "core-phb-2024:spell:fa352b4b5b77382c47bad253",
+        "name": "术法爆发",
+        "pack_id": "core-phb-2024",
+        "semantic_group": "damage.cantrip_scaling",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "a62bf93e71c3ef1ea0e2f81510031e969cbfb84fb0bacf78fda374264f07a291",
+        "source_complete": true,
+        "source_fingerprint": "6f7ec180c5d1fb9a668fbd10cb858fe168b13844528e87fbc27e1076ef501d1b",
+        "source_path": "玩家手册2024/法术详述/0环.htm",
+        "source_record_id": "fa352b4b5b77382c47bad253",
+        "typed_clause_ids": [
+          "core-phb-2024:spell:fa352b4b5b77382c47bad253:target"
+        ]
+      },
+      {
+        "clause_types": [
+          "concentration",
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "fizbans-treasury:spell:843fb135e4cc8a1fb34c46be",
+        "name": "费资本铂金盾",
+        "pack_id": "fizbans-treasury",
+        "semantic_group": "concentration.defense_modifier",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "d67ab7f538b593d54f8f53dbaabe3aaffb0f4919fa78965f3554386c25978564",
+        "source_complete": true,
+        "source_fingerprint": "57e7601f49856c8bdf29f8b7af10763fb401e71bd714363cb1a94b4bbfea373c",
+        "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+        "source_record_id": "843fb135e4cc8a1fb34c46be",
+        "typed_clause_ids": [
+          "fizbans-treasury:spell:843fb135e4cc8a1fb34c46be:target",
+          "fizbans-treasury:spell:843fb135e4cc8a1fb34c46be:concentration"
+        ]
+      },
+      {
+        "clause_types": [
+          "area",
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+        "name": "雾凇霜缚",
+        "pack_id": "fizbans-treasury",
+        "semantic_group": "area.cone_save_condition",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "f3b275e265d656222d552e17bcc5d4a43c86e207b22e6cf5f9144b23d6727b5f",
+        "source_complete": true,
+        "source_fingerprint": "be9cd13062116e1928605e32a9742d1303e5b12f8899b6f91d06b612278a211b",
+        "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+        "source_record_id": "cadce71b1ba7a42354f785dc",
+        "typed_clause_ids": [
+          "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:target",
+          "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:area"
+        ]
+      },
+      {
+        "clause_types": [
+          "concentration",
+          "summon_or_creation",
+          "target_selection",
+          "upcast"
+        ],
+        "compile_status": "full",
+        "content_id": "tashas-cauldron:spell:083419d9de551806a5ca9748",
+        "name": "亡灵召唤术",
+        "pack_id": "tashas-cauldron",
+        "semantic_group": "summon.stat_block.lifecycle",
+        "source_bound_blockers": [],
+        "source_checksum": "8e21521f802b9835e1879b0cd5b13d6d08250648cac09112ab745241bab53beb",
+        "source_complete": true,
+        "source_fingerprint": "f051639e10dfdc7e9d340120f61a8c2bb3cd942f767a6d07da361717f178a5d8",
+        "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+        "source_record_id": "083419d9de551806a5ca9748",
+        "typed_clause_ids": [
+          "tashas-cauldron:spell:083419d9de551806a5ca9748:target_selection",
+          "tashas-cauldron:spell:083419d9de551806a5ca9748:summon_or_creation",
+          "tashas-cauldron:spell:083419d9de551806a5ca9748:upcast",
+          "tashas-cauldron:spell:083419d9de551806a5ca9748:concentration"
+        ]
+      },
+      {
+        "clause_types": [
+          "concentration",
+          "summon_or_creation",
+          "target_selection",
+          "upcast"
+        ],
+        "compile_status": "full",
+        "content_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
+        "name": "野兽召唤术",
+        "pack_id": "tashas-cauldron",
+        "semantic_group": "summon.stat_block.lifecycle",
+        "source_bound_blockers": [],
+        "source_checksum": "34d050061088a0539431759a1bf61da81b0fb8dceba7a54219efe347e2c5575a",
+        "source_complete": true,
+        "source_fingerprint": "f57b0e2559fd8a0edbef3ef77cf0ead4daa815a664e1c412bd7e26a337961d50",
+        "source_path": "塔莎的万事坩埚/法术/法术详述/2环.html",
+        "source_record_id": "54c8c29188db1442473d9dc1",
+        "typed_clause_ids": [
+          "tashas-cauldron:spell:54c8c29188db1442473d9dc1:target_selection",
+          "tashas-cauldron:spell:54c8c29188db1442473d9dc1:summon_or_creation",
+          "tashas-cauldron:spell:54c8c29188db1442473d9dc1:upcast",
+          "tashas-cauldron:spell:54c8c29188db1442473d9dc1:concentration"
+        ]
+      },
+      {
+        "clause_types": [
+          "concentration",
+          "spell_modifier",
+          "spell_modifier",
+          "target_selection",
+          "upcast"
+        ],
+        "compile_status": "full",
+        "content_id": "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
+        "name": "智能壁垒",
+        "pack_id": "tashas-cauldron",
+        "semantic_group": "concentration.defense_modifier",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "780dfff0497c82e88fb265546e7a542be97ac58e432c6a015518a84261d6f64d",
+        "source_complete": true,
+        "source_fingerprint": "f86c958ce95034df82a6a6301688c2c5117bcb4976c5bd9f15bc48d644ee8c31",
+        "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+        "source_record_id": "b4ea0dc1907dd5ac08666af3",
+        "typed_clause_ids": [
+          "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3:target",
+          "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3:concentration",
+          "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3:psychic-resistance",
+          "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3:saving-throw-advantage",
+          "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3:upcast-targets"
+        ]
+      },
+      {
+        "clause_types": [
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "xanathars-guide:spell:5aa5cf7f93be0fa149fdcd62",
+        "name": "混乱箭",
+        "pack_id": "xanathars-guide",
+        "semantic_group": "damage.attack_or_save.condition",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "18c1099aded61d8852131ce7a96ba6274498cc45d5d076eb1149c6771f10185d",
+        "source_complete": true,
+        "source_fingerprint": "252f05cc02ca6b371fc79abc09f96cfea99d4e40991d9d709a5191bd1424b27d",
+        "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+        "source_record_id": "5aa5cf7f93be0fa149fdcd62",
+        "typed_clause_ids": [
+          "xanathars-guide:spell:5aa5cf7f93be0fa149fdcd62:target"
+        ]
+      },
+      {
+        "clause_types": [
+          "concentration",
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "xanathars-guide:spell:6d32a73dbc7bf6f5fac303bd",
+        "name": "兽之联结",
+        "pack_id": "xanathars-guide",
+        "semantic_group": "concentration.beast_bond",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "1a269911bd4ed778875429004f05923c6922b19d3f1c3dba1bd853230ea0b8ae",
+        "source_complete": true,
+        "source_fingerprint": "d3240455ebc564a3e59c8d37a6520578aa6adcb6ac6350833503c9534f2de1f3",
+        "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+        "source_record_id": "6d32a73dbc7bf6f5fac303bd",
+        "typed_clause_ids": [
+          "xanathars-guide:spell:6d32a73dbc7bf6f5fac303bd:target",
+          "xanathars-guide:spell:6d32a73dbc7bf6f5fac303bd:concentration"
+        ]
+      },
+      {
+        "clause_types": [
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "xanathars-guide:spell:805cbf82765f6710391cc75f",
+        "name": "圈套术",
+        "pack_id": "xanathars-guide",
+        "semantic_group": "ritual.trap_trigger",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "ce9fc32f61f0069e3006b73a41508ba423696abb6a249c453fafddbfeb1dc547",
+        "source_complete": true,
+        "source_fingerprint": "bbc5ba53f4b4f4e20fc37e375d35c129d3a9e83e9c0721a0fe2572673a7ae83b",
+        "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+        "source_record_id": "805cbf82765f6710391cc75f",
+        "typed_clause_ids": [
+          "xanathars-guide:spell:805cbf82765f6710391cc75f:target"
+        ]
+      },
+      {
+        "clause_types": [
+          "area",
+          "target_selection"
+        ],
+        "compile_status": "full",
+        "content_id": "xanathars-guide:spell:96d5c3265bc938448c4aef58",
+        "name": "典礼术",
+        "pack_id": "xanathars-guide",
+        "semantic_group": "ritual.ceremony_choice",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "b64ff721a1f209f3b625b158a6df852c3c5f092bdf41bcbf606aa5f44ca1b230",
+        "source_complete": true,
+        "source_fingerprint": "0a3e8780679f11352f3e01fd7a63fced6dcb633f2f3fa42fa020ac6a211a0090",
+        "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+        "source_record_id": "96d5c3265bc938448c4aef58",
+        "typed_clause_ids": [
+          "xanathars-guide:spell:96d5c3265bc938448c4aef58:target",
+          "xanathars-guide:spell:96d5c3265bc938448c4aef58:area"
+        ]
+      },
+      {
+        "clause_types": [
+          "concentration"
+        ],
+        "compile_status": "full",
+        "content_id": "xanathars-guide:spell:aadf89719f073bfca1fefb3a",
+        "name": "写入空中",
+        "pack_id": "xanathars-guide",
+        "semantic_group": "concentration.remote_message",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "f396ac922598331efc5045bf668f3f2bdf543b65f3cee8ce4c368fb26b6bb240",
+        "source_complete": true,
+        "source_fingerprint": "b91f38e132025eee4b219a00092f1c994822911f90d6c130cac15c4a01f87499",
+        "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+        "source_record_id": "aadf89719f073bfca1fefb3a",
+        "typed_clause_ids": [
+          "xanathars-guide:spell:aadf89719f073bfca1fefb3a:concentration"
+        ]
+      },
+      {
+        "clause_types": [
+          "concentration"
+        ],
+        "compile_status": "full",
+        "content_id": "xanathars-guide:spell:c9d315871dc96f3fed66c29b",
+        "name": "西风打击",
+        "pack_id": "xanathars-guide",
+        "semantic_group": "concentration.movement",
+        "source_bound_blockers": [
+          "existing generic consumer is not source-complete for this shape"
+        ],
+        "source_checksum": "d34ac1d55f4aba92c3a54b9f3eaafb45939c4279a158930e118e0809c6bd13ef",
+        "source_complete": true,
+        "source_fingerprint": "d9427224492c27ab4734ac66c5ccd56ef45b43afc6e11b188b543de16059945a",
+        "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+        "source_record_id": "c9d315871dc96f3fed66c29b",
+        "typed_clause_ids": [
+          "xanathars-guide:spell:c9d315871dc96f3fed66c29b:concentration"
+        ]
+      }
+    ]
+  },
+  "checks": {
+    "all_required_checks_passed": true,
+    "default_behavior_executed": true,
+    "formal_database_written": false,
+    "formal_registry_written": false,
+    "generic_consumer_exact": true,
+    "historical_xliii_sha_exact": true,
+    "isolated_preview_confirm_replay": true,
+    "isolated_snapshot_transaction": true,
+    "name_branch_count": 0,
+    "occupied_position_rejected_before_payment": true,
+    "protected_ollama_sha_exact": true,
+    "source_bound_compile_full": true,
+    "source_concentration_lifecycle": true,
+    "source_provenance": true,
+    "spell_slot_rollback": true
+  },
+  "chosen_cluster": "summon.stat_block.lifecycle",
+  "chosen_content_ids": [
+    "tashas-cauldron:spell:083419d9de551806a5ca9748",
+    "tashas-cauldron:spell:54c8c29188db1442473d9dc1"
+  ],
+  "decision": "promote_existing_generic_summon_consumer",
+  "evidence_artifact": "data/content-ir/compiled/production-runtime-results-LIV.json",
+  "focused_test": "backend/tests/test_round_LIV_summon_census_closure.py",
+  "historical_report_sha256": "98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f",
+  "no_push": true,
+  "production_runtime_full_ids": [
+    "tashas-cauldron:spell:083419d9de551806a5ca9748",
+    "tashas-cauldron:spell:54c8c29188db1442473d9dc1"
+  ],
+  "protected_ollama_sha256": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3",
+  "schema_version": "round-LIV-summon-census-closure-1"
+}

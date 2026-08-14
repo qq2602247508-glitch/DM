@@ -1610,6 +1610,15 @@ class CombatEngineService:
                 if command.source_combatant_id
                 else None
             )
+            before_transaction_snapshot = {
+                "combat_id": combat_id,
+                "combat_version": combat.version,
+                "source_combatant_id": source.id if source is not None else None,
+                "source_version": source.version if source is not None else None,
+                "source_action_available": (
+                    source.action_available if source is not None else None
+                ),
+            }
             if source is not None and (source.combat_id != combat_id or not source.is_active):
                 raise StateNotFoundError("召唤来源不在当前战斗中")
             if source is not None and command.source_version is not None:
@@ -2069,10 +2078,32 @@ class CombatEngineService:
                 "replaced_concentration_effect_ids": [effect.id for effect in old_effects],
                 "ended_summon_ids": [item.id for item in ended_summons],
             }
+            transaction = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="combat_summon",
+                idempotency_key=idempotency_key,
+                status="applied",
+                before_snapshot=before_transaction_snapshot,
+                after_snapshot={
+                    "combat_id": combat_id,
+                    "combat_version": combat.version,
+                    "source_combatant_id": source.id if source is not None else None,
+                    "source_version": source.version if source is not None else None,
+                    "source_action_available": (
+                        source.action_available if source is not None else None
+                    ),
+                    "summon": result,
+                },
+                source="combat",
+                confirmed_at=datetime.now(UTC),
+            )
+            session.add(transaction)
+            session.flush()
             action = CombatAction(
                 campaign_id=campaign_id,
                 combat_id=combat_id,
                 actor_combatant_id=source.id if source is not None else None,
+                transaction_id=transaction.id,
                 action_type="summon",
                 target_combatant_ids=[item.id for item in combatants],
                 request_json=command.model_dump(mode="json"),
