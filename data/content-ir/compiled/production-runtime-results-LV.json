@@ -1,0 +1,93 @@
+{
+  "artifact_date": "2026-08-14",
+  "checks": {
+    "actual_generic_consumer_probe": true,
+    "all_required_checks_passed": true,
+    "focused_nodes_passed": true,
+    "formal_database_written": false,
+    "historical_xliii_sha_exact": true,
+    "name_branch_count": 0,
+    "promotion_gate_closed": false,
+    "protected_ollama_sha_exact": true,
+    "selected_id_authoritative": true,
+    "selected_id_not_promoted": true,
+    "source_bound_compile": true,
+    "source_complete_consumer": false
+  },
+  "content_kind": "spell",
+  "evidence_by_id": {
+    "core-phb-2024:spell:63fb2360b8c30fb0419d9225": {
+      "compile_status": "full",
+      "content_id": "core-phb-2024:spell:63fb2360b8c30fb0419d9225",
+      "decision": "retained_compile_only",
+      "name": "猎人印记",
+      "production_runtime_full": false,
+      "registry_error": null,
+      "required_source_semantics": [
+        "attack-hit 1d6 force damage rider",
+        "advantage on Perception or Survival checks to find the marked creature",
+        "bonus-action transfer after the marked target reaches 0 HP",
+        "visible target and range validation for the transfer",
+        "upcast concentration duration of 8 hours or 24 hours"
+      ],
+      "resolved_consumers": [
+        "spell_economy.concentration.v1"
+      ],
+      "runtime_blocks": {
+        "attack_roll": [],
+        "communication_capability": [],
+        "communication_route": [],
+        "concentration": [
+          {
+            "clause_id": "concentration",
+            "duration": "专注，至多1小时",
+            "evidence_ref": "# 猎人印记｜Hunter's Mark *一环 预言（游侠）* **施法时间：**附赠动作 **施法距离：**90尺 **法术成分：**V **持续时间：**专注，至多1小时 你指定施法距离内一个你能看见的生物并以魔法标记其作为你的猎物。每当你以攻击检定命中该目标时，你对其额外造成1d6力场伤害，且每当你为寻找目标生物而进行感知（察觉或求生）检定时都具有优势，直至法术结束。 如果在法术结束前目标 HP 降至 0，则你可以用附赠动作将标记转移至施法距离内的另一个可见生物。 **升环施法。**使用三环或四环法术位施展该法术时，其专注可以维持至多8小时。使用环阶5+的法术位施展该法术时，其专注可以维持至多 24 小时。",
+            "required": true,
+            "type": "concentration"
+          }
+        ],
+        "duration": [],
+        "effects": [],
+        "illusion_lifecycle": [],
+        "object_effect_lifecycle": [],
+        "saving_throw": [],
+        "target_selection": [
+          {
+            "clause_id": "target",
+            "count": 1,
+            "evidence_ref": "距离：**90尺 **法术成分：**V **持续时间：**专注，至多1小时 你指定施法距离内一个你能看见的生物并以魔法标记其作为你的猎物。每当你以攻击检定命中该目标时，你对其额外造成1d6力场伤害，且每当你为寻找目标生物而进行感知（察觉或求生）检定时都具有优势，直至法术结束。 如果在法术结束前目标 HP 降至 0，则你可以用附赠动作将标记转移至施法距离内的另一个可见生物。 **升环施法。**使用三环或四环法术位施展该法术时，其专注可以维持至多8小时。使用环阶5+的法术位施展该法术时，其专注可以维持至多 24 小时。",
+            "kind": "one_creature",
+            "type": "target_selection",
+            "visibility": "visible"
+          }
+        ],
+        "upcast": []
+      },
+      "source": {
+        "authored_path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-63fb2360b8c30fb0419d9225.json",
+        "source_fingerprint": "ca3493ac1ff56d892d8da3ed717ae7b04e2d1a2b274d2653ce7798873dae0ebe",
+        "source_path": "玩家手册2024/法术详述/1环.htm",
+        "source_record_id": "63fb2360b8c30fb0419d9225",
+        "source_text": "#### 猎人印记｜Hunter's Mark\n\n*一环 预言（游侠）*\n**施法时间：**附赠动作\n**施法距离：**90尺\n**法术成分：**V\n**持续时间：**专注，至多1小时\n你指定施法距离内一个你能看见的生物并以魔法标记其作为你的猎物。每当你以攻击检定命中该目标时，你对其额外造成1d6力场伤害，且每当你为寻找目标生物而进行感知（察觉或求生）检定时都具有优势，直至法术结束。\n如果在法术结束前目标 HP 降至 0，则你可以用附赠动作将标记转移至施法距离内的另一个可见生物。\n**升环施法。**使用三环或四环法术位施展该法术时，其专注可以维持至多8小时。使用环阶5+的法术位施展该法术时，其专注可以维持至多\n24 小时。"
+      },
+      "source_bound_blockers": [
+        "spell_economy.concentration.v1 only covers spell-slot/concentration state",
+        "no source-complete attack rider consumer bound to the marked target",
+        "no source-complete search-check advantage consumer",
+        "no target-death transfer lifecycle with independent target/range/visibility/CAS checks",
+        "no source-complete upcast concentration-duration contract for this shape"
+      ],
+      "typed_clause_ids": [
+        "target",
+        "concentration"
+      ],
+      "typed_clause_types": [
+        "concentration",
+        "target_selection"
+      ]
+    }
+  },
+  "production_runtime_full_ids": [],
+  "round_id": "round-LV",
+  "schema_version": "content-ir-production-runtime-results-LV-1"
+}
