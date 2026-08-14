@@ -3636,3 +3636,22 @@ git diff --check
   `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab`;
   Round XLIII report SHA remains
   `98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f`.
+## 2026-08-14 Round LX handoff: Fog Cloud retention audit
+
+- Decision: `retention_audit_no_promotion`; no unsafe runtime seam was added.
+- The current authoritative loader derived `26` compile-only IDs and selected
+  `core-phb-2024:spell:9b29fbb72177f058bf1448ef` (Fog Cloud) after excluding
+  the already deep-reviewed Sacred Flame and Skywrite candidates.
+- Source binding is positive through exact content ID, source record ID,
+  source fingerprint, source checksum, and canonical authored duplicate.
+- Fog Cloud remains blocked because its source requires persistent area
+  creation, strong-wind early termination, and upcast radius scaling, while the
+  current generic runtime exposes only concentration for this record.
+- Before → after: `209/26/111` → `209/26/111`; production, compile-only, and
+  unique-compiled set deltas are all zero.
+- Evidence:
+  `scripts/validate-round-LX-retention-audit.py`,
+  `reports/round-LX-retention-audit-2026-08-14.json`,
+  `backend/tests/test_round_LX_retention_audit.py`, and
+  `docs/round-LX-retention-audit-2026-08-14.md`.
+- No push. Protected paths remain unmodified.
