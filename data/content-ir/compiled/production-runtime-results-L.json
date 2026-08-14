@@ -1,17 +1,31 @@
 {
   "checks": {
+    "actual_operation_transaction": true,
+    "actual_persisted_snapshot": true,
+    "actual_receipt_fields": true,
+    "actual_replay": true,
     "all_required_checks_passed": true,
-    "cas": true,
-    "expiry_receipt": true,
+    "behavioral_nodes": {
+      "test_round_l_actor_cas_rejects_after_preview": true,
+      "test_round_l_beast_cas_rejects_after_preview": true,
+      "test_round_l_capability_persistence_receipt_and_behavioral_boundaries": true,
+      "test_round_l_character_cas_rejects_after_preview": true,
+      "test_round_l_invalid_runtime_contract_rejects": true,
+      "test_round_l_replay_is_exact_and_payload_drift_rejected": true,
+      "test_speak_with_animals_rejects_non_beast_and_stale_cas": true,
+      "test_speak_with_animals_rejects_source_boundary_drift": true
+    },
+    "character_actor_beast_cas": true,
+    "compile_full": true,
     "formal_database_written": false,
     "formal_registry_written": false,
-    "influence_skill_boundary": true,
+    "invalid_non_beast_scope": true,
+    "invalid_runtime_input_scope": true,
+    "invalid_runtime_source_contract": true,
+    "isolated_api_runtime": true,
     "name_branch_count": 0,
-    "operation_transaction": true,
     "preview_confirm_replay": true,
     "protected_fingerprints_unchanged": true,
-    "recent_observation_boundary": true,
-    "source_provenance": true,
     "typed_consumer": true
   },
   "content_kind": "spell",
@@ -19,14 +33,289 @@
     "core-phb-2024:spell:d82624a42cf6c33ccec927b8": {
       "content_id": "core-phb-2024:spell:d82624a42cf6c33ccec927b8",
       "content_kind": "spell",
-      "production_runtime_full": true,
-      "runtime_receipt": {
-        "behavioral_test": "backend/tests/test_round_L_speak_with_animals_runtime.py",
-        "creature_kind": "beast",
-        "duration": {
-          "unit": "minutes",
-          "value": 10
+      "operation_transaction": {
+        "after_snapshot": {
+          "actor_combatant_id": "00000000-0000-0000-0000-00000000000c",
+          "actor_version_after": 2,
+          "beast_version_after": 2,
+          "communication": {
+            "beast_combatant_id": "00000000-0000-0000-0000-00000000000e",
+            "creature_kind": "beast",
+            "influence_action_skill": "persuasion",
+            "influence_action_skills": [
+              "deception",
+              "intimidation",
+              "persuasion"
+            ],
+            "information_scope": "surroundings_and_monsters",
+            "observation_age_hours": 24,
+            "recent_observation_boundary_hours": 24
+          },
+          "communication_capability_receipt": {
+            "capability_id": "core-phb-2024:spell:d82624a42cf6c33ccec927b8:self:beast",
+            "clause_id": "communication_capability",
+            "content_id": "core-phb-2024:spell:d82624a42cf6c33ccec927b8",
+            "creature_kind": "beast",
+            "duration_unit": "minutes",
+            "duration_value": 10,
+            "expires_at": "2026-08-14T12:10:00+00:00",
+            "influence_action_skills": [
+              "deception",
+              "intimidation",
+              "persuasion"
+            ],
+            "information_scope": "surroundings_and_monsters",
+            "recent_observation_hours": 24,
+            "replayed": false,
+            "request_fingerprint": "a31d97c62727d763ac49e9aa2c3bc4931f575a9f44a8f1fabbc36aab1505c9b8",
+            "schema": "spell.communication.capability.v1",
+            "source_fingerprint": "efd7ccf941e012513b582fc600b535fae6d875bdbdfc3fff278a7fbfb9ad28c3",
+            "source_record_id": "d82624a42cf6c33ccec927b8",
+            "started_at": "2026-08-14T12:00:00+00:00",
+            "state_version_after": 1,
+            "state_version_before": 0,
+            "target_scope": "self"
+          },
+          "consumer": "spell.communication.capability.v1",
+          "runtime_id": "core-phb-2024:spell:d82624a42cf6c33ccec927b8"
         },
+        "before_snapshot": {
+          "actor": {
+            "id": "00000000-0000-0000-0000-00000000000c",
+            "snapshot_json": {
+              "combat_start_state": {
+                "concentration": {},
+                "conditions": [],
+                "hp": 20,
+                "is_active": true,
+                "max_hp_reduction": 0,
+                "snapshot_json": {
+                  "combat_start_state": {
+                    "concentration": {},
+                    "conditions": [],
+                    "hp": 20,
+                    "is_active": true,
+                    "max_hp_reduction": 0,
+                    "temporary_hp": 0
+                  },
+                  "feature_runtime": {
+                    "actions": {},
+                    "attack_riders": [],
+                    "combat_start": {
+                      "attack_action_count": 1,
+                      "attack_slot_replacements": [],
+                      "defenses": [],
+                      "modifiers": [],
+                      "movement_modes": []
+                    },
+                    "dm_only": [],
+                    "feature_block_schema_version": "1.0",
+                    "feature_blocks": [],
+                    "feature_contracts": [],
+                    "proficiencies": [],
+                    "progression": {
+                      "class_levels": {},
+                      "proficiency_bonus": 3,
+                      "spell_slots": {},
+                      "total_level": 5
+                    },
+                    "resources": {},
+                    "schema_version": "1.2",
+                    "spellcasting": [],
+                    "triggers": []
+                  },
+                  "grid_position": {
+                    "col": 5,
+                    "row": 5
+                  }
+                },
+                "temporary_hp": 0
+              },
+              "feature_runtime": {
+                "actions": {},
+                "attack_riders": [],
+                "combat_start": {
+                  "attack_action_count": 1,
+                  "attack_slot_replacements": [],
+                  "defenses": [],
+                  "modifiers": [],
+                  "movement_modes": []
+                },
+                "dm_only": [],
+                "feature_block_schema_version": "1.0",
+                "feature_blocks": [],
+                "feature_contracts": [],
+                "proficiencies": [],
+                "progression": {
+                  "class_levels": {},
+                  "proficiency_bonus": 3,
+                  "spell_slots": {},
+                  "total_level": 5
+                },
+                "resources": {},
+                "schema_version": "1.2",
+                "spellcasting": [],
+                "triggers": []
+              },
+              "grid_position": {
+                "col": 5,
+                "row": 5
+              }
+            },
+            "version": 1
+          },
+          "beast": {
+            "id": "00000000-0000-0000-0000-00000000000e",
+            "version": 1
+          }
+        },
+        "id": "00000000-0000-0000-0000-000000000011",
+        "idempotency_key": "content-ir:round-l-validator:capability",
+        "operation_type": "content_ir_communication_capability",
+        "source": "combat",
+        "status": "applied"
+      },
+      "persisted_actor_snapshot": {
+        "combat_start_state": {
+          "concentration": {},
+          "conditions": [],
+          "hp": 20,
+          "is_active": true,
+          "max_hp_reduction": 0,
+          "snapshot_json": {
+            "combat_start_state": {
+              "concentration": {},
+              "conditions": [],
+              "hp": 20,
+              "is_active": true,
+              "max_hp_reduction": 0,
+              "temporary_hp": 0
+            },
+            "feature_runtime": {
+              "actions": {},
+              "attack_riders": [],
+              "combat_start": {
+                "attack_action_count": 1,
+                "attack_slot_replacements": [],
+                "defenses": [],
+                "modifiers": [],
+                "movement_modes": []
+              },
+              "dm_only": [],
+              "feature_block_schema_version": "1.0",
+              "feature_blocks": [],
+              "feature_contracts": [],
+              "proficiencies": [],
+              "progression": {
+                "class_levels": {},
+                "proficiency_bonus": 3,
+                "spell_slots": {},
+                "total_level": 5
+              },
+              "resources": {},
+              "schema_version": "1.2",
+              "spellcasting": [],
+              "triggers": []
+            },
+            "grid_position": {
+              "col": 5,
+              "row": 5
+            }
+          },
+          "temporary_hp": 0
+        },
+        "communication_capabilities": [
+          {
+            "capability_id": "core-phb-2024:spell:d82624a42cf6c33ccec927b8:self:beast",
+            "clause_id": "communication_capability",
+            "content_id": "core-phb-2024:spell:d82624a42cf6c33ccec927b8",
+            "creature_kind": "beast",
+            "duration_unit": "minutes",
+            "duration_value": 10,
+            "expires_at": "2026-08-14T12:10:00+00:00",
+            "influence_action_skills": [
+              "deception",
+              "intimidation",
+              "persuasion"
+            ],
+            "information_scope": "surroundings_and_monsters",
+            "recent_observation_hours": 24,
+            "source_fingerprint": "efd7ccf941e012513b582fc600b535fae6d875bdbdfc3fff278a7fbfb9ad28c3",
+            "source_record_id": "d82624a42cf6c33ccec927b8",
+            "started_at": "2026-08-14T12:00:00+00:00",
+            "target_scope": "self"
+          }
+        ],
+        "communication_capability_version": 1,
+        "feature_runtime": {
+          "actions": {},
+          "attack_riders": [],
+          "combat_start": {
+            "attack_action_count": 1,
+            "attack_slot_replacements": [],
+            "defenses": [],
+            "modifiers": [],
+            "movement_modes": []
+          },
+          "dm_only": [],
+          "feature_block_schema_version": "1.0",
+          "feature_blocks": [],
+          "feature_contracts": [],
+          "proficiencies": [],
+          "progression": {
+            "class_levels": {},
+            "proficiency_bonus": 3,
+            "spell_slots": {},
+            "total_level": 5
+          },
+          "resources": {},
+          "schema_version": "1.2",
+          "spellcasting": [],
+          "triggers": []
+        },
+        "grid_position": {
+          "col": 5,
+          "row": 5
+        }
+      },
+      "production_runtime_full": true,
+      "replay": {
+        "already_applied": true,
+        "operation_transaction_id": "00000000-0000-0000-0000-000000000011",
+        "receipt": {
+          "capability_id": "core-phb-2024:spell:d82624a42cf6c33ccec927b8:self:beast",
+          "clause_id": "communication_capability",
+          "content_id": "core-phb-2024:spell:d82624a42cf6c33ccec927b8",
+          "creature_kind": "beast",
+          "duration_unit": "minutes",
+          "duration_value": 10,
+          "expires_at": "2026-08-14T12:10:00+00:00",
+          "influence_action_skills": [
+            "deception",
+            "intimidation",
+            "persuasion"
+          ],
+          "information_scope": "surroundings_and_monsters",
+          "recent_observation_hours": 24,
+          "replayed": false,
+          "request_fingerprint": "a31d97c62727d763ac49e9aa2c3bc4931f575a9f44a8f1fabbc36aab1505c9b8",
+          "schema": "spell.communication.capability.v1",
+          "source_fingerprint": "efd7ccf941e012513b582fc600b535fae6d875bdbdfc3fff278a7fbfb9ad28c3",
+          "source_record_id": "d82624a42cf6c33ccec927b8",
+          "started_at": "2026-08-14T12:00:00+00:00",
+          "state_version_after": 1,
+          "state_version_before": 0,
+          "target_scope": "self"
+        }
+      },
+      "runtime_receipt": {
+        "capability_id": "core-phb-2024:spell:d82624a42cf6c33ccec927b8:self:beast",
+        "clause_id": "communication_capability",
+        "content_id": "core-phb-2024:spell:d82624a42cf6c33ccec927b8",
+        "creature_kind": "beast",
+        "duration_unit": "minutes",
+        "duration_value": 10,
+        "expires_at": "2026-08-14T12:10:00+00:00",
         "influence_action_skills": [
           "deception",
           "intimidation",
@@ -34,7 +323,61 @@
         ],
         "information_scope": "surroundings_and_monsters",
         "recent_observation_hours": 24,
-        "schema": "spell.communication.capability.v1"
+        "replayed": false,
+        "request_fingerprint": "a31d97c62727d763ac49e9aa2c3bc4931f575a9f44a8f1fabbc36aab1505c9b8",
+        "schema": "spell.communication.capability.v1",
+        "source_fingerprint": "efd7ccf941e012513b582fc600b535fae6d875bdbdfc3fff278a7fbfb9ad28c3",
+        "source_record_id": "d82624a42cf6c33ccec927b8",
+        "started_at": "2026-08-14T12:00:00+00:00",
+        "state_version_after": 1,
+        "state_version_before": 0,
+        "target_scope": "self"
+      },
+      "runtime_result": {
+        "actor_combatant_id": "00000000-0000-0000-0000-00000000000c",
+        "actor_version_after": 2,
+        "beast_version_after": 2,
+        "communication": {
+          "beast_combatant_id": "00000000-0000-0000-0000-00000000000e",
+          "creature_kind": "beast",
+          "influence_action_skill": "persuasion",
+          "influence_action_skills": [
+            "deception",
+            "intimidation",
+            "persuasion"
+          ],
+          "information_scope": "surroundings_and_monsters",
+          "observation_age_hours": 24,
+          "recent_observation_boundary_hours": 24
+        },
+        "communication_capability_receipt": {
+          "capability_id": "core-phb-2024:spell:d82624a42cf6c33ccec927b8:self:beast",
+          "clause_id": "communication_capability",
+          "content_id": "core-phb-2024:spell:d82624a42cf6c33ccec927b8",
+          "creature_kind": "beast",
+          "duration_unit": "minutes",
+          "duration_value": 10,
+          "expires_at": "2026-08-14T12:10:00+00:00",
+          "influence_action_skills": [
+            "deception",
+            "intimidation",
+            "persuasion"
+          ],
+          "information_scope": "surroundings_and_monsters",
+          "recent_observation_hours": 24,
+          "replayed": false,
+          "request_fingerprint": "a31d97c62727d763ac49e9aa2c3bc4931f575a9f44a8f1fabbc36aab1505c9b8",
+          "schema": "spell.communication.capability.v1",
+          "source_fingerprint": "efd7ccf941e012513b582fc600b535fae6d875bdbdfc3fff278a7fbfb9ad28c3",
+          "source_record_id": "d82624a42cf6c33ccec927b8",
+          "started_at": "2026-08-14T12:00:00+00:00",
+          "state_version_after": 1,
+          "state_version_before": 0,
+          "target_scope": "self"
+        },
+        "consumer": "spell.communication.capability.v1",
+        "operation_transaction_id": "00000000-0000-0000-0000-000000000011",
+        "runtime_id": "core-phb-2024:spell:d82624a42cf6c33ccec927b8"
       },
       "source": {
         "authored_path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-d82624a42cf6c33ccec927b8.json",

@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
 CAPABILITY_SCHEMA = "spell.communication.capability.v1"
+INFLUENCE_ACTION_SKILLS = ("deception", "intimidation", "persuasion")
 
 
 def _fingerprint(value: object) -> str:
@@ -34,18 +36,18 @@ class TypedSpellCommunicationCapabilitySpec:
         for field in ("content_id", "source_record_id", "clause_id", "target_scope"):
             if not str(getattr(self, field)).strip():
                 raise ValueError(f"communication capability {field} is required")
-        if len(self.source_fingerprint) != 64:
+        if not re.fullmatch(r"[0-9a-f]{64}", self.source_fingerprint):
             raise ValueError("communication capability source_fingerprint must be sha256")
         if self.target_scope != "self":
             raise ValueError("communication capability target_scope must be self")
+        if self.clause_id != "communication_capability":
+            raise ValueError("communication capability clause is unsupported")
         if self.creature_kind != "beast":
             raise ValueError("communication capability creature_kind must be beast")
         if self.duration_unit != "minutes" or self.duration_value != 10:
             raise ValueError("communication capability duration must be 10 minutes")
-        if not self.influence_action_skills:
-            raise ValueError("communication capability requires Influence skills")
-        if any(not str(item).strip() for item in self.influence_action_skills):
-            raise ValueError("communication capability skills must be non-empty")
+        if self.influence_action_skills != INFLUENCE_ACTION_SKILLS:
+            raise ValueError("communication capability Influence skills are incomplete")
         if self.information_scope != "surroundings_and_monsters":
             raise ValueError("communication capability information scope is unsupported")
         if self.recent_observation_hours != 24:

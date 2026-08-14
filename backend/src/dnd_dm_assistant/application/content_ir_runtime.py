@@ -2652,6 +2652,19 @@ class ContentIRRuntimeService:
             capability.get("recent_observation_hours") or 0
         ):
             raise ValueError("communication capability information is older than one day")
+        TypedSpellCommunicationCapabilitySpec(
+            content_id=runtime_id,
+            source_record_id=source_record_id,
+            source_fingerprint=source_fingerprint,
+            clause_id=_text(capability.get("clause_id")),
+            target_scope=_text(capability.get("target_scope")),
+            creature_kind=_text(capability.get("creature_kind")),
+            duration_unit=_text(capability.get("duration_unit")),
+            duration_value=int(capability.get("duration_value") or 0),
+            influence_action_skills=skills,
+            information_scope=_text(capability.get("information_scope")),
+            recent_observation_hours=int(capability.get("recent_observation_hours") or 0),
+        )
         return {
             "content_id": runtime_id,
             "source_record_id": source_record_id,
@@ -2832,7 +2845,8 @@ class ContentIRRuntimeService:
             session.add(operation)
             session.flush()
             output["operation_transaction_id"] = operation.id
-            operation.after_snapshot = output
+            operation.after_snapshot = dict(output)
+            session.flush()
             return output
 
     def _confirm_spell_communication_route(
@@ -3078,7 +3092,8 @@ class ContentIRRuntimeService:
             session.add(operation)
             session.flush()
             output["operation_transaction_id"] = operation.id
-            operation.after_snapshot = output
+            operation.after_snapshot = dict(output)
+            session.flush()
             return output
 
     @classmethod
@@ -4884,6 +4899,52 @@ class ContentIRRuntimeService:
                         raise ValueError(
                             "communication route operation replay payload does not match"
                         )
+                if existing.idempotency_key.endswith(":capability"):
+                    communication = previous.get("communication")
+                    receipt = previous.get("communication_capability_receipt")
+                    if not isinstance(communication, Mapping) or not isinstance(
+                        receipt, Mapping
+                    ):
+                        raise ValueError(
+                            "communication capability operation replay receipt is incomplete"
+                        )
+                    if _text(previous.get("preview_token")) != _text(data.get("preview_token")):
+                        raise ValueError(
+                            "communication capability operation replay payload does not match"
+                        )
+                    submitted = {
+                        "runtime_id": _text(data.get("runtime_id")),
+                        "beast_combatant_id": _text(
+                            data.get("communication_beast_combatant_id")
+                        ),
+                        "influence_action_skill": _text(
+                            data.get("communication_influence_skill")
+                        ).lower(),
+                        "information_scope": _text(
+                            data.get("communication_information_scope")
+                        ),
+                        "observation_age_hours": data.get(
+                            "communication_observation_age_hours"
+                        ),
+                    }
+                    prior = {
+                        "runtime_id": _text(previous.get("runtime_id")),
+                        "beast_combatant_id": _text(
+                            communication.get("beast_combatant_id")
+                        ),
+                        "influence_action_skill": _text(
+                            communication.get("influence_action_skill")
+                        ).lower(),
+                        "information_scope": _text(communication.get("information_scope")),
+                        "observation_age_hours": communication.get(
+                            "observation_age_hours"
+                        ),
+                    }
+                    if submitted != prior:
+                        raise ValueError(
+                            "communication capability operation replay payload does not match"
+                        )
+                    previous["operation_transaction_id"] = existing.id
                 return {**previous, "already_applied": True}
         preview = self.preview(campaign_id, data)
         token = _text(data.get("preview_token"))

@@ -13,20 +13,34 @@
     "speak_with_animals_in_project_production_ids": true
   },
   "checks": {
+    "actual_operation_transaction": true,
+    "actual_persisted_snapshot": true,
+    "actual_receipt_fields": true,
+    "actual_replay": true,
     "all_required_checks_passed": true,
-    "cas": true,
+    "behavioral_nodes": {
+      "test_round_l_actor_cas_rejects_after_preview": true,
+      "test_round_l_beast_cas_rejects_after_preview": true,
+      "test_round_l_capability_persistence_receipt_and_behavioral_boundaries": true,
+      "test_round_l_character_cas_rejects_after_preview": true,
+      "test_round_l_invalid_runtime_contract_rejects": true,
+      "test_round_l_replay_is_exact_and_payload_drift_rejected": true,
+      "test_speak_with_animals_rejects_non_beast_and_stale_cas": true,
+      "test_speak_with_animals_rejects_source_boundary_drift": true
+    },
+    "character_actor_beast_cas": true,
+    "compile_full": true,
     "evidence_loader_inclusion": true,
-    "expiry_receipt": true,
     "formal_database_written": false,
     "formal_registry_written": false,
-    "influence_skill_boundary": true,
+    "invalid_non_beast_scope": true,
+    "invalid_runtime_input_scope": true,
+    "invalid_runtime_source_contract": true,
+    "isolated_api_runtime": true,
     "name_branch_count": 0,
-    "operation_transaction": true,
     "preview_confirm_replay": true,
     "projection_reconciliation": true,
     "protected_fingerprints_unchanged": true,
-    "recent_observation_boundary": true,
-    "source_provenance": true,
     "typed_consumer": true
   },
   "evidence_artifact": "data/content-ir/compiled/production-runtime-results-L.json",
@@ -36,13 +50,23 @@
     "round_xliii_report_sha256": "98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f"
   },
   "no_push": true,
+  "node_stdout_sha256": {
+    "test_round_l_actor_cas_rejects_after_preview": "e965267b6e51fb6b651aa4a70a362def751f11025a31512de16bf72e245ca37a",
+    "test_round_l_beast_cas_rejects_after_preview": "e965267b6e51fb6b651aa4a70a362def751f11025a31512de16bf72e245ca37a",
+    "test_round_l_capability_persistence_receipt_and_behavioral_boundaries": "e965267b6e51fb6b651aa4a70a362def751f11025a31512de16bf72e245ca37a",
+    "test_round_l_character_cas_rejects_after_preview": "e965267b6e51fb6b651aa4a70a362def751f11025a31512de16bf72e245ca37a",
+    "test_round_l_invalid_runtime_contract_rejects": "0b046af3f0e5604297b530edf937e44050919108d71c1f36630b14afe0c20fd5",
+    "test_round_l_replay_is_exact_and_payload_drift_rejected": "e965267b6e51fb6b651aa4a70a362def751f11025a31512de16bf72e245ca37a",
+    "test_speak_with_animals_rejects_non_beast_and_stale_cas": "e965267b6e51fb6b651aa4a70a362def751f11025a31512de16bf72e245ca37a",
+    "test_speak_with_animals_rejects_source_boundary_drift": "9fbdf8c5b5ddc91a45fe644bf53c556996b9072d4336b10e3dd6ac162046320c"
+  },
   "promotion_decision": "promote",
-  "report_fingerprint": "b77884ffa3c1553df51f051c59224906c2c8fb47e1d7ecd683abe0ea3a93d924",
+  "report_fingerprint": "455d3338ecd6a5c42efaa9ad7e1f8f629ed1292d30cc1e0f13091e6c83479eda",
   "round_id": "round-L",
   "runtime_consumers": [
     "spell.communication.capability.v1"
   ],
-  "schema_version": "round-L-speak-with-animals-production-1",
+  "schema_version": "round-L-speak-with-animals-production-2",
   "source_bound_producer": {
     "authored_path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-d82624a42cf6c33ccec927b8.json",
     "compile_status": "full",
@@ -52,6 +76,5 @@
       "target",
       "communication_capability"
     ]
-  },
-  "test_stdout_sha256": "5f0e2dc14a1cd81f844c93beac10747b1fbcb5b113bddeaccaa6fe9c6a1d848e"
+  }
 }
