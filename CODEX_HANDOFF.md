@@ -1,3 +1,28 @@
+## 2026-08-14 Round LIX handoff: strongest compile-only retention audit
+
+- Baseline accepted HEAD: `063e9e171d6432c66349acce36a58ab74f37be2f`; local-only,
+  no push.
+- Current authoritative projection remains `209 production / 26 compile-only /
+  111 unique compiled`; no IDs promoted.
+- Deterministically selected
+  `xanathars-guide:spell:aadf89719f073bfca1fefb3a` (Skywrite/写入空中): one
+  canonical authored record, exact content/source-record/fingerprint/checksum binding,
+  no missing typed clause, no registry error, and generic
+  `spell_economy.concentration.v1` resolution.
+- Retained because source-complete runtime is not present: cloud-written text creation
+  and persistence plus strong-wind early termination are absent from the current generic
+  runtime, which exposes only concentration. No production evidence artifact was
+  registered and no projection arithmetic was used.
+- Evidence:
+  `scripts/validate-round-LIX-retention-audit.py`,
+  `reports/round-LIX-retention-audit-2026-08-14.json`,
+  `backend/tests/test_round_LIX_retention_audit.py`,
+  `docs/round-LIX-retention-audit-2026-08-14.md`.
+- Focused Round LIX plus LVIII/LVII/LVI/LV regressions, Ruff, compileall,
+  `git diff --check`, protected hashes, and historical no-diff checks are required
+  before the local Round LIX commit. Protected `backend/tests/integrations/` and
+  `backend/tests/ollama.py` remain untouched and untracked.
+
 ## 2026-08-14 Round LII handoff: generic illusion lifecycle / inspection
 
 - Baseline `951ef198533ae9378c638bd05f66ed1066ee9cb8`; local-only, no push.
