@@ -2339,6 +2339,12 @@ class ContentIRRuntimeService:
         target = self._first_parameters(blocks, "target_selection")
         if _text(target.get("count")).lower() != "all_in_area":
             return None
+        runtime_contract = data.get("runtime_contract")
+        if not (
+            isinstance(runtime_contract, Mapping)
+            and runtime_contract.get("exact_area_membership") is True
+        ):
+            return None
         area = self._first_parameters(blocks, "area")
         shape = _text(data.get("area_shape")) or _text(area.get("shape"))
         size_ft = data.get("area_size_ft") or area.get("size_ft")
@@ -2376,7 +2382,7 @@ class ContentIRRuntimeService:
                 if data.get("area_height_ft") is not None
                 else None
             ),
-            include_actor=True,
+            include_actor=bool(data.get("area_include_actor")),
             requires_line_of_sight=_text(target.get("visibility")).lower() == "visible",
             maximum_range_ft=int(raw_range),
             target_ids=target_ids,
@@ -3642,9 +3648,6 @@ class ContentIRRuntimeService:
             area = self._first_parameters(blocks, "area")
             area_shape = _text(data.get("area_shape")) or _text(area.get("shape")) or None
             area_size = data.get("area_size_ft") or area.get("size_ft")
-            all_in_area = _text(
-                self._first_parameters(blocks, "target_selection").get("count")
-            ).lower() == "all_in_area"
             if area_shape and (
                 data.get("area_anchor_row") is None or data.get("area_anchor_col") is None
             ):
@@ -3717,8 +3720,7 @@ class ContentIRRuntimeService:
                             "area_anchor_row": data.get("area_anchor_row"),
                             "area_anchor_col": data.get("area_anchor_col"),
                             "area_anchor_height_ft": int(data.get("area_anchor_height_ft") or 0),
-                            "area_include_actor": all_in_area
-                            or bool(data.get("area_include_actor")),
+                            "area_include_actor": bool(data.get("area_include_actor")),
                         }
                     )
                 commands.append(CombatActionCommand.model_validate(command_data))

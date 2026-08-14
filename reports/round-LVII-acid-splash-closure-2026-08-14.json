@@ -88,6 +88,8 @@
     "project_production_count_after_artifact": true,
     "project_production_count_before_artifact": 208,
     "protected_ollama_sha_exact": true,
+    "range_probe_membership_submissions_exact": true,
+    "range_rejected_before_payment": true,
     "replay_idempotent": true,
     "save_success_no_damage": true,
     "selected_id_authoritative": true,
@@ -411,7 +413,7 @@
       "sha256": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
     }
   },
-  "report_fingerprint": "26146971589d3eeb728e053a6fe084af64f2263a77483f73316bd6ab2d3b2c44",
+  "report_fingerprint": "95dce8fe42c6327187fbc7086cc223b030b111599ea18092e180d0d3e50d91cd",
   "required_check_keys": [
     "selected_id_authoritative",
     "canonical_source_complete",
@@ -431,6 +433,8 @@
     "anchor_range_boundary_accepted",
     "anchor_range_too_far_rejected",
     "anchor_grid_bounds_rejected",
+    "range_probe_membership_submissions_exact",
+    "range_rejected_before_payment",
     "replay_idempotent",
     "target_cas_rejected",
     "operation_transactions_persisted",
@@ -443,11 +447,12 @@
     "duplicate_invalid_set_idempotent",
     "unrelated_compile_only_ids_unchanged",
     "unrelated_production_ids_unchanged",
-    "migration_projection_matches_sets",
     "production_union_semantics_proven",
     "name_branch_free",
     "protected_ollama_sha_exact",
     "historical_xliii_sha_exact",
+    "final_loader_acceptance",
+    "migration_projection_matches_sets",
     "project_production_count_after_artifact"
   ],
   "round_id": "round-LVII",

@@ -59,6 +59,7 @@ _ISO_TIMESTAMP_RE = re.compile(
     r"\b20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}"
     r"(?:\.[0-9]+)?(?:Z|[+-][0-9]{2}:[0-9]{2})\b"
 )
+_PREVIEW_TOKEN_RE = re.compile(r'("preview_token"\s*:\s*")[0-9a-fA-F]{64}(")')
 
 
 def _sha(value: bytes) -> str:
@@ -67,7 +68,8 @@ def _sha(value: bytes) -> str:
 
 def _stable(value: Any) -> Any:
     if isinstance(value, str):
-        return _ISO_TIMESTAMP_RE.sub("stable-time", _UUID_RE.sub("stable-id", value))
+        value = _ISO_TIMESTAMP_RE.sub("stable-time", _UUID_RE.sub("stable-id", value))
+        return _PREVIEW_TOKEN_RE.sub(r"\1stable-token\2", value)
     if isinstance(value, dict):
         normalized_items = [
             (
@@ -276,10 +278,28 @@ def _area_body(
         "area_size_ft": 5,
         "area_anchor_row": anchor_row,
         "area_anchor_col": anchor_col,
-        "area_include_actor": False,
+        "area_include_actor": True,
+        "runtime_contract": {"exact_area_membership": True},
         "resolution_total": total,
         "save_succeeded_by_target": save_by_target,
         "idempotency_key": key,
+    }
+
+
+def _response_evidence(response: Any) -> dict[str, Any]:
+    try:
+        payload = response.json()
+    except ValueError:
+        payload = None
+    detail = (
+        payload.get("detail") or payload.get("message")
+        if isinstance(payload, dict)
+        else None
+    )
+    return {
+        "status": response.status_code,
+        "detail": detail,
+        "text": response.text,
     }
 
 
@@ -519,6 +539,9 @@ def _run_area_boundary_and_rejection_probes(
             )
             bounds = _setup_area_spell(client, runtime, 5)
             bounds_root = f"{bounds['base']}/combats/{bounds['combat']['id']}"
+            bounds_character_before = client.get(
+                f"{bounds['base']}/characters/{bounds['character']['id']}"
+            ).json()
             boundary_target = client.post(
                 f"{bounds_root}/combatants",
                 json={
@@ -538,7 +561,7 @@ def _run_area_boundary_and_rejection_probes(
                 key="round-lvii-acid-splash-range-boundary",
                 total=8,
                 anchor_col=14,
-                target_ids=[boundary_target["id"]],
+                target_ids=[],
                 primary_target_id=boundary_target["id"],
                 primary_target_version=boundary_target["version"],
             )
@@ -567,7 +590,7 @@ def _run_area_boundary_and_rejection_probes(
                 key="round-lvii-acid-splash-range-too-far",
                 total=8,
                 anchor_col=15,
-                target_ids=[too_far_target["id"]],
+                target_ids=[],
                 primary_target_id=too_far_target["id"],
                 primary_target_version=too_far_target["version"],
             )
@@ -582,7 +605,7 @@ def _run_area_boundary_and_rejection_probes(
                 key="round-lvii-acid-splash-anchor-out-of-bounds",
                 total=8,
                 anchor_col=21,
-                target_ids=[too_far_target["id"]],
+                target_ids=[],
                 primary_target_id=too_far_target["id"],
                 primary_target_version=too_far_target["version"],
             )
@@ -592,6 +615,27 @@ def _run_area_boundary_and_rejection_probes(
                 f"{bounds['base']}/content-ir/runtime/preview",
                 json=out_of_bounds,
             )
+            rejected_probes = (
+                ("omitted", omitted_response, omitted, character_before),
+                ("extra_outside", extra_response, extra, character_after_omitted),
+                ("too_far_65ft", too_far_response, too_far_body, bounds_character_before),
+                (
+                    "anchor_out_of_bounds",
+                    out_of_bounds_response,
+                    out_of_bounds,
+                    bounds_character_before,
+                ),
+            )
+            rejection_payment: dict[str, bool] = {}
+            for name, response, _, before_character in rejected_probes:
+                if before_character is None:
+                    continue
+                after_character = client.get(
+                    f"{scene['base']}/characters/{scene['character']['id']}"
+                ).json()
+                rejection_payment[name] = (
+                    after_character["version"] == before_character["version"]
+                )
             return {
                 "omitted_in_area_status": omitted_response.status_code,
                 "omitted_before_payment": (
@@ -599,9 +643,36 @@ def _run_area_boundary_and_rejection_probes(
                     and character_after_omitted["version"] == character_before["version"]
                 ),
                 "extra_outside_status": extra_response.status_code,
+                "boundary_60ft": {
+                    **_response_evidence(boundary_response),
+                    "submitted_target_ids": [
+                        boundary_body["target_combatant_id"],
+                        *boundary_body["target_combatant_ids"],
+                    ],
+                    "membership": (
+                        boundary_response.json().get("area_membership")
+                        if boundary_response.status_code == 200
+                        else None
+                    ),
+                },
+                "too_far_65ft": {
+                    **_response_evidence(too_far_response),
+                    "submitted_target_ids": [
+                        too_far_body["target_combatant_id"],
+                        *too_far_body["target_combatant_ids"],
+                    ],
+                },
+                "anchor_out_of_bounds": {
+                    **_response_evidence(out_of_bounds_response),
+                    "submitted_target_ids": [
+                        out_of_bounds["target_combatant_id"],
+                        *out_of_bounds["target_combatant_ids"],
+                    ],
+                },
                 "boundary_60ft_status": boundary_response.status_code,
                 "too_far_65ft_status": too_far_response.status_code,
                 "anchor_out_of_bounds_status": out_of_bounds_response.status_code,
+                "rejection_payment_unchanged": rejection_payment,
             }
 
 
@@ -834,9 +905,34 @@ def main() -> int:
         ]
         is True,
         "extra_outside_rejected": area_probes["extra_outside_status"] == 400,
-        "anchor_range_boundary_accepted": area_probes["boundary_60ft_status"] == 422,
-        "anchor_range_too_far_rejected": area_probes["too_far_65ft_status"] == 422,
-        "anchor_grid_bounds_rejected": area_probes["anchor_out_of_bounds_status"] == 422,
+        "anchor_range_boundary_accepted": (
+            area_probes["boundary_60ft"]["status"] == 200
+            and area_probes["boundary_60ft"]["submitted_target_ids"]
+            == area_probes["boundary_60ft"]["membership"]["target_ids"]
+        ),
+        "anchor_range_too_far_rejected": (
+            area_probes["too_far_65ft"]["status"] == 400
+            and "typed spell range"
+            in str(area_probes["too_far_65ft"]["detail"])
+        ),
+        "anchor_grid_bounds_rejected": (
+            area_probes["anchor_out_of_bounds"]["status"] == 400
+            and "outside the combat grid"
+            in str(area_probes["anchor_out_of_bounds"]["detail"])
+        ),
+        "range_probe_membership_submissions_exact": all(
+            len(probe["submitted_target_ids"])
+            == len(set(probe["submitted_target_ids"]))
+            and len(probe["submitted_target_ids"]) == 1
+            for probe in (
+                area_probes["boundary_60ft"],
+                area_probes["too_far_65ft"],
+                area_probes["anchor_out_of_bounds"],
+            )
+        ),
+        "range_rejected_before_payment": all(
+            area_probes["rejection_payment_unchanged"].values()
+        ),
         "replay_idempotent": production["replay_already_applied"] is True,
         "target_cas_rejected": production["stale_target_cas_status"] == 409,
         "operation_transactions_persisted": bool(production["operation_transactions"])
@@ -874,23 +970,21 @@ def main() -> int:
         )
         == EXPECTED_XLIII_SHA,
     }
-    required = [
+    precheck_required_keys = [
         key
         for key, value in checks.items()
         if isinstance(value, bool)
         and key != "selected_preexisting_in_production_union"
     ]
-    required.append("project_production_count_after_artifact")
     deferred_checks = {
         "migration_projection_matches_sets",
         "project_production_count_after_artifact",
     }
-    initial_required = [key for key in required if key not in deferred_checks]
-    checks["all_required_checks_passed"] = all(
-        checks[key]
-        for key in required
-        if key not in deferred_checks
-    )
+    precheck_required_keys = [
+        key for key in precheck_required_keys if key not in deferred_checks
+    ]
+    precheck_passed = all(checks[key] for key in precheck_required_keys)
+    checks["all_required_checks_passed"] = precheck_passed
     row = {
         "content_id": SPELL_ID,
         "runtime_id": SPELL_ID,
@@ -899,7 +993,7 @@ def main() -> int:
         "source_fingerprint": source["source_fingerprint"],
         "compile_status": compiled["compile_status"],
         "consumer_ids": production["consumer_ids"],
-        "production_runtime_full": checks["all_required_checks_passed"],
+        "production_runtime_full": precheck_passed,
         "production": production,
         "scaling": scaling,
         "area_probes": area_probes,
@@ -911,16 +1005,26 @@ def main() -> int:
         "round_id": "round-LVII",
         "artifact_date": "2026-08-14",
         "bootstrap_phase": True,
-        "production_runtime_full_ids": [SPELL_ID],
-        "evidence_by_id": {SPELL_ID: {**row, "production_runtime_full": True}},
+        "production_runtime_full_ids": [SPELL_ID] if precheck_passed else [],
+        "evidence_by_id": {SPELL_ID: row},
         "checks": checks,
-        "required_check_keys": initial_required,
-        "all_required_checks_passed": True,
+        "required_check_keys": precheck_required_keys,
+        "all_required_checks_passed": precheck_passed,
     }
-    # This bootstrap artifact contains only the evidence-backed checks already
-    # proven above; the set-derived migration/count checks are evaluated after
-    # the loader can see this candidate in the production union.
+    # The strict loader must only see a candidate after all pre-persist checks
+    # pass.  A failing precheck is materialized as a safe, non-production
+    # artifact and exits before loader or migration projection work.
     _write_json(RESULT_PATH, artifact)
+    if not precheck_passed:
+        artifact["bootstrap_phase"] = False
+        artifact["required_check_keys"] = precheck_required_keys
+        artifact["production_runtime_full_ids"] = []
+        artifact["all_required_checks_passed"] = False
+        row["production_runtime_full"] = False
+        artifact["evidence_by_id"] = {SPELL_ID: row}
+        _write_json(RESULT_PATH, artifact)
+        return 1
+
     loaded = load_production_runtime_evidence(
         ROOT,
         pack_id=None,
@@ -939,6 +1043,12 @@ def main() -> int:
         == baseline_project_production
         + len(production_after - production_before)
     )
+    required = [
+        *precheck_required_keys,
+        "final_loader_acceptance",
+        "migration_projection_matches_sets",
+        "project_production_count_after_artifact",
+    ]
     checks["all_required_checks_passed"] = all(checks[key] for key in required)
     artifact["checks"] = checks
     artifact["all_required_checks_passed"] = checks["all_required_checks_passed"]

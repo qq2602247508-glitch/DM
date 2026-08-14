@@ -43,9 +43,34 @@ def test_round_lvii_artifact_captures_generic_runtime_evidence() -> None:
     assert row["payload_drift"]["rejected"] is True
     assert row["strict_loader_probe"]["rejected"] is True
     assert artifact["checks"]["all_required_checks_passed"] is True
+    assert artifact["all_required_checks_passed"] is True
+    assert artifact["bootstrap_phase"] is False
+    assert artifact["production_runtime_full_ids"] == [SPELL_ID]
+    assert artifact["all_required_checks_passed"] == all(
+        artifact["checks"][key] for key in artifact["required_check_keys"]
+    )
     assert artifact["checks"] == report["checks"]
     assert artifact["required_check_keys"] == report["required_check_keys"]
     assert all(artifact["checks"][key] is True for key in artifact["required_check_keys"])
+    probes = artifact["evidence_by_id"][SPELL_ID]["area_probes"]
+    assert probes["boundary_60ft"]["status"] == 200
+    assert probes["boundary_60ft"]["submitted_target_ids"] == probes["boundary_60ft"][
+        "membership"
+    ]["target_ids"]
+    assert probes["too_far_65ft"]["status"] == 400
+    assert "typed spell range" in probes["too_far_65ft"]["detail"]
+    assert probes["anchor_out_of_bounds"]["status"] == 400
+    assert "outside the combat grid" in probes["anchor_out_of_bounds"]["detail"]
+    assert probes["rejection_payment_unchanged"] == {
+        "anchor_out_of_bounds": True,
+        "extra_outside": True,
+        "omitted": True,
+        "too_far_65ft": True,
+    }
+    assert report["before"]["production"] == 208
+    assert report["before"]["compile_only"] == 27
+    assert report["after"]["production"] == 209
+    assert report["after"]["compile_only"] == 26
 
 
 def test_round_lvii_projection_is_set_derived_and_unrelated_ids_unchanged() -> None:
