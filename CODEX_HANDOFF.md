@@ -3505,3 +3505,13 @@ git diff --check
 - Protected `backend/tests/ollama.py` SHA remains
   `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`;
   `backend/tests/integrations/` remains untouched and untracked.
+# 2026-08-14 Round L handoff：Speak with Animals production closure
+
+- 当前 HEAD 基线：`ec801044a25bc2d8ddaf3df2478c7adc90843eeb`；本轮本地工作完成后提交见 Git log。
+- 候选比较：Disguise Self 仍缺 illusion persistence/physical inspection/research-vs-DC/expiry；Prestidigitation 仍缺六模式与三槽 lifecycle；Speak with Animals 具备最强完整闭合边界，已 promotion。
+- 新增 `communication_capability` typed spell clause 和 generic `spell.communication.capability.v1` consumer。source-bound IR 覆盖 self target、10-minute duration、beast communication、Influence skills、surroundings/monsters 与 24-hour observation boundary。
+- 真实 API 行为证据覆盖 preview/confirm/replay、capability persistence/expiry receipt、CAS、operation transaction、invalid source/runtime/target/input；测试文件为 `backend/tests/test_round_L_speak_with_animals_runtime.py`。
+- generic evidence artifact 为 `data/content-ir/compiled/production-runtime-results-L.json`；validator 为 `scripts/validate-round-L-speak-with-animals-production.py`；report 为 `reports/round-L-speak-with-animals-production-2026-08-14.json`。
+- loader-derived canonical projection：`206 production / 32 compile-only / 111 unique compiled`。本轮不 promotion Disguise Self 或 Prestidigitation。
+- Protected untracked `backend/tests/integrations/`、`backend/tests/ollama.py` 未修改/未 staging；expected ollama SHA `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`。
+- no push；历史 Round XLIII report SHA 保持 `98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f`。

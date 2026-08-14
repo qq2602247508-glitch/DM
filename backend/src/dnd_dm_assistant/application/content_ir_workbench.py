@@ -65,6 +65,7 @@ _SPELL_CLAUSE_TYPES = frozenset(
         "timed_modifier",
         "target_selection",
         "communication_route",
+        "communication_capability",
     }
 )
 _SPELL_CLAUSE_CAPABILITIES = {
@@ -318,6 +319,21 @@ _SPELL_CLAUSE_FIELDS = {
             "evidence_ref",
         }
     ),
+    "communication_capability": frozenset(
+        {
+            "type",
+            "clause_id",
+            "resolution_kind",
+            "target_scope",
+            "duration_unit",
+            "duration_value",
+            "creature_kind",
+            "influence_action_skills",
+            "information_scope",
+            "recent_observation_hours",
+            "evidence_ref",
+        }
+    ),
 }
 _SPELL_CLAUSE_FIELDS = {
     clause_type: fields | frozenset({"evidence_ref"})
@@ -341,6 +357,15 @@ _SPELL_REQUIRED_FIELDS = {
     "timed_modifier": (("stat", "operation", "value", "duration_unit", "duration_value"),),
     "target_selection": (("kind",),),
     "communication_route": (("resolution_kind",), ("range_ft",)),
+    "communication_capability": (
+        ("resolution_kind",),
+        ("target_scope",),
+        ("duration_unit", "duration_value"),
+        ("creature_kind",),
+        ("influence_action_skills",),
+        ("information_scope",),
+        ("recent_observation_hours",),
+    ),
 }
 _SPELL_TOP_LEVEL_FIELDS = frozenset(
     {
@@ -1174,6 +1199,7 @@ def _materialize_spell_runtime(
         "concentration": [],
         "upcast": [],
         "communication_route": [],
+        "communication_capability": [],
     }
     for clause in ordered:
         clause_type = _text(clause.get("type"))
@@ -1190,6 +1216,7 @@ def _materialize_spell_runtime(
             "resource_effect",
             "summon_or_creation",
             "communication_route",
+            "communication_capability",
         }:
             resolution["effects"].append(_jsonable(clause))
         else:

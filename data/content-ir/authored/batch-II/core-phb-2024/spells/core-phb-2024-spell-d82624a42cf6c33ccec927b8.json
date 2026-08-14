@@ -18,10 +18,27 @@
     {
       "clause_id": "target",
       "count": 1,
-      "evidence_ref": "、游侠、魔契师）* **施法时间：**动作或仪式 **施法距离：**自身 **法术成分：**V、S **持续时间：**10 分钟 你在法术持续时间内获得理解野兽生物并用语言与其沟通的能力，并且你可以对它们使用交涉动作时任何技能选项都可以适用。 大多数野兽在谈及和生存与伙伴无关的话题时能说的很少，但至少，一只野兽能够给你提供周遭的地点和怪物的情报，包括任何它们近一日内察觉到过的东西。",
-      "kind": "one_creature",
+      "evidence_ref": "施法距离：自身。持续时间：10分钟。你在法术持续时间内获得理解野兽生物并用语言与其沟通的能力。",
+      "kind": "self",
       "type": "target_selection",
       "visibility": "visible"
+    },
+    {
+      "clause_id": "communication_capability",
+      "creature_kind": "beast",
+      "duration_unit": "minutes",
+      "duration_value": 10,
+      "evidence_ref": "你在法术持续时间内获得理解野兽生物并用语言与其沟通的能力，并且你可以对它们使用交涉动作时任何技能选项都可以适用。大多数野兽在谈及和生存与伙伴无关的话题时能说的很少，但至少，一只野兽能够给你提供周遭的地点和怪物的情报，包括任何它们近一日内察觉到过的东西。",
+      "information_scope": "surroundings_and_monsters",
+      "influence_action_skills": [
+        "deception",
+        "intimidation",
+        "persuasion"
+      ],
+      "recent_observation_hours": 24,
+      "resolution_kind": "beast_communication_capability",
+      "target_scope": "self",
+      "type": "communication_capability"
     }
   ],
   "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",

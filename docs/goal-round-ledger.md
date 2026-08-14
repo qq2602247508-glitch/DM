@@ -864,3 +864,10 @@ feature binding 与 spell-slot reactivation 仍保持 partial。
 - focused validator、Round XXXIV/XXXIII tests、provenance/CAS/idempotency/replay/fail-closed checks通过；两个保护路径 fingerprint 未变化。
 - `genie-bottled-respite` 与 `scribe-manifest-mind` 保持 compile-only；前者缺 vessel 空间/休息边界，后者缺 spectral-object movement/300-foot expiry/spell-slot reactivation。
 - 证据：`docs/tashas-feature-production-consumer-round-XXXIV-2026-08-13.md`、`scripts/validate-tashas-feature-production-consumer-round-XXXIV.py`、`reports/tashas-feature-production-consumer-round-XXXIV-2026-08-13.json`、`data/content-ir/compiled/production-runtime-results-XXXIV.json`。
+# 2026-08-14 Round L：Speak with Animals production closure
+
+- 基线 `ec801044a25bc2d8ddaf3df2478c7adc90843eeb`；比较 Disguise Self、Prestidigitation、Speak with Animals 后，选择 source-complete 的 Speak with Animals。
+- 新增 typed `communication_capability` Content IR 与 generic `spell.communication.capability.v1` consumer；实现 self target、10 分钟、beast scope、Influence skill options、24 小时 recent-observation boundary、snapshot CAS、expiry receipt、transaction 和 replay。
+- 证据：`data/content-ir/compiled/production-runtime-results-L.json`、`reports/round-L-speak-with-animals-production-2026-08-14.json`、`scripts/validate-round-L-speak-with-animals-production.py`、`backend/tests/test_round_L_speak_with_animals_runtime.py`。
+- canonical projection 自 generic loader 计算为 `206 production / 32 compile-only / 111 unique compiled`；Disguise Self 与 Prestidigitation 保持 compile-only。
+- 受保护路径未变，Round XLIII report SHA 保持；无 push。

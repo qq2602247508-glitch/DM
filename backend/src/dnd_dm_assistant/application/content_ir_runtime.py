@@ -55,6 +55,10 @@ from dnd_dm_assistant.domain.spell_slot_reactivation import (
 from dnd_dm_assistant.domain.telepathic_information import (
     share_authorized_sensory_information,
 )
+from dnd_dm_assistant.domain.typed_spell_communication_capabilities import (
+    TypedSpellCommunicationCapabilitySpec,
+    apply_typed_spell_communication_capability,
+)
 from dnd_dm_assistant.domain.typed_spell_communication_routes import (
     TypedSpellCommunicationRouteSpec,
     apply_typed_spell_communication_route,
@@ -2602,6 +2606,72 @@ class ContentIRRuntimeService:
             "magical_silence_blocks": bool(route.get("magical_silence_blocks", True)),
         }
 
+    @classmethod
+    def _spell_communication_capability_contract(
+        cls,
+        data: Mapping[str, Any],
+        blocks: Mapping[str, list[dict[str, Any]]],
+        *,
+        runtime_id: str,
+        runtime_source: Mapping[str, Any],
+    ) -> dict[str, Any] | None:
+        capability = next(
+            (
+                cls._parameters(block)
+                for block in blocks.get("communication_capability", [])
+                if cls._parameters(block).get("resolution_kind")
+                == "beast_communication_capability"
+            ),
+            None,
+        )
+        if capability is None:
+            return None
+        target = cls._first_parameters(blocks, "target_selection")
+        if _text(target.get("kind")).lower() != "self":
+            raise ValueError("communication capability requires self target")
+        source_record_id = _text(runtime_source.get("source_record_id"))
+        source_fingerprint = _text(runtime_source.get("source_fingerprint"))
+        if not source_record_id or len(source_fingerprint) != 64:
+            raise ValueError("communication capability requires source provenance")
+        beast_id = _text(data.get("communication_beast_combatant_id"))
+        beast_version = int(data.get("communication_beast_version") or 0)
+        if not beast_id or beast_version < 1:
+            raise ValueError("communication capability requires a beast target and version")
+        skill = _text(data.get("communication_influence_skill")).lower()
+        skills = tuple(
+            _text(item).lower() for item in capability.get("influence_action_skills", [])
+        )
+        if not skill or skill not in skills:
+            raise ValueError("communication capability requires a permitted Influence skill")
+        if _text(data.get("communication_information_scope")) != _text(
+            capability.get("information_scope")
+        ):
+            raise ValueError("communication capability requires the source information scope")
+        observation_age = data.get("communication_observation_age_hours")
+        if observation_age is None or int(observation_age) > int(
+            capability.get("recent_observation_hours") or 0
+        ):
+            raise ValueError("communication capability information is older than one day")
+        return {
+            "content_id": runtime_id,
+            "source_record_id": source_record_id,
+            "source_fingerprint": source_fingerprint,
+            "clause_id": _text(capability.get("clause_id")) or "communication_capability",
+            "target_scope": _text(capability.get("target_scope")),
+            "creature_kind": _text(capability.get("creature_kind")),
+            "duration_unit": _text(capability.get("duration_unit")),
+            "duration_value": int(capability.get("duration_value") or 0),
+            "influence_action_skills": skills,
+            "information_scope": _text(capability.get("information_scope")),
+            "recent_observation_hours": int(
+                capability.get("recent_observation_hours") or 0
+            ),
+            "beast_id": beast_id,
+            "beast_version": beast_version,
+            "influence_skill": skill,
+            "observation_age_hours": int(observation_age),
+        }
+
     @staticmethod
     def _expire_spell_timed_modifiers(target: Combatant, now: datetime) -> None:
         snapshot = dict(target.snapshot_json or {})
@@ -2891,6 +2961,119 @@ class ContentIRRuntimeService:
                 reason="source-bound spell communication route confirmed",
                 source="combat",
                 confirmed_at=datetime.now(UTC),
+            )
+            session.add(operation)
+            session.flush()
+            output["operation_transaction_id"] = operation.id
+            operation.after_snapshot = output
+            return output
+
+    def _confirm_spell_communication_capability(
+        self,
+        campaign_id: str,
+        data: Mapping[str, Any],
+        *,
+        key: str,
+        token: str,
+        preview: Mapping[str, Any],
+        contract: Mapping[str, Any],
+        spell_done: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        with Session(self.engine) as session, session.begin():
+            existing = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == campaign_id,
+                    OperationTransaction.idempotency_key == f"content-ir:{key}:capability",
+                )
+            )
+            if existing is not None:
+                return {**dict(existing.after_snapshot or {}), "already_applied": True}
+            actor = session.get(Combatant, _text(data.get("actor_combatant_id")))
+            beast = session.get(Combatant, _text(contract["beast_id"]))
+            if actor is None or beast is None or actor.combat_id != beast.combat_id:
+                raise StateNotFoundError("communication capability actor or beast not found")
+            expected_actor_version = int(data.get("actor_version") or 0)
+            if actor.version != expected_actor_version:
+                raise VersionConflict("combatant", actor.id, expected_actor_version, actor.version)
+            if beast.version != int(contract["beast_version"]):
+                raise VersionConflict(
+                    "combatant", beast.id, int(contract["beast_version"]), beast.version
+                )
+            if token != _text(preview.get("preview_token")):
+                raise VersionConflict("content runtime preview", key, 1, 2)
+            if _text((beast.snapshot_json or {}).get("creature_type")).lower() != "beast":
+                raise ValueError("communication capability target is not a beast")
+            now = datetime.now(UTC)
+            before = {
+                "actor": {
+                    "id": actor.id,
+                    "version": actor.version,
+                    "snapshot_json": deepcopy(actor.snapshot_json or {}),
+                },
+                "beast": {"id": beast.id, "version": beast.version},
+            }
+            snapshot = dict(actor.snapshot_json or {})
+            state = {
+                "version": int(snapshot.get("communication_capability_version") or 0),
+                "communication_capabilities": list(
+                    snapshot.get("communication_capabilities") or []
+                ),
+            }
+            spec = TypedSpellCommunicationCapabilitySpec(
+                content_id=_text(contract["content_id"]),
+                source_record_id=_text(contract["source_record_id"]),
+                source_fingerprint=_text(contract["source_fingerprint"]),
+                clause_id=_text(contract["clause_id"]),
+                target_scope=_text(contract["target_scope"]),
+                creature_kind=_text(contract["creature_kind"]),
+                duration_unit=_text(contract["duration_unit"]),
+                duration_value=int(contract["duration_value"]),
+                influence_action_skills=tuple(contract["influence_action_skills"]),
+                information_scope=_text(contract["information_scope"]),
+                recent_observation_hours=int(contract["recent_observation_hours"]),
+            )
+            updated, receipt = apply_typed_spell_communication_capability(
+                spec,
+                state=state,
+                expected_version=state["version"],
+                now=now,
+            )
+            snapshot["communication_capability_version"] = updated["version"]
+            snapshot["communication_capabilities"] = updated["communication_capabilities"]
+            actor.snapshot_json = snapshot
+            actor.version += 1
+            beast.version += 1
+            output = {
+                "schema_version": PRODUCTION_SCHEMA,
+                "runtime_id": _text(data.get("runtime_id")),
+                "production_runtime_full": True,
+                "preview_token": token,
+                "consumer": "spell.communication.capability.v1",
+                "spell_cast": dict(spell_done),
+                "communication_capability_receipt": receipt,
+                "communication": {
+                    "creature_kind": "beast",
+                    "beast_combatant_id": beast.id,
+                    "influence_action_skill": contract["influence_skill"],
+                    "influence_action_skills": list(contract["influence_action_skills"]),
+                    "information_scope": contract["information_scope"],
+                    "observation_age_hours": contract["observation_age_hours"],
+                    "recent_observation_boundary_hours": contract["recent_observation_hours"],
+                },
+                "actor_combatant_id": actor.id,
+                "actor_version_after": actor.version,
+                "beast_version_after": beast.version,
+            }
+            operation = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="content_ir_communication_capability",
+                idempotency_key=f"content-ir:{key}:capability",
+                status="applied",
+                before_snapshot=before,
+                after_snapshot=output,
+                reason="source-bound beast communication capability confirmed",
+                source="combat",
+                confirmed_at=now,
             )
             session.add(operation)
             session.flush()
@@ -3382,6 +3565,14 @@ class ContentIRRuntimeService:
                 if isinstance(runtime.get("source"), Mapping)
                 else {},
             )
+            communication_capability_contract = self._spell_communication_capability_contract(
+                execution_data,
+                blocks,
+                runtime_id=_text(runtime.get("spell_id")),
+                runtime_source=runtime.get("source")
+                if isinstance(runtime.get("source"), Mapping)
+                else {},
+            )
             if communication_route_contract is not None:
                 route_target = session.get(
                     Combatant, communication_route_contract["target_id"]
@@ -3439,6 +3630,22 @@ class ContentIRRuntimeService:
                         communication_route_contract["message_fingerprint"]
                     ),
                 )
+            if communication_capability_contract is not None:
+                beast = session.get(
+                    Combatant, communication_capability_contract["beast_id"]
+                )
+                if beast is None or beast.combat_id != combat.id:
+                    raise StateNotFoundError("communication capability beast target not found")
+                if beast.version != communication_capability_contract["beast_version"]:
+                    raise VersionConflict(
+                        "combatant",
+                        beast.id,
+                        communication_capability_contract["beast_version"],
+                        beast.version,
+                    )
+                creature_kind = _text((beast.snapshot_json or {}).get("creature_type")).lower()
+                if creature_kind != communication_capability_contract["creature_kind"]:
+                    raise ValueError("communication capability target is not a beast")
             if timed_modifier_contract is not None:
                 for target_id, expected_version in timed_modifier_contract["target_versions"].items():
                     target = session.get(Combatant, target_id)
@@ -3478,6 +3685,7 @@ class ContentIRRuntimeService:
                 if defense_contract is not None
                 or timed_modifier_contract is not None
                 or communication_route_contract is not None
+                or communication_capability_contract is not None
                 or summon_contract is not None
                 else self._spell_commands(execution_data, blocks)
             )
@@ -3537,6 +3745,7 @@ class ContentIRRuntimeService:
                         commands is not None
                         or summon_contract is not None
                         or communication_route_contract is not None
+                        or communication_capability_contract is not None
                     ),
                     "requires_resolution_input": commands is not None,
                     "requires_cas": True,
@@ -3548,6 +3757,7 @@ class ContentIRRuntimeService:
                     "defense": defense_contract,
                     "timed_modifier": timed_modifier_contract,
                     "communication_route": communication_route_contract,
+                    "communication_capability": communication_capability_contract,
                     "summon": summon_preview,
                     "remote_spell_origin": self._remote_origin_receipt(remote_origin),
                 },
@@ -4650,6 +4860,14 @@ class ContentIRRuntimeService:
                         == f"content-ir:{key}:communication",
                     )
                 )
+            if existing is None:
+                existing = session.scalar(
+                    select(OperationTransaction).where(
+                        OperationTransaction.campaign_id == campaign_id,
+                        OperationTransaction.idempotency_key
+                        == f"content-ir:{key}:capability",
+                    )
+                )
             if existing is not None:
                 previous = dict(existing.after_snapshot or {})
                 if existing.idempotency_key.endswith(":communication"):
@@ -4850,6 +5068,14 @@ class ContentIRRuntimeService:
                 if isinstance(runtime.get("source"), Mapping)
                 else {},
             )
+            communication_capability_contract = self._spell_communication_capability_contract(
+                execution_data,
+                blocks,
+                runtime_id=_text(runtime.get("spell_id")),
+                runtime_source=runtime.get("source")
+                if isinstance(runtime.get("source"), Mapping)
+                else {},
+            )
             summon_contract = self._spell_summon_contract(
                 execution_data,
                 blocks,
@@ -4858,7 +5084,17 @@ class ContentIRRuntimeService:
                 runtime_level=int(runtime.get("level") or 0),
                 caster_level=int(character.level or 0),
             )
-            if communication_route_contract is not None:
+            if communication_capability_contract is not None:
+                combat_done = self._confirm_spell_communication_capability(
+                    campaign_id,
+                    data,
+                    key=key,
+                    token=token,
+                    preview=preview,
+                    contract=communication_capability_contract,
+                    spell_done=spell_done,
+                )
+            elif communication_route_contract is not None:
                 combat_done = self._confirm_spell_communication_route(
                     campaign_id,
                     data,
@@ -4918,7 +5154,8 @@ class ContentIRRuntimeService:
             else:
                 commands = self._spell_commands(execution_data, blocks)
             if (
-                communication_route_contract is not None
+                communication_capability_contract is not None
+                or communication_route_contract is not None
                 or timed_modifier_contract is not None
                 or defense_contract is not None
                 or summon_contract is not None
@@ -4979,7 +5216,11 @@ class ContentIRRuntimeService:
                 expected_character_version=expected_character_version,
             )
             raise
-        if communication_route_contract is not None or timed_modifier_contract is not None:
+        if (
+            communication_capability_contract is not None
+            or communication_route_contract is not None
+            or timed_modifier_contract is not None
+        ):
             return dict(combat_done)
         output = {
             "schema_version": PRODUCTION_SCHEMA,

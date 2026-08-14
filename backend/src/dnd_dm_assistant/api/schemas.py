@@ -2567,6 +2567,15 @@ class ContentIRRuntimeRequest(BaseModel):
     communication_message_fingerprint: str | None = Field(
         default=None, min_length=64, max_length=64
     )
+    communication_beast_combatant_id: str | None = None
+    communication_beast_version: int | None = Field(default=None, ge=1)
+    communication_influence_skill: Literal[
+        "deception", "intimidation", "persuasion"
+    ] | None = None
+    communication_information_scope: Literal[
+        "surroundings_and_monsters"
+    ] | None = None
+    communication_observation_age_hours: int | None = Field(default=None, ge=0, le=10_000)
     origin_id: str | None = Field(default=None, min_length=1, max_length=36)
     summon_choice: str | None = Field(default=None, min_length=1, max_length=80)
     area_shape: Literal["cone", "line", "cube", "sphere", "cylinder"] | None = None

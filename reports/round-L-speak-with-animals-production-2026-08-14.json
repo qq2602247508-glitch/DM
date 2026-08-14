@@ -1,0 +1,57 @@
+{
+  "artifact_date": "2026-08-14",
+  "canonical_projection": {
+    "compile_only_after": 32,
+    "compile_only_census_size": 35,
+    "counts": {
+      "compile_only": 32,
+      "production": 206,
+      "unique_compiled": 111
+    },
+    "migration_projection_matches_project_union": true,
+    "speak_with_animals_in_loaded_evidence": true,
+    "speak_with_animals_in_project_production_ids": true
+  },
+  "checks": {
+    "all_required_checks_passed": true,
+    "cas": true,
+    "evidence_loader_inclusion": true,
+    "expiry_receipt": true,
+    "formal_database_written": false,
+    "formal_registry_written": false,
+    "influence_skill_boundary": true,
+    "name_branch_count": 0,
+    "operation_transaction": true,
+    "preview_confirm_replay": true,
+    "projection_reconciliation": true,
+    "protected_fingerprints_unchanged": true,
+    "recent_observation_boundary": true,
+    "source_provenance": true,
+    "typed_consumer": true
+  },
+  "evidence_artifact": "data/content-ir/compiled/production-runtime-results-L.json",
+  "evidence_mechanism": "generic load_production_runtime_evidence production-runtime-results*.json loader",
+  "historical_preservation": {
+    "expected_round_xliii_report_sha256": "98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f",
+    "round_xliii_report_sha256": "98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f"
+  },
+  "no_push": true,
+  "promotion_decision": "promote",
+  "report_fingerprint": "b77884ffa3c1553df51f051c59224906c2c8fb47e1d7ecd683abe0ea3a93d924",
+  "round_id": "round-L",
+  "runtime_consumers": [
+    "spell.communication.capability.v1"
+  ],
+  "schema_version": "round-L-speak-with-animals-production-1",
+  "source_bound_producer": {
+    "authored_path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-d82624a42cf6c33ccec927b8.json",
+    "compile_status": "full",
+    "source_fingerprint": "efd7ccf941e012513b582fc600b535fae6d875bdbdfc3fff278a7fbfb9ad28c3",
+    "source_record_id": "d82624a42cf6c33ccec927b8",
+    "typed_clause_ids": [
+      "target",
+      "communication_capability"
+    ]
+  },
+  "test_stdout_sha256": "5f0e2dc14a1cd81f844c93beac10747b1fbcb5b113bddeaccaa6fe9c6a1d848e"
+}

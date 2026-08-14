@@ -98,6 +98,32 @@ _CONSUMERS: dict[str, dict[str, Any]] = {
         "idempotency_scope": "campaign_content_ir_and_spell_cast",
         "snapshot_effects": ("communication_routes", "private_reply", "audit"),
     },
+    "spell.communication.capability.v1": {
+        "content_kind": "spell",
+        "runtime_schema_version": "spell-runtime-1",
+        "clause_types": ("communication_capability", "target_selection"),
+        "required_fields": (
+            "character_id",
+            "character_version",
+            "known_spell_id",
+            "slot_level",
+            "actor_combatant_id",
+            "actor_version",
+        ),
+        "required_services": ("combat_engine.communication_capability",),
+        "transaction_boundary": (
+            "spell_cast_with_communication_capability_snapshot_and_rollback_boundary"
+        ),
+        "cas_entities": ("character", "actor_combatant", "beast_target"),
+        "idempotency_scope": "campaign_content_ir_and_spell_cast",
+        "snapshot_effects": (
+            "communication_capabilities",
+            "influence_action_skills",
+            "recent_observation_boundary",
+            "expiry",
+            "audit",
+        ),
+    },
     "combat_engine.condition_lifecycle.v1": {
         "content_kind": "spell_or_feature",
         "runtime_schema_version": "spell-runtime-1|feature-runtime-1",
@@ -471,6 +497,7 @@ _ALLOWED_SPELL_BLOCKS = {
     "area",
     "spell_origins",
     "communication_route",
+    "communication_capability",
 }
 
 _ALLOWED_ITEM_CLAUSES = {
@@ -568,6 +595,17 @@ def resolve_production_consumers(
             if route.get("resolution_kind") != "private_communication_route":
                 raise ValueError("unsupported communication route resolution")
             resolved.append("spell.communication.route.v1")
+        if blocks.get("communication_capability"):
+            if not blocks.get("target_selection"):
+                raise ValueError("communication capability requires typed target selection")
+            if len(blocks["communication_capability"]) != 1:
+                raise ValueError(
+                    "spell runtime requires exactly one communication capability contract"
+                )
+            capability = blocks["communication_capability"][0]
+            if capability.get("resolution_kind") != "beast_communication_capability":
+                raise ValueError("unsupported communication capability resolution")
+            resolved.append("spell.communication.capability.v1")
         if _has_effect(blocks, "summon_or_creation"):
             if not blocks.get("target_selection"):
                 raise ValueError("summon runtime requires a typed target selection")

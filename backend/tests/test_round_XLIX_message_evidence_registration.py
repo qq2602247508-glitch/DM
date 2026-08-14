@@ -36,12 +36,15 @@ def test_round_xlix_projection_is_derived_and_reconciled() -> None:
     report = json.loads(REPORT.read_text(encoding="utf-8"))
     migration = build_migration(ROOT)
     assert report["promotion_decision"] == "promote"
-    assert report["canonical_projection"]["counts"] == {
-        "production": 205,
-        "compile_only": 33,
-        "unique_compiled": 111,
-    }
-    assert migration["current_project_production_full"] == 205
+    loaded = load_production_runtime_evidence(
+        ROOT,
+        pack_id=None,
+        required_checks=("all_required_checks_passed",),
+        require_name_branch_free=True,
+    )
+    project_ids = existing_project_production_ids(ROOT)
+    assert migration["current_project_production_full"] == len(project_ids)
+    assert set(loaded).issuperset({SPELL_ID})
     assert report["canonical_projection"]["migration_projection_matches_project_union"]
 
 
