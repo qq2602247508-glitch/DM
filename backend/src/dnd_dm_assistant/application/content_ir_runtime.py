@@ -2328,6 +2328,60 @@ class ContentIRRuntimeService:
             raise ValueError("production spell runtime target ids must be unique")
         return target_ids
 
+    def _validate_exact_area_membership(
+        self,
+        session: Session,
+        combat: Combat,
+        actor: Combatant,
+        data: Mapping[str, Any],
+        blocks: Mapping[str, list[dict[str, Any]]],
+    ) -> dict[str, Any] | None:
+        target = self._first_parameters(blocks, "target_selection")
+        if _text(target.get("count")).lower() != "all_in_area":
+            return None
+        area = self._first_parameters(blocks, "area")
+        shape = _text(data.get("area_shape")) or _text(area.get("shape"))
+        size_ft = data.get("area_size_ft") or area.get("size_ft")
+        anchor_row = data.get("area_anchor_row")
+        anchor_col = data.get("area_anchor_col")
+        if not shape or size_ft is None or anchor_row is None or anchor_col is None:
+            raise ValueError(
+                "all_in_area runtime requires a typed area shape, size and anchor"
+            )
+        raw_range = target.get("range_ft", target.get("range", area.get("range")))
+        if raw_range is None:
+            raise ValueError("all_in_area runtime requires an explicit source range")
+        if isinstance(raw_range, str):
+            match = re.search(r"\d+", raw_range)
+            raw_range = int(match.group(0)) if match else None
+        if raw_range is None or isinstance(raw_range, bool):
+            raise ValueError("all_in_area runtime source range is invalid")
+        target_ids = set(self._runtime_target_ids(data))
+        return self.combat.validate_exact_area_target_ids(
+            session,
+            combat,
+            actor,
+            shape=shape,
+            size_ft=int(size_ft),
+            anchor_row=int(anchor_row),
+            anchor_col=int(anchor_col),
+            anchor_height_ft=int(data.get("area_anchor_height_ft") or 0),
+            width_ft=(
+                int(data["area_width_ft"])
+                if data.get("area_width_ft") is not None
+                else None
+            ),
+            height_ft=(
+                int(data["area_height_ft"])
+                if data.get("area_height_ft") is not None
+                else None
+            ),
+            include_actor=True,
+            requires_line_of_sight=_text(target.get("visibility")).lower() == "visible",
+            maximum_range_ft=int(raw_range),
+            target_ids=target_ids,
+        )
+
     @staticmethod
     def _text_list(value: object, *, field: str) -> list[str]:
         raw_values = [value] if isinstance(value, str) else value
@@ -3588,6 +3642,9 @@ class ContentIRRuntimeService:
             area = self._first_parameters(blocks, "area")
             area_shape = _text(data.get("area_shape")) or _text(area.get("shape")) or None
             area_size = data.get("area_size_ft") or area.get("size_ft")
+            all_in_area = _text(
+                self._first_parameters(blocks, "target_selection").get("count")
+            ).lower() == "all_in_area"
             if area_shape and (
                 data.get("area_anchor_row") is None or data.get("area_anchor_col") is None
             ):
@@ -3602,6 +3659,8 @@ class ContentIRRuntimeService:
                 {},
             )
             commands: list[CombatActionCommand] = []
+            action_cost = self._action_cost(blocks)
+            next_actor_version = actor_version
             for index, target_id in enumerate(target_ids):
                 save_by_target = data.get("save_succeeded_by_target")
                 save_succeeded = (
@@ -3622,11 +3681,11 @@ class ContentIRRuntimeService:
                     "target_combatant_id": target_id,
                     "target_version": int(target_versions[target_id]),
                     "actor_combatant_id": actor_id or None,
-                    "actor_version": (actor_version + index) if actor_id else None,
-                    "action_cost": self._action_cost(blocks) if index == 0 else "none",
+                    "actor_version": next_actor_version if actor_id else None,
+                    "action_cost": action_cost if index == 0 else "none",
                     "reaction_trigger": (
                         "content_ir_runtime"
-                        if index == 0 and self._action_cost(blocks) == "reaction"
+                        if index == 0 and action_cost == "reaction"
                         else None
                     ),
                     "action_name": _text(data.get("runtime_id")),
@@ -3658,10 +3717,16 @@ class ContentIRRuntimeService:
                             "area_anchor_row": data.get("area_anchor_row"),
                             "area_anchor_col": data.get("area_anchor_col"),
                             "area_anchor_height_ft": int(data.get("area_anchor_height_ft") or 0),
-                            "area_include_actor": bool(data.get("area_include_actor")),
+                            "area_include_actor": all_in_area
+                            or bool(data.get("area_include_actor")),
                         }
                     )
                 commands.append(CombatActionCommand.model_validate(command_data))
+                if actor_id:
+                    if index == 0 and action_cost != "none":
+                        next_actor_version += 1
+                    if target_id == actor_id:
+                        next_actor_version += 1
             return commands
         if healing:
             amount = self._validate_resolution_total(
@@ -3723,6 +3788,13 @@ class ContentIRRuntimeService:
                 "runtime_level": runtime.get("level"),
                 "caster_level": int(character.level or 0),
             }
+            area_membership = self._validate_exact_area_membership(
+                session,
+                combat,
+                actor,
+                execution_data,
+                blocks,
+            )
             consumers = resolve_production_consumers(
                 content_kind="spell",
                 runtime_schema_version=str(runtime.get("runtime_schema_version") or ""),
@@ -3942,6 +4014,7 @@ class ContentIRRuntimeService:
                 "runtime_preview_full": True,
                 "spell_preview": spell_preview,
                 "combat_preview": combat_preview,
+                "area_membership": area_membership,
                 "production_contract": {
                     "content_kind": "spell",
                     "known_spell_id": spell.id,
@@ -5744,6 +5817,17 @@ class ContentIRRuntimeService:
                 raise StateNotFoundError("content runtime spell combat not found")
             remote_origin = self._resolve_remote_spell_origin(
                 session, combat, actor, blocks, data
+            )
+            self._validate_exact_area_membership(
+                session,
+                combat,
+                actor,
+                {
+                    **data,
+                    "runtime_level": runtime.get("level"),
+                    "caster_level": int(character.level or 0),
+                },
+                blocks,
             )
         spell_key = f"{key}:spell"
         cast_data = {

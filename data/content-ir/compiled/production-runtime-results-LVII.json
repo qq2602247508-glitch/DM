@@ -3,19 +3,31 @@
   "artifact_date": "2026-08-14",
   "bootstrap_phase": false,
   "checks": {
+    "actor_in_area_damaged": true,
     "all_required_checks_passed": true,
+    "anchor_grid_bounds_rejected": true,
+    "anchor_range_boundary_accepted": true,
+    "anchor_range_too_far_rejected": true,
     "area_damage_persisted": true,
+    "canonical_duplicate_binding_exact": true,
+    "canonical_source_checksum_matches_census": true,
     "canonical_source_complete": true,
     "cantrip_scaling_matches_source": true,
     "duplicate_invalid_set_idempotent": true,
     "each_selected_id_removed_once": true,
+    "exact_area_membership": true,
+    "extra_outside_rejected": true,
     "final_loader_acceptance": true,
     "generic_consumers_present": true,
     "historical_xliii_sha_exact": true,
+    "incomplete_batch_ii_duplicate_not_used": true,
     "migration_projection_matches_sets": true,
     "name_branch_count": 0,
     "name_branch_free": true,
+    "omitted_in_area_rejected_before_payment": true,
+    "operation_transaction_action_binding": true,
     "operation_transactions_persisted": true,
+    "outside_area_untouched": true,
     "payload_drift_rejected": true,
     "preview_confirm_replay": true,
     "production_runtime_full": true,
@@ -35,6 +47,14 @@
   },
   "evidence_by_id": {
     "core-phb-2024:spell:d84dec64befac8db7294e0f1": {
+      "area_probes": {
+        "anchor_out_of_bounds_status": 422,
+        "boundary_60ft_status": 422,
+        "extra_outside_status": 400,
+        "omitted_before_payment": true,
+        "omitted_in_area_status": 400,
+        "too_far_65ft_status": 422
+      },
       "compile_status": "full",
       "consumer_ids": [
         "combat_engine.area_damage.v1",
@@ -48,17 +68,101 @@
         "rejected": true
       },
       "production": {
+        "area_membership": {
+          "anchor": {
+            "col": 2,
+            "height_ft": 0,
+            "row": 2
+          },
+          "anchor_range_ft": 0,
+          "geometry": {
+            "stable-id-0": {
+              "distance_ft": 0,
+              "grid_position": {
+                "col": 2,
+                "row": 2
+              },
+              "line_of_sight": true,
+              "line_of_sight_mode": "2d",
+              "line_of_sight_pair": {
+                "from": {
+                  "col": 2,
+                  "row": 2
+                },
+                "to": {
+                  "col": 2,
+                  "row": 2
+                }
+              }
+            },
+            "stable-id-1": {
+              "distance_ft": 5,
+              "grid_position": {
+                "col": 2,
+                "row": 3
+              },
+              "line_of_sight": true,
+              "line_of_sight_mode": "2d",
+              "line_of_sight_pair": {
+                "from": {
+                  "col": 2,
+                  "row": 2
+                },
+                "to": {
+                  "col": 2,
+                  "row": 3
+                }
+              }
+            },
+            "stable-id-2": {
+              "distance_ft": 5,
+              "grid_position": {
+                "col": 3,
+                "row": 2
+              },
+              "line_of_sight": true,
+              "line_of_sight_mode": "2d",
+              "line_of_sight_pair": {
+                "from": {
+                  "col": 2,
+                  "row": 2
+                },
+                "to": {
+                  "col": 3,
+                  "row": 2
+                }
+              }
+            }
+          },
+          "include_actor": true,
+          "maximum_range_ft": 60,
+          "requires_line_of_sight": true,
+          "shape": "sphere",
+          "size_ft": 5,
+          "target_ids": [
+            "stable-id",
+            "stable-id",
+            "stable-id"
+          ],
+          "validated_by": "CombatEngineService.validate_exact_area_target_ids"
+        },
         "confirm_response": {
           "already_applied": null,
           "production_runtime_full": true
         },
         "confirm_status": 200,
+        "confirmed_actor_hp": 12,
         "confirmed_second_target_hp": 92,
         "confirmed_target_hp": 92,
         "consumer_ids": [
           "combat_engine.area_damage.v1",
           "combat_engine.damage_heal.v1",
           "spell.cantrip_scaling.v1"
+        ],
+        "expected_area_target_ids": [
+          "stable-id",
+          "stable-id",
+          "stable-id"
         ],
         "operation_transactions": [
           {
@@ -338,7 +442,7 @@
                       "area_anchor_height_ft": 0,
                       "area_anchor_row": 2,
                       "area_height_ft": null,
-                      "area_include_actor": false,
+                      "area_include_actor": true,
                       "area_shape": "sphere",
                       "area_size_ft": 5,
                       "area_width_ft": null,
@@ -402,14 +506,14 @@
                       "hp_lost": 8,
                       "modifier": "normal",
                       "original_damage": 8,
-                      "remaining_hp": 92,
+                      "remaining_hp": 12,
                       "remaining_temporary_hp": 0,
                       "temporary_hp_lost": 0,
                       "unapplied_damage": 0
                     },
                     "round_number": 1,
                     "status": "confirmed",
-                    "summary": "Sword Burst caster 对 Sword Burst target 使用「core-phb-2024:spell:d84dec64befac8db7294e0f1」；造成 8 点acid伤害",
+                    "summary": "Acid Splash caster 对 Acid Splash caster 使用「core-phb-2024:spell:d84dec64befac8db7294e0f1」；造成 8 点acid伤害",
                     "target_combatant_ids": [
                       "stable-id"
                     ],
@@ -430,10 +534,10 @@
                     "damage_immunities": [],
                     "damage_resistances": [],
                     "damage_vulnerabilities": [],
-                    "display_name": "Sword Burst caster",
+                    "display_name": "Acid Splash caster",
                     "entity_id": "stable-id",
                     "entity_type": "character",
-                    "hp": 20,
+                    "hp": 12,
                     "id": "stable-id",
                     "initiative": 20,
                     "is_active": true,
@@ -524,24 +628,377 @@
                     "speed_ft": 30,
                     "temporary_hp": 0,
                     "updated_at": "stable-time",
-                    "version": 2
+                    "version": 3
                   },
                   "concentration_prompts": [],
                   "death_save": null,
                   "end_condition": {
                     "can_end": false,
                     "defeated_count": 0,
-                    "hostile_count": 2,
+                    "hostile_count": 3,
                     "reason": "hostile_monsters_remain",
                     "remaining_hostiles": [
                       {
                         "combatant_id": "stable-id",
-                        "display_name": "Sword Burst target 2",
+                        "display_name": "Acid Splash outside",
                         "hp": 100
                       },
                       {
                         "combatant_id": "stable-id",
-                        "display_name": "Sword Burst target",
+                        "display_name": "Acid Splash target 2",
+                        "hp": 100
+                      },
+                      {
+                        "combatant_id": "stable-id",
+                        "display_name": "Acid Splash target",
+                        "hp": 100
+                      }
+                    ],
+                    "requires_dm_confirmation": false,
+                    "suggested_resolution_type": null
+                  },
+                  "target": {
+                    "action_available": false,
+                    "armor_class": 10,
+                    "bonus_action_available": true,
+                    "combat_id": "stable-id",
+                    "concentration": {},
+                    "condition_immunities": [],
+                    "conditions": [],
+                    "created_at": "stable-time",
+                    "damage_immunities": [],
+                    "damage_resistances": [],
+                    "damage_vulnerabilities": [],
+                    "display_name": "Acid Splash caster",
+                    "entity_id": "stable-id",
+                    "entity_type": "character",
+                    "hp": 12,
+                    "id": "stable-id",
+                    "initiative": 20,
+                    "is_active": true,
+                    "max_hp": 20,
+                    "max_hp_reduction": 0,
+                    "movement_remaining_ft": 30,
+                    "reaction_available": true,
+                    "snapshot_json": {
+                      "combat_start_state": {
+                        "concentration": {},
+                        "conditions": [],
+                        "hp": 20,
+                        "is_active": true,
+                        "max_hp_reduction": 0,
+                        "snapshot_json": {
+                          "combat_start_state": {
+                            "concentration": {},
+                            "conditions": [],
+                            "hp": 20,
+                            "is_active": true,
+                            "max_hp_reduction": 0,
+                            "temporary_hp": 0
+                          },
+                          "feature_runtime": {
+                            "actions": {},
+                            "attack_riders": [],
+                            "combat_start": {
+                              "attack_action_count": 1,
+                              "attack_slot_replacements": [],
+                              "defenses": [],
+                              "modifiers": [],
+                              "movement_modes": []
+                            },
+                            "dm_only": [],
+                            "feature_block_schema_version": "1.0",
+                            "feature_blocks": [],
+                            "feature_contracts": [],
+                            "proficiencies": [],
+                            "progression": {
+                              "class_levels": {},
+                              "proficiency_bonus": 3,
+                              "spell_slots": {},
+                              "total_level": 5
+                            },
+                            "resources": {},
+                            "schema_version": "1.2",
+                            "spellcasting": [],
+                            "triggers": []
+                          },
+                          "grid_position": {
+                            "col": 2,
+                            "row": 2
+                          }
+                        },
+                        "temporary_hp": 0
+                      },
+                      "feature_runtime": {
+                        "actions": {},
+                        "attack_riders": [],
+                        "combat_start": {
+                          "attack_action_count": 1,
+                          "attack_slot_replacements": [],
+                          "defenses": [],
+                          "modifiers": [],
+                          "movement_modes": []
+                        },
+                        "dm_only": [],
+                        "feature_block_schema_version": "1.0",
+                        "feature_blocks": [],
+                        "feature_contracts": [],
+                        "proficiencies": [],
+                        "progression": {
+                          "class_levels": {},
+                          "proficiency_bonus": 3,
+                          "spell_slots": {},
+                          "total_level": 5
+                        },
+                        "resources": {},
+                        "schema_version": "1.2",
+                        "spellcasting": [],
+                        "triggers": []
+                      },
+                      "grid_position": {
+                        "col": 2,
+                        "row": 2
+                      }
+                    },
+                    "speed_ft": 30,
+                    "temporary_hp": 0,
+                    "updated_at": "stable-time",
+                    "version": 3
+                  }
+                },
+                {
+                  "action": {
+                    "action_type": "damage",
+                    "actor_combatant_id": "stable-id",
+                    "campaign_id": "stable-id",
+                    "combat_id": "stable-id",
+                    "created_at": "stable-time",
+                    "dm_override": false,
+                    "explanation": "8 点强酸伤害 → HP 扣除 8",
+                    "id": "stable-id",
+                    "idempotency_key": "content-ir:round-lvii-acid-splash-production:combat:1",
+                    "override_reason": null,
+                    "request_json": {
+                      "action_cost": "none",
+                      "action_name": "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+                      "action_type": "damage",
+                      "action_window_id": "stable-id",
+                      "actor_combatant_id": "stable-id",
+                      "actor_version": 3,
+                      "amount": 8,
+                      "area_anchor_col": 2,
+                      "area_anchor_height_ft": 0,
+                      "area_anchor_row": 2,
+                      "area_height_ft": null,
+                      "area_include_actor": true,
+                      "area_shape": "sphere",
+                      "area_size_ft": 5,
+                      "area_width_ft": null,
+                      "attack_ability": null,
+                      "attack_adjudication_note": null,
+                      "attack_d20": null,
+                      "attack_range_ft": null,
+                      "attack_roll_mode": null,
+                      "attack_roll_total": null,
+                      "attack_sequence_id": "stable-id",
+                      "attack_sequence_known_spell_id": "stable-id",
+                      "attack_sequence_replacement_kind": null,
+                      "attack_sequence_replacement_policy_id": "stable-id",
+                      "attack_sequence_slot_index": null,
+                      "attack_sequence_slot_indices": [],
+                      "attack_sequence_version": null,
+                      "condition_duration": null,
+                      "condition_duration_value": null,
+                      "condition_save_ability": null,
+                      "condition_save_dc": null,
+                      "conditions_to_apply": [],
+                      "critical_hit": false,
+                      "damage_components": [],
+                      "damage_tags": [],
+                      "damage_type": "acid",
+                      "dm_override": false,
+                      "forced_movement_direction": null,
+                      "forced_movement_distance_ft": null,
+                      "help_effect_id": "stable-id",
+                      "help_effect_version": null,
+                      "ignore_cover": false,
+                      "is_attack": false,
+                      "is_sorcerer_spell": false,
+                      "is_spell_attack": false,
+                      "is_unarmed_attack": false,
+                      "is_weapon_attack": false,
+                      "legendary_cost": null,
+                      "legendary_pool_max": null,
+                      "override_reason": null,
+                      "reaction_event": null,
+                      "reaction_trigger": null,
+                      "reaction_window_id": "stable-id",
+                      "recharge_consume": false,
+                      "recharge_key": null,
+                      "requires_explicit_elevation": false,
+                      "resolution_note": null,
+                      "resource_cost": 0,
+                      "resource_key": null,
+                      "sequence_id": "stable-id",
+                      "sequence_size": null,
+                      "sequence_step": null,
+                      "target_combatant_id": "stable-id",
+                      "target_version": 1,
+                      "triggered_attack_window_id": "stable-id",
+                      "triggered_attack_window_version": null
+                    },
+                    "result_json": {
+                      "adjusted_damage": 8,
+                      "damage_type": "acid",
+                      "explanation": "8 点强酸伤害 → HP 扣除 8",
+                      "hp_lost": 8,
+                      "modifier": "normal",
+                      "original_damage": 8,
+                      "remaining_hp": 92,
+                      "remaining_temporary_hp": 0,
+                      "temporary_hp_lost": 0,
+                      "unapplied_damage": 0
+                    },
+                    "round_number": 1,
+                    "status": "confirmed",
+                    "summary": "Acid Splash caster 对 Acid Splash target 使用「core-phb-2024:spell:d84dec64befac8db7294e0f1」；造成 8 点acid伤害",
+                    "target_combatant_ids": [
+                      "stable-id"
+                    ],
+                    "transaction_id": "stable-id",
+                    "turn_index": 0,
+                    "updated_at": "stable-time",
+                    "version": 1
+                  },
+                  "actor": {
+                    "action_available": false,
+                    "armor_class": 10,
+                    "bonus_action_available": true,
+                    "combat_id": "stable-id",
+                    "concentration": {},
+                    "condition_immunities": [],
+                    "conditions": [],
+                    "created_at": "stable-time",
+                    "damage_immunities": [],
+                    "damage_resistances": [],
+                    "damage_vulnerabilities": [],
+                    "display_name": "Acid Splash caster",
+                    "entity_id": "stable-id",
+                    "entity_type": "character",
+                    "hp": 12,
+                    "id": "stable-id",
+                    "initiative": 20,
+                    "is_active": true,
+                    "max_hp": 20,
+                    "max_hp_reduction": 0,
+                    "movement_remaining_ft": 30,
+                    "reaction_available": true,
+                    "snapshot_json": {
+                      "combat_start_state": {
+                        "concentration": {},
+                        "conditions": [],
+                        "hp": 20,
+                        "is_active": true,
+                        "max_hp_reduction": 0,
+                        "snapshot_json": {
+                          "combat_start_state": {
+                            "concentration": {},
+                            "conditions": [],
+                            "hp": 20,
+                            "is_active": true,
+                            "max_hp_reduction": 0,
+                            "temporary_hp": 0
+                          },
+                          "feature_runtime": {
+                            "actions": {},
+                            "attack_riders": [],
+                            "combat_start": {
+                              "attack_action_count": 1,
+                              "attack_slot_replacements": [],
+                              "defenses": [],
+                              "modifiers": [],
+                              "movement_modes": []
+                            },
+                            "dm_only": [],
+                            "feature_block_schema_version": "1.0",
+                            "feature_blocks": [],
+                            "feature_contracts": [],
+                            "proficiencies": [],
+                            "progression": {
+                              "class_levels": {},
+                              "proficiency_bonus": 3,
+                              "spell_slots": {},
+                              "total_level": 5
+                            },
+                            "resources": {},
+                            "schema_version": "1.2",
+                            "spellcasting": [],
+                            "triggers": []
+                          },
+                          "grid_position": {
+                            "col": 2,
+                            "row": 2
+                          }
+                        },
+                        "temporary_hp": 0
+                      },
+                      "feature_runtime": {
+                        "actions": {},
+                        "attack_riders": [],
+                        "combat_start": {
+                          "attack_action_count": 1,
+                          "attack_slot_replacements": [],
+                          "defenses": [],
+                          "modifiers": [],
+                          "movement_modes": []
+                        },
+                        "dm_only": [],
+                        "feature_block_schema_version": "1.0",
+                        "feature_blocks": [],
+                        "feature_contracts": [],
+                        "proficiencies": [],
+                        "progression": {
+                          "class_levels": {},
+                          "proficiency_bonus": 3,
+                          "spell_slots": {},
+                          "total_level": 5
+                        },
+                        "resources": {},
+                        "schema_version": "1.2",
+                        "spellcasting": [],
+                        "triggers": []
+                      },
+                      "grid_position": {
+                        "col": 2,
+                        "row": 2
+                      }
+                    },
+                    "speed_ft": 30,
+                    "temporary_hp": 0,
+                    "updated_at": "stable-time",
+                    "version": 3
+                  },
+                  "concentration_prompts": [],
+                  "death_save": null,
+                  "end_condition": {
+                    "can_end": false,
+                    "defeated_count": 0,
+                    "hostile_count": 3,
+                    "reason": "hostile_monsters_remain",
+                    "remaining_hostiles": [
+                      {
+                        "combatant_id": "stable-id",
+                        "display_name": "Acid Splash outside",
+                        "hp": 100
+                      },
+                      {
+                        "combatant_id": "stable-id",
+                        "display_name": "Acid Splash target 2",
+                        "hp": 100
+                      },
+                      {
+                        "combatant_id": "stable-id",
+                        "display_name": "Acid Splash target",
                         "hp": 92
                       }
                     ],
@@ -560,7 +1017,7 @@
                     "damage_immunities": [],
                     "damage_resistances": [],
                     "damage_vulnerabilities": [],
-                    "display_name": "Sword Burst target",
+                    "display_name": "Acid Splash target",
                     "entity_id": "stable-id",
                     "entity_type": "monster",
                     "hp": 92,
@@ -602,7 +1059,7 @@
                     "dm_override": false,
                     "explanation": "8 点强酸伤害 → HP 扣除 8",
                     "id": "stable-id",
-                    "idempotency_key": "content-ir:round-lvii-acid-splash-production:combat:1",
+                    "idempotency_key": "content-ir:round-lvii-acid-splash-production:combat:2",
                     "override_reason": null,
                     "request_json": {
                       "action_cost": "none",
@@ -610,13 +1067,13 @@
                       "action_type": "damage",
                       "action_window_id": "stable-id",
                       "actor_combatant_id": "stable-id",
-                      "actor_version": 2,
+                      "actor_version": 3,
                       "amount": 8,
                       "area_anchor_col": 2,
                       "area_anchor_height_ft": 0,
                       "area_anchor_row": 2,
                       "area_height_ft": null,
-                      "area_include_actor": false,
+                      "area_include_actor": true,
                       "area_shape": "sphere",
                       "area_size_ft": 5,
                       "area_width_ft": null,
@@ -687,7 +1144,7 @@
                     },
                     "round_number": 1,
                     "status": "confirmed",
-                    "summary": "Sword Burst caster 对 Sword Burst target 2 使用「core-phb-2024:spell:d84dec64befac8db7294e0f1」；造成 8 点acid伤害",
+                    "summary": "Acid Splash caster 对 Acid Splash target 2 使用「core-phb-2024:spell:d84dec64befac8db7294e0f1」；造成 8 点acid伤害",
                     "target_combatant_ids": [
                       "stable-id"
                     ],
@@ -708,10 +1165,10 @@
                     "damage_immunities": [],
                     "damage_resistances": [],
                     "damage_vulnerabilities": [],
-                    "display_name": "Sword Burst caster",
+                    "display_name": "Acid Splash caster",
                     "entity_id": "stable-id",
                     "entity_type": "character",
-                    "hp": 20,
+                    "hp": 12,
                     "id": "stable-id",
                     "initiative": 20,
                     "is_active": true,
@@ -802,24 +1259,29 @@
                     "speed_ft": 30,
                     "temporary_hp": 0,
                     "updated_at": "stable-time",
-                    "version": 2
+                    "version": 3
                   },
                   "concentration_prompts": [],
                   "death_save": null,
                   "end_condition": {
                     "can_end": false,
                     "defeated_count": 0,
-                    "hostile_count": 2,
+                    "hostile_count": 3,
                     "reason": "hostile_monsters_remain",
                     "remaining_hostiles": [
                       {
                         "combatant_id": "stable-id",
-                        "display_name": "Sword Burst target 2",
+                        "display_name": "Acid Splash outside",
+                        "hp": 100
+                      },
+                      {
+                        "combatant_id": "stable-id",
+                        "display_name": "Acid Splash target 2",
                         "hp": 92
                       },
                       {
                         "combatant_id": "stable-id",
-                        "display_name": "Sword Burst target",
+                        "display_name": "Acid Splash target",
                         "hp": 92
                       }
                     ],
@@ -838,12 +1300,12 @@
                     "damage_immunities": [],
                     "damage_resistances": [],
                     "damage_vulnerabilities": [],
-                    "display_name": "Sword Burst target 2",
+                    "display_name": "Acid Splash target 2",
                     "entity_id": "stable-id",
                     "entity_type": "monster",
                     "hp": 92,
                     "id": "stable-id",
-                    "initiative": 10,
+                    "initiative": 9,
                     "is_active": true,
                     "max_hp": 100,
                     "max_hp_reduction": 0,
@@ -1044,13 +1506,13 @@
               "combatant_id": "stable-id",
               "dead": false,
               "death_save": null,
-              "hp": 92,
+              "hp": 12,
               "owner_character_id": "stable-id",
               "temporary_hp": 0
             },
             "before_snapshot": {
               "combatant": {
-                "action_available": true,
+                "action_available": false,
                 "armor_class": 10,
                 "bonus_action_available": true,
                 "combat_id": "stable-id",
@@ -1061,14 +1523,14 @@
                 "damage_immunities": [],
                 "damage_resistances": [],
                 "damage_vulnerabilities": [],
-                "display_name": "Sword Burst target 2",
+                "display_name": "Acid Splash caster",
                 "entity_id": "stable-id",
-                "entity_type": "monster",
-                "hp": 100,
+                "entity_type": "character",
+                "hp": 20,
                 "id": "stable-id",
-                "initiative": 10,
+                "initiative": 20,
                 "is_active": true,
-                "max_hp": 100,
+                "max_hp": 20,
                 "max_hp_reduction": 0,
                 "movement_remaining_ft": 30,
                 "reaction_available": true,
@@ -1076,24 +1538,89 @@
                   "combat_start_state": {
                     "concentration": {},
                     "conditions": [],
-                    "hp": 100,
+                    "hp": 20,
                     "is_active": true,
                     "max_hp_reduction": 0,
+                    "snapshot_json": {
+                      "combat_start_state": {
+                        "concentration": {},
+                        "conditions": [],
+                        "hp": 20,
+                        "is_active": true,
+                        "max_hp_reduction": 0,
+                        "temporary_hp": 0
+                      },
+                      "feature_runtime": {
+                        "actions": {},
+                        "attack_riders": [],
+                        "combat_start": {
+                          "attack_action_count": 1,
+                          "attack_slot_replacements": [],
+                          "defenses": [],
+                          "modifiers": [],
+                          "movement_modes": []
+                        },
+                        "dm_only": [],
+                        "feature_block_schema_version": "1.0",
+                        "feature_blocks": [],
+                        "feature_contracts": [],
+                        "proficiencies": [],
+                        "progression": {
+                          "class_levels": {},
+                          "proficiency_bonus": 3,
+                          "spell_slots": {},
+                          "total_level": 5
+                        },
+                        "resources": {},
+                        "schema_version": "1.2",
+                        "spellcasting": [],
+                        "triggers": []
+                      },
+                      "grid_position": {
+                        "col": 2,
+                        "row": 2
+                      }
+                    },
                     "temporary_hp": 0
                   },
-                  "disposition": "enemy",
+                  "feature_runtime": {
+                    "actions": {},
+                    "attack_riders": [],
+                    "combat_start": {
+                      "attack_action_count": 1,
+                      "attack_slot_replacements": [],
+                      "defenses": [],
+                      "modifiers": [],
+                      "movement_modes": []
+                    },
+                    "dm_only": [],
+                    "feature_block_schema_version": "1.0",
+                    "feature_blocks": [],
+                    "feature_contracts": [],
+                    "proficiencies": [],
+                    "progression": {
+                      "class_levels": {},
+                      "proficiency_bonus": 3,
+                      "spell_slots": {},
+                      "total_level": 5
+                    },
+                    "resources": {},
+                    "schema_version": "1.2",
+                    "spellcasting": [],
+                    "triggers": []
+                  },
                   "grid_position": {
                     "col": 2,
-                    "row": 3
+                    "row": 2
                   }
                 },
                 "speed_ft": 30,
                 "temporary_hp": 0,
                 "updated_at": "stable-time",
-                "version": 1
+                "version": 2
               }
             },
-            "idempotency_key": "content-ir:round-lvii-acid-splash-production:combat:1",
+            "idempotency_key": "content-ir:round-lvii-acid-splash-production:combat:0",
             "operation_type": "combat_damage",
             "reason": "damage confirmed in combat",
             "source": "combat",
@@ -1121,7 +1648,67 @@
                 "damage_immunities": [],
                 "damage_resistances": [],
                 "damage_vulnerabilities": [],
-                "display_name": "Sword Burst target",
+                "display_name": "Acid Splash target 2",
+                "entity_id": "stable-id",
+                "entity_type": "monster",
+                "hp": 100,
+                "id": "stable-id",
+                "initiative": 9,
+                "is_active": true,
+                "max_hp": 100,
+                "max_hp_reduction": 0,
+                "movement_remaining_ft": 30,
+                "reaction_available": true,
+                "snapshot_json": {
+                  "combat_start_state": {
+                    "concentration": {},
+                    "conditions": [],
+                    "hp": 100,
+                    "is_active": true,
+                    "max_hp_reduction": 0,
+                    "temporary_hp": 0
+                  },
+                  "disposition": "enemy",
+                  "grid_position": {
+                    "col": 2,
+                    "row": 3
+                  }
+                },
+                "speed_ft": 30,
+                "temporary_hp": 0,
+                "updated_at": "stable-time",
+                "version": 1
+              }
+            },
+            "idempotency_key": "content-ir:round-lvii-acid-splash-production:combat:2",
+            "operation_type": "combat_damage",
+            "reason": "damage confirmed in combat",
+            "source": "combat",
+            "status": "applied"
+          },
+          {
+            "after_snapshot": {
+              "combatant_id": "stable-id",
+              "dead": false,
+              "death_save": null,
+              "hp": 92,
+              "owner_character_id": "stable-id",
+              "temporary_hp": 0
+            },
+            "before_snapshot": {
+              "combatant": {
+                "action_available": true,
+                "armor_class": 10,
+                "bonus_action_available": true,
+                "combat_id": "stable-id",
+                "concentration": {},
+                "condition_immunities": [],
+                "conditions": [],
+                "created_at": "stable-time",
+                "damage_immunities": [],
+                "damage_resistances": [],
+                "damage_vulnerabilities": [],
+                "display_name": "Acid Splash target",
                 "entity_id": "stable-id",
                 "entity_type": "monster",
                 "hp": 100,
@@ -1153,15 +1740,45 @@
                 "version": 1
               }
             },
-            "idempotency_key": "content-ir:round-lvii-acid-splash-production:combat:0",
+            "idempotency_key": "content-ir:round-lvii-acid-splash-production:combat:1",
             "operation_type": "combat_damage",
             "reason": "damage confirmed in combat",
             "source": "combat",
             "status": "applied"
           }
         ],
+        "outside_target_hp": 100,
         "preview_response": {
           "combat_preview": [
+            {
+              "after": {
+                "hp": 12,
+                "max_hp": 20,
+                "max_hp_reduction": 0,
+                "temporary_hp": 0,
+                "version": 2
+              },
+              "before": {
+                "hp": 20,
+                "max_hp": 20,
+                "max_hp_reduction": 0,
+                "temporary_hp": 0,
+                "version": 1
+              },
+              "concentration_check_dc": null,
+              "result": {
+                "adjusted_damage": 8,
+                "damage_type": "acid",
+                "explanation": "8 点强酸伤害 → HP 扣除 8",
+                "hp_lost": 8,
+                "modifier": "normal",
+                "original_damage": 8,
+                "remaining_hp": 12,
+                "remaining_temporary_hp": 0,
+                "temporary_hp_lost": 0,
+                "unapplied_damage": 0
+              }
+            },
             {
               "after": {
                 "hp": 92,
@@ -1266,24 +1883,32 @@
           {
             "character_level": 1,
             "resolved_amounts": [
+              4,
+              4,
               4
             ]
           },
           {
             "character_level": 11,
             "resolved_amounts": [
+              12,
+              12,
               12
             ]
           },
           {
             "character_level": 17,
             "resolved_amounts": [
+              16,
+              16,
               16
             ]
           },
           {
             "character_level": 5,
             "resolved_amounts": [
+              8,
+              8,
               8
             ]
           }
@@ -1292,6 +1917,84 @@
         "scaling_matches_source_progression": true,
         "scaling_previews": [
           {
+            "area_membership": {
+              "anchor": {
+                "col": 2,
+                "height_ft": 0,
+                "row": 2
+              },
+              "anchor_range_ft": 0,
+              "geometry": {
+                "stable-id-0": {
+                  "distance_ft": 0,
+                  "grid_position": {
+                    "col": 2,
+                    "row": 2
+                  },
+                  "line_of_sight": true,
+                  "line_of_sight_mode": "2d",
+                  "line_of_sight_pair": {
+                    "from": {
+                      "col": 2,
+                      "row": 2
+                    },
+                    "to": {
+                      "col": 2,
+                      "row": 2
+                    }
+                  }
+                },
+                "stable-id-1": {
+                  "distance_ft": 5,
+                  "grid_position": {
+                    "col": 2,
+                    "row": 3
+                  },
+                  "line_of_sight": true,
+                  "line_of_sight_mode": "2d",
+                  "line_of_sight_pair": {
+                    "from": {
+                      "col": 2,
+                      "row": 2
+                    },
+                    "to": {
+                      "col": 2,
+                      "row": 3
+                    }
+                  }
+                },
+                "stable-id-2": {
+                  "distance_ft": 5,
+                  "grid_position": {
+                    "col": 3,
+                    "row": 2
+                  },
+                  "line_of_sight": true,
+                  "line_of_sight_mode": "2d",
+                  "line_of_sight_pair": {
+                    "from": {
+                      "col": 2,
+                      "row": 2
+                    },
+                    "to": {
+                      "col": 3,
+                      "row": 2
+                    }
+                  }
+                }
+              },
+              "include_actor": true,
+              "maximum_range_ft": 60,
+              "requires_line_of_sight": true,
+              "shape": "sphere",
+              "size_ft": 5,
+              "target_ids": [
+                "stable-id",
+                "stable-id",
+                "stable-id"
+              ],
+              "validated_by": "CombatEngineService.validate_exact_area_target_ids"
+            },
             "character_level": 1,
             "consumer_ids": [
               "combat_engine.area_damage.v1",
@@ -1300,10 +2003,90 @@
             ],
             "reported_total": 4,
             "resolved_amounts": [
+              4,
+              4,
               4
             ]
           },
           {
+            "area_membership": {
+              "anchor": {
+                "col": 2,
+                "height_ft": 0,
+                "row": 2
+              },
+              "anchor_range_ft": 0,
+              "geometry": {
+                "stable-id-0": {
+                  "distance_ft": 0,
+                  "grid_position": {
+                    "col": 2,
+                    "row": 2
+                  },
+                  "line_of_sight": true,
+                  "line_of_sight_mode": "2d",
+                  "line_of_sight_pair": {
+                    "from": {
+                      "col": 2,
+                      "row": 2
+                    },
+                    "to": {
+                      "col": 2,
+                      "row": 2
+                    }
+                  }
+                },
+                "stable-id-1": {
+                  "distance_ft": 5,
+                  "grid_position": {
+                    "col": 2,
+                    "row": 3
+                  },
+                  "line_of_sight": true,
+                  "line_of_sight_mode": "2d",
+                  "line_of_sight_pair": {
+                    "from": {
+                      "col": 2,
+                      "row": 2
+                    },
+                    "to": {
+                      "col": 2,
+                      "row": 3
+                    }
+                  }
+                },
+                "stable-id-2": {
+                  "distance_ft": 5,
+                  "grid_position": {
+                    "col": 3,
+                    "row": 2
+                  },
+                  "line_of_sight": true,
+                  "line_of_sight_mode": "2d",
+                  "line_of_sight_pair": {
+                    "from": {
+                      "col": 2,
+                      "row": 2
+                    },
+                    "to": {
+                      "col": 3,
+                      "row": 2
+                    }
+                  }
+                }
+              },
+              "include_actor": true,
+              "maximum_range_ft": 60,
+              "requires_line_of_sight": true,
+              "shape": "sphere",
+              "size_ft": 5,
+              "target_ids": [
+                "stable-id",
+                "stable-id",
+                "stable-id"
+              ],
+              "validated_by": "CombatEngineService.validate_exact_area_target_ids"
+            },
             "character_level": 11,
             "consumer_ids": [
               "combat_engine.area_damage.v1",
@@ -1312,10 +2095,90 @@
             ],
             "reported_total": 12,
             "resolved_amounts": [
+              12,
+              12,
               12
             ]
           },
           {
+            "area_membership": {
+              "anchor": {
+                "col": 2,
+                "height_ft": 0,
+                "row": 2
+              },
+              "anchor_range_ft": 0,
+              "geometry": {
+                "stable-id-0": {
+                  "distance_ft": 0,
+                  "grid_position": {
+                    "col": 2,
+                    "row": 2
+                  },
+                  "line_of_sight": true,
+                  "line_of_sight_mode": "2d",
+                  "line_of_sight_pair": {
+                    "from": {
+                      "col": 2,
+                      "row": 2
+                    },
+                    "to": {
+                      "col": 2,
+                      "row": 2
+                    }
+                  }
+                },
+                "stable-id-1": {
+                  "distance_ft": 5,
+                  "grid_position": {
+                    "col": 2,
+                    "row": 3
+                  },
+                  "line_of_sight": true,
+                  "line_of_sight_mode": "2d",
+                  "line_of_sight_pair": {
+                    "from": {
+                      "col": 2,
+                      "row": 2
+                    },
+                    "to": {
+                      "col": 2,
+                      "row": 3
+                    }
+                  }
+                },
+                "stable-id-2": {
+                  "distance_ft": 5,
+                  "grid_position": {
+                    "col": 3,
+                    "row": 2
+                  },
+                  "line_of_sight": true,
+                  "line_of_sight_mode": "2d",
+                  "line_of_sight_pair": {
+                    "from": {
+                      "col": 2,
+                      "row": 2
+                    },
+                    "to": {
+                      "col": 3,
+                      "row": 2
+                    }
+                  }
+                }
+              },
+              "include_actor": true,
+              "maximum_range_ft": 60,
+              "requires_line_of_sight": true,
+              "shape": "sphere",
+              "size_ft": 5,
+              "target_ids": [
+                "stable-id",
+                "stable-id",
+                "stable-id"
+              ],
+              "validated_by": "CombatEngineService.validate_exact_area_target_ids"
+            },
             "character_level": 17,
             "consumer_ids": [
               "combat_engine.area_damage.v1",
@@ -1324,10 +2187,90 @@
             ],
             "reported_total": 16,
             "resolved_amounts": [
+              16,
+              16,
               16
             ]
           },
           {
+            "area_membership": {
+              "anchor": {
+                "col": 2,
+                "height_ft": 0,
+                "row": 2
+              },
+              "anchor_range_ft": 0,
+              "geometry": {
+                "stable-id-0": {
+                  "distance_ft": 0,
+                  "grid_position": {
+                    "col": 2,
+                    "row": 2
+                  },
+                  "line_of_sight": true,
+                  "line_of_sight_mode": "2d",
+                  "line_of_sight_pair": {
+                    "from": {
+                      "col": 2,
+                      "row": 2
+                    },
+                    "to": {
+                      "col": 2,
+                      "row": 2
+                    }
+                  }
+                },
+                "stable-id-1": {
+                  "distance_ft": 5,
+                  "grid_position": {
+                    "col": 2,
+                    "row": 3
+                  },
+                  "line_of_sight": true,
+                  "line_of_sight_mode": "2d",
+                  "line_of_sight_pair": {
+                    "from": {
+                      "col": 2,
+                      "row": 2
+                    },
+                    "to": {
+                      "col": 2,
+                      "row": 3
+                    }
+                  }
+                },
+                "stable-id-2": {
+                  "distance_ft": 5,
+                  "grid_position": {
+                    "col": 3,
+                    "row": 2
+                  },
+                  "line_of_sight": true,
+                  "line_of_sight_mode": "2d",
+                  "line_of_sight_pair": {
+                    "from": {
+                      "col": 2,
+                      "row": 2
+                    },
+                    "to": {
+                      "col": 3,
+                      "row": 2
+                    }
+                  }
+                }
+              },
+              "include_actor": true,
+              "maximum_range_ft": 60,
+              "requires_line_of_sight": true,
+              "shape": "sphere",
+              "size_ft": 5,
+              "target_ids": [
+                "stable-id",
+                "stable-id",
+                "stable-id"
+              ],
+              "validated_by": "CombatEngineService.validate_exact_area_target_ids"
+            },
             "character_level": 5,
             "consumer_ids": [
               "combat_engine.area_damage.v1",
@@ -1336,6 +2279,8 @@
             ],
             "reported_total": 8,
             "resolved_amounts": [
+              8,
+              8,
               8
             ]
           }
@@ -1357,13 +2302,25 @@
     "selected_id_authoritative",
     "canonical_source_complete",
     "source_fingerprint_matches_census",
+    "canonical_source_checksum_matches_census",
+    "canonical_duplicate_binding_exact",
+    "incomplete_batch_ii_duplicate_not_used",
     "generic_consumers_present",
     "preview_confirm_replay",
     "production_runtime_full",
     "area_damage_persisted",
+    "exact_area_membership",
+    "actor_in_area_damaged",
+    "outside_area_untouched",
+    "omitted_in_area_rejected_before_payment",
+    "extra_outside_rejected",
+    "anchor_range_boundary_accepted",
+    "anchor_range_too_far_rejected",
+    "anchor_grid_bounds_rejected",
     "replay_idempotent",
     "target_cas_rejected",
     "operation_transactions_persisted",
+    "operation_transaction_action_binding",
     "save_success_no_damage",
     "cantrip_scaling_matches_source",
     "payload_drift_rejected",

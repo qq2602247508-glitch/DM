@@ -10813,6 +10813,139 @@ class CombatEngineService:
         return grid, affected, geometry
 
     @classmethod
+    def validate_exact_area_target_ids(
+        cls,
+        session: Session,
+        combat: Combat,
+        actor: Combatant,
+        *,
+        shape: str,
+        size_ft: int,
+        anchor_row: int,
+        anchor_col: int,
+        anchor_height_ft: int = 0,
+        width_ft: int | None = None,
+        height_ft: int | None = None,
+        include_actor: bool = False,
+        requires_line_of_sight: bool = True,
+        maximum_range_ft: int | None = None,
+        target_ids: set[str],
+    ) -> dict[str, Any]:
+        """Validate an exact source-required area membership set.
+
+        This is shared by typed spell/runtime callers and deliberately derives
+        membership from active authoritative combatants, their footprints, the
+        scene grid, and the existing area/LOS geometry primitives.  A submitted
+        target list is accepted only when it equals the authoritative set.
+        """
+
+        if combat.scene_id is None:
+            raise ValueError("exact area targeting requires an authoritative combat scene")
+        grid = session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
+        if grid is None:
+            raise ValueError("exact area targeting requires an authoritative combat grid")
+        origin = cls._grid_point(actor)
+        origin_footprint = cls._grid_footprint(actor)
+        if origin is None or not origin_footprint:
+            raise ValueError("exact area targeting requires actor grid position")
+        anchor = (anchor_row, anchor_col)
+        if not (1 <= anchor_row <= grid.height and 1 <= anchor_col <= grid.width):
+            raise ValueError("area anchor is outside the combat grid")
+        if shape == "cube":
+            if size_ft % grid.cell_size_ft != 0:
+                raise ValueError("cube size must align to the authoritative grid cell size")
+            side_cells = size_ft // grid.cell_size_ft
+            if (
+                anchor_row + side_cells - 1 > grid.height
+                or anchor_col + side_cells - 1 > grid.width
+            ):
+                raise ValueError("cube area extends outside the combat grid")
+        anchor_distance_ft = cls._grid_footprint_distance_ft(
+            origin_footprint,
+            (anchor,),
+            cell_size_ft=grid.cell_size_ft,
+        )
+        if maximum_range_ft is not None and anchor_distance_ft > maximum_range_ft:
+            raise ValueError(
+                f"area anchor is {anchor_distance_ft} ft away, beyond the "
+                f"typed spell range of {maximum_range_ft} ft"
+            )
+        blockers, _ = cls._grid_obstacles(session, grid)
+        affected: list[Combatant] = []
+        geometry: dict[str, dict[str, object]] = {}
+        for candidate in cls._ordered_combatants(session, combat.id):
+            if candidate.id == actor.id and not include_actor:
+                continue
+            point = cls._grid_point(candidate)
+            footprint = cls._grid_footprint(candidate)
+            if point is None or not footprint:
+                continue
+            if not cls._footprint_in_monster_area(
+                shape=shape,
+                origin=origin,
+                anchor=anchor,
+                footprint=footprint,
+                size_ft=size_ft,
+                width_ft=width_ft,
+                cell_size_ft=grid.cell_size_ft,
+                origin_height_ft=cls._grid_elevation_ft(actor),
+                anchor_height_ft=anchor_height_ft,
+                point_height_ft=cls._grid_elevation_ft(candidate),
+                height_ft=height_ft,
+            ):
+                continue
+            has_sight, line_of_sight_mode, sight_pair = cls._grid_footprint_line_of_sight(
+                session,
+                grid,
+                origin_footprint,
+                footprint,
+                blockers,
+                start_height_ft=cls._explicit_grid_elevation_ft(actor),
+                end_height_ft=cls._explicit_grid_elevation_ft(candidate),
+            )
+            if requires_line_of_sight and not has_sight:
+                continue
+            affected.append(candidate)
+            geometry[candidate.id] = {
+                "grid_position": {"row": point[0], "col": point[1]},
+                "distance_ft": cls._grid_footprint_distance_ft(
+                    origin_footprint,
+                    footprint,
+                    cell_size_ft=grid.cell_size_ft,
+                ),
+                "line_of_sight": has_sight,
+                "line_of_sight_mode": line_of_sight_mode,
+                "line_of_sight_pair": (
+                    {
+                        "from": {"row": sight_pair[0][0], "col": sight_pair[0][1]},
+                        "to": {"row": sight_pair[1][0], "col": sight_pair[1][1]},
+                    }
+                    if sight_pair is not None
+                    else None
+                ),
+            }
+        affected_ids = {candidate.id for candidate in affected}
+        if target_ids != affected_ids:
+            missing = sorted(affected_ids - target_ids)
+            extra = sorted(target_ids - affected_ids)
+            raise ValueError(
+                "area target list does not match authoritative membership; "
+                f"missing={missing}, outside_or_blocked={extra}"
+            )
+        return {
+            "shape": shape,
+            "size_ft": size_ft,
+            "anchor": {"row": anchor_row, "col": anchor_col, "height_ft": anchor_height_ft},
+            "anchor_range_ft": anchor_distance_ft,
+            "maximum_range_ft": maximum_range_ft,
+            "include_actor": include_actor,
+            "requires_line_of_sight": requires_line_of_sight,
+            "target_ids": sorted(affected_ids),
+            "geometry": geometry,
+            "validated_by": "CombatEngineService.validate_exact_area_target_ids",
+        }
+
+    @classmethod
     def _validate_player_roll_area_target(
         cls,
         session: Session,
