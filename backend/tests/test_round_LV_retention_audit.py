@@ -57,6 +57,10 @@ def test_round_lv_source_bound_compile_and_consumer_gap() -> None:
 def test_round_lv_projection_retains_selected_id_and_unrelated_ids() -> None:
     authoritative = authoritative_compile_only_ids(ROOT)
     artifact_path = "data/content-ir/compiled/production-runtime-results-LV.json"
+    historical_artifacts = {
+        artifact_path,
+        "data/content-ir/compiled/production-runtime-results-LVI.json",
+    }
     loaded_before = {
         content_id: row
         for content_id, row in load_production_runtime_evidence(
@@ -65,16 +69,27 @@ def test_round_lv_projection_retains_selected_id_and_unrelated_ids() -> None:
             required_checks=("all_required_checks_passed",),
             require_name_branch_free=True,
         ).items()
-        if row["evidence_path"] != artifact_path
+        if row["evidence_path"] not in historical_artifacts
     }
-    loaded_after = load_production_runtime_evidence(
+    loaded_after_historical = {
+        content_id: row
+        for content_id, row in load_production_runtime_evidence(
+            ROOT,
+            pack_id=None,
+            required_checks=("all_required_checks_passed",),
+            require_name_branch_free=True,
+        ).items()
+        if row["evidence_path"] != "data/content-ir/compiled/production-runtime-results-LVI.json"
+    }
+    loaded_after_current = load_production_runtime_evidence(
         ROOT,
         pack_id=None,
         required_checks=("all_required_checks_passed",),
         require_name_branch_free=True,
     )
     before_compile_only = project_compile_only_ids(authoritative, loaded_before)
-    after_compile_only = project_compile_only_ids(authoritative, loaded_after)
+    after_compile_only = project_compile_only_ids(authoritative, loaded_after_historical)
+    current_compile_only = project_compile_only_ids(authoritative, loaded_after_current)
     report = json.loads(
         (ROOT / "reports/round-LV-retention-audit-2026-08-14.json").read_text(
             encoding="utf-8"
@@ -86,8 +101,8 @@ def test_round_lv_projection_retains_selected_id_and_unrelated_ids() -> None:
     assert after_compile_only == set(report["projection_sets"]["after_compile_only_ids"])
     assert AUDIT_ID in before_compile_only and AUDIT_ID in after_compile_only
     assert (before_compile_only - {AUDIT_ID}) == (after_compile_only - {AUDIT_ID})
-    assert set(migration["current_project_compile_only_ids"]) == after_compile_only
-    assert set(loaded_after).issubset(existing_project_production_ids(ROOT))
+    assert set(migration["current_project_compile_only_ids"]) == current_compile_only
+    assert set(loaded_after_current).issubset(existing_project_production_ids(ROOT))
     assert AUDIT_ID not in existing_project_production_ids(ROOT)
     assert report["projection_sets"]["production_before_ids"] == report[
         "projection_sets"

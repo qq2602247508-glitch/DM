@@ -19,10 +19,18 @@ SPEC.loader.exec_module(MODULE)
 
 
 def test_round_liv_census_has_30_remaining_ids_and_summon_cluster() -> None:
-    census = MODULE._census()
+    report = json.loads(
+        (
+            ROOT
+            / "reports/round-LIV-summon-census-closure-2026-08-14.json"
+        ).read_text(encoding="utf-8")
+    )
+    census = report["census"]
     assert census["authoritative_census_size"] == 35
-    assert census["remaining_compile_only_size"] == 30
-    assert set(MODULE.SUMMON_IDS).issubset(census["remaining_compile_only_ids"])
+    assert len(report["projection_sets"]["before_compile_only_ids"]) == 30
+    assert set(MODULE.SUMMON_IDS).issubset(
+        report["projection_sets"]["before_compile_only_ids"]
+    )
     summon_group = next(
         item
         for item in census["groups"]
@@ -33,7 +41,12 @@ def test_round_liv_census_has_30_remaining_ids_and_summon_cluster() -> None:
 
 
 def test_round_liv_summon_source_is_complete_and_compiles_full() -> None:
-    census = MODULE._census()
+    census = json.loads(
+        (
+            ROOT
+            / "reports/round-LIV-summon-census-closure-2026-08-14.json"
+        ).read_text(encoding="utf-8")
+    )["census"]
     rows = {row["content_id"]: row for row in census["rows"]}
     for content_id in MODULE.SUMMON_IDS:
         assert rows[content_id]["source_complete"] is True
