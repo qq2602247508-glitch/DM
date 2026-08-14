@@ -210,7 +210,19 @@ def build_report() -> dict[str, Any]:
         "artifact_date": artifact_date,
         "decision": "retention_audit_no_promotion",
         "candidate_comparison": {
-            "ranking_claim": True,
+            "ranking_claim": bool(candidates)
+            and selected["content_id"]
+            == min(
+                candidates,
+                key=lambda row: (
+                    len(row["source_semantics"]["missing_source_semantics"]),
+                    len(row["source_semantics"]["missing_source_clause_types"]),
+                    row["consumer_probe"]["registry_error"] is not None,
+                    row["duplicate_evidence"]["duplicate_authority_conflict"],
+                    -len(row["consumer_probe"]["resolved_consumer_ids"]),
+                    row["content_id"],
+                ),
+            )["content_id"],
             "selection_basis": "derived minimum of source semantic gaps, missing typed clauses, registry errors, duplicate authority conflicts, and generic consumer count",
             "selected_candidate_for_deep_review": selected["content_id"],
             "selected_candidate_decision": selected["decision"],
@@ -240,7 +252,9 @@ def build_report() -> dict[str, Any]:
             "The selected Skywrite source requires strong wind to terminate the spell early.",
             "The current generic runtime exposes only concentration for this source; it has no generic object/cloud lifecycle, duration persistence, environmental termination, or termination consumer.",
         ],
-        "all_candidates_promoted": False,
+        "all_candidates_promoted": all(
+            row["production_runtime_full"] is True for row in candidates
+        ),
         "all_required_checks_passed": checks["all_required_checks_passed"],
     }
 
