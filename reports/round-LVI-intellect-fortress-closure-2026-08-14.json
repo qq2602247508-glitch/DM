@@ -4,6 +4,7 @@
     "production": 208,
     "unique_compiled": 111
   },
+  "all_required_checks_passed": true,
   "artifact_date": "2026-08-14",
   "baseline_commit": "3ef55cf",
   "before": {
@@ -11,6 +12,7 @@
     "production": 208,
     "unique_compiled": 111
   },
+  "bootstrap_phase": false,
   "candidate_comparison": {
     "basis": [
       "source-complete authored/compiled IR",
@@ -60,6 +62,7 @@
     "compile_full": true,
     "concentration_persisted": true,
     "current_evidence_exact": true,
+    "current_loader_acceptance": true,
     "downstream_failure_rollback": true,
     "duplicate_invalid_set_idempotent": true,
     "each_selected_id_removed_once": true,
@@ -74,11 +77,13 @@
     "payload_drift_rejected": true,
     "preview_confirm_replay": true,
     "production_runtime_full": true,
+    "production_union_semantics_proven": true,
     "protected_ollama_sha_exact": true,
     "psychic_resistance_consumed": true,
     "save_advantage_consumed": true,
     "selected_count": true,
     "selected_id_authoritative": true,
+    "selected_preexisting_in_production_union": true,
     "stale_target_cas_rejected": true,
     "strict_loader_rejects_nonproduction_row": true,
     "target_cap_rejected": true,
@@ -97,6 +102,9 @@
     "round_xliii_report": "98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f"
   },
   "no_push": true,
+  "production_runtime_full_ids": [
+    "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3"
+  ],
   "projection_sets": {
     "after_compile_only_ids": [
       "core-phb-2024:spell:63fb2360b8c30fb0419d9225",
@@ -762,7 +770,44 @@
       "sha256": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
     }
   },
-  "report_fingerprint": "b1c9af01fa24f12e7cbe8c70fa54217806a500be78f0c170a1cf5072a8397447",
+  "report_fingerprint": "83665b1a1c8ae2637b7b1ae75d46591d5d103e4f02a9fb7301a5c3fd642925be",
+  "required_check_keys": [
+    "batch_II_compile_full",
+    "character_resource_cleanup",
+    "compile_full",
+    "concentration_persisted",
+    "downstream_failure_rollback",
+    "formal_database_unchanged",
+    "formal_registry_unchanged",
+    "fourth_level_target_cap",
+    "grouped_concentration_end",
+    "name_branch_free",
+    "preview_confirm_replay",
+    "production_runtime_full",
+    "psychic_resistance_consumed",
+    "save_advantage_consumed",
+    "selected_count",
+    "stale_target_cas_rejected",
+    "target_cap_rejected",
+    "thirty_ft_group_distance_rejected",
+    "transactions_persisted",
+    "typed_clause_count",
+    "typed_defense_consumer",
+    "selected_id_authoritative",
+    "current_evidence_exact",
+    "payload_drift_rejected",
+    "strict_loader_rejects_nonproduction_row",
+    "each_selected_id_removed_once",
+    "duplicate_invalid_set_idempotent",
+    "unrelated_compile_only_ids_unchanged",
+    "unrelated_production_ids_unchanged",
+    "migration_projection_matches_sets",
+    "selected_preexisting_in_production_union",
+    "production_union_semantics_proven",
+    "protected_ollama_sha_exact",
+    "historical_xliii_sha_exact",
+    "current_loader_acceptance"
+  ],
   "round_id": "round-LVI",
   "schema_version": "round-LVI-intellect-fortress-closure-1",
   "selected_content_ids": [

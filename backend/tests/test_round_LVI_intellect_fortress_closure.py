@@ -22,9 +22,12 @@ def _report() -> dict[str, object]:
 
 def test_round_lvi_selected_artifact_is_source_bound_and_full() -> None:
     artifact = json.loads(ARTIFACT.read_text(encoding="utf-8"))
+    report = _report()
     row = artifact["evidence_by_id"][SPELL_ID]
     assert artifact["artifact_date"] == "2026-08-14"
+    assert artifact["bootstrap_phase"] is False
     assert artifact["production_runtime_full_ids"] == [SPELL_ID]
+    assert report["production_runtime_full_ids"] == artifact["production_runtime_full_ids"]
     assert row["production_runtime_full"] is True
     assert row["consumer_ids"] == [
         "spell.defense.v1",
@@ -33,6 +36,14 @@ def test_round_lvi_selected_artifact_is_source_bound_and_full() -> None:
     assert row["payload_drift"]["rejected"] is True
     assert row["strict_loader_probe"]["rejected"] is True
     assert artifact["checks"]["all_required_checks_passed"] is True
+    assert artifact["checks"] == report["checks"]
+    assert (
+        artifact["all_required_checks_passed"]
+        == report["all_required_checks_passed"]
+        == artifact["checks"]["all_required_checks_passed"]
+    )
+    assert all(artifact["checks"][key] is True for key in artifact["required_check_keys"])
+    assert artifact["required_check_keys"] == report["required_check_keys"]
 
 
 def test_round_lvi_projection_is_set_derived_and_unrelated_ids_unchanged() -> None:
@@ -60,6 +71,9 @@ def test_round_lvi_projection_is_set_derived_and_unrelated_ids_unchanged() -> No
     migration = build_migration(ROOT)
     assert set(migration["current_project_compile_only_ids"]) == after
     assert report["checks"]["duplicate_invalid_set_idempotent"] is True
+    assert report["checks"]["migration_projection_matches_sets"] is True
+    assert report["checks"]["selected_preexisting_in_production_union"] is True
+    assert report["checks"]["production_union_semantics_proven"] is True
 
 
 def test_round_lvi_selected_artifact_is_not_a_name_branch() -> None:
