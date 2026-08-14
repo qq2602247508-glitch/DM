@@ -69,6 +69,7 @@ reports/*
 !/reports/tashas-feature-production-consumer-round-XLII-2026-08-13.json
 !/reports/round-XLIII-typed-target-adjudication-2026-08-13.json
 !/reports/round-LII-illusion-lifecycle-2026-08-14.json
+!/reports/round-LVIII-retention-audit-2026-08-14.json
 tmp/
 temp/
 

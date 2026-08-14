@@ -3367,6 +3367,46 @@ git diff --check
   `backend/tests/ollama.py`
   `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab`.
 
+## 2026-08-14 Round LVIII Next Compile-only Closure Retention Audit
+
+- Status: `retention_audit_no_promotion`; no production-code change and no spell
+  promotion.
+- The 26 current compile-only IDs were compared through dynamic source-bound
+  clause/runtime blocks, closed registry resolution, duplicate provenance, set
+  projection, and content-ID branch scans. Candidate comparison explicitly makes
+  no ranking claim.
+- Sacred Flame
+  `core-phb-2024:spell:82f220a9e3474d8fe1cafd8b` is the nearest candidate, but
+  remains retained: the batch-II canonical duplicate is target-only and has no
+  executable consumer; the older complete duplicate has save/damage/cantrip
+  scaling but shares source fingerprint/checksum with the incomplete duplicate,
+  and its source-required `ignores_cover` semantic has no generic runtime
+  consumer. No authority rewrite was made.
+- Projection remains `209 production / 26 compile-only / 111 unique compiled`;
+  delta `0/0/0`; promoted IDs `[]`.
+- Evidence:
+  `docs/round-LVIII-retention-audit-2026-08-14.md`,
+  `scripts/validate-round-LVIII-retention-audit.py`,
+  `backend/tests/test_round_LVIII_retention_audit.py`, and
+  `reports/round-LVIII-retention-audit-2026-08-14.json`.
+- Focused LVIII + LV/LVI/LVII compatibility: `13 passed`; full backend:
+  `1159 passed`, one existing Starlette/httpx deprecation warning. Ruff,
+  compileall, and `git diff --check` passed.
+- Validator stdout/report were byte-identical across two runs. stdout SHA:
+  `a98d144709d9eccdc92fcf2e0cca0a28bb0e9e4170970c87f67a217802aa74a5`;
+  report SHA:
+  `9790bed045ffc15679a5f228b90b5af0d6cbdf8966d47c7f37dfc6982eec8c71`;
+  report fingerprint:
+  `80fca0e3b4aadf319fd764ec45c827d7c329a53a58ded8f6a768eb2c0a7b1a9e`.
+- Historical protection verified: XXII artifact SHA
+  `af93368afb0b350cbe1a828558a15cf38f35a68827764418ad5fc405defdb224`;
+  XLIII report SHA
+  `98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f`;
+  Ollama SHA
+  `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab`.
+- The modified historical Round XX report was restored to exact HEAD bytes;
+  both it and the XXII artifact pass `git diff --exit-code`. Local-only; no push.
+
 ## 2026-08-13 Round XXXV Entity Spatial Evidence
 
 - 本轮先执行可靠 push helper；GitHub smart HTTP 端到端检测失败，helper 报告

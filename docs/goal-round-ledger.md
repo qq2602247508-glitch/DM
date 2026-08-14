@@ -854,6 +854,37 @@ feature binding 与 spell-slot reactivation 仍保持 partial。
   `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab`。
 - 实现、迁移、测试、validator、report、docs 和 ledger 均只做本地提交；
   明确未 push。
+
+## 2026-08-14 Round LVIII：next compile-only closure retention audit
+
+- 状态：`retention_audit_no_promotion`；没有候选满足全部 production gates，因此没有修改生产代码。
+- 当前 26 条 compile-only ID 以 set-derived source census、typed clause/runtime block、
+  registry consumer resolution、duplicate provenance 和 content-ID branch scan 逐项比较。
+- 最接近候选为 Sacred Flame
+  `core-phb-2024:spell:82f220a9e3474d8fe1cafd8b`，但保留 compile-only：当前
+  batch-II canonical duplicate 只有 target clause、无 executable consumer；旧
+  core-2024 duplicate 虽有 save/damage/cantrip scaling，却与 batch-II duplicate
+  共用 source fingerprint/checksum 而 typed completeness 不同，且 `ignores_cover`
+  尚无 generic runtime consumer，不能安全选择或提升。
+- projection 保持 `209 production / 26 compile-only / 111 unique compiled`，
+  delta `0/0/0`，promoted IDs 为空；其余 25 条仍有动态 source semantic 或
+  registry/runtime gap。
+- focused LVIII + LV/LVI/LVII compatibility：`13 passed`；full backend：
+  `1159 passed`，仅既有 Starlette/httpx deprecation warning；Ruff、compileall、
+  `git diff --check` 通过。
+- validator 双跑 stdout/report byte-identical；stdout SHA-256
+  `a98d144709d9eccdc92fcf2e0cca0a28bb0e9e4170970c87f67a217802aa74a5`；
+  report SHA-256
+  `9790bed045ffc15679a5f228b90b5af0d6cbdf8966d47c7f37dfc6982eec8c71`；
+  report fingerprint `80fca0e3b4aadf319fd764ec45c827d7c329a53a58ded8f6a768eb2c0a7b1a9e`。
+- 历史 `data/content-ir/compiled/production-runtime-results-XXII.json` SHA
+  保持 `af93368afb0b350cbe1a828558a15cf38f35a68827764418ad5fc405defdb224`；
+  XLIII report SHA 保持 `98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f`；
+  `backend/tests/ollama.py` SHA 保持
+  `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab`。
+- Round XX historical report 已恢复为 HEAD bytes；Round XX report 与 XXII
+  production artifact 均 `git diff --exit-code` 通过。仅新 LVIII artifacts 与 docs
+  进入本地提交，不 push。
 # 2026-08-13 Round XXXIV：巨灵宗主扩展法术列表
 
 - 状态：`accepted`
