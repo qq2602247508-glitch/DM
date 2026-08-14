@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 from collections.abc import Mapping
 from copy import deepcopy
@@ -67,6 +68,7 @@ from dnd_dm_assistant.domain.typed_spell_illusion_lifecycle import (
     TypedSpellIllusionSpec,
     apply_typed_spell_illusion,
     inspect_typed_spell_illusion,
+    terminate_typed_spell_illusion,
 )
 from dnd_dm_assistant.domain.typed_spell_timed_modifiers import (
     TypedSpellTimedModifierSpec,
@@ -107,6 +109,17 @@ def _fingerprint(value: object) -> str:
 
 def _text(value: object) -> str:
     return str(value or "").strip()
+
+
+def _illusion_runtime_now() -> datetime:
+    fixed = os.environ.get("DND_DM_ILLUSION_NOW", "").strip()
+    if fixed:
+        try:
+            value = datetime.fromisoformat(fixed)
+        except ValueError as exc:
+            raise ValueError("DND_DM_ILLUSION_NOW must be an ISO-8601 datetime") from exc
+        return value.astimezone(UTC) if value.tzinfo else value.replace(tzinfo=UTC)
+    return datetime.now(UTC)
 
 
 def _stable_request_data(data: Mapping[str, Any]) -> dict[str, Any]:
@@ -4991,7 +5004,7 @@ class ContentIRRuntimeService:
                 contract["spec"],
                 state=state,
                 expected_version=state["version"],
-                now=datetime.now(UTC),
+                now=_illusion_runtime_now(),
             )
             snapshot["illusion_version"] = updated["version"]
             snapshot["illusion_envelopes"] = updated["illusion_envelopes"]
@@ -5004,7 +5017,7 @@ class ContentIRRuntimeService:
                     illusion_id=receipt.illusion_id,
                     research_action=_text(data.get("illusion_research_action")) or "research",
                     investigation_total=int(data["illusion_investigation_total"]),
-                    now=datetime.now(UTC),
+                    now=_illusion_runtime_now(),
                 )
             output = {
                 "schema_version": PRODUCTION_SCHEMA,
@@ -5034,6 +5047,103 @@ class ContentIRRuntimeService:
                 before_snapshot=before,
                 after_snapshot=output,
                 reason="source-bound generic illusion lifecycle confirmed",
+                source="combat",
+                confirmed_at=datetime.now(UTC),
+            )
+            session.add(operation)
+            session.flush()
+            output["operation_transaction_id"] = operation.id
+            operation.after_snapshot = dict(output)
+            return output
+
+    def inspect_spell_illusion(self, campaign_id: str, data: Mapping[str, Any]) -> dict[str, Any]:
+        with Session(self.engine) as session:
+            actor = session.get(Combatant, _text(data.get("actor_combatant_id")))
+            combat = session.get(Combat, actor.combat_id) if actor is not None else None
+            if actor is None or combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("illusion actor not found")
+            expected = int(data.get("actor_version") or 0)
+            if actor.version != expected:
+                raise VersionConflict("combatant", actor.id, expected, actor.version)
+            snapshot = dict(actor.snapshot_json or {})
+            state = {
+                "version": int(snapshot.get("illusion_version") or 0),
+                "illusion_envelopes": list(snapshot.get("illusion_envelopes") or []),
+            }
+            illusion_id = f"{_text(data.get('runtime_id'))}:{actor.id}"
+            inspection = inspect_typed_spell_illusion(
+                state,
+                illusion_id=illusion_id,
+                research_action=_text(data.get("illusion_research_action")) or "research",
+                investigation_total=int(data.get("illusion_investigation_total") or 0),
+                now=_illusion_runtime_now(),
+            )
+            return {
+                "schema_version": PRODUCTION_SCHEMA,
+                "consumer": "spell.illusion.lifecycle.v1",
+                "actor_combatant_id": actor.id,
+                "actor_version": actor.version,
+                "inspection": inspection,
+            }
+
+    def terminate_spell_illusion(
+        self, campaign_id: str, data: Mapping[str, Any]
+    ) -> dict[str, Any]:
+        key = _text(data.get("idempotency_key"))
+        if len(key) < 8:
+            raise ValueError("illusion termination idempotency_key is required")
+        with Session(self.engine) as session, session.begin():
+            operation_key = f"content-ir:{key}:termination"
+            existing = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == campaign_id,
+                    OperationTransaction.idempotency_key == operation_key,
+                )
+            )
+            if existing is not None:
+                return {**dict(existing.after_snapshot or {}), "already_applied": True}
+            actor = session.get(Combatant, _text(data.get("actor_combatant_id")))
+            combat = session.get(Combat, actor.combat_id) if actor is not None else None
+            if actor is None or combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("illusion actor not found")
+            expected = int(data.get("actor_version") or 0)
+            if actor.version != expected:
+                raise VersionConflict("combatant", actor.id, expected, actor.version)
+            snapshot = dict(actor.snapshot_json or {})
+            state = {
+                "version": int(snapshot.get("illusion_version") or 0),
+                "illusion_envelopes": list(snapshot.get("illusion_envelopes") or []),
+            }
+            illusion_id = f"{_text(data.get('runtime_id'))}:{actor.id}"
+            updated = terminate_typed_spell_illusion(
+                state,
+                expected_version=state["version"],
+                illusion_id=illusion_id,
+                reason=_text(data.get("illusion_termination_reason")) or "terminate",
+            )
+            snapshot["illusion_version"] = updated["version"]
+            snapshot["illusion_envelopes"] = updated["illusion_envelopes"]
+            actor.snapshot_json = snapshot
+            actor.version += 1
+            output = {
+                "schema_version": PRODUCTION_SCHEMA,
+                "consumer": "spell.illusion.lifecycle.v1",
+                "actor_combatant_id": actor.id,
+                "actor_version_after": actor.version,
+                "termination": updated["illusion_envelopes"][0]["termination"],
+                "persisted_snapshot": {
+                    "illusion_version": snapshot["illusion_version"],
+                    "illusion_envelopes": snapshot["illusion_envelopes"],
+                },
+            }
+            operation = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="content_ir_illusion_termination",
+                idempotency_key=operation_key,
+                status="applied",
+                before_snapshot={"actor_version": expected},
+                after_snapshot=output,
+                reason="explicit illusion lifecycle termination",
                 source="combat",
                 confirmed_at=datetime.now(UTC),
             )

@@ -1,7 +1,7 @@
 # Round LII：generic illusion lifecycle / inspection consumer
 
 日期：2026-08-14  
-基线：`951ef198533ae9378c638bd05f66ed1066ee9cb8`
+基线：`c5ced8c55b75eb83dc0dd6b114f5a82196a7efdc`
 
 ## 决策
 
@@ -27,20 +27,20 @@ Self ID branch exists.
 
 ## Evidence and projection
 
-- Focused suite: `backend/tests/test_round_LII_illusion_lifecycle.py`, 3 passed.
+- Focused suite: `backend/tests/test_round_LII_illusion_lifecycle.py`, 6 passed.
 - Validator: `scripts/validate-round-LII-illusion-lifecycle.py`.
 - Artifact: `data/content-ir/compiled/production-runtime-results-LII.json`.
 - Report: `reports/round-LII-illusion-lifecycle-2026-08-14.json`.
 - Canonical set projection: `207 production / 31 compile-only / 111 unique compiled`.
 - Validator stdout/report/artifact were byte-identical across two runs.
-- Report SHA-256: `23252ff2e2cc218ca0e9aa927c93ffafd2eee7191755fe45d1be25310406c98c`.
-- Artifact SHA-256: `ba613a4e4548b0549159645bd66469b68db3477885fd48d1525884b6e916c3c6`.
-- Validator stdout SHA-256: `f3a2f7d1be67d48e340c45eeff02de1983a217d72e65c8dc30a4fe02fe2f1738`.
+- Report SHA-256: `91a9953892412a065d5f10f25a3d196bb22f93034ef68301a3663680f2dcbb9b`.
+- Artifact SHA-256: `26fa5f66f2f762199f6cb38b0fbc282e3e7dd16b683e36b1963edfb1d4c1c926`.
+- Validator stdout SHA-256: `86b86a75a637237831a4dfb65fcf6a69d3244d57744d6a54c73965998b8c871b`.
 
 ## Gates and protection
 
 Ruff on the changed files, compileall, `git diff --check`, and full backend
-pytest all pass. Full backend pytest is `1129 passed, 1 warning`. Round XLIII report SHA
+pytest all pass. Full backend pytest is `1132 passed, 1 warning`. Round XLIII report SHA
 remains `98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f`;
 protected `backend/tests/ollama.py` SHA remains
 `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`.

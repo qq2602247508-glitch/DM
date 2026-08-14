@@ -2,25 +2,86 @@
   "artifact_date": "2026-08-14",
   "checks": {
     "all_required_checks_passed": true,
-    "focused_test": {
-      "command": [
-        "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
-        "-m",
-        "pytest",
-        "-q",
-        "backend/tests/test_round_LII_illusion_lifecycle.py"
-      ],
-      "passed": true,
-      "returncode": 0,
-      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "stdout_sha256": "9fbdf8c5b5ddc91a45fe644bf53c556996b9072d4336b10e3dd6ac162046320c"
-    },
     "formal_database_written": false,
     "formal_registry_written": false,
     "generic_registry_consumer_exact": true,
     "historical_xliii_sha_exact": true,
-    "isolated_runtime_receipt_suite_passed": true,
+    "isolated_api_exact_replay_and_payload_drift": true,
+    "isolated_api_expiry_and_termination_evidence": true,
+    "isolated_api_inspection_success_against_save_dc": true,
+    "isolated_api_operation_transaction_namespace_content": true,
+    "isolated_api_persisted_envelope_exact": true,
+    "isolated_api_preview_confirm_receipt": true,
+    "isolated_api_source_receipt_exact": true,
     "name_branch_count": 0,
+    "named_nodes": {
+      "test_illusion_api_preview_confirm_persists_cas_transaction_and_replay": {
+        "command": [
+          "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+          "-m",
+          "pytest",
+          "-q",
+          "backend/tests/test_round_LII_illusion_lifecycle.py::test_illusion_api_preview_confirm_persists_cas_transaction_and_replay"
+        ],
+        "passed": true,
+        "returncode": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_sha256": "e965267b6e51fb6b651aa4a70a362def751f11025a31512de16bf72e245ca37a"
+      },
+      "test_round_lii_api_rejects_cas_and_contract_boundaries": {
+        "command": [
+          "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+          "-m",
+          "pytest",
+          "-q",
+          "backend/tests/test_round_LII_illusion_lifecycle.py::test_round_lii_api_rejects_cas_and_contract_boundaries"
+        ],
+        "passed": true,
+        "returncode": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_sha256": "e965267b6e51fb6b651aa4a70a362def751f11025a31512de16bf72e245ca37a"
+      },
+      "test_round_lii_expiry_and_explicit_termination_are_state_transitions": {
+        "command": [
+          "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+          "-m",
+          "pytest",
+          "-q",
+          "backend/tests/test_round_LII_illusion_lifecycle.py::test_round_lii_expiry_and_explicit_termination_are_state_transitions"
+        ],
+        "passed": true,
+        "returncode": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_sha256": "e965267b6e51fb6b651aa4a70a362def751f11025a31512de16bf72e245ca37a"
+      },
+      "test_round_lii_physical_inspection_and_research_use_persisted_save_dc": {
+        "command": [
+          "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+          "-m",
+          "pytest",
+          "-q",
+          "backend/tests/test_round_LII_illusion_lifecycle.py::test_round_lii_physical_inspection_and_research_use_persisted_save_dc"
+        ],
+        "passed": true,
+        "returncode": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_sha256": "e965267b6e51fb6b651aa4a70a362def751f11025a31512de16bf72e245ca37a"
+      },
+      "test_round_lii_source_contract_covers_bounds_and_registry": {
+        "command": [
+          "/Users/inagi/codex/130 游戏/135-跑团助手 dnd/backend/.venv/bin/python",
+          "-m",
+          "pytest",
+          "-q",
+          "backend/tests/test_round_LII_illusion_lifecycle.py::test_round_lii_source_contract_covers_bounds_and_registry"
+        ],
+        "passed": true,
+        "returncode": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_sha256": "e965267b6e51fb6b651aa4a70a362def751f11025a31512de16bf72e245ca37a"
+      }
+    },
+    "named_nodes_all_passed": true,
     "protected_ollama_sha_exact": true,
     "source_bound_compile_full": true,
     "source_fields_cover_physical_inspection_and_research_dc": true,
@@ -32,6 +93,168 @@
       "authored_path": "data/content-ir/authored/batch-II/core-phb-2024/spells/core-phb-2024-spell-83b7d94b77f332dd71310bbe.json",
       "content_id": "core-phb-2024:spell:83b7d94b77f332dd71310bbe",
       "content_kind": "spell",
+      "isolated_api_receipt": {
+        "api_inspection": {
+          "failure": {
+            "checked_at": "2026-08-14T12:00:00+00:00",
+            "discerned": false,
+            "illusion_id": "isolated-actor",
+            "investigation_total": 13,
+            "physical_inspection_result": "passes_through",
+            "research_action": "research",
+            "save_dc": 14,
+            "skill": "intelligence_investigation"
+          },
+          "success": {
+            "checked_at": "2026-08-14T12:00:00+00:00",
+            "discerned": true,
+            "illusion_id": "isolated-actor",
+            "investigation_total": 14,
+            "physical_inspection_result": "passes_through",
+            "research_action": "research",
+            "save_dc": 14,
+            "skill": "intelligence_investigation"
+          }
+        },
+        "confirm": {
+          "consumer": "spell.illusion.lifecycle.v1",
+          "illusion_receipt": {
+            "clause_id": "illusion_lifecycle",
+            "content_id": "core-phb-2024:spell:83b7d94b77f332dd71310bbe",
+            "expires_at": "2026-08-14T13:00:00+00:00",
+            "illusion_id": "isolated-actor",
+            "physical_inspection_result": "passes_through",
+            "replayed": false,
+            "request_fingerprint": "present",
+            "schema": "spell.illusion.lifecycle.v1",
+            "source_fingerprint": "333f2d3a48232acf17b222fc2782505ff5f61a059a7ffe49c26ad86823caa0f4",
+            "source_record_id": "83b7d94b77f332dd71310bbe",
+            "state_version_after": 1,
+            "state_version_before": 0,
+            "termination": null
+          },
+          "inspection": {
+            "checked_at": "2026-08-14T12:00:00+00:00",
+            "discerned": true,
+            "illusion_id": "isolated-actor",
+            "investigation_total": 14,
+            "physical_inspection_result": "passes_through",
+            "research_action": "research",
+            "save_dc": 14,
+            "skill": "intelligence_investigation"
+          },
+          "production_runtime_full": true,
+          "spell_cast_present": true
+        },
+        "expiry": {
+          "checked_at": "2026-08-14T13:00:00+00:00",
+          "error": {
+            "code": "http_400",
+            "details": null,
+            "message": "illusion has expired",
+            "request_id": "present"
+          },
+          "rejected": true
+        },
+        "operation_transaction": {
+          "after_snapshot_contains_receipt": true,
+          "idempotency_key": "content-ir:round-lii-isolated-evidence:illusion",
+          "identity_present": true,
+          "operation_type": "content_ir_illusion_lifecycle",
+          "status": "applied"
+        },
+        "payload_drift": {
+          "rejected": true,
+          "status_code": 400
+        },
+        "persisted_actor_snapshot": {
+          "actor_version": 3,
+          "illusion_envelopes": [
+            {
+              "area_scope": "caster-chosen illusion envelope",
+              "body_shape": "variable",
+              "carried_envelope": [
+                "clothing",
+                "armor",
+                "weapons"
+              ],
+              "clause_id": "illusion_lifecycle",
+              "content_id": "core-phb-2024:spell:83b7d94b77f332dd71310bbe",
+              "duration_unit": "hours",
+              "duration_value": 1,
+              "expires_at": "2026-08-14T13:00:00+00:00",
+              "height_delta_ft": -1,
+              "investigation_skill": "intelligence_investigation",
+              "limb_arrangement": "preserve",
+              "physical_inspection": "passes_through",
+              "physical_inspection_result": "passes_through",
+              "research_action": "research",
+              "save_dc": 14,
+              "source_fingerprint": "333f2d3a48232acf17b222fc2782505ff5f61a059a7ffe49c26ad86823caa0f4",
+              "source_id": "core-phb-2024:spell:83b7d94b77f332dd71310bbe",
+              "source_record_id": "83b7d94b77f332dd71310bbe",
+              "started_at": "2026-08-14T12:00:00+00:00",
+              "target_id": "isolated-actor",
+              "target_scope": "self",
+              "termination": "terminate"
+            }
+          ],
+          "illusion_version": 2
+        },
+        "preview": {
+          "consumer": [
+            "spell.illusion.lifecycle.v1"
+          ],
+          "illusion_lifecycle": {
+            "area_scope": "caster-chosen illusion envelope",
+            "body_shape": "variable",
+            "carried_envelope": [
+              "clothing",
+              "armor",
+              "weapons"
+            ],
+            "clause_id": "illusion_lifecycle",
+            "content_id": "core-phb-2024:spell:83b7d94b77f332dd71310bbe",
+            "duration_unit": "hours",
+            "duration_value": 1,
+            "height_delta_ft": -1,
+            "inspection_protocol": {
+              "action": "research",
+              "save_dc": 14,
+              "skill": "intelligence_investigation"
+            },
+            "investigation_skill": "intelligence_investigation",
+            "limb_arrangement": "preserve",
+            "physical_inspection": "passes_through",
+            "physical_inspection_result": "passes_through",
+            "research_action": "research",
+            "save_dc": 14,
+            "source_fingerprint": "333f2d3a48232acf17b222fc2782505ff5f61a059a7ffe49c26ad86823caa0f4",
+            "source_id": "core-phb-2024:spell:83b7d94b77f332dd71310bbe",
+            "source_record_id": "83b7d94b77f332dd71310bbe",
+            "target_id": "isolated-actor",
+            "target_scope": "self"
+          },
+          "runtime_preview_full": true,
+          "source": {
+            "source_book": "玩家手册 2024",
+            "source_fingerprint": "333f2d3a48232acf17b222fc2782505ff5f61a059a7ffe49c26ad86823caa0f4",
+            "source_path": "玩家手册2024/法术详述/1环.htm",
+            "source_record_id": "83b7d94b77f332dd71310bbe",
+            "source_trust": "authored_ir"
+          }
+        },
+        "replay": {
+          "already_applied": true,
+          "operation_transaction_id_present": true,
+          "same_receipt": true
+        },
+        "termination": {
+          "operation_transaction_id_present": true,
+          "reason": "terminate",
+          "version_after": 2
+        }
+      },
       "isolated_runtime_test": "backend/tests/test_round_LII_illusion_lifecycle.py",
       "name": "易容术",
       "production_runtime_full": true,
@@ -41,7 +264,7 @@
         "height delta -1/0/+1 and preserved limb arrangement",
         "caster-chosen illusion area",
         "physical inspection passes through illusion",
-        "Research plus Intelligence (Investigation) against spell save DC",
+        "Research plus Intelligence (Investigation) against persisted spell save DC",
         "expiry and termination persistence"
       ],
       "resolved_consumers": [
@@ -109,5 +332,5 @@
     "core-phb-2024:spell:83b7d94b77f332dd71310bbe"
   ],
   "round_id": "round-LII",
-  "schema_version": "content-ir-production-runtime-results-LII-1"
+  "schema_version": "content-ir-production-runtime-results-LII-2"
 }

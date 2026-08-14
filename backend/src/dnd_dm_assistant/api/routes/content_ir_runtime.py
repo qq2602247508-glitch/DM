@@ -41,3 +41,30 @@ def confirm_content_runtime(
     if not body.preview_token or not body.idempotency_key:
         raise HTTPException(status_code=422, detail="preview_token and idempotency_key required")
     return _safe_call(lambda: service.confirm(campaign_id, body.model_dump(mode="json")))
+
+
+@router.post("/runtime/illusion/inspect")
+def inspect_illusion_runtime(
+    campaign_id: str,
+    body: ContentIRRuntimeRequest,
+    service: Annotated[ContentIRRuntimeService, Depends(get_content_ir_runtime_service)],
+) -> dict[str, Any]:
+    return _safe_call(
+        lambda: service.inspect_spell_illusion(campaign_id, body.model_dump(mode="json"))
+    )
+
+
+@router.post("/runtime/illusion/terminate")
+def terminate_illusion_runtime(
+    campaign_id: str,
+    body: ContentIRRuntimeRequest,
+    service: Annotated[ContentIRRuntimeService, Depends(get_content_ir_runtime_service)],
+) -> dict[str, Any]:
+    if not body.idempotency_key or not body.illusion_termination_reason:
+        raise HTTPException(
+            status_code=422,
+            detail="idempotency_key and illusion_termination_reason required",
+        )
+    return _safe_call(
+        lambda: service.terminate_spell_illusion(campaign_id, body.model_dump(mode="json"))
+    )

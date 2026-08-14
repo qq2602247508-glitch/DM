@@ -1,7 +1,7 @@
 {
   "all_required_checks_passed": true,
   "artifact_date": "2026-08-14",
-  "baseline_commit": "951ef198533ae9378c638bd05f66ed1066ee9cb8",
+  "baseline_commit": "c5ced8c55b75eb83dc0dd6b114f5a82196a7efdc",
   "candidate_id": "core-phb-2024:spell:83b7d94b77f332dd71310bbe",
   "canonical_projection": {
     "after": {
@@ -21,8 +21,15 @@
     "formal_registry_written": false,
     "generic_registry_consumer_exact": true,
     "historical_xliii_sha_exact": true,
-    "isolated_runtime_receipt_suite_passed": true,
+    "isolated_api_exact_replay_and_payload_drift": true,
+    "isolated_api_expiry_and_termination_evidence": true,
+    "isolated_api_inspection_success_against_save_dc": true,
+    "isolated_api_operation_transaction_namespace_content": true,
+    "isolated_api_persisted_envelope_exact": true,
+    "isolated_api_preview_confirm_receipt": true,
+    "isolated_api_source_receipt_exact": true,
     "name_branch_count": 0,
+    "named_nodes_all_passed": true,
     "protected_ollama_sha_exact": true,
     "source_bound_compile_full": true,
     "source_fields_cover_physical_inspection_and_research_dc": true,
@@ -30,7 +37,7 @@
   },
   "decision": "promote_disguise_self_through_generic_illusion_lifecycle",
   "evidence_artifact": "data/content-ir/compiled/production-runtime-results-LII.json",
-  "evidence_mechanism": "source-bound SpellSpec compile, generic registry resolution, isolated API receipt suite, and set-based evidence loader",
+  "evidence_mechanism": "source-bound SpellSpec compile, named test nodes, and isolated migrated SQLite API receipt with persisted snapshot and transaction inspection",
   "historical_artifact_sha256": {
     "backend_tests_ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3",
     "round_xliii_report": "98718564dab7e41bb911b2d10813cb43bf59b422732ec67480b4e362e519c76f"
@@ -180,7 +187,7 @@
       "sha256": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
     }
   },
-  "report_fingerprint": "8fa22550048c4653405dce8dd5570677d6e94fba6c1baf91a023dc6802541041",
+  "report_fingerprint": "810e12cc58c0e5ffe197115dac95247db52ec0061933dab0f96d3b054ad363ee",
   "round_id": "round-LII",
-  "schema_version": "round-LII-illusion-lifecycle-1"
+  "schema_version": "round-LII-illusion-lifecycle-2"
 }

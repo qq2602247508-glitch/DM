@@ -2586,6 +2586,7 @@ class ContentIRRuntimeRequest(BaseModel):
     illusion_area_scope: str | None = Field(default=None, min_length=1, max_length=200)
     illusion_research_action: Literal["research"] | None = None
     illusion_investigation_total: int | None = Field(default=None, ge=-100, le=1000)
+    illusion_termination_reason: Literal["expiry", "terminate"] | None = None
     origin_id: str | None = Field(default=None, min_length=1, max_length=36)
     summon_choice: str | None = Field(default=None, min_length=1, max_length=80)
     area_shape: Literal["cone", "line", "cube", "sphere", "cylinder"] | None = None

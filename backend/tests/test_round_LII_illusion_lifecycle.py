@@ -7,6 +7,8 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine, select
+from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.application.content_ir_production_registry import (
     resolve_production_consumers,
@@ -19,6 +21,7 @@ from dnd_dm_assistant.domain.typed_spell_illusion_lifecycle import (
     inspect_typed_spell_illusion,
     terminate_typed_spell_illusion,
 )
+from dnd_dm_assistant.infrastructure.database.models import Combatant, OperationTransaction
 
 ROOT = Path(__file__).resolve().parents[2]
 AUTHORED = ROOT / (
@@ -66,7 +69,18 @@ def _spec() -> TypedSpellIllusionSpec:
     )
 
 
-def test_illusion_contract_covers_bounds_inspection_expiry_and_termination() -> None:
+def test_round_lii_source_contract_covers_bounds_and_registry() -> None:
+    runtime = _runtime()
+    block = ContentIRRuntimeService._runtime_blocks(runtime)["illusion_lifecycle"][0]
+    assert runtime["source"]["source_record_id"] == "83b7d94b77f332dd71310bbe"
+    assert len(runtime["source"]["source_fingerprint"]) == 64
+    assert block["height_delta_range_ft"] == [-1, 1]
+    assert block["limb_arrangement"] == "preserve"
+    assert set(block["carried_envelope"]) == {"clothing", "armor", "weapons"}
+    assert block["area_scope"] == "caster-chosen illusion envelope"
+
+
+def test_round_lii_physical_inspection_and_research_use_persisted_save_dc() -> None:
     now = datetime(2026, 8, 14, 12, tzinfo=UTC)
     state, receipt = apply_typed_spell_illusion(
         _spec(), state={"version": 0, "illusion_envelopes": []}, expected_version=0, now=now
@@ -91,6 +105,8 @@ def test_illusion_contract_covers_bounds_inspection_expiry_and_termination() -> 
         investigation_total=13,
         now=now + timedelta(minutes=5),
     )["discerned"] is False
+    assert row["physical_inspection_result"] == "passes_through"
+    assert row["save_dc"] == 14
     with pytest.raises(ValueError, match="research"):
         inspect_typed_spell_illusion(
             state,
@@ -99,6 +115,13 @@ def test_illusion_contract_covers_bounds_inspection_expiry_and_termination() -> 
             investigation_total=20,
             now=now,
         )
+
+
+def test_round_lii_expiry_and_explicit_termination_are_state_transitions() -> None:
+    now = datetime(2026, 8, 14, 12, tzinfo=UTC)
+    state, receipt = apply_typed_spell_illusion(
+        _spec(), state={"version": 0, "illusion_envelopes": []}, expected_version=0, now=now
+    )
     with pytest.raises(ValueError, match="expired"):
         inspect_typed_spell_illusion(
             state,
@@ -110,6 +133,7 @@ def test_illusion_contract_covers_bounds_inspection_expiry_and_termination() -> 
     terminated = terminate_typed_spell_illusion(
         state, expected_version=1, illusion_id=receipt.illusion_id, reason="terminate"
     )
+    assert terminated["version"] == 2
     assert terminated["illusion_envelopes"][0]["termination"] == "terminate"
 
 
@@ -188,8 +212,9 @@ def _setup(client: TestClient) -> dict[str, Any]:
 
 
 def test_illusion_api_preview_confirm_persists_cas_transaction_and_replay(
-    campaign_client: TestClient,
+    campaign_client: TestClient, monkeypatch: Any
 ) -> None:
+    monkeypatch.setenv("DND_DM_ILLUSION_NOW", "2026-08-14T12:00:00+00:00")
     scene = _setup(campaign_client)
     body = {
         "content_kind": "spell",
@@ -242,3 +267,126 @@ def test_illusion_api_preview_confirm_persists_cas_transaction_and_replay(
         json={**body, "preview_token": preview_json["preview_token"], "illusion_save_dc": 15},
     )
     assert drift.status_code == 400
+    inspection = campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/illusion/inspect",
+        json={**body, "actor_version": result["actor_version_after"]},
+    )
+    assert inspection.status_code == 200, inspection.text
+    assert inspection.json()["inspection"]["discerned"] is True
+    failed_inspection = campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/illusion/inspect",
+        json={
+            **body,
+            "actor_version": result["actor_version_after"],
+            "illusion_investigation_total": 13,
+        },
+    )
+    assert failed_inspection.status_code == 200
+    assert failed_inspection.json()["inspection"]["discerned"] is False
+    monkeypatch.setenv("DND_DM_ILLUSION_NOW", "2026-08-14T13:00:00+00:00")
+    expired_inspection = campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/illusion/inspect",
+        json={**body, "actor_version": result["actor_version_after"]},
+    )
+    assert expired_inspection.status_code == 400
+    monkeypatch.setenv("DND_DM_ILLUSION_NOW", "2026-08-14T12:00:00+00:00")
+    terminated = campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/illusion/terminate",
+        json={
+            **body,
+            "actor_version": result["actor_version_after"],
+            "idempotency_key": "round-lii-illusion-termination",
+            "illusion_termination_reason": "terminate",
+        },
+    )
+    assert terminated.status_code == 200, terminated.text
+    assert terminated.json()["termination"] == "terminate"
+    assert terminated.json()["persisted_snapshot"]["illusion_version"] == 2
+
+    engine = create_engine(campaign_client.database_url)  # type: ignore[attr-defined]
+    try:
+        with Session(engine) as session:
+            actor = session.scalar(
+                select(Combatant).where(Combatant.id == scene["actor"]["id"])
+            )
+            operation = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.id == result["operation_transaction_id"]
+                )
+            )
+            assert actor is not None
+            assert operation is not None
+            snapshot = actor.snapshot_json
+            assert actor.version == scene["actor"]["version"] + 2
+            assert snapshot["illusion_version"] == 2
+            assert snapshot["illusion_envelopes"][0]["expires_at"] == result[
+                "illusion_receipt"
+            ]["expires_at"]
+            assert snapshot["illusion_envelopes"][0]["termination"] == "terminate"
+            assert operation.operation_type == "content_ir_illusion_lifecycle"
+            assert operation.idempotency_key == "content-ir:round-lii-illusion:illusion"
+            assert operation.after_snapshot["illusion_receipt"] == result["illusion_receipt"]
+            termination_operation = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.id == terminated.json()["operation_transaction_id"]
+                )
+            )
+            assert termination_operation is not None
+            assert termination_operation.operation_type == "content_ir_illusion_termination"
+    finally:
+        engine.dispose()
+
+
+def test_round_lii_api_rejects_cas_and_contract_boundaries(
+    campaign_client: TestClient,
+) -> None:
+    scene = _setup(campaign_client)
+    body = {
+        "content_kind": "spell",
+        "runtime_id": SPELL_ID,
+        "character_id": scene["character"]["id"],
+        "character_version": scene["character"]["version"],
+        "known_spell_id": scene["known"]["id"],
+        "slot_level": 1,
+        "combat_id": scene["combat"]["id"],
+        "actor_combatant_id": scene["actor"]["id"],
+        "actor_version": scene["actor"]["version"],
+        "illusion_save_dc": 14,
+        "illusion_height_delta_ft": -1,
+        "illusion_body_shape": "variable",
+        "illusion_limb_arrangement": "preserve",
+        "illusion_carried_envelope": ["clothing", "armor", "weapons"],
+        "illusion_area_scope": "caster-chosen illusion envelope",
+        "idempotency_key": "round-lii-boundary",
+    }
+    stale_character = campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/preview",
+        json={**body, "character_version": body["character_version"] - 1},
+    )
+    assert stale_character.status_code == 409
+    stale_actor = campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/preview",
+        json={**body, "actor_version": body["actor_version"] + 1},
+    )
+    assert stale_actor.status_code == 409
+    assert campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/preview",
+        json={**body, "illusion_height_delta_ft": -2},
+    ).status_code == 422
+    assert campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/preview",
+        json={**body, "illusion_limb_arrangement": "change"},
+    ).status_code == 422
+    assert campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/preview",
+        json={**body, "illusion_carried_envelope": ["clothing"]},
+    ).status_code == 400
+    assert campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/preview",
+        json={**body, "illusion_area_scope": ""},
+    ).status_code == 422
+
+    assert campaign_client.post(
+        f"{scene['base']}/content-ir/runtime/preview",
+        json={**body, "runtime_id": "unbound-source-contract"},
+    ).status_code == 400
