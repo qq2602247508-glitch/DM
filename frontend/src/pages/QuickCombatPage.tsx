@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState, type ReactElement } from "react";
+import { useEffect, useMemo, useState, type ReactElement } from "react";
 
 import {
   advanceCombatTurn,
@@ -15,11 +15,13 @@ import {
   type CombatActionCommand,
   type CombatantInput,
 } from "../api/entities";
+import { listCampaigns } from "../api/campaigns";
 import { runAssistantTurn } from "../api/assistant";
 import { listCharacters, listNpcs, listScenes } from "../api/entities";
 import type { Combat, CombatAction, Combatant } from "../api/types";
 import { RequireCampaign } from "../components/RequireCampaign";
 import { SceneMap, type SceneMapToken } from "../components/SceneMap";
+import { useCurrentCampaign } from "../hooks/appContexts";
 import { useToast } from "../hooks/toastContext";
 import { soundboard } from "../ui/soundboard";
 import { Badge, Button, EmptyState, LoadingBlock } from "../ui/primitives";
@@ -44,12 +46,23 @@ const CONDITIONS_LIST = [
 function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElement {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const { selectCampaign } = useCurrentCampaign();
 
   const [selectedCombatId, setSelectedCombatId] = useState<string>("");
   const [selectedCombatantId, setSelectedCombatantId] = useState<string>("");
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [showAddCombatantModal, setShowAddCombatantModal] = useState<boolean>(false);
   const [showNewCombatModal, setShowNewCombatModal] = useState<boolean>(false);
+
+  // New combatant form
+  const [newCombatantName, setNewCombatantName] = useState<string>("");
+  const [newCombatantType, setNewCombatantType] = useState<"character" | "monster" | "npc">("monster");
+  const [newCombatantHp, setNewCombatantHp] = useState<string>("12");
+  const [newCombatantAc, setNewCombatantAc] = useState<string>("14");
+  const [newCombatantInit, setNewCombatantInit] = useState<string>("10");
+
+  // New combat form
+  const [newCombatName, setNewCombatName] = useState<string>("遭遇战：" + new Date().toLocaleTimeString());
 
   // Quick Action form states
   const [actionTargetId, setActionTargetId] = useState<string>("");
@@ -58,10 +71,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
   const [actionAttackRoll, setActionAttackRoll] = useState<string>("15");
   const [actionName, setActionName] = useState<string>("近战武器攻击");
   const [isCritical, setIsCritical] = useState<boolean>(false);
-
-  // Freeform adjustment
-  const [quickHpAmount, setQuickHpAmount] = useState<string>("5");
-  const [freeformTargetId, setFreeformTargetId] = useState<string>("");
 
   // Dice Roller
   const [diceHistory, setDiceHistory] = useState<Array<{ id: string; formula: string; result: number; rolls: number[]; isCrit?: boolean; isFumble?: boolean }>>([]);
@@ -72,6 +81,11 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
   const [aiNarrative, setAiNarrative] = useState<string>("");
 
   // Queries
+  const campaignsQuery = useQuery({
+    queryKey: ["campaigns"],
+    queryFn: ({ signal }) => listCampaigns(signal),
+  });
+
   const combatsQuery = useQuery({
     queryKey: ["combats", campaignId],
     queryFn: ({ signal }) => listCombats(campaignId, signal),
@@ -109,11 +123,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     queryFn: ({ signal }) => listNpcs(campaignId, signal),
   });
 
-  const scenesQuery = useQuery({
-    queryKey: ["scenes", campaignId],
-    queryFn: ({ signal }) => listScenes(campaignId, signal),
-  });
-
   // Sorted combatants by initiative descending
   const sortedCombatants = useMemo(() => {
     const items = [...(combatantsQuery.data ?? [])];
@@ -130,6 +139,73 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
   const selectedTargetCombatant = useMemo(() => {
     return sortedCombatants.find((c) => c.id === (actionTargetId || selectedCombatantId)) ?? null;
   }, [sortedCombatants, actionTargetId, selectedCombatantId]);
+
+  // Quick Preset Encounter Launcher
+  const createPresetEncounterMutation = useMutation({
+    mutationFn: async () => {
+      const combat = await createCombat(campaignId, {
+        name: "红落避难所前厅突袭",
+        round_number: 1,
+        status: "active",
+      });
+
+      // Add default party & monsters
+      await createCombatant(campaignId, combat.id, {
+        display_name: "圣骑士 瓦伦丁",
+        entity_type: "character",
+        hp: 28,
+        max_hp: 28,
+        armor_class: 18,
+        initiative: 17,
+        conditions: [],
+        snapshot_json: { row: 3, col: 3 },
+      });
+
+      await createCombatant(campaignId, combat.id, {
+        display_name: "游侠 艾拉",
+        entity_type: "character",
+        hp: 20,
+        max_hp: 20,
+        armor_class: 15,
+        initiative: 15,
+        conditions: [],
+        snapshot_json: { row: 4, col: 2 },
+      });
+
+      await createCombatant(campaignId, combat.id, {
+        display_name: "地精头目·裂齿",
+        entity_type: "monster",
+        hp: 21,
+        max_hp: 21,
+        armor_class: 15,
+        initiative: 14,
+        conditions: [],
+        snapshot_json: { row: 3, col: 7 },
+      });
+
+      await createCombatant(campaignId, combat.id, {
+        display_name: "地精射手 A",
+        entity_type: "monster",
+        hp: 7,
+        max_hp: 7,
+        armor_class: 13,
+        initiative: 11,
+        conditions: [],
+        snapshot_json: { row: 2, col: 8 },
+      });
+
+      return combat;
+    },
+    onSuccess: (combat) => {
+      soundboard.playNat20();
+      setSelectedCombatId(combat.id);
+      void queryClient.invalidateQueries({ queryKey: ["combats", campaignId] });
+      showToast("🚀 预设遭遇已创建并载入参战人员！", "success");
+    },
+    onError: (err) => {
+      showToast(err instanceof Error ? err.message : "创建遭遇失败", "error");
+    },
+  });
 
   // Mutations
   const advanceTurnMutation = useMutation({
@@ -252,6 +328,35 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     },
   });
 
+  const addCombatantMutation = useMutation({
+    mutationFn: async () => {
+      if (!combatId) throw new Error("请先选择或新建战斗");
+      if (!newCombatantName.trim()) throw new Error("请输入战斗员名称");
+      return createCombatant(campaignId, combatId, {
+        display_name: newCombatantName.trim(),
+        entity_type: newCombatantType,
+        hp: Number(newCombatantHp) || 10,
+        max_hp: Number(newCombatantHp) || 10,
+        armor_class: Number(newCombatantAc) || 10,
+        initiative: Number(newCombatantInit) || 10,
+        conditions: [],
+        snapshot_json: {
+          row: Math.floor(Math.random() * 5) + 2,
+          col: Math.floor(Math.random() * 8) + 2,
+        },
+      });
+    },
+    onSuccess: () => {
+      setShowAddCombatantModal(false);
+      setNewCombatantName("");
+      void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
+      showToast("👥 战斗员已加入战场！", "success");
+    },
+    onError: (err) => {
+      showToast(err instanceof Error ? err.message : "添加战斗员失败", "error");
+    },
+  });
+
   const aiTacticsMutation = useMutation({
     mutationFn: async () => {
       const summary = sortedCombatants
@@ -340,6 +445,78 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     });
   }, [sortedCombatants]);
 
+  if (combatsQuery.isLoading) {
+    return <LoadingBlock label="正在载入战役战斗数据…" />;
+  }
+
+  // If no combat exists in current campaign, provide 1-click starter combat creator
+  if (!activeCombat || (combatsQuery.data ?? []).length === 0) {
+    return (
+      <div className="mx-auto max-w-4xl p-6">
+        <div className="rounded-2xl border border-amber-500/40 bg-gradient-to-b from-ink-900 via-ink-950 to-ink-950 p-8 shadow-2xl text-center">
+          <span className="text-5xl">⚡</span>
+          <h2 className="mt-4 font-display text-2xl font-bold text-parchment-100">当前战役尚无活跃战斗遭遇</h2>
+          <p className="mt-2 text-sm text-stone-400">
+            您可以一键快速发起标准新手遭遇，或手动新建一场遭遇战并导入玩家与怪物。
+          </p>
+
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
+            <button
+              className="rounded-xl border border-amber-500/70 bg-gradient-to-r from-amber-600 to-amber-700 px-6 py-3 text-sm font-bold text-amber-950 shadow-lg shadow-amber-600/30 transition hover:brightness-110 active:scale-95 disabled:opacity-50"
+              disabled={createPresetEncounterMutation.isPending}
+              onClick={() => createPresetEncounterMutation.mutate()}
+              type="button"
+            >
+              {createPresetEncounterMutation.isPending ? "正在装载战场…" : "🚀 一键发起《红落避难所前厅突袭》（4名参战者）"}
+            </button>
+            <button
+              className="rounded-xl border border-ink-700 bg-ink-900 px-5 py-3 text-sm text-stone-300 hover:border-ink-600 hover:text-white"
+              onClick={() => setShowNewCombatModal(true)}
+              type="button"
+            >
+              ➕ 新建自定义遭遇
+            </button>
+          </div>
+        </div>
+
+        {/* New Combat Modal */}
+        {showNewCombatModal ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+            <div className="w-full max-w-md rounded-xl border border-ink-700 bg-ink-900 p-6 shadow-2xl">
+              <h3 className="font-display text-base font-bold text-parchment-100">新建遭遇战斗</h3>
+              <div className="mt-4 space-y-3">
+                <div>
+                  <label className="text-xs text-stone-400">战斗名称</label>
+                  <input
+                    className={`${inputCls} mt-1`}
+                    onChange={(e) => setNewCombatName(e.target.value)}
+                    value={newCombatName}
+                  />
+                </div>
+              </div>
+              <div className="mt-6 flex justify-end gap-2">
+                <Button onClick={() => setShowNewCombatModal(false)} variant="ghost">取消</Button>
+                <Button
+                  onClick={async () => {
+                    if (!newCombatName.trim()) return;
+                    const c = await createCombat(campaignId, { name: newCombatName.trim(), status: "active", round_number: 1 });
+                    setShowNewCombatModal(false);
+                    setSelectedCombatId(c.id);
+                    void queryClient.invalidateQueries({ queryKey: ["combats", campaignId] });
+                    showToast("遭遇战已创建！", "success");
+                  }}
+                  variant="primary"
+                >
+                  创建并进入
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <div className={`flex flex-col bg-ink-950 text-stone-200 ${isFullscreen ? "fixed inset-0 z-50 overflow-y-auto p-4" : "p-3 lg:p-5"}`}>
       {/* Top Cockpit Header */}
@@ -353,6 +530,23 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
             </div>
           </div>
 
+          {/* Campaign Selector */}
+          <div className="flex items-center gap-1.5 rounded-lg border border-ink-700 bg-ink-950/80 px-2 py-1">
+            <span className="text-2xs text-stone-400">战役:</span>
+            <select
+              className="bg-transparent text-xs text-parchment-100 outline-none"
+              onChange={(e) => selectCampaign(e.target.value)}
+              value={campaignId}
+            >
+              {(campaignsQuery.data ?? []).map((cp) => (
+                <option className="bg-ink-900 text-stone-200" key={cp.id} value={cp.id}>
+                  {cp.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Combat Selector */}
           <select
             className={`${selectCls} max-w-48 text-xs font-medium`}
             onChange={(e) => setSelectedCombatId(e.target.value)}
@@ -377,6 +571,13 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
 
         {/* Action Controls */}
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            className="rounded-lg border border-ink-700 bg-ink-800 px-2.5 py-1.5 text-xs text-stone-300 transition hover:border-amber-500/50 hover:text-amber-200"
+            onClick={() => setShowAddCombatantModal(true)}
+            type="button"
+          >
+            👥 添加参战者
+          </button>
           <button
             className="rounded-lg border border-ink-700 bg-ink-800 px-2.5 py-1.5 text-xs text-stone-300 transition hover:border-amber-500/50 hover:text-amber-200"
             onClick={() => rollInitiativesMutation.mutate()}
@@ -418,6 +619,18 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           </div>
 
           <div className="space-y-2.5 overflow-y-auto pr-1" style={{ maxHeight: "calc(100vh - 180px)" }}>
+            {sortedCombatants.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-ink-800 p-6 text-center text-xs text-stone-500">
+                当前遭遇尚无参战者
+                <button
+                  className="mt-2 block mx-auto text-amber-400 underline hover:text-amber-300"
+                  onClick={() => setShowAddCombatantModal(true)}
+                >
+                  + 添加战斗员 / 怪物
+                </button>
+              </div>
+            ) : null}
+
             {sortedCombatants.map((c) => {
               const isCurrent = currentCombatant?.id === c.id;
               const isSelected = selectedCombatantId === c.id;
@@ -834,6 +1047,79 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           </div>
         </div>
       </div>
+
+      {/* Add Combatant Modal */}
+      {showAddCombatantModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-xl border border-ink-700 bg-ink-900 p-6 shadow-2xl">
+            <h3 className="font-display text-base font-bold text-parchment-100">添加参战者 / 怪物</h3>
+            <div className="mt-4 space-y-3">
+              <div>
+                <label className="text-xs text-stone-400">战斗员名称</label>
+                <input
+                  className={`${inputCls} mt-1`}
+                  onChange={(e) => setNewCombatantName(e.target.value)}
+                  placeholder="如：地精巫师 / 守卫长"
+                  value={newCombatantName}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs text-stone-400">阵营类型</label>
+                  <select
+                    className={`${selectCls} mt-1`}
+                    onChange={(e) => setNewCombatantType(e.target.value as "character" | "monster" | "npc")}
+                    value={newCombatantType}
+                  >
+                    <option value="monster">👹 怪物 (Monster)</option>
+                    <option value="character">🛡️ 玩家角色 (PC)</option>
+                    <option value="npc">👤 NPC / 友军</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-stone-400">初始先攻</label>
+                  <input
+                    className={`${inputCls} mt-1`}
+                    onChange={(e) => setNewCombatantInit(e.target.value)}
+                    type="number"
+                    value={newCombatantInit}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs text-stone-400">生命上限 HP</label>
+                  <input
+                    className={`${inputCls} mt-1`}
+                    onChange={(e) => setNewCombatantHp(e.target.value)}
+                    type="number"
+                    value={newCombatantHp}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-stone-400">护甲等级 AC</label>
+                  <input
+                    className={`${inputCls} mt-1`}
+                    onChange={(e) => setNewCombatantAc(e.target.value)}
+                    type="number"
+                    value={newCombatantAc}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-2">
+              <Button onClick={() => setShowAddCombatantModal(false)} variant="ghost">取消</Button>
+              <Button
+                disabled={addCombatantMutation.isPending}
+                onClick={() => addCombatantMutation.mutate()}
+                variant="primary"
+              >
+                {addCombatantMutation.isPending ? "添加中…" : "加入战场"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { CampaignContext } from "../hooks/appContexts";
 import { QuickCombatPage } from "./QuickCombatPage";
 
 const mocks = vi.hoisted(() => ({
+  listCampaigns: vi.fn(),
   listCombats: vi.fn(),
   listCombatants: vi.fn(),
   listCombatActions: vi.fn(),
@@ -18,6 +19,10 @@ const mocks = vi.hoisted(() => ({
   updateCombatant: vi.fn(),
   confirmCombatAction: vi.fn(),
   runAssistantTurn: vi.fn(),
+}));
+
+vi.mock("../api/campaigns", () => ({
+  listCampaigns: mocks.listCampaigns,
 }));
 
 vi.mock("../api/entities", () => ({
@@ -58,6 +63,10 @@ function renderPage() {
 describe("QuickCombatPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
+    mocks.listCampaigns.mockResolvedValue([
+      { id: "campaign-1", name: "红落避难所战役" },
+    ]);
 
     mocks.listCombats.mockResolvedValue([
       { id: "combat-1", name: "红落避难所前厅突袭", status: "active", round_number: 2, version: 1, active_combatant_index: 0 },

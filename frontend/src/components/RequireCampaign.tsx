@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { ReactElement, ReactNode } from "react";
+import { useEffect, type ReactElement, type ReactNode } from "react";
 
 import { listCampaigns } from "../api/campaigns";
 import { useCurrentCampaign } from "../hooks/appContexts";
@@ -15,11 +15,17 @@ export function RequireCampaign({
 }: {
   children: (campaignId: string) => ReactNode;
 }): ReactElement {
-  const { campaignId } = useCurrentCampaign();
+  const { campaignId, selectCampaign } = useCurrentCampaign();
   const campaigns = useQuery({
     queryKey: ["campaigns"],
     queryFn: ({ signal }) => listCampaigns(signal),
   });
+
+  useEffect(() => {
+    if (campaignId === null && campaigns.data && campaigns.data.length > 0) {
+      selectCampaign(campaigns.data[0].id);
+    }
+  }, [campaignId, campaigns.data, selectCampaign]);
 
   if (campaigns.isLoading) {
     return <LoadingBlock />;
