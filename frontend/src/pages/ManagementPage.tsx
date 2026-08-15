@@ -28,6 +28,11 @@ import {
   classSkillSelection, spellChoiceCounts, spellChoicesComplete,
   spellIsAvailable, spellSelectionRule, spellToCharacterAction,
 } from "../ui/characterRules";
+import { previewPrepImport, confirmPrepImport } from "../api/prep";
+import { STARTER_ADVENTURE_PRESET } from "../ui/starterAdventurePreset";
+import { createClientId } from "../ui/id";
+import { soundboard } from "../ui/soundboard";
+import { useCurrentCampaign } from "../hooks/appContexts";
 
 const ABILITY_LABELS: Record<string, string> = {
   strength: "力量", dexterity: "敏捷", constitution: "体质",
@@ -1083,8 +1088,99 @@ function RowCard({ kind, campaignId, row }: { kind: EntityKind; campaignId: stri
   );
 }
 
+function StarterAdventureLoader({ onCampaignCreated }: { onCampaignCreated: (id: string) => void }): ReactElement {
+  const client = useQueryClient();
+  const { showToast } = useToast();
+  const [loading, setLoading] = useState(false);
+
+  const handleInstall = async () => {
+    try {
+      setLoading(true);
+      // 1. Create campaign
+      const newCampaign = await createCampaign({
+        name: STARTER_ADVENTURE_PRESET.title,
+        description: STARTER_ADVENTURE_PRESET.description,
+        allow_legacy: false,
+        encumbrance_mode: "standard",
+      });
+
+      // 2. Preview prep import
+      const preview = await previewPrepImport(
+        newCampaign.id,
+        STARTER_ADVENTURE_PRESET.draft,
+        "create",
+      );
+
+      // 3. Confirm prep import
+      await confirmPrepImport(newCampaign.id, {
+        draft: STARTER_ADVENTURE_PRESET.draft,
+        duplicate_strategy: "create",
+        preview_token: preview.preview_token,
+        idempotency_key: createClientId("preset"),
+      });
+
+      soundboard.playNat20();
+      showToast("🎉 官方预设模组《黄昏钟声：红落避难所》装载成功！已一键生成地点、地图、NPC、遭遇与任务！", "success");
+      void client.invalidateQueries({ queryKey: ["campaigns"] });
+      onCampaignCreated(newCampaign.id);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "模组装载失败", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="mb-6 overflow-hidden rounded-xl border border-amber-500/60 bg-gradient-to-br from-amber-950/40 via-ink-950 to-ink-900 p-5 shadow-2xl">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="rounded bg-amber-500/20 px-2 py-0.5 text-2xs font-semibold uppercase tracking-wider text-amber-300">
+              {STARTER_ADVENTURE_PRESET.tag}
+            </span>
+            <span className="text-2xs text-stone-400">
+              {STARTER_ADVENTURE_PRESET.recommendedLevel} · {STARTER_ADVENTURE_PRESET.duration}
+            </span>
+          </div>
+          <h3 className="mt-1.5 font-display text-lg font-bold text-parchment-100">
+            🌟 {STARTER_ADVENTURE_PRESET.title}
+          </h3>
+          <p className="mt-0.5 text-xs text-amber-200/90 font-medium">
+            {STARTER_ADVENTURE_PRESET.subtitle}
+          </p>
+          <p className="mt-2 text-xs leading-relaxed text-stone-300">
+            {STARTER_ADVENTURE_PRESET.description}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {STARTER_ADVENTURE_PRESET.features.map((feat, i) => (
+              <span
+                key={i}
+                className="rounded-md border border-ink-700 bg-ink-900/80 px-2.5 py-1 text-2xs text-stone-300"
+              >
+                {feat}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div className="flex shrink-0 flex-col items-end justify-center self-center">
+          <Button
+            disabled={loading}
+            loading={loading}
+            onClick={handleInstall}
+            variant="primary"
+          >
+            🚀 一键装载模组开团
+          </Button>
+          <span className="mt-1.5 text-2xs text-stone-400">自动创建战役并装载所有数据</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ManagementContent({ kind, campaignId }: { kind: EntityKind; campaignId: string | null }): ReactElement {
   const [showArchived, setShowArchived] = useState(false);
+  const { selectCampaign } = useCurrentCampaign();
   const rows = useRows(kind, campaignId);
   const meta = META[kind];
   if (kind === "characters" && campaignId) return <CharacterWorkspace campaignId={campaignId} />;
@@ -1093,6 +1189,9 @@ function ManagementContent({ kind, campaignId }: { kind: EntityKind; campaignId:
     : rows.data;
   return (
     <div className="mx-auto max-w-[1200px] p-4 lg:p-6">
+      {kind === "campaigns" ? (
+        <StarterAdventureLoader onCampaignCreated={(id) => selectCampaign(id)} />
+      ) : null}
       <Panel eyebrow={meta.eyebrow} title={`${meta.title}管理`}>
         <CreateForm campaignId={campaignId} kind={kind} onDone={() => undefined} />
       </Panel>

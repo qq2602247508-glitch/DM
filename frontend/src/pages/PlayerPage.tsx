@@ -55,6 +55,7 @@ import { Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
 import { SceneMap } from "../components/SceneMap";
 import { RuleBlockPlan } from "../components/RuleBlockPlan";
 import { PlayerEquipmentPanel } from "../components/player/PlayerEquipmentPanel";
+import { soundboard } from "../ui/soundboard";
 import { useOffline } from "../hooks/useOffline";
 import { usePlayerRealtime } from "../hooks/useRealtimeInvalidation";
 import {
@@ -830,6 +831,10 @@ function SceneGridView({
   const tokens = combat
     ? combat.combatants.flatMap((item) => {
         const position = positionOverrides?.[item.id] ?? item.position;
+        const isConcentrating = Boolean(item.conditions?.some((c: unknown) => {
+          const name = typeof c === "string" ? c : ((c as { condition_name?: string; name?: string })?.condition_name ?? (c as { name?: string })?.name ?? "");
+          return name.toLowerCase().includes("concentrat") || name.includes("专注");
+        }));
         return position ? [{
           id: item.id,
           entity_id: item.id,
@@ -839,6 +844,11 @@ function SceneGridView({
           col: position.col,
           targetKey: `combatant:${item.id}`,
           isOwn: item.is_own,
+          conditions: item.conditions as Array<string | { condition_name?: string; name?: string }>,
+          hp: item.hp,
+          max_hp: item.max_hp,
+          isConcentrating,
+          avatar_url: ((item as Record<string, unknown>).snapshot_json as Record<string, unknown> | undefined)?.avatar_url as string | null | undefined,
         }] : [];
       })
     : scene.tokens.map((item) => ({
@@ -2653,6 +2663,18 @@ function PlayerDashboard({
   const [switchCode, setSwitchCode] = useState("");
   const [restRequestSent, setRestRequestSent] = useState<"short" | "long" | null>(null);
   const [restHitDice, setRestHitDice] = useState<Record<string, string>>({});
+  const [viewingHandout, setViewingHandout] = useState<{ id: string; title: string; body: string } | null>(null);
+  const [lastHandoutCount, setLastHandoutCount] = useState<number>(snapshot.table.handouts.length);
+
+  useEffect(() => {
+    if (snapshot.table.handouts.length > lastHandoutCount) {
+      soundboard.playHandout();
+      const latest = snapshot.table.handouts[snapshot.table.handouts.length - 1];
+      if (latest) setViewingHandout(latest);
+    }
+    setLastHandoutCount(snapshot.table.handouts.length);
+  }, [snapshot.table.handouts.length, lastHandoutCount, snapshot.table.handouts]);
+
   const hitDice = snapshot.character?.hit_dice ?? [];
   const intentMutation = useMutation({ mutationFn: () => submitMyActionRequest("player_intent", intent), onSuccess: () => setIntent("") });
   const levelRequestMutation = useMutation({
@@ -2827,10 +2849,69 @@ function PlayerDashboard({
             {restRequestMutation.isError ? <p className="mb-0 mt-2 text-xs text-red-300">{restRequestMutation.error.message}</p> : null}
           </section>
           <section className={cardCls}><h2 className="mt-0 font-display text-xl">公开游戏日志</h2>{publicLog.length ? publicLog.map((event) => <article className="mb-3 border-l-2 border-amber-700 pl-3" key={event.id}><strong className="text-sm">{event.title}</strong><p className="mb-0 mt-1 text-xs text-stone-400">{event.description}</p></article>) : <p className="text-sm text-stone-500">等待 DM 推进。</p>}</section>
-          <section className={cardCls}><h2 className="mt-0 font-display text-xl">公开讲义</h2>{snapshot.table.handouts.map((handout) => <details className="mb-2 rounded border border-ink-700 p-2" key={handout.id}><summary>{handout.title}</summary><p className="whitespace-pre-wrap text-sm text-stone-400">{handout.body}</p></details>)}</section>
+          <section className={cardCls}>
+            <div className="flex items-center justify-between">
+              <h2 className="mt-0 font-display text-xl">📜 公开讲义与线索</h2>
+              <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-2xs font-medium text-amber-300">
+                {snapshot.table.handouts.length} 份
+              </span>
+            </div>
+            {snapshot.table.handouts.length > 0 ? (
+              <div className="mt-3 space-y-2">
+                {snapshot.table.handouts.map((handout) => (
+                  <button
+                    className="w-full rounded-lg border border-amber-900/60 bg-amber-950/20 p-3 text-left transition hover:border-amber-500/60 hover:bg-amber-950/40"
+                    key={handout.id}
+                    onClick={() => {
+                      soundboard.playHandout();
+                      setViewingHandout(handout);
+                    }}
+                    type="button"
+                  >
+                    <div className="flex items-center justify-between">
+                      <strong className="text-sm text-amber-200">{handout.title}</strong>
+                      <span className="text-2xs text-amber-400">点击阅读 🔍</span>
+                    </div>
+                    <p className="mt-1 line-clamp-2 text-xs text-stone-400">{handout.body}</p>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-2 text-xs text-stone-500">DM 暂未向玩家分发公开线索或道具讲义。</p>
+            )}
+          </section>
           <section className={cardCls}><h2 className="mt-0 font-display text-xl">自由行动</h2><p className="text-xs text-stone-500">规则列表没有覆盖时，仍可用自然语言告诉 DM。</p><textarea className={inputCls} onChange={(event) => setIntent(event.target.value)} placeholder="例如：我把耳朵贴在门上听里面的声音。" rows={3} value={intent} /><Button className="mt-2" disabled={!intent.trim()} loading={intentMutation.isPending} onClick={() => intentMutation.mutate()} variant="primary">提交给 DM 裁定</Button></section>
         </aside>
       </div> : null}
+
+      {/* Full-Screen Parchment Handout Modal */}
+      {viewingHandout ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="relative max-h-[85vh] w-full max-w-xl overflow-y-auto rounded-2xl border-2 border-amber-600/80 bg-gradient-to-b from-[#241c14] to-[#140f0a] p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-amber-700/50 pb-3">
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl">📜</span>
+                <h2 className="font-display text-xl font-bold text-amber-100">{viewingHandout.title}</h2>
+              </div>
+              <button
+                className="rounded-full border border-amber-700/60 px-2 py-0.5 text-xs text-stone-400 hover:text-amber-200"
+                onClick={() => setViewingHandout(null)}
+                type="button"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="mt-4 whitespace-pre-wrap font-serif text-sm leading-relaxed text-amber-100/90">
+              {viewingHandout.body}
+            </div>
+            <div className="mt-6 flex justify-end border-t border-amber-800/40 pt-3">
+              <Button onClick={() => setViewingHandout(null)} size="sm" variant="primary">
+                收起讲义
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

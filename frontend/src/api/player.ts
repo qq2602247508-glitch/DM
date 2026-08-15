@@ -16,6 +16,18 @@ export function getPlayerView(campaignId: string, signal?: AbortSignal): Promise
 export function getPlayerCharacter(campaignId: string, characterId: string, signal?: AbortSignal): Promise<PlayerCharacter> {
   return apiFetch<PlayerCharacter>(`/player/campaigns/${campaignId}/characters/${characterId}`, { signal });
 }
-export function submitPlayerAction(campaignId: string, data: { character_id: string; character_version: number; player_key: string; action_type: string; message?: string; payload_json?: Record<string, unknown>; idempotency_key: string }): Promise<Record<string, unknown>> {
-  return apiFetch(`/player/campaigns/${campaignId}/action-requests`, { method: "POST", body: data });
+export function listHandouts(campaignId: string, signal?: AbortSignal): Promise<{ items: Array<{ id: string; campaign_id: string; title: string; body: string; published: boolean; sort_order: number; version: number }> }> {
+  return apiFetch(`/campaigns/${campaignId}/handouts`, { signal });
+}
+
+export function createHandout(campaignId: string, data: { title: string; body: string; published?: boolean; sort_order?: number }): Promise<Record<string, unknown>> {
+  return apiFetch(`/campaigns/${campaignId}/handouts`, { method: "POST", body: data });
+}
+
+export function updateHandout(campaignId: string, handoutId: string, data: { title?: string; body?: string; published?: boolean; sort_order?: number; version: number }): Promise<Record<string, unknown>> {
+  return apiFetch(`/campaigns/${campaignId}/handouts/${handoutId}`, { method: "PATCH", body: data });
+}
+
+export function publishHandout(campaignId: string, title: string, body: string): Promise<Record<string, unknown>> {
+  return createHandout(campaignId, { title, body, published: true });
 }

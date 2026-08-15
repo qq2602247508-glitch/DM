@@ -11,6 +11,7 @@ import { useCampaignRealtime } from "../hooks/useRealtimeInvalidation";
 import { Icon, type IconName } from "../ui/icons";
 import { formatDateTime } from "../ui/format";
 import { StatusCluster } from "./StatusCluster";
+import { SoundboardBar } from "./SoundboardBar";
 
 const NAV_GROUPS: Array<{ label: string; items: Array<{ path: RoutePath; label: string; icon: IconName }> }> = [
   { label: "现场", items: [
@@ -200,7 +201,8 @@ export function AppShell({ children }: { children: ReactNode }): ReactElement {
             ) : null}
           </div>
 
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-3">
+            <SoundboardBar />
             <StatusCluster />
           </div>
         </header>

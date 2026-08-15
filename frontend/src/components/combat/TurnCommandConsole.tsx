@@ -59,6 +59,7 @@ import {
   type AreaSpellResolution,
 } from "../../ui/areaSpellResolution";
 import { Badge, Button } from "../../ui/primitives";
+import { soundboard } from "../../ui/soundboard";
 import { inputCls, selectCls, textareaCls } from "../../ui/styles";
 import { gridDistanceFt, type TargetingTemplate } from "../../ui/gridTargeting";
 import { monsterActionsForRules } from "../../ui/monsterRuleProfiles";
@@ -762,6 +763,11 @@ export function TurnCommandConsole({
       return confirmCombatAction(campaignId, combatId, pending.command);
     },
     onSuccess: () => {
+      if (pending?.command.action_type === "damage" || pending?.command.action_type === "heal") {
+        soundboard.playAttackHit();
+      } else {
+        soundboard.playSpellCast();
+      }
       setPending(null);
       invalidate();
       showToast("动作已由 DM 确认并写入战斗日志");
@@ -828,6 +834,7 @@ export function TurnCommandConsole({
       }
     },
     onSuccess: () => {
+      soundboard.playSpellCast();
       setPendingArea(null);
       invalidate();
       void client.invalidateQueries({ queryKey: ["characters", campaignId] });

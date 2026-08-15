@@ -34,7 +34,8 @@ def campaign_client(tmp_path: Path, monkeypatch: Any) -> Iterator[TestClient]:
     """A migrated database fixture for campaign-state integration tests."""
     database_url = f"sqlite:///{tmp_path / 'campaign.db'}"
     monkeypatch.setenv("DND_DM_DATABASE_URL", database_url)
-    command.upgrade(Config("backend/alembic.ini"), "head")
+    alembic_path = Path("alembic.ini") if Path("alembic.ini").exists() else Path("backend/alembic.ini")
+    command.upgrade(Config(str(alembic_path)), "head")
     settings = Settings(environment="test", database_url=database_url)
     with TestClient(create_app(settings)) as test_client:
         test_client.database_url = database_url  # type: ignore[attr-defined]
