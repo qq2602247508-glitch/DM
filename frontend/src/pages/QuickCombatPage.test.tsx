@@ -82,6 +82,7 @@ describe("QuickCombatPage", () => {
         armor_class: 18,
         initiative: 16,
         conditions: [],
+        snapshot_json: { actions: [] },
         version: 1,
       },
       {
@@ -93,6 +94,7 @@ describe("QuickCombatPage", () => {
         armor_class: 15,
         initiative: 12,
         conditions: ["prone"],
+        snapshot_json: { actions: [] },
         version: 1,
       },
     ]);
@@ -117,7 +119,7 @@ describe("QuickCombatPage", () => {
     });
 
     expect(screen.getByText("🎲 极速骰盘")).toBeInTheDocument();
-    expect(screen.getByText("🤖 AI 战术副驾")).toBeInTheDocument();
+    expect(screen.getByText("🤖 AI 战术军师")).toBeInTheDocument();
   });
 
   it("triggers quick HP adjustment on button click", async () => {

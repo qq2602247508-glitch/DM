@@ -389,10 +389,10 @@ export function TurnCommandConsole({
         ).map(normalizeAction)
       : monsterActionsForRules(
           active.display_name,
-          ((active.snapshot_json.actions as unknown[] | undefined) ?? [])
+          ((active.snapshot_json?.actions as unknown[] | undefined) ?? [])
             .map(normalizeAction),
         ).filter(isMonsterTurnAction),
-    [active.display_name, active.snapshot_json.actions, activeCharacter, activeIsPlayerControlled],
+    [active.display_name, active.snapshot_json?.actions, activeCharacter, activeIsPlayerControlled],
   );
   const selectedActionBase = useMemo(
     () => actions[Number(actionIndex)] ?? actions[0] ?? {

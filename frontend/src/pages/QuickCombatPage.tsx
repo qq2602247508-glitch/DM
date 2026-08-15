@@ -1,55 +1,430 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState, type ReactElement } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactElement } from "react";
 
 import {
   advanceCombatTurn,
   confirmCombatAction,
+  confirmCombatEffectSave,
+  confirmConcentrationCheck,
+  confirmDeathSave,
   createCombat,
   createCombatant,
   deleteCombatant,
   listCombatActions,
+  listCombatEffects,
   listCombatants,
   listCombats,
+  resolveCombatAttackResolution,
+  resolveCombatAttackResolutionTeleport,
+  resolveCombatBeguilingReflection,
+  resolveCombatDeflectRedirect,
+  resolveCombatPreDamageReaction,
   updateCombat,
   updateCombatant,
-  type CombatActionCommand,
-  type CombatantInput,
 } from "../api/entities";
 import { listCampaigns } from "../api/campaigns";
 import { runAssistantTurn } from "../api/assistant";
-import { listCharacters, listNpcs, listScenes } from "../api/entities";
-import type { Combat, CombatAction, Combatant } from "../api/types";
+import { listCharacters, listCompanions, listNpcs, listScenes } from "../api/entities";
+import type { Combat, CombatAction, CombatEffect, Combatant, Character, Monster, Npc, SceneGrid } from "../api/types";
 import { RequireCampaign } from "../components/RequireCampaign";
-import { SceneMap, type SceneMapToken } from "../components/SceneMap";
+import { InitiativeCardStrip } from "../components/combat/InitiativeCardStrip";
+import {
+  TurnCommandConsole,
+  type CombatTargeting,
+  type CombatTargetingValidity,
+} from "../components/combat/TurnCommandConsole";
+import { PlayerRollPanel } from "../components/combat/PlayerRollPanel";
 import { useCurrentCampaign } from "../hooks/appContexts";
 import { useToast } from "../hooks/toastContext";
 import { soundboard } from "../ui/soundboard";
 import { Badge, Button, EmptyState, LoadingBlock } from "../ui/primitives";
 import { inputCls, selectCls } from "../ui/styles";
 import { formatDateTime } from "../ui/format";
+import {
+  availableElevationLayers,
+  evaluateTargetingElevation,
+  explicitElevationFt,
+  getTargetingCells,
+  gridDistanceFt,
+  hasLineOfSight,
+  isAimPointInRange,
+  isBlockedCell,
+  type GridPoint,
+  type TargetingElevationResult,
+} from "../ui/gridTargeting";
+import {
+  movementCommitKey,
+  planApproachPath,
+  planTargetingPath,
+  planRetreatPath,
+  shortestMovementPath,
+  type MovementPlan,
+} from "../ui/combatMovement";
+import {
+  getDoorOrientation,
+  isMapVoidCell,
+  shouldShowTerrainLabel,
+  terrainCellClass,
+} from "../ui/mapPresentation";
+import {
+  chooseEnemyTarget,
+  isEnemyAiControlledCombatant,
+} from "../ui/combatAutomation";
 
-const CONDITIONS_LIST = [
-  { key: "prone", label: "倒地", icon: "🛌" },
-  { key: "stunned", label: "震慑", icon: "💫" },
-  { key: "blinded", label: "目盲", icon: "👁️" },
-  { key: "paralyzed", label: "麻痹", icon: "⚡" },
-  { key: "poisoned", label: "中毒", icon: "🧪" },
-  { key: "unconscious", label: "昏迷", icon: "💤" },
-  { key: "frightened", label: "恐惧", icon: "😱" },
-  { key: "restrained", label: "束缚", icon: "🕸️" },
-  { key: "charmed", label: "魅惑", icon: "💖" },
-  { key: "invisible", label: "隐形", icon: "👻" },
-  { key: "concentration", label: "专注", icon: "🔮" },
-  { key: "dying", label: "濒死", icon: "💀" },
-];
+type ElevationLayer = number | "unknown";
 
+function combatantElevationFt(fighter: Combatant): number | null {
+  return explicitElevationFt(
+    (fighter.snapshot_json as Record<string, unknown> | undefined)?.elevation_ft
+    ?? (fighter.snapshot_json as Record<string, unknown> | undefined)?.elevation
+  );
+}
+
+function combatantGridPosition(fighter: Combatant): [number, number] | null {
+  const snap = fighter.snapshot_json as Record<string, unknown> | undefined;
+  if (!snap) return null;
+  const pos = snap.grid_position as { row?: number; col?: number } | undefined;
+  if (pos && typeof pos.row === "number" && typeof pos.col === "number") {
+    return [pos.row, pos.col];
+  }
+  if (typeof snap.row === "number" && typeof snap.col === "number") {
+    return [snap.row, snap.col];
+  }
+  return null;
+}
+
+function elevationLayerLabel(layer: ElevationLayer): string {
+  return layer === "unknown" ? "未记录" : `${layer}尺`;
+}
+
+// ---------------------------------------------------------------------------
+// Tactical Grid Component for Quick Combat
+// ---------------------------------------------------------------------------
+function QuickBattleGrid({
+  campaignId,
+  combatId,
+  fighters,
+  activeFighterId,
+  targeting,
+  targetingActorId,
+  targetingValidity,
+  onTargetValidityChange,
+  onTargetSelect,
+  selectedTargetId,
+}: {
+  campaignId: string;
+  combatId: string;
+  fighters: Combatant[];
+  activeFighterId: string | null;
+  targeting: CombatTargeting | null;
+  targetingActorId: string | null;
+  targetingValidity: CombatTargetingValidity;
+  onTargetValidityChange: (validity: CombatTargetingValidity) => void;
+  onTargetSelect: (targetId: string) => void;
+  selectedTargetId: string;
+}): ReactElement {
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+
+  const width = 12;
+  const height = 10;
+  const cellSizeFt = 5;
+
+  const [interactionMode, setInteractionMode] = useState<"move" | "target">("move");
+  const [selectedTokenId, setSelectedTokenId] = useState<string>(activeFighterId ?? "");
+  const [aimPoint, setAimPoint] = useState<GridPoint | null>(null);
+  const [elevationLayer, setElevationLayer] = useState<ElevationLayer>(0);
+  const [fogPreview, setFogPreview] = useState<boolean>(false);
+  const [pings, setPings] = useState<Array<{ id: string; row: number; col: number }>>([]);
+
+  const activeFighter = useMemo(() => fighters.find((f) => f.id === activeFighterId) ?? null, [fighters, activeFighterId]);
+
+  // Derive fighter grid positions (with automatic fallback assignment)
+  const positions = useMemo(() => {
+    const map: Record<string, [number, number]> = {};
+    fighters.forEach((f, i) => {
+      const pos = combatantGridPosition(f);
+      if (pos) {
+        map[f.id] = pos;
+      } else {
+        const isPlayer = f.entity_type === "character";
+        const row = isPlayer ? Math.floor(i / 3) + 2 : Math.floor(i / 3) + 2;
+        const col = isPlayer ? (i % 3) + 2 : 11 - (i % 3);
+        map[f.id] = [row, col];
+      }
+    });
+    return map;
+  }, [fighters]);
+
+  const activePos = activeFighter ? positions[activeFighter.id] : null;
+  const activePosition: GridPoint | null = activePos ? { row: activePos[0], col: activePos[1] } : null;
+
+  const selectedFighter = useMemo(() => fighters.find((f) => f.id === selectedTokenId) ?? activeFighter, [fighters, selectedTokenId, activeFighter]);
+  const selectedPos = selectedFighter ? positions[selectedFighter.id] : null;
+  const selectedRemaining = selectedFighter?.movement_remaining_ft ?? selectedFighter?.speed_ft ?? 30;
+
+  // Move token mutation
+  const moveMutation = useMutation({
+    mutationFn: async ({ fighter, newRow, newCol, spentFt }: { fighter: Combatant; newRow: number; newCol: number; spentFt: number }) => {
+      const nextRemaining = Math.max(0, (fighter.movement_remaining_ft ?? fighter.speed_ft ?? 30) - spentFt);
+      const snapshot = {
+        ...(fighter.snapshot_json as Record<string, unknown> | undefined),
+        grid_position: { row: newRow, col: newCol },
+        row: newRow,
+        col: newCol,
+      };
+      return updateCombatant(
+        campaignId,
+        combatId,
+        fighter.id,
+        {
+          movement_remaining_ft: nextRemaining,
+          snapshot_json: snapshot,
+        },
+        fighter.version,
+      );
+    },
+    onSuccess: () => {
+      soundboard.playDiceRoll();
+      void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
+      showToast("🏃 单位已移动并扣减移动力！", "success");
+    },
+    onError: (err) => {
+      showToast(err instanceof Error ? err.message : "移动失败", "error");
+    },
+  });
+
+  // Calculate targeting area cells
+  const areaCells = useMemo(() => {
+    if (!targeting || !activePosition) return [];
+    const tacticalGrid: SceneGrid = { width, height, cell_size_ft: cellSizeFt, cells: [], spawn_zones: [], theme: "dungeon" };
+    return getTargetingCells(tacticalGrid, activePosition, aimPoint ?? activePosition, targeting);
+  }, [targeting, activePosition, aimPoint]);
+
+  const areaKeys = useMemo(() => new Set(areaCells.map((c) => `${c.row}:${c.col}`)), [areaCells]);
+
+  // Update targeting validity to TurnCommandConsole
+  useEffect(() => {
+    if (!targeting || !activePosition) {
+      onTargetValidityChange({
+        anchorPoint: null,
+        horizontalTargetIds: new Set(),
+        validTargetIds: new Set(),
+        missingElevationTargetIds: new Set(),
+      });
+      return;
+    }
+    const horizontalTargetIds = new Set<string>();
+    const validTargetIds = new Set<string>();
+    const missingElevationTargetIds = new Set<string>();
+
+    fighters.forEach((f) => {
+      if (f.id === targetingActorId || (f.hp ?? 0) <= 0) return;
+      const pos = positions[f.id];
+      if (!pos) return;
+      const key = `${pos[0]}:${pos[1]}`;
+      const inArea = targeting.shape === "single"
+        ? isAimPointInRange(activePosition, { row: pos[0], col: pos[1] }, targeting.rangeFt, cellSizeFt)
+        : areaKeys.has(key);
+
+      if (!inArea) return;
+      horizontalTargetIds.add(f.id);
+      validTargetIds.add(f.id);
+    });
+
+    onTargetValidityChange({
+      anchorPoint: aimPoint ?? (targeting.originSelf ? activePosition : null),
+      horizontalTargetIds,
+      validTargetIds,
+      missingElevationTargetIds,
+    });
+  }, [targeting, activePosition, aimPoint, fighters, positions, areaKeys, targetingActorId, onTargetValidityChange]);
+
+  const triggerPing = (row: number, col: number) => {
+    soundboard.playPing();
+    const id = `${Date.now()}-${Math.random()}`;
+    setPings((prev) => [...prev, { id, row, col }]);
+    showToast(`📍 战术信号已发送至 (${row}, ${col})`, "info");
+    setTimeout(() => {
+      setPings((prev) => prev.filter((p) => p.id !== id));
+    }, 2400);
+  };
+
+  return (
+    <div className="rounded-xl border border-ink-800 bg-ink-950/70 p-3 shadow-xl">
+      {/* Grid Toolbar */}
+      <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2 text-2xs">
+        <div className="flex flex-wrap items-center gap-2">
+          <strong className="text-stone-300">战术场景网格 ({width}×{height})</strong>
+          <span className="text-stone-500">每格 5 尺</span>
+          {interactionMode === "move" && selectedFighter ? (
+            <span className="rounded bg-emerald-950/60 border border-emerald-700/50 px-2 py-0.5 text-emerald-300 font-medium">
+              🏃 剩余移动力: {selectedRemaining} 尺
+            </span>
+          ) : null}
+          {targeting ? (
+            <span className="rounded bg-sky-950/60 border border-sky-700/50 px-2 py-0.5 text-sky-300 font-medium">
+              🔮 施法指示: {targeting.label} ({targeting.rangeFt}尺)
+            </span>
+          ) : null}
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <div className="flex rounded-lg border border-ink-700 bg-ink-900 p-0.5">
+            <button
+              className={`rounded px-2 py-1 text-2xs transition ${interactionMode === "move" ? "bg-amber-600 font-bold text-amber-950" : "text-stone-400 hover:text-stone-200"}`}
+              onClick={() => setInteractionMode("move")}
+              type="button"
+            >
+              🏃 移动模式
+            </button>
+            <button
+              className={`rounded px-2 py-1 text-2xs transition ${interactionMode === "target" ? "bg-sky-600 font-bold text-sky-950" : "text-stone-400 hover:text-stone-200"}`}
+              onClick={() => setInteractionMode("target")}
+              type="button"
+            >
+              🔮 技能/法术瞄准
+            </button>
+          </div>
+          <button
+            className="rounded border border-ink-700 bg-ink-900 px-2 py-1 text-2xs text-stone-400 hover:text-stone-200"
+            onClick={() => setFogPreview(!fogPreview)}
+            type="button"
+          >
+            迷雾: {fogPreview ? "开启" : "关闭"}
+          </button>
+        </div>
+      </div>
+
+      {/* Grid Canvas */}
+      <div className="overflow-auto rounded-lg border border-ink-800 bg-ink-950 p-2">
+        <div
+          className="grid gap-px bg-ink-800 min-w-[560px]"
+          style={{ gridTemplateColumns: `repeat(${width}, minmax(36px, 1fr))` }}
+        >
+          {Array.from({ length: height }, (_, r) =>
+            Array.from({ length: width }, (_, c) => {
+              const row = r + 1;
+              const col = c + 1;
+              const point = { row, col };
+              const fighter = fighters.find((f) => positions[f.id]?.[0] === row && positions[f.id]?.[1] === col);
+              const isSelected = selectedTokenId === fighter?.id;
+              const isActive = activeFighterId === fighter?.id;
+              const isTarget = selectedTargetId === fighter?.id;
+
+              // Movement reachability
+              const distFromSelected = selectedPos
+                ? gridDistanceFt({ row: selectedPos[0], col: selectedPos[1] }, point, cellSizeFt)
+                : null;
+              const canMoveHere = interactionMode === "move" && selectedFighter && !fighter && distFromSelected !== null && distFromSelected <= selectedRemaining;
+
+              // Targeting reachability
+              const inCastRange = targeting && activePosition
+                ? isAimPointInRange(activePosition, point, targeting.rangeFt, cellSizeFt)
+                : false;
+              const isAreaAffected = areaKeys.has(`${row}:${col}`);
+              const hasPing = pings.some((p) => p.row === row && p.col === col);
+
+              return (
+                <button
+                  className={`relative aspect-square border border-ink-800/80 p-0.5 text-2xs transition-all duration-150 ${
+                    canMoveHere ? "bg-emerald-950/40 ring-1 ring-inset ring-emerald-500/50 hover:bg-emerald-900/60 cursor-pointer" : ""
+                  } ${inCastRange && interactionMode === "target" ? "bg-sky-950/40 ring-1 ring-inset ring-sky-500/40" : ""} ${
+                    isAreaAffected && interactionMode === "target" ? "!bg-fuchsia-950/70 !ring-2 !ring-inset !ring-fuchsia-400" : ""
+                  } ${fighter ? "cursor-pointer" : "bg-ink-900/60 hover:bg-ink-800/40"}`}
+                  key={`${row}-${col}`}
+                  onClick={() => {
+                    if (fighter) {
+                      setSelectedTokenId(fighter.id);
+                      onTargetSelect(fighter.id);
+                    } else if (canMoveHere && selectedFighter && distFromSelected !== null) {
+                      moveMutation.mutate({
+                        fighter: selectedFighter,
+                        newRow: row,
+                        newCol: col,
+                        spentFt: distFromSelected,
+                      });
+                    }
+                    if (interactionMode === "target" && inCastRange) {
+                      setAimPoint(point);
+                    }
+                  }}
+                  onDoubleClick={(e) => {
+                    e.preventDefault();
+                    triggerPing(row, col);
+                  }}
+                  title={fighter ? `${fighter.display_name} (HP: ${fighter.hp}/${fighter.max_hp})` : `坐标 (${row}, ${col})`}
+                  type="button"
+                >
+                  {/* Ping Animation Waves */}
+                  {hasPing ? (
+                    <span className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center">
+                      <span className="absolute h-8 w-8 rounded-full border-2 border-amber-400 bg-amber-400/30 animate-ping" />
+                      <span className="absolute h-3 w-3 rounded-full bg-amber-300 shadow-[0_0_8px_rgba(251,191,36,1)]" />
+                    </span>
+                  ) : null}
+
+                  {/* Move Range Highlight Dot */}
+                  {canMoveHere && !fighter ? (
+                    <span className="absolute inset-0 flex items-center justify-center">
+                      <span className="h-2 w-2 rounded-full bg-emerald-400/60" />
+                    </span>
+                  ) : null}
+
+                  {/* Token Rendering */}
+                  {fighter ? (
+                    <div
+                      className={`flex h-full w-full flex-col items-center justify-center rounded-lg p-0.5 text-center leading-none shadow-md transition-all ${
+                        isActive
+                          ? "ring-2 ring-amber-400 bg-gradient-to-br from-amber-500/30 to-ink-900"
+                          : isTarget
+                            ? "ring-2 ring-emerald-400 bg-emerald-950/60"
+                            : isSelected
+                              ? "ring-1 ring-sky-400 bg-sky-950/40"
+                              : fighter.entity_type === "character"
+                                ? "bg-sky-950/60 border border-sky-700/50"
+                                : fighter.entity_type === "npc"
+                                  ? "bg-violet-950/60 border border-violet-700/50"
+                                  : "bg-red-950/60 border border-red-700/50"
+                      }`}
+                    >
+                      <span className="truncate font-bold text-[10px] text-parchment-100">
+                        {fighter.display_name?.slice(0, 3)}
+                      </span>
+                      <span className="mt-0.5 text-[8px] font-mono text-stone-400">
+                        {fighter.hp}/{fighter.max_hp}
+                      </span>
+                    </div>
+                  ) : null}
+                </button>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main Quick Combat Cockpit Page
+// ---------------------------------------------------------------------------
 function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElement {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const { selectCampaign } = useCurrentCampaign();
 
   const [selectedCombatId, setSelectedCombatId] = useState<string>("");
-  const [selectedCombatantId, setSelectedCombatantId] = useState<string>("");
+  const [selectedMapTargetId, setSelectedMapTargetId] = useState<string>("");
+  const [targetingRange, setTargetingRange] = useState<CombatTargeting | null>(null);
+  const [targetingActorId, setTargetingActorId] = useState<string | null>(null);
+  const [targetingValidity, setTargetingValidity] = useState<CombatTargetingValidity>({
+    anchorPoint: null,
+    horizontalTargetIds: new Set(),
+    validTargetIds: new Set(),
+    missingElevationTargetIds: new Set(),
+  });
+  const [autoEnemies, setAutoEnemies] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [showAddCombatantModal, setShowAddCombatantModal] = useState<boolean>(false);
   const [showNewCombatModal, setShowNewCombatModal] = useState<boolean>(false);
@@ -61,22 +436,11 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
   const [newCombatantAc, setNewCombatantAc] = useState<string>("14");
   const [newCombatantInit, setNewCombatantInit] = useState<string>("10");
 
-  // New combat form
-  const [newCombatName, setNewCombatName] = useState<string>("遭遇战：" + new Date().toLocaleTimeString());
-
-  // Quick Action form states
-  const [actionTargetId, setActionTargetId] = useState<string>("");
-  const [actionDamageAmount, setActionDamageAmount] = useState<string>("6");
-  const [actionDamageType, setActionDamageType] = useState<string>("slashing");
-  const [actionAttackRoll, setActionAttackRoll] = useState<string>("15");
-  const [actionName, setActionName] = useState<string>("近战武器攻击");
-  const [isCritical, setIsCritical] = useState<boolean>(false);
-
-  // Dice Roller
+  // Dice Roller states
   const [diceHistory, setDiceHistory] = useState<Array<{ id: string; formula: string; result: number; rolls: number[]; isCrit?: boolean; isFumble?: boolean }>>([]);
   const [customDiceMod, setCustomDiceMod] = useState<string>("3");
 
-  // AI Guidance
+  // AI Guidance states
   const [aiAnalysis, setAiAnalysis] = useState<string>("");
   const [aiNarrative, setAiNarrative] = useState<string>("");
 
@@ -113,101 +477,42 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     refetchInterval: 3000,
   });
 
+  const effectsQuery = useQuery({
+    queryKey: ["combat-effects", campaignId, combatId],
+    queryFn: ({ signal }) => (combatId ? listCombatEffects(campaignId, combatId, signal) : Promise.resolve([])),
+    enabled: Boolean(combatId),
+    refetchInterval: 3000,
+  });
+
   const charactersQuery = useQuery({
     queryKey: ["characters", campaignId],
     queryFn: ({ signal }) => listCharacters(campaignId, signal),
   });
 
-  const npcsQuery = useQuery({
-    queryKey: ["npcs", campaignId],
-    queryFn: ({ signal }) => listNpcs(campaignId, signal),
-  });
-
-  // Sorted combatants by initiative descending
-  const sortedCombatants = useMemo(() => {
+  // Ordered combatants
+  const ordered = useMemo(() => {
     const items = [...(combatantsQuery.data ?? [])];
     return items.sort((a, b) => (b.initiative ?? 0) - (a.initiative ?? 0));
   }, [combatantsQuery.data]);
 
-  // Active turn combatant
-  const currentCombatant = useMemo(() => {
-    if (!sortedCombatants.length) return null;
-    const activeIndex = (activeCombat?.active_combatant_index ?? 0) % sortedCombatants.length;
-    return sortedCombatants[activeIndex] ?? sortedCombatants[0] ?? null;
-  }, [sortedCombatants, activeCombat?.active_combatant_index]);
+  // Active Fighter
+  const activeFighter = useMemo(() => {
+    if (!ordered.length) return null;
+    const index = (activeCombat?.current_turn_index ?? activeCombat?.active_combatant_index ?? 0) % ordered.length;
+    return ordered[index] ?? ordered[0] ?? null;
+  }, [ordered, activeCombat?.current_turn_index, activeCombat?.active_combatant_index]);
 
-  const selectedTargetCombatant = useMemo(() => {
-    return sortedCombatants.find((c) => c.id === (actionTargetId || selectedCombatantId)) ?? null;
-  }, [sortedCombatants, actionTargetId, selectedCombatantId]);
+  const activeCharacter = useMemo(() => {
+    if (!activeFighter || activeFighter.entity_type !== "character") return undefined;
+    return (charactersQuery.data ?? []).find((c) => c.id === activeFighter.entity_id);
+  }, [activeFighter, charactersQuery.data]);
 
-  // Quick Preset Encounter Launcher
-  const createPresetEncounterMutation = useMutation({
-    mutationFn: async () => {
-      const combat = await createCombat(campaignId, {
-        name: "红落避难所前厅突袭",
-        round_number: 1,
-        status: "active",
-      });
+  // Pending Reactions & Prompts
+  const latestAction = (actionsQuery.data ?? [])[0] ?? null;
+  const attackResolutionWindows = (actionsQuery.data ?? []).filter((a) => a.action_type === "attack_resolution_window" && a.status === "pending");
+  const preDamageWindows = (actionsQuery.data ?? []).filter((a) => a.action_type === "pre_damage_reaction_window" && a.status === "pending");
 
-      // Add default party & monsters
-      await createCombatant(campaignId, combat.id, {
-        display_name: "圣骑士 瓦伦丁",
-        entity_type: "character",
-        hp: 28,
-        max_hp: 28,
-        armor_class: 18,
-        initiative: 17,
-        conditions: [],
-        snapshot_json: { row: 3, col: 3 },
-      });
-
-      await createCombatant(campaignId, combat.id, {
-        display_name: "游侠 艾拉",
-        entity_type: "character",
-        hp: 20,
-        max_hp: 20,
-        armor_class: 15,
-        initiative: 15,
-        conditions: [],
-        snapshot_json: { row: 4, col: 2 },
-      });
-
-      await createCombatant(campaignId, combat.id, {
-        display_name: "地精头目·裂齿",
-        entity_type: "monster",
-        hp: 21,
-        max_hp: 21,
-        armor_class: 15,
-        initiative: 14,
-        conditions: [],
-        snapshot_json: { row: 3, col: 7 },
-      });
-
-      await createCombatant(campaignId, combat.id, {
-        display_name: "地精射手 A",
-        entity_type: "monster",
-        hp: 7,
-        max_hp: 7,
-        armor_class: 13,
-        initiative: 11,
-        conditions: [],
-        snapshot_json: { row: 2, col: 8 },
-      });
-
-      return combat;
-    },
-    onSuccess: (combat) => {
-      soundboard.playNat20();
-      setSelectedCombatId(combat.id);
-      void queryClient.invalidateQueries({ queryKey: ["combats", campaignId] });
-      showToast("🚀 预设遭遇已创建并载入参战人员！", "success");
-    },
-    onError: (err) => {
-      showToast(err instanceof Error ? err.message : "创建遭遇失败", "error");
-    },
-  });
-
-  // Mutations
+  // Advance Turn mutation
   const advanceTurnMutation = useMutation({
     mutationFn: async () => {
       if (!activeCombat) throw new Error("没有活跃的战斗");
@@ -224,10 +529,11 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     },
   });
 
+  // Quick Roll All Initiatives
   const rollInitiativesMutation = useMutation({
     mutationFn: async () => {
-      if (!sortedCombatants.length) return;
-      for (const combatant of sortedCombatants) {
+      if (!ordered.length) return;
+      for (const combatant of ordered) {
         const d20 = Math.floor(Math.random() * 20) + 1;
         const dexMod = Math.floor(((combatant.armor_class ?? 10) - 10) / 2);
         const total = d20 + dexMod;
@@ -247,6 +553,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     },
   });
 
+  // Quick HP adjust mutation
   const quickHpAdjustMutation = useMutation({
     mutationFn: async ({ combatant, delta }: { combatant: Combatant; delta: number }) => {
       const currentHp = combatant.hp ?? 0;
@@ -267,67 +574,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     },
   });
 
-  const toggleConditionMutation = useMutation({
-    mutationFn: async ({ combatant, condKey }: { combatant: Combatant; condKey: string }) => {
-      const existing = (combatant.conditions ?? []) as Array<string | { name?: string; condition_name?: string }>;
-      const exists = existing.some((c) => (typeof c === "string" ? c : c?.name ?? c?.condition_name) === condKey);
-      const nextConditions = exists
-        ? existing.filter((c) => (typeof c === "string" ? c : c?.name ?? c?.condition_name) !== condKey)
-        : [...existing, condKey];
-
-      return updateCombatant(
-        campaignId,
-        combatId,
-        combatant.id,
-        { conditions: nextConditions },
-        combatant.version,
-      );
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
-    },
-  });
-
-  const executeActionMutation = useMutation({
-    mutationFn: async () => {
-      if (!selectedTargetCombatant) throw new Error("请选择目标战斗员");
-      const dmg = Number(actionDamageAmount) || 0;
-      const finalDmg = isCritical ? dmg * 2 : dmg;
-
-      const command: CombatActionCommand = {
-        action_type: "damage",
-        target_combatant_id: selectedTargetCombatant.id,
-        target_version: selectedTargetCombatant.version,
-        actor_combatant_id: currentCombatant?.id,
-        actor_version: currentCombatant?.version,
-        action_cost: "action",
-        action_name: actionName,
-        amount: finalDmg,
-        damage_type: actionDamageType,
-        is_attack: true,
-        attack_roll_total: Number(actionAttackRoll) || null,
-        critical_hit: isCritical,
-        resolution_note: `${currentCombatant?.display_name ?? "攻击者"} 对 ${selectedTargetCombatant.display_name} 发动 ${actionName}，造成 ${finalDmg} 点 ${actionDamageType} 伤害${isCritical ? "（💥暴击！）" : ""}`,
-      };
-
-      return confirmCombatAction(campaignId, combatId, command);
-    },
-    onSuccess: () => {
-      if (isCritical) {
-        soundboard.playNat20();
-      } else {
-        soundboard.playAttackHit();
-      }
-      void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
-      void queryClient.invalidateQueries({ queryKey: ["combat-actions", campaignId, combatId] });
-      showToast("⚔️ 动作已执行并写入战斗日志！", "success");
-      setIsCritical(false);
-    },
-    onError: (err) => {
-      showToast(err instanceof Error ? err.message : "执行失败", "error");
-    },
-  });
-
+  // Add Combatant mutation
   const addCombatantMutation = useMutation({
     mutationFn: async () => {
       if (!combatId) throw new Error("请先选择或新建战斗");
@@ -352,17 +599,15 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
       void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
       showToast("👥 战斗员已加入战场！", "success");
     },
-    onError: (err) => {
-      showToast(err instanceof Error ? err.message : "添加战斗员失败", "error");
-    },
   });
 
+  // AI Guidance
   const aiTacticsMutation = useMutation({
     mutationFn: async () => {
-      const summary = sortedCombatants
+      const summary = ordered
         .map((c) => `- ${c.display_name} (${c.entity_type}): HP ${c.hp}/${c.max_hp}, AC ${c.armor_class}, 先攻 ${c.initiative}`)
         .join("\n");
-      const prompt = `当前战斗第 ${activeCombat?.round_number ?? 1} 轮，轮到 [${currentCombatant?.display_name ?? "当前行动者"}] 行动。\n参战人员状态如下：\n${summary}\n\n请作为资深 D&D 5e 战术军师，给出简明扼要的战术决策建议（包括推荐攻击目标、走位、法术使用与附赠动作搭配，100字左右）。`;
+      const prompt = `当前战斗第 ${activeCombat?.round_number ?? 1} 轮，轮到 [${activeFighter?.display_name ?? "当前行动者"}] 行动。\n参战人员状态如下：\n${summary}\n\n请作为资深 D&D 5e 战术军师，给出简明扼要的战术决策建议（包括推荐攻击目标、走位、法术使用与附赠动作搭配，100字左右）。`;
       const res = await runAssistantTurn(campaignId, prompt, { mode: "combat" });
       return res.dm_hint?.text ?? "未能生成战术建议";
     },
@@ -390,7 +635,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     },
   });
 
-  // Roll Dice helper
+  // Roll dice
   const rollDice = (sides: number, count = 1) => {
     soundboard.playDiceRoll();
     const mod = Number(customDiceMod) || 0;
@@ -419,37 +664,11 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     setDiceHistory((prev) => [entry, ...prev.slice(0, 9)]);
   };
 
-  // Convert combatants to SceneMapToken list
-  const sceneTokens: SceneMapToken[] = useMemo(() => {
-    return sortedCombatants.map((c, i) => {
-      const conditions = (c.conditions ?? []) as Array<string | { name?: string; condition_name?: string }>;
-      const isConcentrating = conditions.some((cond) => {
-        const name = typeof cond === "string" ? cond : cond?.name ?? cond?.condition_name ?? "";
-        return name.toLowerCase().includes("concentrat") || name.includes("专注");
-      });
-      return {
-        id: c.id,
-        entity_id: c.entity_id,
-        entity_type: c.entity_type ?? "monster",
-        label: c.display_name ?? `战斗员 ${i + 1}`,
-        row: (c.snapshot_json as Record<string, unknown> | undefined)?.row as number ?? Math.floor(i / 6) + 2,
-        col: (c.snapshot_json as Record<string, unknown> | undefined)?.col as number ?? (i % 6) + 2,
-        targetKey: `combatant:${c.id}`,
-        isOwn: c.entity_type === "character",
-        conditions,
-        hp: c.hp ?? 10,
-        max_hp: c.max_hp ?? 10,
-        isConcentrating,
-        avatar_url: (c.snapshot_json as Record<string, unknown> | undefined)?.avatar_url as string | null | undefined,
-      };
-    });
-  }, [sortedCombatants]);
-
   if (combatsQuery.isLoading) {
     return <LoadingBlock label="正在载入战役战斗数据…" />;
   }
 
-  // If no combat exists in current campaign, provide 1-click starter combat creator
+  // 1-Click Starter Encounter Loader when no combat is active
   if (!activeCombat || (combatsQuery.data ?? []).length === 0) {
     return (
       <div className="mx-auto max-w-4xl p-6">
@@ -462,57 +681,24 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
 
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <button
-              className="rounded-xl border border-amber-500/70 bg-gradient-to-r from-amber-600 to-amber-700 px-6 py-3 text-sm font-bold text-amber-950 shadow-lg shadow-amber-600/30 transition hover:brightness-110 active:scale-95 disabled:opacity-50"
-              disabled={createPresetEncounterMutation.isPending}
-              onClick={() => createPresetEncounterMutation.mutate()}
+              className="rounded-xl border border-amber-500/70 bg-gradient-to-r from-amber-600 to-amber-700 px-6 py-3 text-sm font-bold text-amber-950 shadow-lg shadow-amber-600/30 transition hover:brightness-110 active:scale-95"
+              onClick={async () => {
+                const combat = await createCombat(campaignId, { name: "红落避难所前厅突袭", round_number: 1, status: "active" });
+                await createCombatant(campaignId, combat.id, { display_name: "圣骑士 瓦伦丁", entity_type: "character", hp: 28, max_hp: 28, armor_class: 18, initiative: 17, conditions: [], snapshot_json: { row: 3, col: 3 } });
+                await createCombatant(campaignId, combat.id, { display_name: "游侠 艾拉", entity_type: "character", hp: 20, max_hp: 20, armor_class: 15, initiative: 15, conditions: [], snapshot_json: { row: 4, col: 2 } });
+                await createCombatant(campaignId, combat.id, { display_name: "地精头目·裂齿", entity_type: "monster", hp: 21, max_hp: 21, armor_class: 15, initiative: 14, conditions: [], snapshot_json: { row: 3, col: 7 } });
+                await createCombatant(campaignId, combat.id, { display_name: "地精射手 A", entity_type: "monster", hp: 7, max_hp: 7, armor_class: 13, initiative: 11, conditions: [], snapshot_json: { row: 2, col: 8 } });
+                soundboard.playNat20();
+                setSelectedCombatId(combat.id);
+                void queryClient.invalidateQueries({ queryKey: ["combats", campaignId] });
+                showToast("🚀 预设遭遇已创建并载入参战人员！", "success");
+              }}
               type="button"
             >
-              {createPresetEncounterMutation.isPending ? "正在装载战场…" : "🚀 一键发起《红落避难所前厅突袭》（4名参战者）"}
-            </button>
-            <button
-              className="rounded-xl border border-ink-700 bg-ink-900 px-5 py-3 text-sm text-stone-300 hover:border-ink-600 hover:text-white"
-              onClick={() => setShowNewCombatModal(true)}
-              type="button"
-            >
-              ➕ 新建自定义遭遇
+              🚀 一键发起《红落避难所前厅突袭》（4名参战者）
             </button>
           </div>
         </div>
-
-        {/* New Combat Modal */}
-        {showNewCombatModal ? (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-            <div className="w-full max-w-md rounded-xl border border-ink-700 bg-ink-900 p-6 shadow-2xl">
-              <h3 className="font-display text-base font-bold text-parchment-100">新建遭遇战斗</h3>
-              <div className="mt-4 space-y-3">
-                <div>
-                  <label className="text-xs text-stone-400">战斗名称</label>
-                  <input
-                    className={`${inputCls} mt-1`}
-                    onChange={(e) => setNewCombatName(e.target.value)}
-                    value={newCombatName}
-                  />
-                </div>
-              </div>
-              <div className="mt-6 flex justify-end gap-2">
-                <Button onClick={() => setShowNewCombatModal(false)} variant="ghost">取消</Button>
-                <Button
-                  onClick={async () => {
-                    if (!newCombatName.trim()) return;
-                    const c = await createCombat(campaignId, { name: newCombatName.trim(), status: "active", round_number: 1 });
-                    setShowNewCombatModal(false);
-                    setSelectedCombatId(c.id);
-                    void queryClient.invalidateQueries({ queryKey: ["combats", campaignId] });
-                    showToast("遭遇战已创建！", "success");
-                  }}
-                  variant="primary"
-                >
-                  创建并进入
-                </Button>
-              </div>
-            </div>
-          </div>
-        ) : null}
       </div>
     );
   }
@@ -520,13 +706,13 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
   return (
     <div className={`flex flex-col bg-ink-950 text-stone-200 ${isFullscreen ? "fixed inset-0 z-50 overflow-y-auto p-4" : "p-3 lg:p-5"}`}>
       {/* Top Cockpit Header */}
-      <header className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink-700/80 bg-ink-900/90 p-3.5 shadow-xl backdrop-blur-md">
+      <header className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink-700/80 bg-ink-900/90 p-3 shadow-xl backdrop-blur-md">
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
             <span className="text-2xl">⚡</span>
             <div>
               <h1 className="font-display text-lg font-bold text-parchment-100">快捷战斗座舱 (Quick Combat)</h1>
-              <p className="text-2xs text-stone-400">独立极速查看与裁定 · 直连实时数据库</p>
+              <p className="text-2xs text-stone-400">全规则积木 · 753法术位 · 移动距离与范围 · 实时抗性与借机反应</p>
             </div>
           </div>
 
@@ -564,7 +750,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
               <span className="font-bold text-amber-300">第 {activeCombat.round_number} 轮</span>
               <span className="text-stone-500">|</span>
               <span className="text-stone-300">当前回合:</span>
-              <strong className="text-amber-200">{currentCombatant?.display_name ?? "未指定"}</strong>
+              <strong className="text-amber-200">{activeFighter?.display_name ?? "未指定"}</strong>
             </div>
           ) : null}
         </div>
@@ -581,7 +767,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           <button
             className="rounded-lg border border-ink-700 bg-ink-800 px-2.5 py-1.5 text-xs text-stone-300 transition hover:border-amber-500/50 hover:text-amber-200"
             onClick={() => rollInitiativesMutation.mutate()}
-            title="为当前所有参战者重掷 d20 先攻"
             type="button"
           >
             🎲 全员先攻
@@ -604,445 +789,234 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
         </div>
       </header>
 
-      {/* Main 3-Column Tactical Cockpit Layout */}
+      {/* Reaction Windows / Pause Alerts */}
+      {attackResolutionWindows.length > 0 ? (
+        <div className="mb-3 rounded-xl border border-violet-600/70 bg-violet-950/40 p-3 text-xs text-violet-100 flex flex-wrap items-center justify-between gap-2 shadow-lg">
+          <div>
+            <strong className="text-violet-300">⚡ 攻击决议反应窗口 (Reaction Window)</strong>
+            <p className="mt-0.5 text-2xs text-stone-300">
+              攻击已初步命中，伤害未落地。可使用闪避、护盾术或防御特性截击！
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => resolveCombatAttackResolution(campaignId, combatId, attackResolutionWindows[0].id, attackResolutionWindows[0].version, "accept", "shield")}
+              size="sm"
+              variant="primary"
+            >
+              🛡️ 发动反应截击
+            </Button>
+            <Button
+              onClick={() => resolveCombatAttackResolution(campaignId, combatId, attackResolutionWindows[0].id, attackResolutionWindows[0].version, "reject", "shield")}
+              size="sm"
+              variant="ghost"
+            >
+              放弃反应
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Top Initiative Card Strip */}
+      {ordered.length > 0 ? (
+        <div className="mb-3">
+          <InitiativeCardStrip
+            currentIndex={activeCombat?.current_turn_index ?? activeCombat?.active_combatant_index ?? 0}
+            fighters={ordered}
+          />
+        </div>
+      ) : null}
+
+      {/* Main 2-Column Cockpit Layout: Tactical Map (Left) + Turn Console & AI (Right) */}
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-12">
-        {/* Left Column: 🎯 先攻与战斗员状态栏 (4 Cols) */}
-        <div className="flex flex-col gap-3 lg:col-span-4">
-          <div className="flex items-center justify-between rounded-t-xl border-b border-ink-800 bg-ink-900/60 px-3.5 py-2.5">
-            <div className="flex items-center gap-2">
-              <span className="text-base">🎯</span>
-              <strong className="text-xs font-semibold uppercase tracking-wider text-parchment-200">
-                先攻顺位与战斗员 ({sortedCombatants.length})
-              </strong>
-            </div>
-            <span className="text-2xs text-stone-500">点击卡片选定目标</span>
-          </div>
+        {/* Left Column: 🗺️ 战术地图与移动距离范围 (6 Cols) */}
+        <div className="flex flex-col gap-3 lg:col-span-6">
+          <QuickBattleGrid
+            activeFighterId={activeFighter?.id ?? null}
+            campaignId={campaignId}
+            combatId={combatId}
+            fighters={ordered}
+            onTargetSelect={(id) => setSelectedMapTargetId(id)}
+            onTargetValidityChange={(v) => setTargetingValidity(v)}
+            selectedTargetId={selectedMapTargetId}
+            targeting={targetingRange}
+            targetingActorId={targetingActorId}
+            targetingValidity={targetingValidity}
+          />
 
-          <div className="space-y-2.5 overflow-y-auto pr-1" style={{ maxHeight: "calc(100vh - 180px)" }}>
-            {sortedCombatants.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-ink-800 p-6 text-center text-xs text-stone-500">
-                当前遭遇尚无参战者
-                <button
-                  className="mt-2 block mx-auto text-amber-400 underline hover:text-amber-300"
-                  onClick={() => setShowAddCombatantModal(true)}
-                >
-                  + 添加战斗员 / 怪物
-                </button>
-              </div>
-            ) : null}
-
-            {sortedCombatants.map((c) => {
-              const isCurrent = currentCombatant?.id === c.id;
-              const isSelected = selectedCombatantId === c.id;
-              const hpPct = Math.max(0, Math.min(100, ((c.hp ?? 0) / (c.max_hp ?? 10)) * 100));
-              const conditions = (c.conditions ?? []) as Array<string | { name?: string; condition_name?: string }>;
-
-              return (
-                <div
-                  className={`relative rounded-xl border p-3 transition-all ${
-                    isCurrent
-                      ? "border-amber-500 bg-gradient-to-r from-amber-950/40 via-ink-900 to-ink-900 shadow-lg shadow-amber-500/10 ring-1 ring-amber-400/50"
-                      : isSelected
-                        ? "border-sky-500 bg-sky-950/20"
-                        : "border-ink-800/80 bg-ink-900/50 hover:border-ink-700"
-                  }`}
-                  key={c.id}
-                  onClick={() => {
-                    setSelectedCombatantId(c.id);
-                    setActionTargetId(c.id);
-                  }}
-                >
-                  {/* Top line: Avatar / Name / Initiative */}
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span
-                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                          c.entity_type === "character"
-                            ? "bg-sky-500/20 text-sky-300 border border-sky-500/40"
-                            : c.entity_type === "npc"
-                              ? "bg-violet-500/20 text-violet-300 border border-violet-500/40"
-                              : "bg-red-500/20 text-red-300 border border-red-500/40"
-                        }`}
-                      >
-                        {c.display_name?.slice(0, 1) ?? "战"}
-                      </span>
-                      <strong className="truncate text-sm text-parchment-100">{c.display_name}</strong>
-                      {isCurrent ? (
-                        <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-bold text-amber-300 animate-pulse">
-                          行动中
-                        </span>
-                      ) : null}
-                    </div>
-
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="rounded border border-ink-700 bg-ink-950 px-2 py-0.5 font-mono text-xs text-amber-200">
-                        ⚡ {c.initiative ?? "—"}
-                      </span>
-                      <span className="rounded border border-ink-800 bg-ink-950/60 px-1.5 py-0.5 font-mono text-2xs text-stone-400">
-                        🛡️ AC {c.armor_class ?? 10}
-                      </span>
-                    </div>
+          {/* Quick HP Adjustment Strip for All Fighters */}
+          <div className="rounded-xl border border-ink-800 bg-ink-900/60 p-3 shadow-md">
+            <span className="text-2xs font-semibold uppercase tracking-wider text-parchment-200">
+              ⚡ 快速生命值微调器 (DM HP Adjuster)
+            </span>
+            <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {ordered.slice(0, 6).map((f) => (
+                <div className="flex items-center justify-between rounded-lg border border-ink-800 bg-ink-950/60 p-2 text-2xs" key={f.id}>
+                  <div className="min-w-0 pr-2">
+                    <strong className="truncate block text-stone-200">{f.display_name}</strong>
+                    <span className="text-stone-400">HP: {f.hp}/{f.max_hp}</span>
                   </div>
-
-                  {/* HP Progress Bar & Quick Adjustments */}
-                  <div className="mt-2.5">
-                    <div className="flex items-center justify-between text-2xs">
-                      <span className="text-stone-400">生命值 HP</span>
-                      <strong className={hpPct > 50 ? "text-emerald-300" : hpPct > 20 ? "text-amber-300" : "text-rose-400"}>
-                        {c.hp ?? 0} / {c.max_hp ?? 10}
-                      </strong>
-                    </div>
-                    <div className="mt-1 h-2 overflow-hidden rounded-full bg-ink-950 border border-ink-800">
-                      <div
-                        className={`h-full transition-all duration-300 ${
-                          hpPct > 50 ? "bg-emerald-500" : hpPct > 20 ? "bg-amber-500" : "bg-rose-500"
-                        }`}
-                        style={{ width: `${hpPct}%` }}
-                      />
-                    </div>
-
-                    {/* Quick HP Adjustment Buttons */}
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      <button
-                        className="rounded border border-rose-900/80 bg-rose-950/40 px-1.5 py-0.5 text-2xs font-mono text-rose-300 hover:bg-rose-900"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          quickHpAdjustMutation.mutate({ combatant: c, delta: -10 });
-                        }}
-                        type="button"
-                      >
-                        -10
-                      </button>
-                      <button
-                        className="rounded border border-rose-900/80 bg-rose-950/40 px-1.5 py-0.5 text-2xs font-mono text-rose-300 hover:bg-rose-900"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          quickHpAdjustMutation.mutate({ combatant: c, delta: -5 });
-                        }}
-                        type="button"
-                      >
-                        -5
-                      </button>
-                      <button
-                        className="rounded border border-rose-900/80 bg-rose-950/40 px-1.5 py-0.5 text-2xs font-mono text-rose-300 hover:bg-rose-900"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          quickHpAdjustMutation.mutate({ combatant: c, delta: -1 });
-                        }}
-                        type="button"
-                      >
-                        -1
-                      </button>
-                      <button
-                        className="rounded border border-emerald-900/80 bg-emerald-950/40 px-1.5 py-0.5 text-2xs font-mono text-emerald-300 hover:bg-emerald-900"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          quickHpAdjustMutation.mutate({ combatant: c, delta: 1 });
-                        }}
-                        type="button"
-                      >
-                        +1
-                      </button>
-                      <button
-                        className="rounded border border-emerald-900/80 bg-emerald-950/40 px-1.5 py-0.5 text-2xs font-mono text-emerald-300 hover:bg-emerald-900"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          quickHpAdjustMutation.mutate({ combatant: c, delta: 5 });
-                        }}
-                        type="button"
-                      >
-                        +5
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Conditions Badges */}
-                  <div className="mt-2.5 flex flex-wrap items-center gap-1 border-t border-ink-800/60 pt-2">
-                    {CONDITIONS_LIST.map((cond) => {
-                      const isActive = conditions.some(
-                        (item) => (typeof item === "string" ? item : item?.name ?? item?.condition_name) === cond.key,
-                      );
-                      return (
-                        <button
-                          className={`rounded border px-1.5 py-0.5 text-2xs transition-colors ${
-                            isActive
-                              ? "border-amber-500 bg-amber-500/20 font-bold text-amber-200"
-                              : "border-ink-800/60 bg-ink-950/40 text-stone-500 hover:border-ink-700 hover:text-stone-300"
-                          }`}
-                          key={cond.key}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleConditionMutation.mutate({ combatant: c, condKey: cond.key });
-                          }}
-                          title={`切换状态: ${cond.label}`}
-                          type="button"
-                        >
-                          {cond.icon} {cond.label}
-                        </button>
-                      );
-                    })}
+                  <div className="flex gap-1">
+                    <button
+                      className="rounded border border-rose-900 bg-rose-950/50 px-1.5 py-0.5 text-rose-300 hover:bg-rose-900"
+                      onClick={() => quickHpAdjustMutation.mutate({ combatant: f, delta: -5 })}
+                    >
+                      -5
+                    </button>
+                    <button
+                      className="rounded border border-rose-900 bg-rose-950/50 px-1.5 py-0.5 text-rose-300 hover:bg-rose-900"
+                      onClick={() => quickHpAdjustMutation.mutate({ combatant: f, delta: -1 })}
+                    >
+                      -1
+                    </button>
+                    <button
+                      className="rounded border border-emerald-900 bg-emerald-950/50 px-1.5 py-0.5 text-emerald-300 hover:bg-emerald-900"
+                      onClick={() => quickHpAdjustMutation.mutate({ combatant: f, delta: 1 })}
+                    >
+                      +1
+                    </button>
+                    <button
+                      className="rounded border border-emerald-900 bg-emerald-950/50 px-1.5 py-0.5 text-emerald-300 hover:bg-emerald-900"
+                      onClick={() => quickHpAdjustMutation.mutate({ combatant: f, delta: 5 })}
+                    >
+                      +5
+                    </button>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Middle Column: 🗺️ 战术地图与极速动作台 (5 Cols) */}
-        <div className="flex flex-col gap-3 lg:col-span-5">
-          {/* Tactical Scene Map */}
-          <div className="rounded-xl border border-ink-800 bg-ink-900/50 p-3 shadow-lg">
-            <SceneMap
-              grid={{
-                width: 12,
-                height: 10,
-                cell_size_ft: 5,
-                theme: "dungeon",
-              }}
-              objects={[]}
-              onPing={(row, col) => {
-                showToast(`📍 战术信号已发送至坐标 (${row}, ${col})`, "info");
-              }}
-              onTargetSelect={(targetKey) => {
-                const id = targetKey.replace("combatant:", "");
-                setActionTargetId(id);
-                setSelectedCombatantId(id);
-              }}
-              selectedTargetKey={actionTargetId ? `combatant:${actionTargetId}` : undefined}
-              title="战术场景地图 (双击网格发送Ping)"
-              tokens={sceneTokens}
-            />
-          </div>
-
-          {/* Quick Action Console */}
-          <div className="rounded-xl border border-ink-700/80 bg-ink-900/80 p-4 shadow-xl">
-            <div className="flex items-center justify-between border-b border-ink-800 pb-2.5">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">⚔️</span>
-                <div>
-                  <h3 className="font-display text-sm font-bold text-parchment-100">极速动作裁定台</h3>
-                  <p className="text-2xs text-stone-400">
-                    当前行动者: <strong className="text-amber-300">{currentCombatant?.display_name ?? "未选择"}</strong>
-                  </p>
-                </div>
-              </div>
-              <span className="rounded bg-sky-950/40 border border-sky-800/40 px-2 py-0.5 text-2xs text-sky-300">
-                目标: {selectedTargetCombatant?.display_name ?? "未选定"}
-              </span>
-            </div>
-
-            {/* Action Form */}
-            <div className="mt-3 space-y-3">
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-2xs font-semibold uppercase text-stone-400">动作名称</label>
-                  <input
-                    className={`${inputCls} mt-1`}
-                    onChange={(e) => setActionName(e.target.value)}
-                    placeholder="如：长剑斩击 / 火球术"
-                    value={actionName}
-                  />
-                </div>
-                <div>
-                  <label className="text-2xs font-semibold uppercase text-stone-400">受击目标</label>
-                  <select
-                    className={`${selectCls} mt-1`}
-                    onChange={(e) => {
-                      setActionTargetId(e.target.value);
-                      setSelectedCombatantId(e.target.value);
-                    }}
-                    value={actionTargetId}
-                  >
-                    <option value="">选择目标战斗员</option>
-                    {sortedCombatants.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.display_name} (HP: {c.hp}/{c.max_hp})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <label className="text-2xs font-semibold uppercase text-stone-400">命中检定 d20</label>
-                  <input
-                    className={`${inputCls} mt-1 font-mono`}
-                    onChange={(e) => setActionAttackRoll(e.target.value)}
-                    type="number"
-                    value={actionAttackRoll}
-                  />
-                </div>
-                <div>
-                  <label className="text-2xs font-semibold uppercase text-stone-400">基础伤害</label>
-                  <input
-                    className={`${inputCls} mt-1 font-mono`}
-                    onChange={(e) => setActionDamageAmount(e.target.value)}
-                    type="number"
-                    value={actionDamageAmount}
-                  />
-                </div>
-                <div>
-                  <label className="text-2xs font-semibold uppercase text-stone-400">伤害类型</label>
-                  <select
-                    className={`${selectCls} mt-1`}
-                    onChange={(e) => setActionDamageType(e.target.value)}
-                    value={actionDamageType}
-                  >
-                    <option value="slashing">挥砍 (Slashing)</option>
-                    <option value="piercing">穿刺 (Piercing)</option>
-                    <option value="bludgeoning">钝击 (Bludgeoning)</option>
-                    <option value="fire">火焰 (Fire)</option>
-                    <option value="radiant">光耀 (Radiant)</option>
-                    <option value="necrotic">黯蚀 (Necrotic)</option>
-                    <option value="force">力场 (Force)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between pt-1">
-                <label className="flex items-center gap-2 text-xs font-semibold text-amber-300">
-                  <input
-                    checked={isCritical}
-                    className="accent-amber-500"
-                    onChange={(e) => setIsCritical(e.target.checked)}
-                    type="checkbox"
-                  />
-                  <span>💥 致命一击 (暴击伤害双倍)</span>
-                </label>
-
-                <button
-                  className="rounded-lg border border-amber-600/70 bg-amber-600/20 px-4 py-1.5 text-xs font-bold text-amber-200 shadow-md transition hover:bg-amber-600/30 disabled:opacity-50"
-                  disabled={!selectedTargetCombatant || executeActionMutation.isPending}
-                  onClick={() => executeActionMutation.mutate()}
-                  type="button"
-                >
-                  {executeActionMutation.isPending ? "结算中…" : "💥 确认执行伤害"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: 📜 战况流水 & AI 战术副驾 (3 Cols) */}
-        <div className="flex flex-col gap-3 lg:col-span-3">
-          {/* Quick Dice Roller Arena */}
-          <div className="rounded-xl border border-ink-800 bg-ink-900/60 p-3.5 shadow-md">
-            <div className="flex items-center justify-between border-b border-ink-800 pb-2">
-              <span className="text-xs font-bold text-parchment-200">🎲 极速骰盘</span>
-              <div className="flex items-center gap-1.5">
-                <span className="text-2xs text-stone-400">调整值:</span>
-                <input
-                  className="w-12 rounded border border-ink-700 bg-ink-950 px-1 py-0.5 text-center font-mono text-xs text-amber-200"
-                  onChange={(e) => setCustomDiceMod(e.target.value)}
-                  type="number"
-                  value={customDiceMod}
-                />
-              </div>
-            </div>
-            <div className="mt-2.5 grid grid-cols-4 gap-1.5">
-              {[20, 12, 10, 8, 6, 4].map((d) => (
-                <button
-                  className="rounded border border-ink-700 bg-ink-950/80 py-1.5 text-xs font-bold text-stone-300 transition hover:border-amber-500/60 hover:text-amber-200"
-                  key={d}
-                  onClick={() => rollDice(d)}
-                  type="button"
-                >
-                  d{d}
-                </button>
               ))}
-              <button
-                className="col-span-2 rounded border border-amber-800/60 bg-amber-950/30 py-1.5 text-xs font-bold text-amber-300 hover:bg-amber-900/40"
-                onClick={() => rollDice(6, 2)}
-                type="button"
-              >
-                2d6
-              </button>
             </div>
+          </div>
+        </div>
 
-            {/* Latest Rolls */}
-            {diceHistory.length > 0 ? (
-              <div className="mt-3 flex flex-wrap gap-1.5 border-t border-ink-800/60 pt-2">
-                {diceHistory.slice(0, 4).map((roll) => (
-                  <span
-                    className={`rounded border px-2 py-0.5 font-mono text-2xs ${
-                      roll.isCrit
-                        ? "border-amber-500 bg-amber-500/20 text-amber-200 font-bold"
-                        : roll.isFumble
-                          ? "border-rose-500 bg-rose-500/20 text-rose-200 font-bold"
-                          : "border-ink-800 bg-ink-950 text-stone-300"
-                    }`}
-                    key={roll.id}
+        {/* Right Column: ⚔️ 规则积木指令台 & 法术位 & AI 战术副驾 (6 Cols) */}
+        <div className="flex flex-col gap-3 lg:col-span-6">
+          {/* Complete Rule Block Turn Command Console */}
+          {activeFighter ? (
+            <div className="rounded-xl border border-amber-600/50 bg-ink-900/90 p-3.5 shadow-xl">
+              <TurnCommandConsole
+                active={activeFighter}
+                activeCharacter={activeCharacter}
+                autoEnemies={autoEnemies}
+                automationReady={true}
+                campaignId={campaignId}
+                combatActions={actionsQuery.data ?? []}
+                combatId={combatId}
+                fighters={ordered}
+                key={`${combatId}:${activeFighter.id}`}
+                onAutoEnemiesChange={setAutoEnemies}
+                onEnemyTurnComplete={() => {
+                  advanceTurnMutation.mutate();
+                }}
+                onRangeChange={(range, actorId) => {
+                  setTargetingRange(range);
+                  setTargetingActorId(range ? actorId ?? activeFighter.id : null);
+                }}
+                onTargetChange={setSelectedMapTargetId}
+                selectedTargetId={selectedMapTargetId}
+                targetingValidity={targetingValidity}
+                turnKey={`${activeCombat.round_number}:${activeCombat.current_turn_index ?? 0}:${activeFighter.id}`}
+              />
+            </div>
+          ) : (
+            <div className="rounded-xl border border-ink-800 bg-ink-900/40 p-6 text-center text-xs text-stone-500">
+              当前回合无行动战斗员
+            </div>
+          )}
+
+          {/* Player Rolls Queue */}
+          <PlayerRollPanel
+            actions={actionsQuery.data ?? []}
+            activeEnemy={activeFighter?.entity_type === "monster" ? activeFighter : undefined}
+            automationEnabled={autoEnemies}
+            campaignId={campaignId}
+            combatId={combatId}
+            fighters={ordered}
+            onResolved={() => {
+              void queryClient.invalidateQueries({ queryKey: ["combat-actions", campaignId, combatId] });
+            }}
+          />
+
+          {/* Bottom Grid: 🎲 Dice Roller & 🤖 AI Tactical Copilot */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {/* Quick Dice Roller */}
+            <div className="rounded-xl border border-ink-800 bg-ink-900/60 p-3 shadow-md">
+              <div className="flex items-center justify-between border-b border-ink-800 pb-1.5">
+                <span className="text-xs font-bold text-parchment-200">🎲 极速骰盘</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-2xs text-stone-400">调整:</span>
+                  <input
+                    className="w-10 rounded border border-ink-700 bg-ink-950 px-1 py-0.5 text-center font-mono text-xs text-amber-200"
+                    onChange={(e) => setCustomDiceMod(e.target.value)}
+                    type="number"
+                    value={customDiceMod}
+                  />
+                </div>
+              </div>
+              <div className="mt-2 grid grid-cols-4 gap-1">
+                {[20, 12, 10, 8, 6, 4].map((d) => (
+                  <button
+                    className="rounded border border-ink-700 bg-ink-950/80 py-1 text-xs font-bold text-stone-300 hover:border-amber-500 hover:text-amber-200"
+                    key={d}
+                    onClick={() => rollDice(d)}
+                    type="button"
                   >
-                    {roll.formula} ➔ <strong>{roll.result}</strong>
-                  </span>
+                    d{d}
+                  </button>
                 ))}
-              </div>
-            ) : null}
-          </div>
-
-          {/* AI Tactical Copilot */}
-          <div className="rounded-xl border border-ink-800 bg-ink-900/60 p-3.5 shadow-md">
-            <div className="flex items-center justify-between border-b border-ink-800 pb-2">
-              <span className="text-xs font-bold text-parchment-200">🤖 AI 战术副驾</span>
-              <div className="flex gap-1.5">
                 <button
-                  className="rounded border border-amber-700/60 bg-amber-950/30 px-2 py-0.5 text-2xs text-amber-300 hover:bg-amber-900/40 disabled:opacity-50"
-                  disabled={aiTacticsMutation.isPending}
-                  onClick={() => aiTacticsMutation.mutate()}
+                  className="col-span-2 rounded border border-amber-800/60 bg-amber-950/30 py-1 text-xs font-bold text-amber-300 hover:bg-amber-900/40"
+                  onClick={() => rollDice(6, 2)}
                   type="button"
                 >
-                  {aiTacticsMutation.isPending ? "思考中…" : "战术分析"}
-                </button>
-                <button
-                  className="rounded border border-sky-700/60 bg-sky-950/30 px-2 py-0.5 text-2xs text-sky-300 hover:bg-sky-900/40 disabled:opacity-50"
-                  disabled={aiNarrativeMutation.isPending}
-                  onClick={() => aiNarrativeMutation.mutate()}
-                  type="button"
-                >
-                  {aiNarrativeMutation.isPending ? "构思中…" : "战况朗读"}
+                  2d6
                 </button>
               </div>
-            </div>
 
-            <div className="mt-2.5 min-h-[80px] max-h-48 overflow-y-auto text-xs leading-relaxed text-stone-300">
-              {aiAnalysis ? (
-                <div className="rounded border border-amber-900/40 bg-amber-950/15 p-2 font-sans text-amber-200/90">
-                  <strong className="block text-2xs uppercase text-amber-400">💡 战术建议</strong>
-                  {aiAnalysis}
+              {diceHistory.length > 0 ? (
+                <div className="mt-2 flex flex-wrap gap-1 border-t border-ink-800/60 pt-1.5">
+                  {diceHistory.slice(0, 3).map((r) => (
+                    <span
+                      className={`rounded border px-1.5 py-0.5 font-mono text-2xs ${
+                        r.isCrit ? "border-amber-500 bg-amber-500/20 text-amber-200 font-bold" : "border-ink-800 bg-ink-950 text-stone-300"
+                      }`}
+                      key={r.id}
+                    >
+                      {r.formula}➔<strong>{r.result}</strong>
+                    </span>
+                  ))}
                 </div>
               ) : null}
-              {aiNarrative ? (
-                <div className="mt-2 rounded border border-sky-900/40 bg-sky-950/15 p-2 font-serif text-sky-200/90 italic">
-                  <strong className="block font-sans text-2xs uppercase text-sky-400 not-italic">🎙️ 战斗旁白</strong>
-                  {aiNarrative}
-                </div>
-              ) : null}
-              {!aiAnalysis && !aiNarrative ? (
-                <p className="py-4 text-center text-2xs text-stone-500">点击上方按钮让 AI 辅助战术裁定与旁白解说</p>
-              ) : null}
             </div>
-          </div>
 
-          {/* Live Action History Log */}
-          <div className="flex-1 rounded-xl border border-ink-800 bg-ink-900/60 p-3.5 shadow-md">
-            <div className="border-b border-ink-800 pb-2">
-              <span className="text-xs font-bold text-parchment-200">📜 实时战斗记录</span>
-            </div>
-            <div className="mt-2 max-h-56 space-y-1.5 overflow-y-auto pr-1">
-              {(actionsQuery.data ?? []).length > 0 ? (
-                (actionsQuery.data ?? []).slice(0, 10).map((act: CombatAction) => (
-                  <div className="rounded border border-ink-800/60 bg-ink-950/40 p-2 text-2xs" key={act.id}>
-                    <div className="flex items-center justify-between">
-                      <strong className="text-stone-300">{act.action_name ?? act.action_type}</strong>
-                      <span className="font-mono text-stone-500">{formatDateTime(act.created_at)}</span>
-                    </div>
-                    {act.resolution_note ? <p className="mt-1 text-stone-400">{act.resolution_note}</p> : null}
-                  </div>
-                ))
-              ) : (
-                <p className="py-4 text-center text-2xs text-stone-500">本场战斗尚无动作记录</p>
-              )}
+            {/* AI Tactical Copilot */}
+            <div className="rounded-xl border border-ink-800 bg-ink-900/60 p-3 shadow-md flex flex-col justify-between">
+              <div className="flex items-center justify-between border-b border-ink-800 pb-1.5">
+                <span className="text-xs font-bold text-parchment-200">🤖 AI 战术军师</span>
+                <div className="flex gap-1">
+                  <button
+                    className="rounded border border-amber-700/60 bg-amber-950/30 px-1.5 py-0.5 text-2xs text-amber-300 hover:bg-amber-900/40 disabled:opacity-50"
+                    disabled={aiTacticsMutation.isPending}
+                    onClick={() => aiTacticsMutation.mutate()}
+                    type="button"
+                  >
+                    {aiTacticsMutation.isPending ? "思考中…" : "战术建议"}
+                  </button>
+                  <button
+                    className="rounded border border-sky-700/60 bg-sky-950/30 px-1.5 py-0.5 text-2xs text-sky-300 hover:bg-sky-900/40 disabled:opacity-50"
+                    disabled={aiNarrativeMutation.isPending}
+                    onClick={() => aiNarrativeMutation.mutate()}
+                    type="button"
+                  >
+                    {aiNarrativeMutation.isPending ? "构思中…" : "战况朗读"}
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-1.5 min-h-[50px] max-h-28 overflow-y-auto text-2xs text-stone-300">
+                {aiAnalysis ? <p className="text-amber-200/90 leading-relaxed">{aiAnalysis}</p> : null}
+                {aiNarrative ? <p className="font-serif text-sky-200/90 italic leading-relaxed">{aiNarrative}</p> : null}
+                {!aiAnalysis && !aiNarrative ? <p className="text-stone-500 py-2 text-center">点击按钮获取 AI 决策与旁白</p> : null}
+              </div>
             </div>
           </div>
         </div>
