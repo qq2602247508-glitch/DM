@@ -74,6 +74,16 @@ import {
 
 type ElevationLayer = number | "unknown";
 
+export type VfxEvent = {
+  id: string;
+  row: number;
+  col: number;
+  type: "slash" | "arcane" | "shockwave" | "smite" | "fire" | "dust";
+  text?: string;
+  isCrit?: boolean;
+  isMiss?: boolean;
+};
+
 // ---------------------------------------------------------------------------
 // 5e Conditions Metadata & Rules
 // ---------------------------------------------------------------------------
@@ -140,7 +150,7 @@ function combatantGridPosition(fighter: Combatant): [number, number] | null {
 }
 
 // ---------------------------------------------------------------------------
-// Tactical Grid Component for Quick Combat
+// Tactical Grid Component for Quick Combat with Animated VFX & Movement
 // ---------------------------------------------------------------------------
 function QuickBattleGrid({
   campaignId,
@@ -153,6 +163,8 @@ function QuickBattleGrid({
   onTargetValidityChange,
   onTargetSelect,
   selectedTargetId,
+  vfxEvents,
+  onSpawnVfx,
 }: {
   campaignId: string;
   combatId: string;
@@ -164,6 +176,8 @@ function QuickBattleGrid({
   onTargetValidityChange: (validity: CombatTargetingValidity) => void;
   onTargetSelect: (targetId: string) => void;
   selectedTargetId: string;
+  vfxEvents: VfxEvent[];
+  onSpawnVfx: (event: Omit<VfxEvent, "id">) => void;
 }): ReactElement {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
@@ -204,7 +218,7 @@ function QuickBattleGrid({
   const selectedPos = selectedFighter ? positions[selectedFighter.id] : null;
   const selectedRemaining = selectedFighter?.movement_remaining_ft ?? selectedFighter?.speed_ft ?? 30;
 
-  // Move token mutation
+  // Move token mutation with movement dust VFX
   const moveMutation = useMutation({
     mutationFn: async ({ fighter, newRow, newCol, spentFt }: { fighter: Combatant; newRow: number; newCol: number; spentFt: number }) => {
       const nextRemaining = Math.max(0, (fighter.movement_remaining_ft ?? fighter.speed_ft ?? 30) - spentFt);
@@ -214,6 +228,10 @@ function QuickBattleGrid({
         row: newRow,
         col: newCol,
       };
+
+      // Trigger movement dust animation
+      onSpawnVfx({ row: newRow, col: newCol, type: "dust", text: `-${spentFt}尺` });
+
       return updateCombatant(
         campaignId,
         combatId,
@@ -365,6 +383,7 @@ function QuickBattleGrid({
                 : false;
               const isAreaAffected = areaKeys.has(`${row}:${col}`);
               const hasPing = pings.some((p) => p.row === row && p.col === col);
+              const activeVfx = vfxEvents.filter((v) => v.row === row && v.col === col);
 
               return (
                 <button
@@ -405,6 +424,51 @@ function QuickBattleGrid({
                     </span>
                   ) : null}
 
+                  {/* Combat Visual Effects (Slash / Arcane / Shockwave / Smite / Dust) */}
+                  {activeVfx.map((vfx) => (
+                    <span className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center overflow-visible" key={vfx.id}>
+                      {/* Slash VFX */}
+                      {vfx.type === "slash" ? (
+                        <span className="absolute h-10 w-2.5 rounded-full bg-gradient-to-t from-red-600 via-amber-400 to-white animate-vfx-slash shadow-[0_0_15px_#f59e0b]" />
+                      ) : null}
+
+                      {/* Arcane Dart VFX */}
+                      {vfx.type === "arcane" ? (
+                        <span className="absolute h-8 w-8 rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 animate-vfx-arcane-dart shadow-[0_0_20px_#d946ef]" />
+                      ) : null}
+
+                      {/* Thunderwave Shockwave VFX */}
+                      {vfx.type === "shockwave" ? (
+                        <span className="absolute h-12 w-12 rounded-full border-4 border-sky-400 bg-sky-500/20 animate-vfx-shockwave" />
+                      ) : null}
+
+                      {/* Holy Smite Beam VFX */}
+                      {vfx.type === "smite" ? (
+                        <span className="absolute h-16 w-3 rounded bg-gradient-to-b from-amber-200 via-yellow-400 to-amber-600 animate-vfx-smite shadow-[0_0_25px_#fef08a]" />
+                      ) : null}
+
+                      {/* Movement Dust Ripple */}
+                      {vfx.type === "dust" ? (
+                        <span className="absolute h-8 w-8 rounded-full border border-emerald-400/60 bg-emerald-400/20 animate-token-dust" />
+                      ) : null}
+
+                      {/* Floating Combat Damage Text */}
+                      {vfx.text ? (
+                        <span
+                          className={`absolute font-black font-mono text-xs drop-shadow-[0_2px_4px_rgba(0,0,0,1)] animate-float-combat-text ${
+                            vfx.isCrit
+                              ? "text-amber-300 text-sm scale-125"
+                              : vfx.isMiss
+                                ? "text-stone-400"
+                                : "text-rose-400"
+                          }`}
+                        >
+                          {vfx.text}
+                        </span>
+                      ) : null}
+                    </span>
+                  ))}
+
                   {/* Move Range Highlight Dot */}
                   {canMoveHere && !fighter ? (
                     <span className="absolute inset-0 flex items-center justify-center">
@@ -412,10 +476,10 @@ function QuickBattleGrid({
                     </span>
                   ) : null}
 
-                  {/* Token Rendering */}
+                  {/* Token Rendering with Smooth Movement Glide */}
                   {fighter ? (
                     <div
-                      className={`flex h-full w-full flex-col items-center justify-center rounded-lg p-0.5 text-center leading-none shadow-md transition-all ${
+                      className={`token-smooth-move flex h-full w-full flex-col items-center justify-center rounded-lg p-0.5 text-center leading-none shadow-md transition-all ${
                         isActive
                           ? "ring-2 ring-amber-400 bg-gradient-to-br from-amber-500/30 to-ink-900"
                           : isTarget
@@ -473,6 +537,17 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
   const [autoEnemies, setAutoEnemies] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [showAddCombatantModal, setShowAddCombatantModal] = useState<boolean>(false);
+
+  // Visual Effects (VFX) Queue
+  const [vfxEvents, setVfxEvents] = useState<VfxEvent[]>([]);
+
+  const spawnVfx = useCallback((event: Omit<VfxEvent, "id">) => {
+    const id = `${Date.now()}-${Math.random()}`;
+    setVfxEvents((prev) => [...prev, { ...event, id }]);
+    setTimeout(() => {
+      setVfxEvents((prev) => prev.filter((e) => e.id !== id));
+    }, 1200);
+  }, []);
 
   // Active Tab for Quick Actions HUD
   const [activeHudTab, setActiveHudTab] = useState<"actions" | "spells" | "skills" | "features" | "conditions">("actions");
@@ -682,6 +757,15 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
       const currentHp = combatant.hp ?? 0;
       const maxHp = combatant.max_hp ?? 10;
       const newHp = Math.max(0, Math.min(maxHp, currentHp + delta));
+      const pos = combatantGridPosition(combatant) ?? [3, 3];
+
+      spawnVfx({
+        row: pos[0],
+        col: pos[1],
+        type: delta < 0 ? "slash" : "dust",
+        text: delta > 0 ? `+${delta}` : `${delta}`,
+      });
+
       return updateCombatant(
         campaignId,
         combatId,
@@ -697,7 +781,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     },
   });
 
-  // 1-Click Auto Resolve Action Mutation (Smart Dice + Resistance + Advantage + Condition Calculation)
+  // 1-Click Auto Resolve Action Mutation (Smart Dice + VFX Trigger)
   const autoResolveActionMutation = useMutation({
     mutationFn: async () => {
       if (!activeFighter || !promptTargetCombatant) throw new Error("请选定攻击者与受击目标");
@@ -720,9 +804,11 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
       const isCrit = d20 === 20 || (isMeleeAttack && (promptTargetCombatant.conditions ?? []).some((c) => ["paralyzed", "unconscious"].includes(c)));
       const targetAc = promptTargetCombatant.armor_class ?? 10;
       const isHit = isCrit || attackTotal >= targetAc;
+      const targetPos = combatantGridPosition(promptTargetCombatant) ?? [3, 5];
 
       if (!isHit) {
         soundboard.playDiceRoll();
+        spawnVfx({ row: targetPos[0], col: targetPos[1], type: "dust", text: "MISS!", isMiss: true });
         const command: CombatActionCommand = {
           action_type: "damage",
           target_combatant_id: promptTargetCombatant.id,
@@ -751,6 +837,15 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
       if (immunities.includes(promptDamageType)) finalDamage = 0;
       else if (resistances.includes(promptDamageType)) finalDamage = Math.floor(baseDamage / 2);
       else if (vulnerabilities.includes(promptDamageType)) finalDamage = baseDamage * 2;
+
+      // Trigger attack VFX on grid target cell
+      spawnVfx({
+        row: targetPos[0],
+        col: targetPos[1],
+        type: promptDamageType === "fire" ? "fire" : "slash",
+        text: isCrit ? `CRIT! -${finalDamage}` : `-${finalDamage}`,
+        isCrit,
+      });
 
       const command: CombatActionCommand = {
         action_type: "damage",
@@ -782,7 +877,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     },
   });
 
-  // Thunderwave Execution with 10ft Push and Grid Push
+  // Thunderwave Execution with 10ft Push & Shockwave VFX
   const thunderwaveMutation = useMutation({
     mutationFn: async () => {
       if (!activeFighter || !promptTargetCombatant) throw new Error("请选定施法者与目标");
@@ -800,6 +895,10 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
 
       const pushedRow = Math.max(1, Math.min(10, targetPos[0] + stepRow));
       const pushedCol = Math.max(1, Math.min(12, targetPos[1] + stepCol));
+
+      // Trigger Shockwave VFX
+      spawnVfx({ row: casterPos[0], col: casterPos[1], type: "shockwave" });
+      spawnVfx({ row: targetPos[0], col: targetPos[1], type: "shockwave", text: `-${damage} 击退10尺` });
 
       // Push target token
       const snapshot = {
@@ -845,7 +944,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     },
   });
 
-  // Magic Missile Multi-Target Split Execution
+  // Magic Missile Multi-Target Split Execution with Arcane VFX
   const executeMagicMissileMutation = useMutation({
     mutationFn: async () => {
       if (!activeFighter) throw new Error("无有效施法者");
@@ -865,6 +964,10 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
         }
 
         const nextHp = Math.max(0, (target.hp ?? 10) - targetTotalDamage);
+        const pos = combatantGridPosition(target) ?? [3, 5];
+
+        // Trigger Arcane Dart VFX
+        spawnVfx({ row: pos[0], col: pos[1], type: "arcane", text: `-${targetTotalDamage}` });
 
         await updateCombatant(
           campaignId,
@@ -912,6 +1015,13 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
       const isHit = isManualCrit || attackTotal >= targetAc;
       const dmg = Number(manualDamageRoll) || 0;
       const finalDmg = isHit ? dmg : 0;
+      const targetPos = combatantGridPosition(promptTargetCombatant) ?? [3, 5];
+
+      if (isHit) {
+        spawnVfx({ row: targetPos[0], col: targetPos[1], type: "slash", text: isManualCrit ? `CRIT! -${finalDmg}` : `-${finalDmg}`, isCrit: isManualCrit });
+      } else {
+        spawnVfx({ row: targetPos[0], col: targetPos[1], type: "dust", text: "MISS!", isMiss: true });
+      }
 
       const command: CombatActionCommand = {
         action_type: "damage",
@@ -1072,7 +1182,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
             <span className="text-2xl">⚡</span>
             <div>
               <h1 className="font-display text-lg font-bold text-parchment-100">快捷战斗座舱 (Quick Combat)</h1>
-              <p className="text-2xs text-stone-400">雷鸣波推开 · 魔法飞弹多目标 · 绊摔倒地优势 · 18技能与15状态</p>
+              <p className="text-2xs text-stone-400">攻击特效 · 移动滑动动画 · 漂浮伤害数字 · 雷鸣击退 · 魔法飞弹多目标</p>
             </div>
           </div>
 
@@ -1440,6 +1550,8 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
               onClick={() => {
                 if (!promptTargetCombatant) return;
                 const smiteDamage = Math.floor(Math.random() * 8) + 1 + Math.floor(Math.random() * 8) + 1;
+                const pos = combatantGridPosition(promptTargetCombatant) ?? [3, 5];
+                spawnVfx({ row: pos[0], col: pos[1], type: "smite", text: `-${smiteDamage} 光耀` });
                 quickHpAdjustMutation.mutate({ combatant: promptTargetCombatant, delta: -smiteDamage });
                 showToast(`⚖️ 圣负惩击：对 ${promptTargetCombatant.display_name} 造成 ${smiteDamage} 点额外光耀伤害！`, "success");
               }}
@@ -1714,6 +1826,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
             campaignId={campaignId}
             combatId={combatId}
             fighters={ordered}
+            onSpawnVfx={spawnVfx}
             onTargetSelect={(id) => {
               setSelectedMapTargetId(id);
               setPromptTargetId(id);
@@ -1723,6 +1836,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
             targeting={targetingRange}
             targetingActorId={targetingActorId}
             targetingValidity={targetingValidity}
+            vfxEvents={vfxEvents}
           />
 
           {/* Quick HP Adjustment Strip for All Fighters */}

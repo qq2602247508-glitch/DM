@@ -61,3 +61,150 @@ textarea {
   word-break: break-word;
   line-height: 1.75;
 }
+
+/* -------------------------------------------------------------------------
+ * Combat VFX & Movement Animations
+ * ------------------------------------------------------------------------- */
+
+/* Melee Slash Animation */
+@keyframes vfx-slash {
+  0% {
+    opacity: 0;
+    transform: rotate(-45deg) scaleX(0.2) scaleY(1.5) translateY(-50%);
+    filter: drop-shadow(0 0 12px #f59e0b) brightness(2);
+  }
+  35% {
+    opacity: 1;
+    transform: rotate(15deg) scaleX(1.3) scaleY(1.2) translateY(0);
+    filter: drop-shadow(0 0 20px #ef4444) brightness(2.5);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(45deg) scaleX(1.6) scaleY(0.4) translateY(50%);
+    filter: drop-shadow(0 0 4px #dc2626) brightness(1);
+  }
+}
+
+.animate-vfx-slash {
+  animation: vfx-slash 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Arcane / Magic Missile Dart Burst */
+@keyframes vfx-arcane-dart {
+  0% {
+    opacity: 0;
+    transform: scale(0.2) rotate(0deg);
+    filter: drop-shadow(0 0 6px #d946ef);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.4) rotate(180deg);
+    filter: drop-shadow(0 0 24px #e879f9) brightness(2);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.2) rotate(360deg);
+    filter: drop-shadow(0 0 35px #a855f7) brightness(0.5);
+  }
+}
+
+.animate-vfx-arcane-dart {
+  animation: vfx-arcane-dart 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* Thunderwave Sonic Shockwave */
+@keyframes vfx-shockwave {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.3);
+    border-width: 6px;
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.9), inset 0 0 15px rgba(56, 189, 248, 0.7);
+  }
+  60% {
+    opacity: 0.8;
+    transform: scale(2.8);
+    border-width: 3px;
+    box-shadow: 0 0 30px rgba(14, 165, 233, 0.8), inset 0 0 25px rgba(14, 165, 233, 0.5);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(4.2);
+    border-width: 1px;
+    box-shadow: 0 0 40px rgba(2, 132, 199, 0);
+  }
+}
+
+.animate-vfx-shockwave {
+  animation: vfx-shockwave 0.75s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+
+/* Holy Radiant Smite Beam */
+@keyframes vfx-smite {
+  0% {
+    opacity: 0;
+    transform: scaleY(0) scaleX(0.5);
+    filter: drop-shadow(0 0 10px #fbbf24) brightness(2);
+  }
+  30% {
+    opacity: 1;
+    transform: scaleY(1.4) scaleX(1.3);
+    filter: drop-shadow(0 0 30px #fef08a) brightness(3);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleY(1.6) scaleX(0.2);
+    filter: drop-shadow(0 0 8px #f59e0b);
+  }
+}
+
+.animate-vfx-smite {
+  animation: vfx-smite 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Floating Combat Numbers (Damage / Heal / Crit / Miss) */
+@keyframes float-combat-text {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.6);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-8px) scale(1.3);
+  }
+  40% {
+    transform: translateY(-16px) scale(1.0);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(-30px) scale(0.95);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-42px) scale(0.8);
+  }
+}
+
+.animate-float-combat-text {
+  animation: float-combat-text 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* Token Movement Glide Transition */
+.token-smooth-move {
+  transition: transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+/* Token Step Dust Pulse */
+@keyframes token-step-dust {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.8);
+  }
+}
+
+.animate-token-dust {
+  animation: token-step-dust 0.4s ease-out forwards;
+}
