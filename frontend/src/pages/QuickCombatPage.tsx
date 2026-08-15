@@ -139,10 +139,6 @@ function combatantGridPosition(fighter: Combatant): [number, number] | null {
   return null;
 }
 
-function elevationLayerLabel(layer: ElevationLayer): string {
-  return layer === "unknown" ? "未记录" : `${layer}尺`;
-}
-
 // ---------------------------------------------------------------------------
 // Tactical Grid Component for Quick Combat
 // ---------------------------------------------------------------------------
@@ -179,13 +175,12 @@ function QuickBattleGrid({
   const [interactionMode, setInteractionMode] = useState<"move" | "target">("move");
   const [selectedTokenId, setSelectedTokenId] = useState<string>(activeFighterId ?? "");
   const [aimPoint, setAimPoint] = useState<GridPoint | null>(null);
-  const [elevationLayer, setElevationLayer] = useState<ElevationLayer>(0);
   const [fogPreview, setFogPreview] = useState<boolean>(false);
   const [pings, setPings] = useState<Array<{ id: string; row: number; col: number }>>([]);
 
   const activeFighter = useMemo(() => fighters.find((f) => f.id === activeFighterId) ?? null, [fighters, activeFighterId]);
 
-  // Derive fighter grid positions (with automatic fallback assignment)
+  // Derive fighter grid positions
   const positions = useMemo(() => {
     const map: Record<string, [number, number]> = {};
     fighters.forEach((f, i) => {
@@ -249,7 +244,7 @@ function QuickBattleGrid({
 
   const areaKeys = useMemo(() => new Set(areaCells.map((c) => `${c.row}:${c.col}`)), [areaCells]);
 
-  // Update targeting validity to TurnCommandConsole
+  // Update targeting validity
   useEffect(() => {
     if (!targeting || !activePosition) {
       onTargetValidityChange({
@@ -440,6 +435,11 @@ function QuickBattleGrid({
                       <span className="mt-0.5 text-[8px] font-mono text-stone-400">
                         {fighter.hp}/{fighter.max_hp}
                       </span>
+                      {fighter.conditions && fighter.conditions.length > 0 ? (
+                        <span className="mt-0.5 text-[7px] text-amber-300 font-bold">
+                          {fighter.conditions[0].slice(0, 2)}
+                        </span>
+                      ) : null}
                     </div>
                   ) : null}
                 </button>
@@ -474,8 +474,8 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [showAddCombatantModal, setShowAddCombatantModal] = useState<boolean>(false);
 
-  // Active Tab for Quick Actions HUD: "actions" | "skills" | "features" | "conditions"
-  const [activeHudTab, setActiveHudTab] = useState<"actions" | "skills" | "features" | "conditions">("actions");
+  // Active Tab for Quick Actions HUD
+  const [activeHudTab, setActiveHudTab] = useState<"actions" | "spells" | "skills" | "features" | "conditions">("actions");
 
   // New combatant form
   const [newCombatantName, setNewCombatantName] = useState<string>("");
@@ -491,12 +491,16 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
   const [promptAttackMod, setPromptAttackMod] = useState<string>("4");
   const [promptDamageDice, setPromptDamageDice] = useState<string>("1d8+2");
   const [promptDamageType, setPromptDamageType] = useState<string>("slashing");
+  const [isMeleeAttack, setIsMeleeAttack] = useState<boolean>(true);
   const [manualAttackRoll, setManualAttackRoll] = useState<string>("");
   const [manualDamageRoll, setManualDamageRoll] = useState<string>("");
   const [isManualCrit, setIsManualCrit] = useState<boolean>(false);
 
+  // Magic Missile Multi-Target Distribution state
+  const [magicMissileModalOpen, setMagicMissileModalOpen] = useState<boolean>(false);
+  const [dartAllocations, setDartAllocations] = useState<Record<string, number>>({});
+
   // Skill Check Modal state
-  const [selectedSkill, setSelectedSkill] = useState<(typeof DND_SKILLS)[0] | null>(null);
   const [skillCheckMod, setSkillCheckMod] = useState<string>("3");
   const [skillCheckResult, setSkillCheckResult] = useState<string>("");
 
@@ -568,6 +572,45 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
   const promptTargetCombatant = useMemo(() => {
     return ordered.find((f) => f.id === (promptTargetId || selectedMapTargetId)) ?? ordered.find((f) => f.id !== activeFighter?.id) ?? null;
   }, [ordered, promptTargetId, selectedMapTargetId, activeFighter]);
+
+  // Derive Advantage / Disadvantage based on conditions
+  const attackAdvantageState = useMemo(() => {
+    if (!activeFighter || !promptTargetCombatant) return { hasAdvantage: false, hasDisadvantage: false, reasons: [] as string[] };
+    const reasons: string[] = [];
+    let hasAdv = false;
+    let hasDis = false;
+
+    const targetConds = promptTargetCombatant.conditions ?? [];
+    const attackerConds = activeFighter.conditions ?? [];
+
+    // Target prone
+    if (targetConds.includes("prone")) {
+      if (isMeleeAttack) {
+        hasAdv = true;
+        reasons.push("目标倒地：近战攻击具有优势 (Advantage)");
+      } else {
+        hasDis = true;
+        reasons.push("目标倒地：远程攻击具有劣势 (Disadvantage)");
+      }
+    }
+    // Target paralyzed / unconscious / stunned / restrained
+    if (targetConds.some((c) => ["paralyzed", "unconscious", "stunned", "restrained"].includes(c))) {
+      hasAdv = true;
+      reasons.push("目标处于限制/失能状态：攻击具有优势");
+    }
+    // Attacker invisible
+    if (attackerConds.includes("invisible")) {
+      hasAdv = true;
+      reasons.push("攻击者处于隐形/潜伏：攻击具有优势");
+    }
+    // Attacker poisoned / blinded / prone
+    if (attackerConds.some((c) => ["poisoned", "blinded", "prone"].includes(c))) {
+      hasDis = true;
+      reasons.push("自身处于负面状态：攻击具有劣势");
+    }
+
+    return { hasAdvantage: hasAdv && !hasDis, hasDisadvantage: hasDis && !hasAdv, reasons };
+  }, [activeFighter, promptTargetCombatant, isMeleeAttack]);
 
   // Advance Turn mutation
   const advanceTurnMutation = useMutation({
@@ -654,14 +697,27 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     },
   });
 
-  // 1-Click Auto Resolve Action Mutation (Smart Dice + Resistance calculation)
+  // 1-Click Auto Resolve Action Mutation (Smart Dice + Resistance + Advantage + Condition Calculation)
   const autoResolveActionMutation = useMutation({
     mutationFn: async () => {
       if (!activeFighter || !promptTargetCombatant) throw new Error("请选定攻击者与受击目标");
       const attackMod = Number(promptAttackMod) || 0;
-      const d20 = Math.floor(Math.random() * 20) + 1;
+
+      // Roll d20 with Advantage / Disadvantage
+      const roll1 = Math.floor(Math.random() * 20) + 1;
+      const roll2 = Math.floor(Math.random() * 20) + 1;
+      let d20 = roll1;
+      let rollDesc = `d20(${roll1})`;
+      if (attackAdvantageState.hasAdvantage) {
+        d20 = Math.max(roll1, roll2);
+        rollDesc = `优势取高(${roll1}, ${roll2}) ➔ ${d20}`;
+      } else if (attackAdvantageState.hasDisadvantage) {
+        d20 = Math.min(roll1, roll2);
+        rollDesc = `劣势取低(${roll1}, ${roll2}) ➔ ${d20}`;
+      }
+
       const attackTotal = d20 + attackMod;
-      const isCrit = d20 === 20;
+      const isCrit = d20 === 20 || (isMeleeAttack && (promptTargetCombatant.conditions ?? []).some((c) => ["paralyzed", "unconscious"].includes(c)));
       const targetAc = promptTargetCombatant.armor_class ?? 10;
       const isHit = isCrit || attackTotal >= targetAc;
 
@@ -678,7 +734,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           amount: 0,
           is_attack: true,
           attack_roll_total: attackTotal,
-          resolution_note: `${activeFighter.display_name} 发动「${promptActionName}」命中检定 ${d20}+${attackMod} = ${attackTotal} (vs AC ${targetAc}) ➔ ❌ 未命中！`,
+          resolution_note: `${activeFighter.display_name} 发动「${promptActionName}」命中检定 ${rollDesc} + ${attackMod} = ${attackTotal} (vs AC ${targetAc}) ➔ ❌ 未命中！`,
         };
         return confirmCombatAction(campaignId, combatId, command);
       }
@@ -709,7 +765,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
         is_attack: true,
         attack_roll_total: attackTotal,
         critical_hit: isCrit,
-        resolution_note: `${activeFighter.display_name} 发动「${promptActionName}」命中检定 ${d20}+${attackMod} = ${attackTotal} (vs AC ${targetAc}) ➔ ✅ 命中！造成 ${finalDamage} 点 ${promptDamageType} 伤害${isCrit ? "（💥暴击！）" : ""}${resistances.includes(promptDamageType) ? "（抗性减半）" : ""}`,
+        resolution_note: `${activeFighter.display_name} 发动「${promptActionName}」命中检定 ${rollDesc} + ${attackMod} = ${attackTotal} (vs AC ${targetAc}) ➔ ✅ 命中！造成 ${finalDamage} 点 ${promptDamageType} 伤害${isCrit ? "（💥暴击！）" : ""}${resistances.includes(promptDamageType) ? "（抗性减半）" : ""}`,
       };
 
       return confirmCombatAction(campaignId, combatId, command);
@@ -723,6 +779,127 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     },
     onError: (err) => {
       showToast(err instanceof Error ? err.message : "自动结算失败", "error");
+    },
+  });
+
+  // Thunderwave Execution with 10ft Push and Grid Push
+  const thunderwaveMutation = useMutation({
+    mutationFn: async () => {
+      if (!activeFighter || !promptTargetCombatant) throw new Error("请选定施法者与目标");
+      const d8_1 = Math.floor(Math.random() * 8) + 1;
+      const d8_2 = Math.floor(Math.random() * 8) + 1;
+      const damage = d8_1 + d8_2;
+
+      // Calculate push grid coordinates (10 ft = 2 cells away from caster)
+      const casterPos = combatantGridPosition(activeFighter) ?? [3, 3];
+      const targetPos = combatantGridPosition(promptTargetCombatant) ?? [3, 5];
+      const dRow = targetPos[0] - casterPos[0];
+      const dCol = targetPos[1] - casterPos[1];
+      const stepRow = dRow === 0 ? 0 : dRow > 0 ? 2 : -2;
+      const stepCol = dCol === 0 ? 2 : dCol > 0 ? 2 : -2;
+
+      const pushedRow = Math.max(1, Math.min(10, targetPos[0] + stepRow));
+      const pushedCol = Math.max(1, Math.min(12, targetPos[1] + stepCol));
+
+      // Push target token
+      const snapshot = {
+        ...(promptTargetCombatant.snapshot_json as Record<string, unknown> | undefined),
+        grid_position: { row: pushedRow, col: pushedCol },
+        row: pushedRow,
+        col: pushedCol,
+      };
+
+      const nextHp = Math.max(0, (promptTargetCombatant.hp ?? 10) - damage);
+
+      await updateCombatant(
+        campaignId,
+        combatId,
+        promptTargetCombatant.id,
+        {
+          hp: nextHp,
+          snapshot_json: snapshot,
+        },
+        promptTargetCombatant.version,
+      );
+
+      const command: CombatActionCommand = {
+        action_type: "damage",
+        target_combatant_id: promptTargetCombatant.id,
+        target_version: promptTargetCombatant.version,
+        actor_combatant_id: activeFighter.id,
+        actor_version: activeFighter.version,
+        action_cost: "action",
+        action_name: "雷鸣波 (Thunderwave)",
+        amount: damage,
+        damage_type: "thunder",
+        resolution_note: `${activeFighter.display_name} 施展「雷鸣波」！对 ${promptTargetCombatant.display_name} 造成 ${damage} 点雷鸣伤害，并将其震飞击退 10 尺至 (${pushedRow}, ${pushedCol})！`,
+      };
+
+      return confirmCombatAction(campaignId, combatId, command);
+    },
+    onSuccess: () => {
+      soundboard.playAttackHit();
+      void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
+      void queryClient.invalidateQueries({ queryKey: ["combat-actions", campaignId, combatId] });
+      showToast("🌊 雷鸣波已造成范围伤害并将目标震退 10 尺！", "success");
+    },
+  });
+
+  // Magic Missile Multi-Target Split Execution
+  const executeMagicMissileMutation = useMutation({
+    mutationFn: async () => {
+      if (!activeFighter) throw new Error("无有效施法者");
+      const targetEntries = Object.entries(dartAllocations).filter(([, count]) => count > 0);
+      if (!targetEntries.length) throw new Error("请为至少一个目标分配飞弹");
+
+      for (const [targetId, dartCount] of targetEntries) {
+        const target = ordered.find((f) => f.id === targetId);
+        if (!target) continue;
+
+        let targetTotalDamage = 0;
+        const rolls: number[] = [];
+        for (let i = 0; i < dartCount; i++) {
+          const dmg = Math.floor(Math.random() * 4) + 1 + 1; // 1d4+1
+          targetTotalDamage += dmg;
+          rolls.push(dmg);
+        }
+
+        const nextHp = Math.max(0, (target.hp ?? 10) - targetTotalDamage);
+
+        await updateCombatant(
+          campaignId,
+          combatId,
+          target.id,
+          { hp: nextHp },
+          target.version,
+        );
+
+        const command: CombatActionCommand = {
+          action_type: "damage",
+          target_combatant_id: target.id,
+          target_version: target.version,
+          actor_combatant_id: activeFighter.id,
+          actor_version: activeFighter.version,
+          action_cost: "action",
+          action_name: "魔法飞弹 (Magic Missile)",
+          amount: targetTotalDamage,
+          damage_type: "force",
+          resolution_note: `${activeFighter.display_name} 射出 ${dartCount} 枚「魔法飞弹」击中 ${target.display_name}（自动必中，各 ${rolls.join("+")} 点）➔ 造成 ${targetTotalDamage} 点力场伤害！`,
+        };
+
+        await confirmCombatAction(campaignId, combatId, command);
+      }
+    },
+    onSuccess: () => {
+      soundboard.playAttackHit();
+      setMagicMissileModalOpen(false);
+      setDartAllocations({});
+      void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
+      void queryClient.invalidateQueries({ queryKey: ["combat-actions", campaignId, combatId] });
+      showToast("🚀 魔法飞弹已发射并分别对目标结算必中力场伤害！", "success");
+    },
+    onError: (err) => {
+      showToast(err instanceof Error ? err.message : "施法失败", "error");
     },
   });
 
@@ -895,7 +1072,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
             <span className="text-2xl">⚡</span>
             <div>
               <h1 className="font-display text-lg font-bold text-parchment-100">快捷战斗座舱 (Quick Combat)</h1>
-              <p className="text-2xs text-stone-400">全部18技能检定 · 15核心状态 · 实体骰双轨 · 753法术位 · 借机反应</p>
+              <p className="text-2xs text-stone-400">雷鸣波推开 · 魔法飞弹多目标 · 绊摔倒地优势 · 18技能与15状态</p>
             </div>
           </div>
 
@@ -982,7 +1159,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
         </div>
       ) : null}
 
-      {/* Interactive Suite: Quick Actions / 18 Skills / Class Features / 15 Conditions */}
+      {/* Interactive Suite: Quick Actions / Classic Spells / 18 Skills / Class Features / 15 Conditions */}
       <div className="mb-3 rounded-xl border border-ink-700 bg-gradient-to-r from-ink-900 via-ink-950 to-ink-900 p-3.5 shadow-xl">
         {/* Navigation Tabs for HUD */}
         <div className="flex flex-wrap items-center justify-between border-b border-ink-800 pb-2.5 gap-2">
@@ -992,7 +1169,14 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
               onClick={() => setActiveHudTab("actions")}
               type="button"
             >
-              ⚔️ 快捷动作与攻击
+              ⚔️ 快捷动作
+            </button>
+            <button
+              className={`rounded px-3 py-1 text-xs font-bold transition ${activeHudTab === "spells" ? "bg-fuchsia-600 text-fuchsia-950" : "text-stone-400 hover:text-stone-200"}`}
+              onClick={() => setActiveHudTab("spells")}
+              type="button"
+            >
+              ✨ 经典战术法术 (飞弹多目标/雷鸣推开)
             </button>
             <button
               className={`rounded px-3 py-1 text-xs font-bold transition ${activeHudTab === "skills" ? "bg-sky-600 text-sky-950" : "text-stone-400 hover:text-stone-200"}`}
@@ -1013,12 +1197,15 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
               onClick={() => setActiveHudTab("conditions")}
               type="button"
             >
-              🏷️ 15核心状态赋予/解除
+              🏷️ 15核心状态
             </button>
           </div>
 
           <div className="text-2xs text-stone-400">
-            当前操作目标: <strong className="text-emerald-300">{promptTargetCombatant?.display_name ?? "未选定目标"}</strong>
+            当前锁定目标: <strong className="text-emerald-300">{promptTargetCombatant?.display_name ?? "未选定目标"}</strong>
+            {promptTargetCombatant?.conditions && promptTargetCombatant.conditions.length > 0 ? (
+              <span className="ml-1 text-rose-300">({promptTargetCombatant.conditions.join(", ")})</span>
+            ) : null}
           </div>
         </div>
 
@@ -1032,6 +1219,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
                 setPromptAttackMod("5");
                 setPromptDamageDice("1d8+3");
                 setPromptDamageType("slashing");
+                setIsMeleeAttack(true);
                 setActionPromptOpen(true);
               }}
               type="button"
@@ -1045,6 +1233,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
                 setPromptAttackMod("6");
                 setPromptDamageDice("1d8+3");
                 setPromptDamageType("piercing");
+                setIsMeleeAttack(false);
                 setActionPromptOpen(true);
               }}
               type="button"
@@ -1058,6 +1247,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
                 setPromptAttackMod("6");
                 setPromptDamageDice("3d6");
                 setPromptDamageType("fire");
+                setIsMeleeAttack(false);
                 setActionPromptOpen(true);
               }}
               type="button"
@@ -1071,6 +1261,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
                 setPromptAttackMod("5");
                 setPromptDamageDice("1d8+3");
                 setPromptDamageType("slashing");
+                setIsMeleeAttack(true);
                 setActionPromptOpen(true);
               }}
               type="button"
@@ -1080,7 +1271,65 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           </div>
         ) : null}
 
-        {/* Tab 2: 🎯 18项技能与战术对决 */}
+        {/* Tab 2: ✨ 经典战术法术 (Magic Missile Multi-Target & Thunderwave Push) */}
+        {activeHudTab === "spells" ? (
+          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
+            <button
+              className="flex flex-col rounded-lg border border-fuchsia-600/70 bg-fuchsia-950/30 p-2.5 text-left hover:bg-fuchsia-900/40 transition shadow-md"
+              onClick={() => {
+                const initAlloc: Record<string, number> = {};
+                if (promptTargetCombatant) initAlloc[promptTargetCombatant.id] = 3;
+                else if (ordered[0]) initAlloc[ordered[0].id] = 3;
+                setDartAllocations(initAlloc);
+                setMagicMissileModalOpen(true);
+              }}
+              type="button"
+            >
+              <div className="flex items-center justify-between w-full">
+                <strong className="text-xs font-bold text-fuchsia-200">🚀 魔法飞弹 (Magic Missile)</strong>
+                <Badge tone="ai">多目标分流</Badge>
+              </div>
+              <span className="text-2xs text-stone-400 mt-1">
+                1环 · 生成 3 枚飞弹（各 1d4+1 力场伤害）· 必中无需投骰 · 自由分配单/多目标
+              </span>
+            </button>
+
+            <button
+              className="flex flex-col rounded-lg border border-sky-600/70 bg-sky-950/30 p-2.5 text-left hover:bg-sky-900/40 transition shadow-md"
+              disabled={thunderwaveMutation.isPending || !promptTargetCombatant}
+              onClick={() => thunderwaveMutation.mutate()}
+              type="button"
+            >
+              <div className="flex items-center justify-between w-full">
+                <strong className="text-xs font-bold text-sky-200">🌊 雷鸣波 (Thunderwave)</strong>
+                <Badge tone="warn">强制推开10尺</Badge>
+              </div>
+              <span className="text-2xs text-stone-400 mt-1">
+                1环 · 造成 2d8 雷鸣伤害 · 失败直接将目标在战术网格上击退 10 尺（2格）！
+              </span>
+            </button>
+
+            <button
+              className="flex flex-col rounded-lg border border-amber-600/70 bg-amber-950/30 p-2.5 text-left hover:bg-amber-900/40 transition shadow-md"
+              onClick={() => {
+                if (!promptTargetCombatant) return;
+                toggleConditionMutation.mutate({ combatant: promptTargetCombatant, conditionId: "prone" });
+                showToast(`🧎 绊倒法术/战技：成功将 ${promptTargetCombatant.display_name} 击倒在地 (Prone)！`, "success");
+              }}
+              type="button"
+            >
+              <div className="flex items-center justify-between w-full">
+                <strong className="text-xs font-bold text-amber-200">🧎 油腻术 / 绊摔攻击 (Trip)</strong>
+                <Badge tone="ok">倒地+近战优势</Badge>
+              </div>
+              <span className="text-2xs text-stone-400 mt-1">
+                使目标失足倒地 · 赋予 🧎 倒地状态 · 随后所有近战攻击自动获得优势！
+              </span>
+            </button>
+          </div>
+        ) : null}
+
+        {/* Tab 3: 🎯 18项技能与战术对决 */}
         {activeHudTab === "skills" ? (
           <div className="mt-3">
             {/* Quick Combat Maneuvers */}
@@ -1169,7 +1418,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           </div>
         ) : null}
 
-        {/* Tab 3: 🛡️ 职业特技与战术爆发 */}
+        {/* Tab 4: 🛡️ 职业特技与战术爆发 */}
         {activeHudTab === "features" ? (
           <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-4">
             <button
@@ -1226,7 +1475,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           </div>
         ) : null}
 
-        {/* Tab 4: 🏷️ 15核心状态赋予/解除 */}
+        {/* Tab 5: 🏷️ 15核心状态赋予/解除 */}
         {activeHudTab === "conditions" ? (
           <div className="mt-3">
             <div className="mb-2 text-2xs text-stone-400">
@@ -1262,6 +1511,80 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           </div>
         ) : null}
 
+        {/* Magic Missile Multi-Target Allocation Modal */}
+        {magicMissileModalOpen ? (
+          <div className="mt-3.5 rounded-xl border border-fuchsia-500/70 bg-ink-950/90 p-4 shadow-2xl animate-fade-in">
+            <div className="flex items-center justify-between border-b border-ink-800 pb-2.5">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🚀</span>
+                <strong className="text-sm text-fuchsia-200">
+                  魔法飞弹多目标分配（当前总数：{Object.values(dartAllocations).reduce((a, b) => a + b, 0)}/3 枚）
+                </strong>
+              </div>
+              <button
+                className="text-stone-400 hover:text-stone-200 text-xs"
+                onClick={() => setMagicMissileModalOpen(false)}
+                type="button"
+              >
+                ✕ 关闭
+              </button>
+            </div>
+
+            <p className="mt-2 text-2xs text-stone-300">
+              每枚飞弹造成 <strong>1d4+1 力场伤害</strong>（自动必中）。您可以将飞弹打向同一目标，或分散打向不同敌人：
+            </p>
+
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+              {ordered.map((f) => {
+                const count = dartAllocations[f.id] ?? 0;
+                return (
+                  <div className="flex items-center justify-between rounded-lg border border-ink-800 bg-ink-900/80 p-2 text-2xs" key={f.id}>
+                    <div className="min-w-0 pr-2">
+                      <strong className="truncate block text-stone-200">{f.display_name}</strong>
+                      <span className="text-stone-500 font-mono">HP: {f.hp}/{f.max_hp}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        className="h-6 w-6 rounded border border-ink-700 bg-ink-950 text-xs font-bold text-stone-300 hover:bg-ink-800"
+                        onClick={() => setDartAllocations((prev) => ({ ...prev, [f.id]: Math.max(0, (prev[f.id] ?? 0) - 1) }))}
+                        type="button"
+                      >
+                        -
+                      </button>
+                      <span className="w-5 text-center font-bold text-fuchsia-300 font-mono">{count}</span>
+                      <button
+                        className="h-6 w-6 rounded border border-fuchsia-700 bg-fuchsia-950/60 text-xs font-bold text-fuchsia-200 hover:bg-fuchsia-900"
+                        onClick={() => {
+                          const total = Object.values(dartAllocations).reduce((a, b) => a + b, 0);
+                          if (total >= 3) {
+                            showToast("1环魔法飞弹最多分配 3 枚飞弹", "info");
+                            return;
+                          }
+                          setDartAllocations((prev) => ({ ...prev, [f.id]: (prev[f.id] ?? 0) + 1 }));
+                        }}
+                        type="button"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-3.5 flex justify-end gap-2">
+              <Button onClick={() => setMagicMissileModalOpen(false)} variant="ghost">取消</Button>
+              <Button
+                disabled={executeMagicMissileMutation.isPending || Object.values(dartAllocations).reduce((a, b) => a + b, 0) === 0}
+                onClick={() => executeMagicMissileMutation.mutate()}
+                variant="primary"
+              >
+                {executeMagicMissileMutation.isPending ? "正在发射…" : "🚀 全数发射并分别自动扣除伤害"}
+              </Button>
+            </div>
+          </div>
+        ) : null}
+
         {/* Action & Dice Prompt Interactive Modal / Card */}
         {actionPromptOpen ? (
           <div className="mt-3.5 rounded-xl border border-amber-500/70 bg-ink-950/90 p-4 shadow-2xl animate-fade-in">
@@ -1284,6 +1607,22 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
               </button>
             </div>
 
+            {/* Advantage / Disadvantage Badge banner */}
+            {attackAdvantageState.reasons.length > 0 ? (
+              <div className="mt-2.5 rounded-lg border border-amber-800/60 bg-amber-950/30 p-2 text-2xs">
+                {attackAdvantageState.hasAdvantage ? (
+                  <span className="font-bold text-emerald-300">🟢 本次攻击具有优势 (Advantage - 自动掷 2 颗 d20 取高)</span>
+                ) : attackAdvantageState.hasDisadvantage ? (
+                  <span className="font-bold text-rose-300">🔴 本次攻击具有劣势 (Disadvantage - 自动掷 2 颗 d20 取低)</span>
+                ) : null}
+                <ul className="mt-1 list-disc pl-4 text-stone-400">
+                  {attackAdvantageState.reasons.map((r, i) => (
+                    <li key={i}>{r}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
             <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
               {/* Option 1: Full Auto Resolve */}
               <div className="flex flex-col justify-between rounded-xl border border-emerald-800/60 bg-emerald-950/20 p-3.5 shadow-md">
@@ -1293,7 +1632,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
                     <Badge tone="ok">极速推荐</Badge>
                   </div>
                   <p className="mt-1.5 text-2xs leading-relaxed text-stone-300">
-                    系统自动投掷 d20 命中检定与伤害骰，自动比对目标 AC，计算暴击与抗性减免，扣减目标生命值并播放打击音效。
+                    系统自动投掷 d20 命中检定（自动计算优势/劣势），比对目标 AC，计算暴击与抗性减免，扣减目标生命值并播放打击音效。
                   </p>
                 </div>
 
