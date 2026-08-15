@@ -74,6 +74,51 @@ import {
 
 type ElevationLayer = number | "unknown";
 
+// ---------------------------------------------------------------------------
+// 5e Conditions Metadata & Rules
+// ---------------------------------------------------------------------------
+export const DND_CONDITIONS = [
+  { id: "prone", name: "倒地 (Prone)", icon: "🧎", desc: "攻击者近战具优势，远程具劣势；自身攻击劣势；起身消耗一半移动速度", tone: "warn" as const },
+  { id: "poisoned", name: "中毒 (Poisoned)", icon: "🧪", desc: "攻击检定和所有能力检定具有劣势", tone: "danger" as const },
+  { id: "frightened", name: "恐慌 (Frightened)", icon: "😨", desc: "不能主动靠近恐惧源；攻击检定和能力检定具有劣势", tone: "danger" as const },
+  { id: "restrained", name: "束缚 (Restrained)", icon: "🕸️", desc: "速度为0；自身攻击劣势；针对目标的攻击具有优势；敏捷豁免劣势", tone: "danger" as const },
+  { id: "grappled", name: "擒抱 (Grappled)", icon: "🤼", desc: "速度为0；擒抱者移动时可拖动目标", tone: "warn" as const },
+  { id: "blinded", name: "目盲 (Blinded)", icon: "👁️‍🗨️", desc: "目标无法看见；针对目标的攻击具优势；目标攻击具劣势；依赖视觉的检定自动失败", tone: "danger" as const },
+  { id: "deafened", name: "耳聋 (Deafened)", icon: "🔇", desc: "目标无法听见；依赖听觉的能力检定自动失败", tone: "neutral" as const },
+  { id: "charmed", name: "魅惑 (Charmed)", icon: "💖", desc: "不能攻击魅惑者；魅惑者在与该目标的社交检定中具有优势", tone: "neutral" as const },
+  { id: "paralyzed", name: "麻痹 (Paralyzed)", icon: "⚡", desc: "失能且无法移动/言语；力量敏捷豁免自动失败；针对目标的攻击具优势；5尺内近战命中直接自动暴击！", tone: "danger" as const },
+  { id: "stunned", name: "震慑 (Stunned)", icon: "💫", desc: "失能且无法移动；言语含糊；力量敏捷豁免自动失败；针对目标的攻击具优势", tone: "danger" as const },
+  { id: "unconscious", name: "昏迷 (Unconscious)", icon: "💤", desc: "失能、倒地并掉落所持物；力量敏捷豁免自动失败；针对目标的攻击具优势；5尺内近战命中直接自动暴击！", tone: "danger" as const },
+  { id: "invisible", name: "隐形 (Invisible)", icon: "👻", desc: "无法被视觉侦测；自身攻击具有优势；针对自身的攻击具有劣势", tone: "ok" as const },
+  { id: "incapacitated", name: "失能 (Incapacitated)", icon: "🛑", desc: "不能进行任何动作、附赠动作或反应；无法维持专注", tone: "danger" as const },
+  { id: "concentrating", name: "专注 (Concentrating)", icon: "🔮", desc: "正在维持持续性法术；受到伤害需进行体质豁免 (DC 10 或伤害值的一半)", tone: "ai" as const },
+  { id: "exhaustion", name: "力竭 (Exhaustion)", icon: "⌛", desc: "等级累加减值（检定劣势、速度减半、攻击豁免劣势等）", tone: "danger" as const },
+];
+
+// ---------------------------------------------------------------------------
+// 5e 18 Skills Definitions
+// ---------------------------------------------------------------------------
+export const DND_SKILLS = [
+  { id: "athletics", name: "运动 (Athletics)", ability: "STR", desc: "攀爬、跳跃、游泳、擒抱与推撞对决" },
+  { id: "acrobatics", name: "体操 (Acrobatics)", ability: "DEX", desc: "走钢丝、特技翻滚、脱离擒抱" },
+  { id: "sleight_of_hand", name: "巧手 (Sleight of Hand)", ability: "DEX", desc: "顺手牵羊、隐藏物品、近战缴械" },
+  { id: "stealth", name: "隐匿 (Stealth)", ability: "DEX", desc: "潜行、暗中移动、战术躲藏" },
+  { id: "arcana", name: "奥秘 (Arcana)", ability: "INT", desc: "回忆魔法知识、法术流派、位面存在" },
+  { id: "history", name: "历史 (History)", ability: "INT", desc: "历史事件、古老帝国、贵族家族" },
+  { id: "investigation", name: "调查 (Investigation)", ability: "INT", desc: "搜寻隐秘线索、洞察机关破绽" },
+  { id: "nature", name: "自然 (Nature)", ability: "INT", desc: "动植物知识、地形、天气与自然规律" },
+  { id: "religion", name: "宗教 (Religion)", ability: "INT", desc: "神祇、教派仪式、神圣符号" },
+  { id: "animal_handling", name: "驯兽 (Animal Handling)", ability: "WIS", desc: "安抚坐骑、理解动物意图" },
+  { id: "insight", name: "洞悉 (Insight)", ability: "WIS", desc: "识破谎言、洞察战术假动作与意图" },
+  { id: "medicine", name: "医疗 (Medicine)", ability: "WIS", desc: "战地急救、稳定濒死伤势 (DC 10)" },
+  { id: "perception", name: "察觉 (Perception)", ability: "WIS", desc: "侦测周围细节、识破潜伏伏击" },
+  { id: "survival", name: "生存 (Survival)", ability: "WIS", desc: "追踪足迹、野外辨位、预知危险" },
+  { id: "deception", name: "欺瞒 (Deception)", ability: "CHA", desc: "声东击西、误导敌人、战术佯攻" },
+  { id: "intimidation", name: "威吓 (Intimidation)", ability: "CHA", desc: "战吼威压、以气势逼退敌人" },
+  { id: "performance", name: "表演 (Performance)", ability: "CHA", desc: "引人注目、分散注意力" },
+  { id: "persuasion", name: "说服 (Persuasion)", ability: "CHA", desc: "战地谈判、劝降与调停" },
+];
+
 function combatantElevationFt(fighter: Combatant): number | null {
   return explicitElevationFt(
     (fighter.snapshot_json as Record<string, unknown> | undefined)?.elevation_ft
@@ -429,6 +474,9 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [showAddCombatantModal, setShowAddCombatantModal] = useState<boolean>(false);
 
+  // Active Tab for Quick Actions HUD: "actions" | "skills" | "features" | "conditions"
+  const [activeHudTab, setActiveHudTab] = useState<"actions" | "skills" | "features" | "conditions">("actions");
+
   // New combatant form
   const [newCombatantName, setNewCombatantName] = useState<string>("");
   const [newCombatantType, setNewCombatantType] = useState<"character" | "monster" | "npc">("monster");
@@ -446,6 +494,11 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
   const [manualAttackRoll, setManualAttackRoll] = useState<string>("");
   const [manualDamageRoll, setManualDamageRoll] = useState<string>("");
   const [isManualCrit, setIsManualCrit] = useState<boolean>(false);
+
+  // Skill Check Modal state
+  const [selectedSkill, setSelectedSkill] = useState<(typeof DND_SKILLS)[0] | null>(null);
+  const [skillCheckMod, setSkillCheckMod] = useState<string>("3");
+  const [skillCheckResult, setSkillCheckResult] = useState<string>("");
 
   // Dice Roller states
   const [diceHistory, setDiceHistory] = useState<Array<{ id: string; formula: string; result: number; rolls: number[]; isCrit?: boolean; isFumble?: boolean }>>([]);
@@ -516,9 +569,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     return ordered.find((f) => f.id === (promptTargetId || selectedMapTargetId)) ?? ordered.find((f) => f.id !== activeFighter?.id) ?? null;
   }, [ordered, promptTargetId, selectedMapTargetId, activeFighter]);
 
-  // Pending Reactions & Prompts
-  const attackResolutionWindows = (actionsQuery.data ?? []).filter((a) => a.action_type === "attack_resolution_window" && a.status === "pending");
-
   // Advance Turn mutation
   const advanceTurnMutation = useMutation({
     mutationFn: async () => {
@@ -557,6 +607,29 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
       soundboard.playDiceRoll();
       void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
       showToast("🎲 全员先攻已重新投掷并排序！", "success");
+    },
+  });
+
+  // Toggle condition mutation
+  const toggleConditionMutation = useMutation({
+    mutationFn: async ({ combatant, conditionId }: { combatant: Combatant; conditionId: string }) => {
+      const current = combatant.conditions ?? [];
+      const hasIt = current.includes(conditionId);
+      const nextConditions = hasIt ? current.filter((c) => c !== conditionId) : [...current, conditionId];
+      return updateCombatant(
+        campaignId,
+        combatId,
+        combatant.id,
+        { conditions: nextConditions },
+        combatant.version,
+      );
+    },
+    onSuccess: (_data, vars) => {
+      const current = vars.combatant.conditions ?? [];
+      const isAdd = !current.includes(vars.conditionId);
+      if (isAdd) soundboard.playHandout();
+      void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
+      showToast(`🏷️ ${vars.combatant.display_name} 已${isAdd ? "获得状态" : "解除状态"}：${vars.conditionId}`, "info");
     },
   });
 
@@ -759,6 +832,21 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     setDiceHistory((prev) => [entry, ...prev.slice(0, 9)]);
   };
 
+  // Perform a 5e Skill Check
+  const executeSkillCheck = (skill: (typeof DND_SKILLS)[0]) => {
+    soundboard.playDiceRoll();
+    const d20 = Math.floor(Math.random() * 20) + 1;
+    const mod = Number(skillCheckMod) || 0;
+    const total = d20 + mod;
+    const isCrit = d20 === 20;
+    const isFumble = d20 === 1;
+    const text = `${activeFighter?.display_name ?? "行动者"} 进行【${skill.name}】检定：d20(${d20}) + ${mod} = ${total}${isCrit ? "（💥天然20极佳表现！）" : ""}${isFumble ? "（💀天然1大失败！）" : ""}`;
+    setSkillCheckResult(text);
+    if (isCrit) soundboard.playNat20();
+    if (isFumble) soundboard.playNat1();
+    showToast(`🎲 ${skill.name} 检定总值: ${total}`, "info");
+  };
+
   if (combatsQuery.isLoading) {
     return <LoadingBlock label="正在载入战役战斗数据…" />;
   }
@@ -807,7 +895,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
             <span className="text-2xl">⚡</span>
             <div>
               <h1 className="font-display text-lg font-bold text-parchment-100">快捷战斗座舱 (Quick Combat)</h1>
-              <p className="text-2xs text-stone-400">一键动作 · 自动结算 · 玩家实体骰录入 · 753法术位 · 借机反应</p>
+              <p className="text-2xs text-stone-400">全部18技能检定 · 15核心状态 · 实体骰双轨 · 753法术位 · 借机反应</p>
             </div>
           </div>
 
@@ -894,22 +982,49 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
         </div>
       ) : null}
 
-      {/* Interactive Quick Action Bar & Dice Prompt Section */}
-      <div className="mb-3 rounded-xl border border-amber-600/60 bg-gradient-to-r from-ink-900 via-amber-950/20 to-ink-900 p-3.5 shadow-xl">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">⚔️</span>
-            <div>
-              <strong className="text-sm font-bold text-amber-200">
-                当前行动者快捷操作：[{activeFighter?.display_name ?? "未选定"}]
-              </strong>
-              <p className="text-2xs text-stone-400">
-                点击下列卡片可一键唤起「自动代投」或「录入玩家实体骰」双轨裁定
-              </p>
-            </div>
+      {/* Interactive Suite: Quick Actions / 18 Skills / Class Features / 15 Conditions */}
+      <div className="mb-3 rounded-xl border border-ink-700 bg-gradient-to-r from-ink-900 via-ink-950 to-ink-900 p-3.5 shadow-xl">
+        {/* Navigation Tabs for HUD */}
+        <div className="flex flex-wrap items-center justify-between border-b border-ink-800 pb-2.5 gap-2">
+          <div className="flex rounded-lg border border-ink-700 bg-ink-950/80 p-0.5">
+            <button
+              className={`rounded px-3 py-1 text-xs font-bold transition ${activeHudTab === "actions" ? "bg-amber-600 text-amber-950" : "text-stone-400 hover:text-stone-200"}`}
+              onClick={() => setActiveHudTab("actions")}
+              type="button"
+            >
+              ⚔️ 快捷动作与攻击
+            </button>
+            <button
+              className={`rounded px-3 py-1 text-xs font-bold transition ${activeHudTab === "skills" ? "bg-sky-600 text-sky-950" : "text-stone-400 hover:text-stone-200"}`}
+              onClick={() => setActiveHudTab("skills")}
+              type="button"
+            >
+              🎯 18项技能与战术对决
+            </button>
+            <button
+              className={`rounded px-3 py-1 text-xs font-bold transition ${activeHudTab === "features" ? "bg-purple-600 text-purple-950" : "text-stone-400 hover:text-stone-200"}`}
+              onClick={() => setActiveHudTab("features")}
+              type="button"
+            >
+              🛡️ 职业特技与战术爆发
+            </button>
+            <button
+              className={`rounded px-3 py-1 text-xs font-bold transition ${activeHudTab === "conditions" ? "bg-rose-600 text-rose-950" : "text-stone-400 hover:text-stone-200"}`}
+              onClick={() => setActiveHudTab("conditions")}
+              type="button"
+            >
+              🏷️ 15核心状态赋予/解除
+            </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="text-2xs text-stone-400">
+            当前操作目标: <strong className="text-emerald-300">{promptTargetCombatant?.display_name ?? "未选定目标"}</strong>
+          </div>
+        </div>
+
+        {/* Tab 1: ⚔️ 快捷动作与攻击 */}
+        {activeHudTab === "actions" ? (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <button
               className="rounded-lg border border-amber-600/60 bg-amber-950/40 px-3 py-1.5 text-xs font-bold text-amber-200 hover:bg-amber-900/50 shadow-md"
               onClick={() => {
@@ -963,7 +1078,189 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
               ⚡ 借机攻击
             </button>
           </div>
-        </div>
+        ) : null}
+
+        {/* Tab 2: 🎯 18项技能与战术对决 */}
+        {activeHudTab === "skills" ? (
+          <div className="mt-3">
+            {/* Quick Combat Maneuvers */}
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <button
+                className="rounded-lg border border-amber-600/70 bg-amber-950/40 px-2.5 py-1 text-xs font-bold text-amber-200 hover:bg-amber-900/50"
+                onClick={() => {
+                  if (!promptTargetCombatant) return;
+                  toggleConditionMutation.mutate({ combatant: promptTargetCombatant, conditionId: "prone" });
+                  showToast(`🤼 ${activeFighter?.display_name} 发动推撞倒地对决！`, "info");
+                }}
+                type="button"
+              >
+                🤼 推撞倒地 (Shove Prone)
+              </button>
+              <button
+                className="rounded-lg border border-amber-600/70 bg-amber-950/40 px-2.5 py-1 text-xs font-bold text-amber-200 hover:bg-amber-900/50"
+                onClick={() => {
+                  if (!promptTargetCombatant) return;
+                  toggleConditionMutation.mutate({ combatant: promptTargetCombatant, conditionId: "grappled" });
+                  showToast(`🤼 ${activeFighter?.display_name} 发动擒抱压制！`, "info");
+                }}
+                type="button"
+              >
+                🤼 擒抱控制 (Grapple)
+              </button>
+              <button
+                className="rounded-lg border border-emerald-600/70 bg-emerald-950/40 px-2.5 py-1 text-xs font-bold text-emerald-200 hover:bg-emerald-900/50"
+                onClick={() => {
+                  if (!activeFighter) return;
+                  toggleConditionMutation.mutate({ combatant: activeFighter, conditionId: "invisible" });
+                  showToast(`🕵️ ${activeFighter.display_name} 进行战术躲藏并隐蔽！`, "info");
+                }}
+                type="button"
+              >
+                🕵️ 潜行与躲藏 (Hide)
+              </button>
+              <button
+                className="rounded-lg border border-sky-600/70 bg-sky-950/40 px-2.5 py-1 text-xs font-bold text-sky-200 hover:bg-sky-900/50"
+                onClick={() => {
+                  if (!promptTargetCombatant) return;
+                  if (promptTargetCombatant.hp <= 0) {
+                    quickHpAdjustMutation.mutate({ combatant: promptTargetCombatant, delta: 1 });
+                  }
+                  showToast(`🩹 对 ${promptTargetCombatant.display_name} 执行战地急救 (DC 10 医疗检定)！`, "success");
+                }}
+                type="button"
+              >
+                🩹 急救与稳定伤势 (Stabilize)
+              </button>
+              <button
+                className="rounded-lg border border-purple-600/70 bg-purple-950/40 px-2.5 py-1 text-xs font-bold text-purple-200 hover:bg-purple-900/50"
+                onClick={() => {
+                  showToast(`🤝 协助动作：为下一名队友针对 ${promptTargetCombatant?.display_name ?? "目标"} 的首击赋予优势！`, "success");
+                }}
+                type="button"
+              >
+                🤝 协助盟友 (Help)
+              </button>
+            </div>
+
+            {/* 18 Skills Grid */}
+            <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 md:grid-cols-6">
+              {DND_SKILLS.map((skill) => (
+                <button
+                  className="flex flex-col items-start rounded-lg border border-ink-800 bg-ink-950/80 p-2 text-left hover:border-sky-500/60 hover:bg-sky-950/30 transition group"
+                  key={skill.id}
+                  onClick={() => executeSkillCheck(skill)}
+                  title={skill.desc}
+                  type="button"
+                >
+                  <div className="flex w-full items-center justify-between">
+                    <strong className="text-2xs text-stone-200 group-hover:text-sky-200">{skill.name.split(" ")[0]}</strong>
+                    <span className="rounded bg-ink-800 px-1 py-0.5 text-[8px] font-mono text-stone-400">{skill.ability}</span>
+                  </div>
+                  <span className="mt-0.5 truncate text-[9px] text-stone-500">{skill.desc.slice(0, 8)}…</span>
+                </button>
+              ))}
+            </div>
+
+            {skillCheckResult ? (
+              <div className="mt-2 rounded-lg border border-sky-800/60 bg-sky-950/40 p-2 text-2xs text-sky-200 font-mono">
+                {skillCheckResult}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
+        {/* Tab 3: 🛡️ 职业特技与战术爆发 */}
+        {activeHudTab === "features" ? (
+          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-4">
+            <button
+              className="flex flex-col rounded-lg border border-emerald-700/60 bg-emerald-950/30 p-2.5 text-left hover:bg-emerald-900/40 transition"
+              onClick={() => {
+                if (!activeFighter) return;
+                const heal = Math.floor(Math.random() * 10) + 1 + 3;
+                quickHpAdjustMutation.mutate({ combatant: activeFighter, delta: heal });
+                showToast(`🛡️ 战士回气：回复 ${heal} 点生命值！`, "success");
+              }}
+              type="button"
+            >
+              <strong className="text-xs font-bold text-emerald-200">🛡️ 回气 (Second Wind)</strong>
+              <span className="text-2xs text-stone-400 mt-0.5">附赠动作 · 恢复 1d10 + 等级生命</span>
+            </button>
+
+            <button
+              className="flex flex-col rounded-lg border border-amber-700/60 bg-amber-950/30 p-2.5 text-left hover:bg-amber-900/40 transition"
+              onClick={() => {
+                if (!promptTargetCombatant) return;
+                const smiteDamage = Math.floor(Math.random() * 8) + 1 + Math.floor(Math.random() * 8) + 1;
+                quickHpAdjustMutation.mutate({ combatant: promptTargetCombatant, delta: -smiteDamage });
+                showToast(`⚖️ 圣负惩击：对 ${promptTargetCombatant.display_name} 造成 ${smiteDamage} 点额外光耀伤害！`, "success");
+              }}
+              type="button"
+            >
+              <strong className="text-xs font-bold text-amber-200">⚖️ 圣负惩击 (Divine Smite)</strong>
+              <span className="text-2xs text-stone-400 mt-0.5">命中后消耗法术位 · 追加 2d8 光耀伤害</span>
+            </button>
+
+            <button
+              className="flex flex-col rounded-lg border border-rose-700/60 bg-rose-950/30 p-2.5 text-left hover:bg-rose-900/40 transition"
+              onClick={() => {
+                if (!activeFighter) return;
+                toggleConditionMutation.mutate({ combatant: activeFighter, conditionId: "rage" });
+                showToast(`🪓 狂暴 (Rage)：近战伤害+2，获得钝击/穿刺/挥砍抗性！`, "success");
+              }}
+              type="button"
+            >
+              <strong className="text-xs font-bold text-rose-200">🪓 狂暴 (Rage)</strong>
+              <span className="text-2xs text-stone-400 mt-0.5">附赠动作 · 伤害+2，物理伤害抗性</span>
+            </button>
+
+            <button
+              className="flex flex-col rounded-lg border border-purple-700/60 bg-purple-950/30 p-2.5 text-left hover:bg-purple-900/40 transition"
+              onClick={() => {
+                showToast(`🔮 护盾术 (Shield)：反应激活，AC +5 并免疫魔法飞弹直至下回合！`, "success");
+              }}
+              type="button"
+            >
+              <strong className="text-xs font-bold text-purple-200">🔮 护盾术 (Shield)</strong>
+              <span className="text-2xs text-stone-400 mt-0.5">反应触发 · AC +5 直至自身下回合开始</span>
+            </button>
+          </div>
+        ) : null}
+
+        {/* Tab 4: 🏷️ 15核心状态赋予/解除 */}
+        {activeHudTab === "conditions" ? (
+          <div className="mt-3">
+            <div className="mb-2 text-2xs text-stone-400">
+              为目标 <strong className="text-emerald-300">{promptTargetCombatant?.display_name ?? "未选定"}</strong> 一键赋予/解除 5e 核心状态：
+            </div>
+            <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 md:grid-cols-5">
+              {DND_CONDITIONS.map((cond) => {
+                const isActive = (promptTargetCombatant?.conditions ?? []).includes(cond.id);
+                return (
+                  <button
+                    className={`flex flex-col items-start rounded-lg border p-2 text-left transition ${
+                      isActive
+                        ? "border-rose-500 bg-rose-950/60 ring-1 ring-rose-400"
+                        : "border-ink-800 bg-ink-950/80 hover:border-amber-500/50"
+                    }`}
+                    key={cond.id}
+                    onClick={() => {
+                      if (!promptTargetCombatant) return;
+                      toggleConditionMutation.mutate({ combatant: promptTargetCombatant, conditionId: cond.id });
+                    }}
+                    title={cond.desc}
+                    type="button"
+                  >
+                    <div className="flex w-full items-center justify-between">
+                      <span className="text-xs">{cond.icon} {cond.name.split(" ")[0]}</span>
+                      {isActive ? <Badge tone="danger">生效中</Badge> : null}
+                    </div>
+                    <span className="mt-1 line-clamp-1 text-[8px] text-stone-400">{cond.desc}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
 
         {/* Action & Dice Prompt Interactive Modal / Card */}
         {actionPromptOpen ? (
