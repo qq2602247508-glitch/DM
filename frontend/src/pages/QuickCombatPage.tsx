@@ -129,11 +129,14 @@ export const DND_SKILLS = [
   { id: "persuasion", name: "说服 (Persuasion)", ability: "CHA", desc: "战地谈判、劝降与调停" },
 ];
 
-function combatantElevationFt(fighter: Combatant): number | null {
-  return explicitElevationFt(
-    (fighter.snapshot_json as Record<string, unknown> | undefined)?.elevation_ft
-    ?? (fighter.snapshot_json as Record<string, unknown> | undefined)?.elevation
-  );
+function combatantElevationFt(fighter: Combatant): number {
+  const snap = fighter.snapshot_json as Record<string, unknown> | undefined;
+  if (!snap) return 0;
+  const pos = snap.grid_position as { elevation_ft?: number } | undefined;
+  if (pos && typeof pos.elevation_ft === "number") return pos.elevation_ft;
+  if (typeof snap.elevation_ft === "number") return snap.elevation_ft;
+  if (typeof snap.elevation === "number") return snap.elevation;
+  return 0;
 }
 
 function combatantGridPosition(fighter: Combatant): [number, number] | null {
@@ -150,7 +153,7 @@ function combatantGridPosition(fighter: Combatant): [number, number] | null {
 }
 
 // ---------------------------------------------------------------------------
-// Tactical Grid Component for Quick Combat with Enemy Threat Range Display
+// 45° 3D Isometric Tactical Grid Component with Elevation & 3D Spell Volume
 // ---------------------------------------------------------------------------
 function QuickBattleGrid({
   campaignId,
@@ -187,6 +190,7 @@ function QuickBattleGrid({
   const cellSizeFt = 5;
 
   const [interactionMode, setInteractionMode] = useState<"move" | "target">("move");
+  const [viewPerspective, setViewPerspective] = useState<"iso-3d" | "high-3d" | "flat-2d">("iso-3d");
   const [selectedTokenId, setSelectedTokenId] = useState<string>(activeFighterId ?? "");
   const [aimPoint, setAimPoint] = useState<GridPoint | null>(null);
   const [fogPreview, setFogPreview] = useState<boolean>(false);
@@ -245,13 +249,45 @@ function QuickBattleGrid({
     return { meleeKeys, rangedKeys };
   }, [fighters, positions, showEnemyThreat, height, width, cellSizeFt]);
 
+  // Adjust Elevation Mutation
+  const adjustElevationMutation = useMutation({
+    mutationFn: async ({ fighter, deltaFt }: { fighter: Combatant; deltaFt: number }) => {
+      const curElev = combatantElevationFt(fighter);
+      const nextElev = Math.max(0, curElev + deltaFt);
+      const snapshot = {
+        ...(fighter.snapshot_json as Record<string, unknown> | undefined),
+        elevation_ft: nextElev,
+        grid_position: {
+          ...((fighter.snapshot_json as Record<string, unknown> | undefined)?.grid_position as Record<string, unknown> | undefined),
+          elevation_ft: nextElev,
+        },
+      };
+      return updateCombatant(
+        campaignId,
+        combatId,
+        fighter.id,
+        { snapshot_json: snapshot },
+        fighter.version,
+      );
+    },
+    onSuccess: (_data, vars) => {
+      soundboard.playDiceRoll();
+      void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
+      showToast(`🏔️ ${vars.fighter.display_name} 高度已调整！`, "success");
+    },
+  });
+
   // Move token mutation with movement dust VFX
   const moveMutation = useMutation({
     mutationFn: async ({ fighter, newRow, newCol, spentFt }: { fighter: Combatant; newRow: number; newCol: number; spentFt: number }) => {
       const nextRemaining = Math.max(0, (fighter.movement_remaining_ft ?? fighter.speed_ft ?? 30) - spentFt);
       const snapshot = {
         ...(fighter.snapshot_json as Record<string, unknown> | undefined),
-        grid_position: { row: newRow, col: newCol },
+        grid_position: {
+          ...((fighter.snapshot_json as Record<string, unknown> | undefined)?.grid_position as Record<string, unknown> | undefined),
+          row: newRow,
+          col: newCol,
+        },
         row: newRow,
         col: newCol,
       };
@@ -337,11 +373,11 @@ function QuickBattleGrid({
   };
 
   return (
-    <div className="rounded-xl border border-ink-800 bg-ink-950/70 p-3 shadow-xl">
-      {/* Grid Toolbar */}
-      <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2 text-2xs">
+    <div className="rounded-xl border border-ink-800 bg-ink-950/80 p-3 shadow-2xl">
+      {/* Grid 3D Toolbar & Perspective Controls */}
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-2xs">
         <div className="flex flex-wrap items-center gap-2">
-          <strong className="text-stone-300">战术场景网格 ({width}×{height})</strong>
+          <strong className="text-stone-200">⚔️ 3D 战术立体战场 ({width}×{height})</strong>
           <span className="text-stone-500">每格 5 尺</span>
           {interactionMode === "move" && selectedFighter ? (
             <span className="rounded bg-emerald-950/60 border border-emerald-700/50 px-2 py-0.5 text-emerald-300 font-medium">
@@ -349,13 +385,38 @@ function QuickBattleGrid({
             </span>
           ) : null}
           {targeting ? (
-            <span className="rounded bg-sky-950/60 border border-sky-700/50 px-2 py-0.5 text-sky-300 font-medium">
-              🔮 施法指示: {targeting.label} ({targeting.rangeFt}尺)
+            <span className="rounded bg-fuchsia-950/60 border border-fuchsia-700/50 px-2 py-0.5 text-fuchsia-300 font-medium animate-pulse">
+              🔮 3D 法术范围: {targeting.label} ({targeting.rangeFt}尺)
             </span>
           ) : null}
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {/* 3D Perspective Switcher */}
+          <div className="flex rounded-lg border border-ink-700 bg-ink-900 p-0.5">
+            <button
+              className={`rounded px-2 py-1 text-2xs transition ${viewPerspective === "iso-3d" ? "bg-amber-600 font-bold text-amber-950 shadow" : "text-stone-400 hover:text-stone-200"}`}
+              onClick={() => setViewPerspective("iso-3d")}
+              type="button"
+            >
+              📐 45°等轴 3D
+            </button>
+            <button
+              className={`rounded px-2 py-1 text-2xs transition ${viewPerspective === "high-3d" ? "bg-amber-600 font-bold text-amber-950 shadow" : "text-stone-400 hover:text-stone-200"}`}
+              onClick={() => setViewPerspective("high-3d")}
+              type="button"
+            >
+              🦅 俯角 3D
+            </button>
+            <button
+              className={`rounded px-2 py-1 text-2xs transition ${viewPerspective === "flat-2d" ? "bg-amber-600 font-bold text-amber-950 shadow" : "text-stone-400 hover:text-stone-200"}`}
+              onClick={() => setViewPerspective("flat-2d")}
+              type="button"
+            >
+              🗺️ 2D 平面
+            </button>
+          </div>
+
           <button
             className={`rounded border px-2 py-1 text-2xs transition ${
               showEnemyThreat
@@ -365,54 +426,73 @@ function QuickBattleGrid({
             onClick={() => setShowEnemyThreat(!showEnemyThreat)}
             type="button"
           >
-            👹 敌方攻击范围: {showEnemyThreat ? "开启" : "隐藏"}
+            👹 敌方威胁: {showEnemyThreat ? "开" : "关"}
           </button>
+
           <div className="flex rounded-lg border border-ink-700 bg-ink-900 p-0.5">
             <button
-              className={`rounded px-2 py-1 text-2xs transition ${interactionMode === "move" ? "bg-amber-600 font-bold text-amber-950" : "text-stone-400 hover:text-stone-200"}`}
+              className={`rounded px-2 py-1 text-2xs transition ${interactionMode === "move" ? "bg-emerald-600 font-bold text-emerald-950" : "text-stone-400 hover:text-stone-200"}`}
               onClick={() => setInteractionMode("move")}
               type="button"
             >
-              🏃 移动模式
+              🏃 移动
             </button>
             <button
-              className={`rounded px-2 py-1 text-2xs transition ${interactionMode === "target" ? "bg-sky-600 font-bold text-sky-950" : "text-stone-400 hover:text-stone-200"}`}
+              className={`rounded px-2 py-1 text-2xs transition ${interactionMode === "target" ? "bg-fuchsia-600 font-bold text-fuchsia-950" : "text-stone-400 hover:text-stone-200"}`}
               onClick={() => setInteractionMode("target")}
               type="button"
             >
-              🔮 技能/法术瞄准
+              🔮 3D 瞄准
             </button>
           </div>
-          <button
-            className="rounded border border-ink-700 bg-ink-900 px-2 py-1 text-2xs text-stone-400 hover:text-stone-200"
-            onClick={() => setFogPreview(!fogPreview)}
-            type="button"
-          >
-            迷雾: {fogPreview ? "开启" : "关闭"}
-          </button>
         </div>
       </div>
 
-      {/* Threat Range Legend Banner */}
-      {showEnemyThreat ? (
-        <div className="mb-2 flex flex-wrap items-center gap-3 rounded-lg border border-rose-900/40 bg-rose-950/20 px-2.5 py-1 text-2xs text-rose-300">
-          <span className="font-bold">👹 敌方威胁指示：</span>
-          <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-sm border border-rose-500 bg-rose-500/30" />
-            <span>近战触及/借机攻击区 (5尺)</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-sm border border-amber-600/60 bg-amber-600/10" />
-            <span>远程/走位威胁区 (30尺)</span>
-          </span>
+      {/* Selected Token Elevation Adjuster & High Ground Banner */}
+      {selectedFighter ? (
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-ink-700/60 bg-ink-900/80 px-3 py-1.5 text-2xs">
+          <div className="flex items-center gap-2">
+            <span className="text-stone-400">当前选定单位:</span>
+            <strong className="text-parchment-100">{selectedFighter.display_name}</strong>
+            <span className="rounded bg-ink-950 px-2 py-0.5 font-mono text-amber-300 font-bold border border-ink-800">
+              🏔️ 拔高/飞行高度: {combatantElevationFt(selectedFighter)} 尺
+            </span>
+            {combatantElevationFt(selectedFighter) > 0 ? (
+              <Badge tone="ok">高地优势 (+2远程命中/俯视射程)</Badge>
+            ) : null}
+          </div>
+
+          <div className="flex items-center gap-1">
+            <span className="text-stone-400">调整高度:</span>
+            <button
+              className="rounded border border-ink-700 bg-ink-950 px-2 py-0.5 text-2xs text-stone-300 hover:border-amber-500 hover:text-amber-200"
+              onClick={() => adjustElevationMutation.mutate({ fighter: selectedFighter, deltaFt: -5 })}
+              type="button"
+            >
+              ⬇️ -5尺
+            </button>
+            <button
+              className="rounded border border-amber-600/70 bg-amber-950/40 px-2 py-0.5 text-2xs font-bold text-amber-200 hover:bg-amber-900/50"
+              onClick={() => adjustElevationMutation.mutate({ fighter: selectedFighter, deltaFt: 5 })}
+              type="button"
+            >
+              ⬆️ +5尺高地/飞行
+            </button>
+          </div>
         </div>
       ) : null}
 
-      {/* Grid Canvas */}
-      <div className="overflow-auto rounded-lg border border-ink-800 bg-ink-950 p-2">
+      {/* 3D Perspective Stage Container */}
+      <div className="perspective-stage overflow-hidden rounded-xl border border-ink-800 bg-gradient-to-b from-ink-950 via-[#07090d] to-ink-950 p-4 py-8">
         <div
-          className="grid gap-px bg-ink-800 min-w-[560px]"
-          style={{ gridTemplateColumns: `repeat(${width}, minmax(36px, 1fr))` }}
+          className={`grid gap-1 min-w-[560px] mx-auto ${
+            viewPerspective === "iso-3d"
+              ? "grid-3d-iso"
+              : viewPerspective === "high-3d"
+                ? "grid-3d-high"
+                : "grid-2d-flat"
+          }`}
+          style={{ gridTemplateColumns: `repeat(${width}, minmax(40px, 1fr))` }}
         >
           {Array.from({ length: height }, (_, r) =>
             Array.from({ length: width }, (_, c) => {
@@ -443,17 +523,27 @@ function QuickBattleGrid({
               const hasPing = pings.some((p) => p.row === row && p.col === col);
               const activeVfx = vfxEvents.filter((v) => v.row === row && v.col === col);
 
+              const fighterElevFt = fighter ? combatantElevationFt(fighter) : 0;
+
               return (
                 <button
-                  className={`relative aspect-square border border-ink-800/80 p-0.5 text-2xs transition-all duration-150 ${
-                    canMoveHere ? "bg-emerald-950/40 ring-1 ring-inset ring-emerald-500/50 hover:bg-emerald-900/60 cursor-pointer" : ""
-                  } ${inCastRange && interactionMode === "target" ? "bg-sky-950/40 ring-1 ring-inset ring-sky-500/40" : ""} ${
-                    isAreaAffected && interactionMode === "target" ? "!bg-fuchsia-950/70 !ring-2 !ring-inset !ring-fuchsia-400" : ""
+                  className={`relative aspect-square rounded border p-0.5 text-2xs transition-all duration-200 ${
+                    canMoveHere
+                      ? "bg-emerald-950/60 border-emerald-500/70 shadow-[0_0_12px_rgba(16,185,129,0.3)] hover:bg-emerald-900/70 cursor-pointer"
+                      : ""
+                  } ${inCastRange && interactionMode === "target" ? "bg-sky-950/50 border-sky-500/50" : ""} ${
+                    isAreaAffected && interactionMode === "target"
+                      ? "!bg-fuchsia-950/80 !border-fuchsia-400 !shadow-[0_0_16px_rgba(217,70,239,0.6)]"
+                      : ""
                   } ${
-                    !canMoveHere && !inCastRange && isEnemyMeleeThreat ? "bg-rose-950/35 border-rose-800/60 ring-1 ring-inset ring-rose-500/30" : ""
+                    !canMoveHere && !inCastRange && isEnemyMeleeThreat
+                      ? "bg-rose-950/40 border-rose-700/60 shadow-[inset_0_0_8px_rgba(225,29,72,0.4)]"
+                      : ""
                   } ${
-                    !canMoveHere && !inCastRange && !isEnemyMeleeThreat && isEnemyRangedThreat ? "bg-amber-950/15" : ""
-                  } ${fighter ? "cursor-pointer" : "bg-ink-900/60 hover:bg-ink-800/40"}`}
+                    !canMoveHere && !inCastRange && !isEnemyMeleeThreat && isEnemyRangedThreat
+                      ? "bg-amber-950/20 border-amber-800/30"
+                      : "border-ink-800/80 bg-ink-900/70 hover:bg-ink-800/60"
+                  } ${fighter ? "cursor-pointer" : ""}`}
                   key={`${row}-${col}`}
                   onClick={() => {
                     if (fighter) {
@@ -475,15 +565,25 @@ function QuickBattleGrid({
                     e.preventDefault();
                     triggerPing(row, col);
                   }}
+                  style={{
+                    transformStyle: "preserve-3d",
+                  }}
                   title={
                     fighter
-                      ? `${fighter.display_name} (HP: ${fighter.hp}/${fighter.max_hp})`
+                      ? `${fighter.display_name} (HP: ${fighter.hp}/${fighter.max_hp}, 高度: ${fighterElevFt}尺)`
                       : isEnemyMeleeThreat
-                        ? `坐标 (${row}, ${col}) · ⚠️ 处于敌方近战借机威胁区 (5尺)`
+                        ? `坐标 (${row}, ${col}) · ⚠️ 敌方近战借机区 (5尺)`
                         : `坐标 (${row}, ${col})`
                   }
                   type="button"
                 >
+                  {/* 3D Volumetric Area of Effect (AoE) Extrusion Column */}
+                  {isAreaAffected && interactionMode === "target" ? (
+                    <div className="aoe-3d-volume flex items-center justify-center">
+                      <span className="font-bold text-[8px] text-fuchsia-200 drop-shadow">3D AOE</span>
+                    </div>
+                  ) : null}
+
                   {/* Ping Animation Waves */}
                   {hasPing ? (
                     <span className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center">
@@ -492,7 +592,7 @@ function QuickBattleGrid({
                     </span>
                   ) : null}
 
-                  {/* Combat Visual Effects (Slash / Arcane / Shockwave / Smite / Dust) */}
+                  {/* Combat Visual Effects */}
                   {activeVfx.map((vfx) => (
                     <span className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center overflow-visible" key={vfx.id}>
                       {vfx.type === "slash" ? (
@@ -534,39 +634,55 @@ function QuickBattleGrid({
                   {/* Move Range Highlight Dot */}
                   {canMoveHere && !fighter ? (
                     <span className="absolute inset-0 flex items-center justify-center">
-                      <span className="h-2 w-2 rounded-full bg-emerald-400/60" />
+                      <span className="h-2 w-2 rounded-full bg-emerald-400/80 shadow-[0_0_6px_#34d399]" />
                     </span>
                   ) : null}
 
-                  {/* Token Rendering with Smooth Movement Glide */}
+                  {/* 3D Elevated Token with Drop Shadow */}
                   {fighter ? (
-                    <div
-                      className={`token-smooth-move flex h-full w-full flex-col items-center justify-center rounded-lg p-0.5 text-center leading-none shadow-md transition-all ${
-                        isActive
-                          ? "ring-2 ring-amber-400 bg-gradient-to-br from-amber-500/30 to-ink-900"
-                          : isTarget
-                            ? "ring-2 ring-emerald-400 bg-emerald-950/60"
-                            : isSelected
-                              ? "ring-1 ring-sky-400 bg-sky-950/40"
-                              : fighter.entity_type === "character"
-                                ? "bg-sky-950/60 border border-sky-700/50"
-                                : fighter.entity_type === "npc"
-                                  ? "bg-violet-950/60 border border-violet-700/50"
-                                  : "bg-red-950/60 border border-red-700/50"
-                      }`}
-                    >
-                      <span className="truncate font-bold text-[10px] text-parchment-100">
-                        {fighter.display_name?.slice(0, 3)}
-                      </span>
-                      <span className="mt-0.5 text-[8px] font-mono text-stone-400">
-                        {fighter.hp}/{fighter.max_hp}
-                      </span>
-                      {fighter.conditions && fighter.conditions.length > 0 ? (
-                        <span className="mt-0.5 text-[7px] text-amber-300 font-bold">
-                          {fighter.conditions[0].slice(0, 2)}
-                        </span>
+                    <>
+                      {/* Ground Shadow for elevated tokens */}
+                      {fighterElevFt > 0 && viewPerspective !== "flat-2d" ? (
+                        <div className="token-shadow" style={{ transform: `scale(${Math.max(0.4, 1 - fighterElevFt * 0.02)})` }} />
                       ) : null}
-                    </div>
+
+                      <div
+                        className={`token-smooth-move relative flex h-full w-full flex-col items-center justify-center rounded-lg p-0.5 text-center leading-none shadow-lg transition-all ${
+                          isActive
+                            ? "ring-2 ring-amber-400 bg-gradient-to-br from-amber-500/40 to-ink-900"
+                            : isTarget
+                              ? "ring-2 ring-emerald-400 bg-emerald-950/70"
+                              : isSelected
+                                ? "ring-1 ring-sky-400 bg-sky-950/50"
+                                : fighter.entity_type === "character"
+                                  ? "bg-sky-950/70 border border-sky-600/60"
+                                  : fighter.entity_type === "npc"
+                                    ? "bg-violet-950/70 border border-violet-600/60"
+                                    : "bg-red-950/70 border border-red-600/60"
+                        }`}
+                        style={{
+                          transform: viewPerspective !== "flat-2d" && fighterElevFt > 0 ? `translateZ(${fighterElevFt * 3.5}px)` : undefined,
+                          transformStyle: "preserve-3d",
+                        }}
+                      >
+                        <span className="truncate font-bold text-[10px] text-parchment-100 drop-shadow">
+                          {fighter.display_name?.slice(0, 3)}
+                        </span>
+                        <span className="mt-0.5 text-[8px] font-mono text-stone-300">
+                          {fighter.hp}/{fighter.max_hp}
+                        </span>
+                        {fighterElevFt > 0 ? (
+                          <span className="mt-0.5 rounded bg-amber-400/90 px-1 text-[7px] font-black text-amber-950">
+                            ▲{fighterElevFt}尺
+                          </span>
+                        ) : null}
+                        {fighter.conditions && fighter.conditions.length > 0 ? (
+                          <span className="mt-0.5 text-[7px] text-amber-300 font-bold">
+                            {fighter.conditions[0].slice(0, 2)}
+                          </span>
+                        ) : null}
+                      </div>
+                    </>
                   ) : null}
                 </button>
               );
@@ -965,7 +1081,11 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
       // Push target token
       const snapshot = {
         ...(promptTargetCombatant.snapshot_json as Record<string, unknown> | undefined),
-        grid_position: { row: pushedRow, col: pushedCol },
+        grid_position: {
+          ...((promptTargetCombatant.snapshot_json as Record<string, unknown> | undefined)?.grid_position as Record<string, unknown> | undefined),
+          row: pushedRow,
+          col: pushedCol,
+        },
         row: pushedRow,
         col: pushedCol,
       };
@@ -1216,10 +1336,10 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
               className="rounded-xl border border-amber-500/70 bg-gradient-to-r from-amber-600 to-amber-700 px-6 py-3 text-sm font-bold text-amber-950 shadow-lg shadow-amber-600/30 transition hover:brightness-110 active:scale-95"
               onClick={async () => {
                 const combat = await createCombat(campaignId, { name: "红落避难所前厅突袭", round_number: 1, status: "active" });
-                await createCombatant(campaignId, combat.id, { display_name: "圣骑士 瓦伦丁", entity_type: "character", hp: 28, max_hp: 28, armor_class: 18, initiative: 17, conditions: [], snapshot_json: { actions: [], row: 3, col: 3 } });
-                await createCombatant(campaignId, combat.id, { display_name: "游侠 艾拉", entity_type: "character", hp: 20, max_hp: 20, armor_class: 15, initiative: 15, conditions: [], snapshot_json: { actions: [], row: 4, col: 2 } });
-                await createCombatant(campaignId, combat.id, { display_name: "地精头目·裂齿", entity_type: "monster", hp: 21, max_hp: 21, armor_class: 15, initiative: 14, conditions: [], snapshot_json: { actions: [], row: 3, col: 7 } });
-                await createCombatant(campaignId, combat.id, { display_name: "地精射手 A", entity_type: "monster", hp: 7, max_hp: 7, armor_class: 13, initiative: 11, conditions: [], snapshot_json: { actions: [], row: 2, col: 8 } });
+                await createCombatant(campaignId, combat.id, { display_name: "圣骑士 瓦伦丁", entity_type: "character", hp: 28, max_hp: 28, armor_class: 18, initiative: 17, conditions: [], snapshot_json: { actions: [], row: 3, col: 3, elevation_ft: 0 } });
+                await createCombatant(campaignId, combat.id, { display_name: "游侠 艾拉", entity_type: "character", hp: 20, max_hp: 20, armor_class: 15, initiative: 15, conditions: [], snapshot_json: { actions: [], row: 4, col: 2, elevation_ft: 10 } });
+                await createCombatant(campaignId, combat.id, { display_name: "地精头目·裂齿", entity_type: "monster", hp: 21, max_hp: 21, armor_class: 15, initiative: 14, conditions: [], snapshot_json: { actions: [], row: 3, col: 7, elevation_ft: 0 } });
+                await createCombatant(campaignId, combat.id, { display_name: "地精射手 A", entity_type: "monster", hp: 7, max_hp: 7, armor_class: 13, initiative: 11, conditions: [], snapshot_json: { actions: [], row: 2, col: 8, elevation_ft: 0 } });
                 soundboard.playNat20();
                 setSelectedCombatId(combat.id);
                 void queryClient.invalidateQueries({ queryKey: ["combats", campaignId] });
@@ -1244,7 +1364,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
             <span className="text-2xl">⚡</span>
             <div>
               <h1 className="font-display text-lg font-bold text-parchment-100">快捷战斗座舱 (Quick Combat)</h1>
-              <p className="text-2xs text-stone-400">敌方威胁范围 · 攻击特效 · 移动滑动动画 · 漂浮伤害 · 雷鸣推开 · 魔法飞弹</p>
+              <p className="text-2xs text-stone-400">45°等轴 3D 战术战场 · 高低差拔高/飞行 · 3D 法术范围 · 敌方威胁 · 攻击特效</p>
             </div>
           </div>
 
@@ -1881,7 +2001,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
 
       {/* Main 2-Column Cockpit Layout: Tactical Map (Left) + Turn Console & AI (Right) */}
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-12">
-        {/* Left Column: 🗺️ 战术地图与移动距离范围 (6 Cols) */}
+        {/* Left Column: 🗺️ 3D 战术地图与移动距离范围 (6 Cols) */}
         <div className="flex flex-col gap-3 lg:col-span-6">
           <QuickBattleGrid
             activeFighterId={activeFighter?.id ?? null}
@@ -1911,7 +2031,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
                 <div className="flex items-center justify-between rounded-lg border border-ink-800 bg-ink-950/60 p-2 text-2xs" key={f.id}>
                   <div className="min-w-0 pr-2">
                     <strong className="truncate block text-stone-200">{f.display_name}</strong>
-                    <span className="text-stone-400">HP: {f.hp}/{f.max_hp}</span>
+                    <span className="text-stone-400">HP: {f.hp}/{f.max_hp} · ▲{combatantElevationFt(f)}尺</span>
                   </div>
                   <div className="flex gap-1">
                     <button
@@ -2158,6 +2278,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
                       actions: [],
                       row: Math.floor(Math.random() * 5) + 2,
                       col: Math.floor(Math.random() * 8) + 2,
+                      elevation_ft: 0,
                     },
                   });
                   setShowAddCombatantModal(false);

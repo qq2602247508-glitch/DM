@@ -63,6 +63,74 @@ textarea {
 }
 
 /* -------------------------------------------------------------------------
+ * 3D Isometric Battlefield & Elevation Styles
+ * ------------------------------------------------------------------------- */
+
+.perspective-stage {
+  perspective: 1200px;
+  perspective-origin: 50% 35%;
+}
+
+.grid-3d-iso {
+  transform: rotateX(54deg) rotateZ(-28deg) scale(0.92);
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: -20px 30px 50px rgba(0, 0, 0, 0.8), 0 0 100px rgba(0, 0, 0, 0.5);
+}
+
+.grid-3d-high {
+  transform: rotateX(35deg) rotateZ(-12deg) scale(0.95);
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: -10px 20px 40px rgba(0, 0, 0, 0.8);
+}
+
+.grid-2d-flat {
+  transform: none;
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: none;
+}
+
+/* 3D Volumetric Area of Effect Column */
+.aoe-3d-volume {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transform-style: preserve-3d;
+  transform: translateZ(24px);
+  border-radius: 6px;
+  background: linear-gradient(to top, rgba(217, 70, 239, 0.45), rgba(168, 85, 247, 0.15));
+  border: 1.5px solid rgba(232, 121, 249, 0.8);
+  box-shadow: 0 0 20px rgba(217, 70, 239, 0.6), inset 0 0 15px rgba(217, 70, 239, 0.4);
+  animation: aoe-pulse 2s ease-in-out infinite;
+}
+
+@keyframes aoe-pulse {
+  0%, 100% {
+    opacity: 0.85;
+    transform: translateZ(20px);
+  }
+  50% {
+    opacity: 1;
+    transform: translateZ(32px);
+    box-shadow: 0 0 30px rgba(217, 70, 239, 0.8), inset 0 0 20px rgba(217, 70, 239, 0.6);
+  }
+}
+
+/* 3D Token Elevation Drop Shadow */
+.token-shadow {
+  position: absolute;
+  bottom: -4px;
+  left: 10%;
+  width: 80%;
+  height: 25%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(2px);
+}
+
+/* -------------------------------------------------------------------------
  * Combat VFX & Movement Animations
  * ------------------------------------------------------------------------- */
 
