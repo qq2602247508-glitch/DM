@@ -17,6 +17,7 @@ export type RoutePath =
   | "/quests"
   | "/simulation"
   | "/combat"
+  | "/quick-combat"
   | "/proposals"
   | "/settings"
   | "/player";
@@ -38,6 +39,7 @@ const ROUTES: readonly RoutePath[] = [
   "/quests",
   "/simulation",
   "/combat",
+  "/quick-combat",
   "/proposals",
   "/settings",
   "/player",
