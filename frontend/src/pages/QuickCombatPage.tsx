@@ -21,6 +21,7 @@ import {
   resolveCombatPreDamageReaction,
   updateCombat,
   updateCombatant,
+  type CombatActionCommand,
 } from "../api/entities";
 import { listCampaigns } from "../api/campaigns";
 import { runAssistantTurn } from "../api/assistant";
@@ -427,7 +428,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
   const [autoEnemies, setAutoEnemies] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [showAddCombatantModal, setShowAddCombatantModal] = useState<boolean>(false);
-  const [showNewCombatModal, setShowNewCombatModal] = useState<boolean>(false);
 
   // New combatant form
   const [newCombatantName, setNewCombatantName] = useState<string>("");
@@ -435,6 +435,17 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
   const [newCombatantHp, setNewCombatantHp] = useState<string>("12");
   const [newCombatantAc, setNewCombatantAc] = useState<string>("14");
   const [newCombatantInit, setNewCombatantInit] = useState<string>("10");
+
+  // Interactive Dice Prompt / Action HUD States
+  const [actionPromptOpen, setActionPromptOpen] = useState<boolean>(false);
+  const [promptActionName, setPromptActionName] = useState<string>("近战武器攻击");
+  const [promptTargetId, setPromptTargetId] = useState<string>("");
+  const [promptAttackMod, setPromptAttackMod] = useState<string>("4");
+  const [promptDamageDice, setPromptDamageDice] = useState<string>("1d8+2");
+  const [promptDamageType, setPromptDamageType] = useState<string>("slashing");
+  const [manualAttackRoll, setManualAttackRoll] = useState<string>("");
+  const [manualDamageRoll, setManualDamageRoll] = useState<string>("");
+  const [isManualCrit, setIsManualCrit] = useState<boolean>(false);
 
   // Dice Roller states
   const [diceHistory, setDiceHistory] = useState<Array<{ id: string; formula: string; result: number; rolls: number[]; isCrit?: boolean; isFumble?: boolean }>>([]);
@@ -477,13 +488,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     refetchInterval: 3000,
   });
 
-  const effectsQuery = useQuery({
-    queryKey: ["combat-effects", campaignId, combatId],
-    queryFn: ({ signal }) => (combatId ? listCombatEffects(campaignId, combatId, signal) : Promise.resolve([])),
-    enabled: Boolean(combatId),
-    refetchInterval: 3000,
-  });
-
   const charactersQuery = useQuery({
     queryKey: ["characters", campaignId],
     queryFn: ({ signal }) => listCharacters(campaignId, signal),
@@ -507,10 +511,13 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     return (charactersQuery.data ?? []).find((c) => c.id === activeFighter.entity_id);
   }, [activeFighter, charactersQuery.data]);
 
+  // Target Combatant for Action Prompt
+  const promptTargetCombatant = useMemo(() => {
+    return ordered.find((f) => f.id === (promptTargetId || selectedMapTargetId)) ?? ordered.find((f) => f.id !== activeFighter?.id) ?? null;
+  }, [ordered, promptTargetId, selectedMapTargetId, activeFighter]);
+
   // Pending Reactions & Prompts
-  const latestAction = (actionsQuery.data ?? [])[0] ?? null;
   const attackResolutionWindows = (actionsQuery.data ?? []).filter((a) => a.action_type === "attack_resolution_window" && a.status === "pending");
-  const preDamageWindows = (actionsQuery.data ?? []).filter((a) => a.action_type === "pre_damage_reaction_window" && a.status === "pending");
 
   // Advance Turn mutation
   const advanceTurnMutation = useMutation({
@@ -574,30 +581,118 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     },
   });
 
-  // Add Combatant mutation
-  const addCombatantMutation = useMutation({
+  // 1-Click Auto Resolve Action Mutation (Smart Dice + Resistance calculation)
+  const autoResolveActionMutation = useMutation({
     mutationFn: async () => {
-      if (!combatId) throw new Error("请先选择或新建战斗");
-      if (!newCombatantName.trim()) throw new Error("请输入战斗员名称");
-      return createCombatant(campaignId, combatId, {
-        display_name: newCombatantName.trim(),
-        entity_type: newCombatantType,
-        hp: Number(newCombatantHp) || 10,
-        max_hp: Number(newCombatantHp) || 10,
-        armor_class: Number(newCombatantAc) || 10,
-        initiative: Number(newCombatantInit) || 10,
-        conditions: [],
-        snapshot_json: {
-          row: Math.floor(Math.random() * 5) + 2,
-          col: Math.floor(Math.random() * 8) + 2,
-        },
-      });
+      if (!activeFighter || !promptTargetCombatant) throw new Error("请选定攻击者与受击目标");
+      const attackMod = Number(promptAttackMod) || 0;
+      const d20 = Math.floor(Math.random() * 20) + 1;
+      const attackTotal = d20 + attackMod;
+      const isCrit = d20 === 20;
+      const targetAc = promptTargetCombatant.armor_class ?? 10;
+      const isHit = isCrit || attackTotal >= targetAc;
+
+      if (!isHit) {
+        soundboard.playDiceRoll();
+        const command: CombatActionCommand = {
+          action_type: "damage",
+          target_combatant_id: promptTargetCombatant.id,
+          target_version: promptTargetCombatant.version,
+          actor_combatant_id: activeFighter.id,
+          actor_version: activeFighter.version,
+          action_cost: "action",
+          action_name: promptActionName,
+          amount: 0,
+          is_attack: true,
+          attack_roll_total: attackTotal,
+          resolution_note: `${activeFighter.display_name} 发动「${promptActionName}」命中检定 ${d20}+${attackMod} = ${attackTotal} (vs AC ${targetAc}) ➔ ❌ 未命中！`,
+        };
+        return confirmCombatAction(campaignId, combatId, command);
+      }
+
+      // Roll damage
+      const dieSides = promptDamageDice.includes("d12") ? 12 : promptDamageDice.includes("d10") ? 10 : promptDamageDice.includes("d6") ? 6 : promptDamageDice.includes("d4") ? 4 : 8;
+      const baseDamage = Math.floor(Math.random() * dieSides) + 1 + (isCrit ? Math.floor(Math.random() * dieSides) + 1 : 0) + 2;
+
+      // Check target resistances
+      const resistances = promptTargetCombatant.damage_resistances ?? [];
+      const immunities = promptTargetCombatant.damage_immunities ?? [];
+      const vulnerabilities = promptTargetCombatant.damage_vulnerabilities ?? [];
+      let finalDamage = baseDamage;
+      if (immunities.includes(promptDamageType)) finalDamage = 0;
+      else if (resistances.includes(promptDamageType)) finalDamage = Math.floor(baseDamage / 2);
+      else if (vulnerabilities.includes(promptDamageType)) finalDamage = baseDamage * 2;
+
+      const command: CombatActionCommand = {
+        action_type: "damage",
+        target_combatant_id: promptTargetCombatant.id,
+        target_version: promptTargetCombatant.version,
+        actor_combatant_id: activeFighter.id,
+        actor_version: activeFighter.version,
+        action_cost: "action",
+        action_name: promptActionName,
+        amount: finalDamage,
+        damage_type: promptDamageType,
+        is_attack: true,
+        attack_roll_total: attackTotal,
+        critical_hit: isCrit,
+        resolution_note: `${activeFighter.display_name} 发动「${promptActionName}」命中检定 ${d20}+${attackMod} = ${attackTotal} (vs AC ${targetAc}) ➔ ✅ 命中！造成 ${finalDamage} 点 ${promptDamageType} 伤害${isCrit ? "（💥暴击！）" : ""}${resistances.includes(promptDamageType) ? "（抗性减半）" : ""}`,
+      };
+
+      return confirmCombatAction(campaignId, combatId, command);
     },
     onSuccess: () => {
-      setShowAddCombatantModal(false);
-      setNewCombatantName("");
+      soundboard.playAttackHit();
+      setActionPromptOpen(false);
       void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
-      showToast("👥 战斗员已加入战场！", "success");
+      void queryClient.invalidateQueries({ queryKey: ["combat-actions", campaignId, combatId] });
+      showToast("⚔️ 动作已自动投骰并结算！", "success");
+    },
+    onError: (err) => {
+      showToast(err instanceof Error ? err.message : "自动结算失败", "error");
+    },
+  });
+
+  // Manual Dice Input Confirmation Mutation (Physical dice input)
+  const confirmManualDiceActionMutation = useMutation({
+    mutationFn: async () => {
+      if (!activeFighter || !promptTargetCombatant) throw new Error("请选定攻击者与受击目标");
+      const attackTotal = Number(manualAttackRoll) || 15;
+      const targetAc = promptTargetCombatant.armor_class ?? 10;
+      const isHit = isManualCrit || attackTotal >= targetAc;
+      const dmg = Number(manualDamageRoll) || 0;
+      const finalDmg = isHit ? dmg : 0;
+
+      const command: CombatActionCommand = {
+        action_type: "damage",
+        target_combatant_id: promptTargetCombatant.id,
+        target_version: promptTargetCombatant.version,
+        actor_combatant_id: activeFighter.id,
+        actor_version: activeFighter.version,
+        action_cost: "action",
+        action_name: promptActionName,
+        amount: finalDmg,
+        damage_type: promptDamageType,
+        is_attack: true,
+        attack_roll_total: attackTotal,
+        critical_hit: isManualCrit,
+        resolution_note: `${activeFighter.display_name} 录入实体骰「${promptActionName}」命中检定 ${attackTotal} (vs AC ${targetAc}) ➔ ${isHit ? `✅ 命中！造成 ${finalDmg} 点伤害` : "❌ 未命中"}${isManualCrit ? "（💥暴击！）" : ""}`,
+      };
+
+      return confirmCombatAction(campaignId, combatId, command);
+    },
+    onSuccess: () => {
+      soundboard.playAttackHit();
+      setActionPromptOpen(false);
+      setManualAttackRoll("");
+      setManualDamageRoll("");
+      setIsManualCrit(false);
+      void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
+      void queryClient.invalidateQueries({ queryKey: ["combat-actions", campaignId, combatId] });
+      showToast("✍️ 玩家实体骰结果已应用并结算！", "success");
+    },
+    onError: (err) => {
+      showToast(err instanceof Error ? err.message : "实体骰应用失败", "error");
     },
   });
 
@@ -635,7 +730,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     },
   });
 
-  // Roll dice
+  // Roll dice helper
   const rollDice = (sides: number, count = 1) => {
     soundboard.playDiceRoll();
     const mod = Number(customDiceMod) || 0;
@@ -684,10 +779,10 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
               className="rounded-xl border border-amber-500/70 bg-gradient-to-r from-amber-600 to-amber-700 px-6 py-3 text-sm font-bold text-amber-950 shadow-lg shadow-amber-600/30 transition hover:brightness-110 active:scale-95"
               onClick={async () => {
                 const combat = await createCombat(campaignId, { name: "红落避难所前厅突袭", round_number: 1, status: "active" });
-                await createCombatant(campaignId, combat.id, { display_name: "圣骑士 瓦伦丁", entity_type: "character", hp: 28, max_hp: 28, armor_class: 18, initiative: 17, conditions: [], snapshot_json: { row: 3, col: 3 } });
-                await createCombatant(campaignId, combat.id, { display_name: "游侠 艾拉", entity_type: "character", hp: 20, max_hp: 20, armor_class: 15, initiative: 15, conditions: [], snapshot_json: { row: 4, col: 2 } });
-                await createCombatant(campaignId, combat.id, { display_name: "地精头目·裂齿", entity_type: "monster", hp: 21, max_hp: 21, armor_class: 15, initiative: 14, conditions: [], snapshot_json: { row: 3, col: 7 } });
-                await createCombatant(campaignId, combat.id, { display_name: "地精射手 A", entity_type: "monster", hp: 7, max_hp: 7, armor_class: 13, initiative: 11, conditions: [], snapshot_json: { row: 2, col: 8 } });
+                await createCombatant(campaignId, combat.id, { display_name: "圣骑士 瓦伦丁", entity_type: "character", hp: 28, max_hp: 28, armor_class: 18, initiative: 17, conditions: [], snapshot_json: { actions: [], row: 3, col: 3 } });
+                await createCombatant(campaignId, combat.id, { display_name: "游侠 艾拉", entity_type: "character", hp: 20, max_hp: 20, armor_class: 15, initiative: 15, conditions: [], snapshot_json: { actions: [], row: 4, col: 2 } });
+                await createCombatant(campaignId, combat.id, { display_name: "地精头目·裂齿", entity_type: "monster", hp: 21, max_hp: 21, armor_class: 15, initiative: 14, conditions: [], snapshot_json: { actions: [], row: 3, col: 7 } });
+                await createCombatant(campaignId, combat.id, { display_name: "地精射手 A", entity_type: "monster", hp: 7, max_hp: 7, armor_class: 13, initiative: 11, conditions: [], snapshot_json: { actions: [], row: 2, col: 8 } });
                 soundboard.playNat20();
                 setSelectedCombatId(combat.id);
                 void queryClient.invalidateQueries({ queryKey: ["combats", campaignId] });
@@ -712,7 +807,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
             <span className="text-2xl">⚡</span>
             <div>
               <h1 className="font-display text-lg font-bold text-parchment-100">快捷战斗座舱 (Quick Combat)</h1>
-              <p className="text-2xs text-stone-400">全规则积木 · 753法术位 · 移动距离与范围 · 实时抗性与借机反应</p>
+              <p className="text-2xs text-stone-400">一键动作 · 自动结算 · 玩家实体骰录入 · 753法术位 · 借机反应</p>
             </div>
           </div>
 
@@ -789,34 +884,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
         </div>
       </header>
 
-      {/* Reaction Windows / Pause Alerts */}
-      {attackResolutionWindows.length > 0 ? (
-        <div className="mb-3 rounded-xl border border-violet-600/70 bg-violet-950/40 p-3 text-xs text-violet-100 flex flex-wrap items-center justify-between gap-2 shadow-lg">
-          <div>
-            <strong className="text-violet-300">⚡ 攻击决议反应窗口 (Reaction Window)</strong>
-            <p className="mt-0.5 text-2xs text-stone-300">
-              攻击已初步命中，伤害未落地。可使用闪避、护盾术或防御特性截击！
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              onClick={() => resolveCombatAttackResolution(campaignId, combatId, attackResolutionWindows[0].id, attackResolutionWindows[0].version, "accept", "shield")}
-              size="sm"
-              variant="primary"
-            >
-              🛡️ 发动反应截击
-            </Button>
-            <Button
-              onClick={() => resolveCombatAttackResolution(campaignId, combatId, attackResolutionWindows[0].id, attackResolutionWindows[0].version, "reject", "shield")}
-              size="sm"
-              variant="ghost"
-            >
-              放弃反应
-            </Button>
-          </div>
-        </div>
-      ) : null}
-
       {/* Top Initiative Card Strip */}
       {ordered.length > 0 ? (
         <div className="mb-3">
@@ -827,6 +894,181 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
         </div>
       ) : null}
 
+      {/* Interactive Quick Action Bar & Dice Prompt Section */}
+      <div className="mb-3 rounded-xl border border-amber-600/60 bg-gradient-to-r from-ink-900 via-amber-950/20 to-ink-900 p-3.5 shadow-xl">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">⚔️</span>
+            <div>
+              <strong className="text-sm font-bold text-amber-200">
+                当前行动者快捷操作：[{activeFighter?.display_name ?? "未选定"}]
+              </strong>
+              <p className="text-2xs text-stone-400">
+                点击下列卡片可一键唤起「自动代投」或「录入玩家实体骰」双轨裁定
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              className="rounded-lg border border-amber-600/60 bg-amber-950/40 px-3 py-1.5 text-xs font-bold text-amber-200 hover:bg-amber-900/50 shadow-md"
+              onClick={() => {
+                setPromptActionName("近战武器重击 (Melee Attack)");
+                setPromptAttackMod("5");
+                setPromptDamageDice("1d8+3");
+                setPromptDamageType("slashing");
+                setActionPromptOpen(true);
+              }}
+              type="button"
+            >
+              🗡️ 近战攻击
+            </button>
+            <button
+              className="rounded-lg border border-sky-600/60 bg-sky-950/40 px-3 py-1.5 text-xs font-bold text-sky-200 hover:bg-sky-900/50 shadow-md"
+              onClick={() => {
+                setPromptActionName("远程射击 (Ranged Attack)");
+                setPromptAttackMod("6");
+                setPromptDamageDice("1d8+3");
+                setPromptDamageType("piercing");
+                setActionPromptOpen(true);
+              }}
+              type="button"
+            >
+              🏹 远程射击
+            </button>
+            <button
+              className="rounded-lg border border-purple-600/60 bg-purple-950/40 px-3 py-1.5 text-xs font-bold text-purple-200 hover:bg-purple-900/50 shadow-md"
+              onClick={() => {
+                setPromptActionName("灼热法术冲击 (Spell Attack)");
+                setPromptAttackMod("6");
+                setPromptDamageDice("3d6");
+                setPromptDamageType("fire");
+                setActionPromptOpen(true);
+              }}
+              type="button"
+            >
+              🔮 快速法术打击
+            </button>
+            <button
+              className="rounded-lg border border-rose-600/60 bg-rose-950/40 px-3 py-1.5 text-xs font-bold text-rose-200 hover:bg-rose-900/50 shadow-md"
+              onClick={() => {
+                setPromptActionName("借机攻击 (Opportunity Attack)");
+                setPromptAttackMod("5");
+                setPromptDamageDice("1d8+3");
+                setPromptDamageType("slashing");
+                setActionPromptOpen(true);
+              }}
+              type="button"
+            >
+              ⚡ 借机攻击
+            </button>
+          </div>
+        </div>
+
+        {/* Action & Dice Prompt Interactive Modal / Card */}
+        {actionPromptOpen ? (
+          <div className="mt-3.5 rounded-xl border border-amber-500/70 bg-ink-950/90 p-4 shadow-2xl animate-fade-in">
+            <div className="flex flex-wrap items-center justify-between border-b border-ink-800 pb-2.5">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🎲</span>
+                <strong className="text-sm text-parchment-100">
+                  动作判定：{promptActionName} ➔ 目标：
+                  <span className="text-emerald-300">
+                    {promptTargetCombatant?.display_name ?? "未选定"} (AC {promptTargetCombatant?.armor_class ?? 10} · HP {promptTargetCombatant?.hp}/{promptTargetCombatant?.max_hp})
+                  </span>
+                </strong>
+              </div>
+              <button
+                className="text-stone-400 hover:text-stone-200 text-xs"
+                onClick={() => setActionPromptOpen(false)}
+                type="button"
+              >
+                ✕ 关闭
+              </button>
+            </div>
+
+            <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
+              {/* Option 1: Full Auto Resolve */}
+              <div className="flex flex-col justify-between rounded-xl border border-emerald-800/60 bg-emerald-950/20 p-3.5 shadow-md">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-emerald-400 font-bold text-xs uppercase tracking-wide">🤖 模式 A：智能代投与自动结算</span>
+                    <Badge tone="ok">极速推荐</Badge>
+                  </div>
+                  <p className="mt-1.5 text-2xs leading-relaxed text-stone-300">
+                    系统自动投掷 d20 命中检定与伤害骰，自动比对目标 AC，计算暴击与抗性减免，扣减目标生命值并播放打击音效。
+                  </p>
+                </div>
+
+                <button
+                  className="mt-3 w-full rounded-lg border border-emerald-600 bg-emerald-600/30 py-2.5 text-xs font-bold text-emerald-200 shadow-lg hover:bg-emerald-600/50 disabled:opacity-50 transition active:scale-95"
+                  disabled={autoResolveActionMutation.isPending || !promptTargetCombatant}
+                  onClick={() => autoResolveActionMutation.mutate()}
+                  type="button"
+                >
+                  {autoResolveActionMutation.isPending ? "正在自动结算…" : "🎲 一键自动投骰并扣除目标生命"}
+                </button>
+              </div>
+
+              {/* Option 2: Manual Physical Dice Input */}
+              <div className="rounded-xl border border-amber-800/60 bg-amber-950/20 p-3.5 shadow-md">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-amber-400 font-bold text-xs uppercase tracking-wide">✍️ 模式 B：玩家/DM 实体骰结果录入</span>
+                  <Badge tone="warn">真实跑团</Badge>
+                </div>
+                <p className="mt-1 text-2xs text-stone-300">
+                  玩家或 DM 掷出真实骰子后，在此输入点数，系统将按真实点数精准写入规则：
+                </p>
+
+                <div className="mt-2.5 grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-2xs font-semibold text-stone-400">命中检定总值 (d20+加值)</label>
+                    <input
+                      className={`${inputCls} mt-1 font-mono text-xs`}
+                      onChange={(e) => setManualAttackRoll(e.target.value)}
+                      placeholder="如: 19 (vs AC 18)"
+                      type="number"
+                      value={manualAttackRoll}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-2xs font-semibold text-stone-400">最终伤害点数</label>
+                    <input
+                      className={`${inputCls} mt-1 font-mono text-xs`}
+                      onChange={(e) => setManualDamageRoll(e.target.value)}
+                      placeholder="如: 8"
+                      type="number"
+                      value={manualDamageRoll}
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-2.5 flex items-center justify-between">
+                  <label className="flex items-center gap-1.5 text-2xs text-amber-300 cursor-pointer">
+                    <input
+                      checked={isManualCrit}
+                      className="accent-amber-500"
+                      onChange={(e) => setIsManualCrit(e.target.checked)}
+                      type="checkbox"
+                    />
+                    <span>💥 致命一击 (暴击)</span>
+                  </label>
+
+                  <button
+                    className="rounded-lg border border-amber-600 bg-amber-600/30 px-4 py-1.5 text-xs font-bold text-amber-200 hover:bg-amber-600/50 disabled:opacity-50 transition"
+                    disabled={confirmManualDiceActionMutation.isPending || !promptTargetCombatant}
+                    onClick={() => confirmManualDiceActionMutation.mutate()}
+                    type="button"
+                  >
+                    {confirmManualDiceActionMutation.isPending ? "应用中…" : "✅ 确认应用实体骰"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </div>
+
       {/* Main 2-Column Cockpit Layout: Tactical Map (Left) + Turn Console & AI (Right) */}
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-12">
         {/* Left Column: 🗺️ 战术地图与移动距离范围 (6 Cols) */}
@@ -836,7 +1078,10 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
             campaignId={campaignId}
             combatId={combatId}
             fighters={ordered}
-            onTargetSelect={(id) => setSelectedMapTargetId(id)}
+            onTargetSelect={(id) => {
+              setSelectedMapTargetId(id);
+              setPromptTargetId(id);
+            }}
             onTargetValidityChange={(v) => setTargetingValidity(v)}
             selectedTargetId={selectedMapTargetId}
             targeting={targetingRange}
@@ -911,7 +1156,10 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
                   setTargetingRange(range);
                   setTargetingActorId(range ? actorId ?? activeFighter.id : null);
                 }}
-                onTargetChange={setSelectedMapTargetId}
+                onTargetChange={(id) => {
+                  setSelectedMapTargetId(id);
+                  setPromptTargetId(id);
+                }}
                 selectedTargetId={selectedMapTargetId}
                 targetingValidity={targetingValidity}
                 turnKey={`${activeCombat.round_number}:${activeCombat.current_turn_index ?? 0}:${activeFighter.id}`}
@@ -1084,11 +1332,30 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
             <div className="mt-6 flex justify-end gap-2">
               <Button onClick={() => setShowAddCombatantModal(false)} variant="ghost">取消</Button>
               <Button
-                disabled={addCombatantMutation.isPending}
-                onClick={() => addCombatantMutation.mutate()}
+                onClick={async () => {
+                  if (!newCombatantName.trim()) return;
+                  await createCombatant(campaignId, combatId, {
+                    display_name: newCombatantName.trim(),
+                    entity_type: newCombatantType,
+                    hp: Number(newCombatantHp) || 10,
+                    max_hp: Number(newCombatantHp) || 10,
+                    armor_class: Number(newCombatantAc) || 10,
+                    initiative: Number(newCombatantInit) || 10,
+                    conditions: [],
+                    snapshot_json: {
+                      actions: [],
+                      row: Math.floor(Math.random() * 5) + 2,
+                      col: Math.floor(Math.random() * 8) + 2,
+                    },
+                  });
+                  setShowAddCombatantModal(false);
+                  setNewCombatantName("");
+                  void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
+                  showToast("👥 战斗员已加入战场！", "success");
+                }}
                 variant="primary"
               >
-                {addCombatantMutation.isPending ? "添加中…" : "加入战场"}
+                加入战场
               </Button>
             </div>
           </div>
