@@ -150,7 +150,7 @@ function combatantGridPosition(fighter: Combatant): [number, number] | null {
 }
 
 // ---------------------------------------------------------------------------
-// Tactical Grid Component for Quick Combat with Animated VFX & Movement
+// Tactical Grid Component for Quick Combat with Enemy Threat Range Display
 // ---------------------------------------------------------------------------
 function QuickBattleGrid({
   campaignId,
@@ -190,6 +190,7 @@ function QuickBattleGrid({
   const [selectedTokenId, setSelectedTokenId] = useState<string>(activeFighterId ?? "");
   const [aimPoint, setAimPoint] = useState<GridPoint | null>(null);
   const [fogPreview, setFogPreview] = useState<boolean>(false);
+  const [showEnemyThreat, setShowEnemyThreat] = useState<boolean>(true);
   const [pings, setPings] = useState<Array<{ id: string; row: number; col: number }>>([]);
 
   const activeFighter = useMemo(() => fighters.find((f) => f.id === activeFighterId) ?? null, [fighters, activeFighterId]);
@@ -217,6 +218,32 @@ function QuickBattleGrid({
   const selectedFighter = useMemo(() => fighters.find((f) => f.id === selectedTokenId) ?? activeFighter, [fighters, selectedTokenId, activeFighter]);
   const selectedPos = selectedFighter ? positions[selectedFighter.id] : null;
   const selectedRemaining = selectedFighter?.movement_remaining_ft ?? selectedFighter?.speed_ft ?? 30;
+
+  // Calculate Enemy Threat Ranges (Melee Reach 5ft & Ranged Attack Radius 30ft)
+  const enemyThreatCells = useMemo(() => {
+    if (!showEnemyThreat) return { meleeKeys: new Set<string>(), rangedKeys: new Set<string>() };
+    const meleeKeys = new Set<string>();
+    const rangedKeys = new Set<string>();
+
+    const enemies = fighters.filter((f) => f.entity_type === "monster" && (f.hp ?? 0) > 0);
+    enemies.forEach((enemy) => {
+      const pos = positions[enemy.id];
+      if (!pos) return;
+
+      for (let r = 1; r <= height; r++) {
+        for (let c = 1; c <= width; c++) {
+          const dist = gridDistanceFt({ row: pos[0], col: pos[1] }, { row: r, col: c }, cellSizeFt);
+          if (dist <= 5) {
+            meleeKeys.add(`${r}:${c}`);
+          } else if (dist <= 30) {
+            rangedKeys.add(`${r}:${c}`);
+          }
+        }
+      }
+    });
+
+    return { meleeKeys, rangedKeys };
+  }, [fighters, positions, showEnemyThreat, height, width, cellSizeFt]);
 
   // Move token mutation with movement dust VFX
   const moveMutation = useMutation({
@@ -329,6 +356,17 @@ function QuickBattleGrid({
         </div>
 
         <div className="flex items-center gap-1.5">
+          <button
+            className={`rounded border px-2 py-1 text-2xs transition ${
+              showEnemyThreat
+                ? "border-rose-600 bg-rose-950/60 text-rose-200 font-bold"
+                : "border-ink-700 bg-ink-900 text-stone-400 hover:text-stone-200"
+            }`}
+            onClick={() => setShowEnemyThreat(!showEnemyThreat)}
+            type="button"
+          >
+            👹 敌方攻击范围: {showEnemyThreat ? "开启" : "隐藏"}
+          </button>
           <div className="flex rounded-lg border border-ink-700 bg-ink-900 p-0.5">
             <button
               className={`rounded px-2 py-1 text-2xs transition ${interactionMode === "move" ? "bg-amber-600 font-bold text-amber-950" : "text-stone-400 hover:text-stone-200"}`}
@@ -355,6 +393,21 @@ function QuickBattleGrid({
         </div>
       </div>
 
+      {/* Threat Range Legend Banner */}
+      {showEnemyThreat ? (
+        <div className="mb-2 flex flex-wrap items-center gap-3 rounded-lg border border-rose-900/40 bg-rose-950/20 px-2.5 py-1 text-2xs text-rose-300">
+          <span className="font-bold">👹 敌方威胁指示：</span>
+          <span className="flex items-center gap-1">
+            <span className="h-2 w-2 rounded-sm border border-rose-500 bg-rose-500/30" />
+            <span>近战触及/借机攻击区 (5尺)</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="h-2 w-2 rounded-sm border border-amber-600/60 bg-amber-600/10" />
+            <span>远程/走位威胁区 (30尺)</span>
+          </span>
+        </div>
+      ) : null}
+
       {/* Grid Canvas */}
       <div className="overflow-auto rounded-lg border border-ink-800 bg-ink-950 p-2">
         <div
@@ -366,10 +419,15 @@ function QuickBattleGrid({
               const row = r + 1;
               const col = c + 1;
               const point = { row, col };
+              const cellKey = `${row}:${col}`;
               const fighter = fighters.find((f) => positions[f.id]?.[0] === row && positions[f.id]?.[1] === col);
               const isSelected = selectedTokenId === fighter?.id;
               const isActive = activeFighterId === fighter?.id;
               const isTarget = selectedTargetId === fighter?.id;
+
+              // Enemy Threat Highlight
+              const isEnemyMeleeThreat = enemyThreatCells.meleeKeys.has(cellKey);
+              const isEnemyRangedThreat = enemyThreatCells.rangedKeys.has(cellKey);
 
               // Movement reachability
               const distFromSelected = selectedPos
@@ -381,7 +439,7 @@ function QuickBattleGrid({
               const inCastRange = targeting && activePosition
                 ? isAimPointInRange(activePosition, point, targeting.rangeFt, cellSizeFt)
                 : false;
-              const isAreaAffected = areaKeys.has(`${row}:${col}`);
+              const isAreaAffected = areaKeys.has(cellKey);
               const hasPing = pings.some((p) => p.row === row && p.col === col);
               const activeVfx = vfxEvents.filter((v) => v.row === row && v.col === col);
 
@@ -391,6 +449,10 @@ function QuickBattleGrid({
                     canMoveHere ? "bg-emerald-950/40 ring-1 ring-inset ring-emerald-500/50 hover:bg-emerald-900/60 cursor-pointer" : ""
                   } ${inCastRange && interactionMode === "target" ? "bg-sky-950/40 ring-1 ring-inset ring-sky-500/40" : ""} ${
                     isAreaAffected && interactionMode === "target" ? "!bg-fuchsia-950/70 !ring-2 !ring-inset !ring-fuchsia-400" : ""
+                  } ${
+                    !canMoveHere && !inCastRange && isEnemyMeleeThreat ? "bg-rose-950/35 border-rose-800/60 ring-1 ring-inset ring-rose-500/30" : ""
+                  } ${
+                    !canMoveHere && !inCastRange && !isEnemyMeleeThreat && isEnemyRangedThreat ? "bg-amber-950/15" : ""
                   } ${fighter ? "cursor-pointer" : "bg-ink-900/60 hover:bg-ink-800/40"}`}
                   key={`${row}-${col}`}
                   onClick={() => {
@@ -413,7 +475,13 @@ function QuickBattleGrid({
                     e.preventDefault();
                     triggerPing(row, col);
                   }}
-                  title={fighter ? `${fighter.display_name} (HP: ${fighter.hp}/${fighter.max_hp})` : `坐标 (${row}, ${col})`}
+                  title={
+                    fighter
+                      ? `${fighter.display_name} (HP: ${fighter.hp}/${fighter.max_hp})`
+                      : isEnemyMeleeThreat
+                        ? `坐标 (${row}, ${col}) · ⚠️ 处于敌方近战借机威胁区 (5尺)`
+                        : `坐标 (${row}, ${col})`
+                  }
                   type="button"
                 >
                   {/* Ping Animation Waves */}
@@ -427,32 +495,26 @@ function QuickBattleGrid({
                   {/* Combat Visual Effects (Slash / Arcane / Shockwave / Smite / Dust) */}
                   {activeVfx.map((vfx) => (
                     <span className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center overflow-visible" key={vfx.id}>
-                      {/* Slash VFX */}
                       {vfx.type === "slash" ? (
                         <span className="absolute h-10 w-2.5 rounded-full bg-gradient-to-t from-red-600 via-amber-400 to-white animate-vfx-slash shadow-[0_0_15px_#f59e0b]" />
                       ) : null}
 
-                      {/* Arcane Dart VFX */}
                       {vfx.type === "arcane" ? (
                         <span className="absolute h-8 w-8 rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 animate-vfx-arcane-dart shadow-[0_0_20px_#d946ef]" />
                       ) : null}
 
-                      {/* Thunderwave Shockwave VFX */}
                       {vfx.type === "shockwave" ? (
                         <span className="absolute h-12 w-12 rounded-full border-4 border-sky-400 bg-sky-500/20 animate-vfx-shockwave" />
                       ) : null}
 
-                      {/* Holy Smite Beam VFX */}
                       {vfx.type === "smite" ? (
                         <span className="absolute h-16 w-3 rounded bg-gradient-to-b from-amber-200 via-yellow-400 to-amber-600 animate-vfx-smite shadow-[0_0_25px_#fef08a]" />
                       ) : null}
 
-                      {/* Movement Dust Ripple */}
                       {vfx.type === "dust" ? (
                         <span className="absolute h-8 w-8 rounded-full border border-emerald-400/60 bg-emerald-400/20 animate-token-dust" />
                       ) : null}
 
-                      {/* Floating Combat Damage Text */}
                       {vfx.text ? (
                         <span
                           className={`absolute font-black font-mono text-xs drop-shadow-[0_2px_4px_rgba(0,0,0,1)] animate-float-combat-text ${
@@ -1182,7 +1244,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
             <span className="text-2xl">⚡</span>
             <div>
               <h1 className="font-display text-lg font-bold text-parchment-100">快捷战斗座舱 (Quick Combat)</h1>
-              <p className="text-2xs text-stone-400">攻击特效 · 移动滑动动画 · 漂浮伤害数字 · 雷鸣击退 · 魔法飞弹多目标</p>
+              <p className="text-2xs text-stone-400">敌方威胁范围 · 攻击特效 · 移动滑动动画 · 漂浮伤害 · 雷鸣推开 · 魔法飞弹</p>
             </div>
           </div>
 
