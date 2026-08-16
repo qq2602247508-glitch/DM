@@ -1466,7 +1466,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
 
   const [targetingRange, setTargetingRange] = useState<CombatTargeting | null>(null);
   const [targetingActorId, setTargetingActorId] = useState<string | null>(null);
-  const [autoEnemies, setAutoEnemies] = useState<boolean>(false);
+  const [autoEnemies, setAutoEnemies] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [showAddCombatantModal, setShowAddCombatantModal] = useState<boolean>(false);
 
@@ -1736,9 +1736,15 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
       const mod = pendingSavePrompt.saveAbility === "DEX" ? 2 : pendingSavePrompt.saveAbility === "CON" ? 2 : 1;
       const total = d20Roll + mod;
       const isPassed = total >= pendingSavePrompt.saveDc;
-      const finalDmg = isPassed
+      let finalDmg = isPassed
         ? (pendingSavePrompt.halfOnSave ? Math.floor(pendingSavePrompt.baseDamageAmount / 2) : 0)
         : pendingSavePrompt.baseDamageAmount;
+
+      if ((target.damage_immunities ?? []).includes(pendingSavePrompt.damageType)) {
+        finalDmg = 0;
+      } else if ((target.damage_resistances ?? []).includes(pendingSavePrompt.damageType)) {
+        finalDmg = Math.floor(finalDmg / 2);
+      }
 
       const nextHp = Math.max(0, (target.hp ?? 10) - finalDmg);
       const pos = combatantGridPosition(target) ?? [3, 3];
@@ -1779,13 +1785,18 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
       } else if (res) {
         showToast(`💥 豁免失败！总点数 ${res.total} < DC，受到全额 ${res.finalDmg} 点伤害`, "warn");
       }
+
+      // Automatically advance turn to the next combatant after saving throw finishes
+      setTimeout(() => {
+        advanceTurnMutation.mutate();
+      }, 900);
     },
     onError: (err) => {
       showToast(err instanceof Error ? err.message : "豁免结算失败", "error");
     },
   });
 
-  // Monster AI Autonomous Tactical Action (Spells with Save Roll or Physical Attack)
+  // Monster AI Autonomous Tactical Action (Spells with Save Roll or Physical Attack following D&D 5e Rules)
   const monsterAiAttackMutation = useMutation({
     mutationFn: async () => {
       if (!activeFighter || activeFighter.entity_type !== "monster") return;
@@ -1795,7 +1806,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
         return;
       }
 
-      // Find nearest PC
+      // Find nearest alive PC
       const monsterPos = positions[activeFighter.id] ?? [3, 7];
       let nearestPc = alivePcs[0];
       let minDistance = 999;
@@ -1809,30 +1820,48 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
       }
 
       const targetPos = positions[nearestPc.id] ?? [3, 3];
+      const remainingSpeed = activeFighter.movement_remaining_ft ?? (activeFighter.speed_ft ?? 30);
 
-      // If farther than 5ft, move closer
+      // 1. Tactical Movement (D&D 5e Move Action within speed)
       let updatedActor = activeFighter;
-      if (minDistance > 5) {
-        const dRow = Math.sign(targetPos[0] - monsterPos[0]);
-        const dCol = Math.sign(targetPos[1] - monsterPos[1]);
-        const newRow = Math.max(1, Math.min(10, monsterPos[0] + dRow));
-        const newCol = Math.max(1, Math.min(12, monsterPos[1] + dCol));
-        
-        spawnVfx({ row: newRow, col: newCol, type: "dust", text: "-5尺" });
-        updatedActor = await updateCombatant(campaignId, combatId, activeFighter.id, {
-          movement_remaining_ft: Math.max(0, (activeFighter.movement_remaining_ft ?? 30) - 5),
-          snapshot_json: {
-            ...(activeFighter.snapshot_json as Record<string, unknown> | undefined),
-            row: newRow,
-            col: newCol,
-            grid_position: { row: newRow, col: newCol },
-          },
-        }, activeFighter.version);
+      let currentMonsterPos = [...monsterPos];
+      if (minDistance > 5 && remainingSpeed >= 5) {
+        const stepsPossible = Math.min(Math.floor(remainingSpeed / 5), Math.ceil((minDistance - 5) / 5));
+        let curR = monsterPos[0];
+        let curC = monsterPos[1];
+        let spentFt = 0;
+
+        for (let s = 0; s < stepsPossible; s++) {
+          const dRow = Math.sign(targetPos[0] - curR);
+          const dCol = Math.sign(targetPos[1] - curC);
+          const nextR = Math.max(1, Math.min(10, curR + dRow));
+          const nextC = Math.max(1, Math.min(12, curC + dCol));
+          if (nextR === curR && nextC === curC) break;
+          curR = nextR;
+          curC = nextC;
+          spentFt += 5;
+        }
+
+        if (spentFt > 0) {
+          currentMonsterPos = [curR, curC];
+          minDistance = gridDistanceFt({ row: curR, col: curC }, { row: targetPos[0], col: targetPos[1] }, 5);
+          spawnVfx({ row: curR, col: curC, type: "dust", text: `-${spentFt}尺` });
+          updatedActor = await updateCombatant(campaignId, combatId, activeFighter.id, {
+            movement_remaining_ft: Math.max(0, remainingSpeed - spentFt),
+            snapshot_json: {
+              ...(activeFighter.snapshot_json as Record<string, unknown> | undefined),
+              row: curR,
+              col: curC,
+              grid_position: { row: curR, col: curC },
+            },
+          }, activeFighter.version);
+        }
       }
 
-      // 40% chance to cast a magical AoE saving throw spell if in 15ft
-      const willCastSpell = Math.random() < 0.45;
-      if (willCastSpell) {
+      // 2. Action Choice according to D&D 5e Rules (Spells, Melee, or Ranged)
+      const willCastSpell = Math.random() < 0.40;
+      if (willCastSpell && minDistance <= 15) {
+        // Magical AoE / Saving Throw Spell
         const isFire = Math.random() > 0.5;
         const spellName = isFire ? "燃烧之手 (Burning Hands)" : "雷鸣波 (Thunderwave)";
         const saveAbility = isFire ? "DEX" : "CON";
@@ -1841,6 +1870,14 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
         const baseDmg = isFire
           ? Math.floor(Math.random() * 6) + 1 + Math.floor(Math.random() * 6) + 1 + Math.floor(Math.random() * 6) + 1 // 3d6
           : Math.floor(Math.random() * 8) + 1 + Math.floor(Math.random() * 8) + 1; // 2d8
+
+        // Deduct monster action in DB
+        await updateCombatant(campaignId, combatId, updatedActor.id, {
+          snapshot_json: {
+            ...(updatedActor.snapshot_json as Record<string, unknown> | undefined),
+            turn_resources: { action: false, bonus_action: true, reaction: true },
+          },
+        }, updatedActor.version);
 
         // Prompt player to roll saving throw
         setPendingSavePrompt({
@@ -1859,28 +1896,36 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
 
         soundboard.playDiceRoll();
         showToast(`👹【${updatedActor.display_name}】发动了【${spellName}】！请玩家进行 ${saveAbility} 豁免！`, "warn");
-        return;
+        return { triggeredSave: true };
       }
 
-      // Standard Physical Attack (d20 + 4 vs PC AC)
+      // Physical Attack (Melee if <= 5ft, Ranged if > 5ft)
+      const isMelee = minDistance <= 5;
+      const attackName = isMelee ? `${updatedActor.display_name} 爪抓重击` : `${updatedActor.display_name} 短弓射击`;
+      const damageType = isMelee ? "slashing" : "piercing";
       const d20 = Math.floor(Math.random() * 20) + 1;
       const attackMod = 4;
       const attackTotal = d20 + attackMod;
       const targetAc = nearestPc.armor_class ?? 10;
-      const isHit = attackTotal >= targetAc || d20 === 20;
       const isCrit = d20 === 20;
+      const isNat1 = d20 === 1;
+      const isHit = !isNat1 && (isCrit || attackTotal >= targetAc);
 
-      const dmg = isHit
-        ? (isCrit ? (Math.floor(Math.random() * 6) + 1) * 2 + 2 : Math.floor(Math.random() * 6) + 1 + 2)
-        : 0;
-
+      let dmg = 0;
       if (isHit) {
+        const weaponDie1 = Math.floor(Math.random() * 6) + 1;
+        const weaponDie2 = isCrit ? Math.floor(Math.random() * 6) + 1 : 0;
+        dmg = weaponDie1 + weaponDie2 + 2;
+
+        if ((nearestPc.damage_immunities ?? []).includes(damageType)) dmg = 0;
+        else if ((nearestPc.damage_resistances ?? []).includes(damageType)) dmg = Math.floor(dmg / 2);
+
         const nextHp = Math.max(0, (nearestPc.hp ?? 10) - dmg);
         spawnVfx({
           row: targetPos[0],
           col: targetPos[1],
           type: "slash",
-          text: `-${dmg}`,
+          text: isCrit ? `暴击! -${dmg}` : `-${dmg}`,
           isCrit,
         });
         const updatedPc = await updateCombatant(campaignId, combatId, nearestPc.id, { hp: nextHp }, nearestPc.version);
@@ -1892,12 +1937,13 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           actor_combatant_id: updatedActor.id,
           actor_version: updatedActor.version,
           action_cost: "action",
-          action_name: `${activeFighter.display_name} 猛击`,
+          action_name: attackName,
           amount: dmg,
-          damage_type: "slashing",
+          damage_type: damageType,
+          critical_hit: isCrit,
           is_attack: true,
           attack_roll_total: attackTotal,
-          resolution_note: `👹【${activeFighter.display_name}】对【${nearestPc.display_name}】发动攻击：d20(${d20})+${attackMod}=${attackTotal} ➔ 命中！造成 ${dmg} 点伤害！`,
+          resolution_note: `👹【${updatedActor.display_name}】对【${nearestPc.display_name}】发动「${attackName}」：d20(${d20})+${attackMod}=${attackTotal} vs AC ${targetAc} ➔ ${isCrit ? `💥 致命一击！造成 ${dmg} 点伤害！` : `🎯 命中！造成 ${dmg} 点伤害！`}`,
         };
         await confirmCombatAction(campaignId, combatId, command);
       } else {
@@ -1905,7 +1951,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           row: targetPos[0],
           col: targetPos[1],
           type: "dust",
-          text: "未命中",
+          text: isNat1 ? "大失败" : "未命中",
           isMiss: true,
         });
         const command: CombatActionCommand = {
@@ -1913,17 +1959,34 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           actor_combatant_id: updatedActor.id,
           actor_version: updatedActor.version,
           action_cost: "action",
-          action_name: `${activeFighter.display_name} 攻击未命中`,
-          resolution_note: `👹【${activeFighter.display_name}】对【${nearestPc.display_name}】发动攻击：d20(${d20})+${attackMod}=${attackTotal} ➔ 未命中 (目标 AC ${targetAc})`,
+          action_name: `${attackName} (未命中)`,
+          resolution_note: `👹【${updatedActor.display_name}】对【${nearestPc.display_name}】发动「${attackName}」：d20(${d20})+${attackMod}=${attackTotal} vs AC ${targetAc} ➔ ${isNat1 ? "💀 投出大失败 1！" : "未命中"}`,
         };
         await confirmCombatAction(campaignId, combatId, command);
       }
+
+      // Deduct monster action
+      await updateCombatant(campaignId, combatId, updatedActor.id, {
+        snapshot_json: {
+          ...(updatedActor.snapshot_json as Record<string, unknown> | undefined),
+          turn_resources: { action: false, bonus_action: true, reaction: true },
+        },
+      }, updatedActor.version);
+
+      return { triggeredSave: false };
     },
-    onSuccess: () => {
+    onSuccess: (res) => {
       soundboard.playAttackHit();
       void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
       void queryClient.invalidateQueries({ queryKey: ["combat-actions", campaignId, combatId] });
-      showToast("👹 敌方 AI 战术行动已执行完毕！", "info");
+      showToast("👹 敌方 AI 已完成移动并执行攻击！", "info");
+
+      // If no saving throw prompt is waiting for the player, automatically advance the turn
+      if (!res?.triggeredSave) {
+        setTimeout(() => {
+          advanceTurnMutation.mutate();
+        }, 1000);
+      }
     },
     onError: (err) => {
       showToast(err instanceof Error ? err.message : "怪物行动执行失败", "error");
