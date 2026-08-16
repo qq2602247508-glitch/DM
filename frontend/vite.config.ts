@@ -6,6 +6,9 @@ export default defineConfig({
   server: {
     host: "127.0.0.1",
     port: 5173,
+    headers: {
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+    },
     // PlayerPage intentionally uses same-origin /api/v1 requests so the
     // production LAN gateway can keep its session cookie isolated. Mirror
     // that route in the dev server as well; without this, Vite's SPA fallback
