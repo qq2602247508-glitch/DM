@@ -81,10 +81,10 @@ function combatantGridPosition(fighter: Combatant): [number, number] | null {
   const snap = fighter.snapshot_json as Record<string, unknown> | undefined;
   if (!snap) return null;
   const pos = snap.grid_position as { row?: number; col?: number } | undefined;
-  if (pos && typeof pos.row === "number" && typeof pos.col === "number") {
+  if (pos && typeof pos.row === "number" && typeof pos.col === "number" && pos.row >= 1 && pos.row <= 10 && pos.col >= 1 && pos.col <= 12) {
     return [pos.row, pos.col];
   }
-  if (typeof snap.row === "number" && typeof snap.col === "number") {
+  if (typeof snap.row === "number" && typeof snap.col === "number" && snap.row >= 1 && snap.row <= 10 && snap.col >= 1 && snap.col <= 12) {
     return [snap.row, snap.col];
   }
   return null;
@@ -1518,7 +1518,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
   const [targetingRange, setTargetingRange] = useState<CombatTargeting | null>(null);
   const [targetingActorId, setTargetingActorId] = useState<string | null>(null);
   const [autoEnemies, setAutoEnemies] = useState<boolean>(true);
-  const [showEnemyThreat, setShowEnemyThreat] = useState<boolean>(true);
+  const [showEnemyThreat, setShowEnemyThreat] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [showAddCombatantModal, setShowAddCombatantModal] = useState<boolean>(false);
 
@@ -1617,18 +1617,28 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     return items.sort((a, b) => (b.initiative ?? 0) - (a.initiative ?? 0));
   }, [combatantsQuery.data]);
 
-  // Positions map
+  // Positions map with clean non-overlapping fallback placement
   const positions = useMemo(() => {
     const map: Record<string, [number, number]> = {};
-    ordered.forEach((f, i) => {
+    let pcIdx = 0;
+    let enemyIdx = 0;
+    ordered.forEach((f) => {
       const pos = combatantGridPosition(f);
       if (pos) {
         map[f.id] = pos;
       } else {
         const isPlayer = f.entity_type === "character";
-        const row = isPlayer ? Math.floor(i / 3) + 2 : Math.floor(i / 3) + 2;
-        const col = isPlayer ? (i % 3) + 2 : 11 - (i % 3);
-        map[f.id] = [row, col];
+        if (isPlayer) {
+          const row = Math.min(8, 3 + pcIdx * 2);
+          const col = 3;
+          map[f.id] = [row, col];
+          pcIdx++;
+        } else {
+          const row = Math.min(8, 3 + enemyIdx * 2);
+          const col = 9;
+          map[f.id] = [row, col];
+          enemyIdx++;
+        }
       }
     });
     return map;
@@ -2552,7 +2562,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     );
   }
 
-  const moverRemaining = (activeFighter?.movement_remaining_ft !== undefined && activeFighter?.movement_remaining_ft !== null)
+  const moverRemaining = (activeFighter?.movement_remaining_ft !== undefined && activeFighter?.movement_remaining_ft !== null && activeFighter.movement_remaining_ft > 0)
     ? activeFighter.movement_remaining_ft
     : (activeFighter?.speed_ft ?? 30);
   const moverMaxSpeed = activeFighter?.speed_ft ?? 30;
@@ -2891,7 +2901,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
                 </span>
                 <div className="flex gap-2">
                   <input
-                    className={`${inputCls} font-mono text-center text-sm font-bold text-amber-200 w-28`}
+                    className="w-32 rounded-xl border border-amber-700/60 bg-ink-950 px-3 py-2 text-center font-mono text-sm font-bold text-amber-200 focus:border-amber-400 focus:outline-none"
                     max={20}
                     min={1}
                     onChange={(e) => setManualSaveD20(e.target.value)}

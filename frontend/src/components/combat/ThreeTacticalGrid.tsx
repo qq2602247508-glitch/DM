@@ -28,7 +28,7 @@ export type ThreeTacticalGridProps = {
 };
 
 type CellTerrain = {
-  elevationFt: number; // 0, 10, 20
+  elevationFt: number;
   isWall?: boolean;
   isStairs?: boolean;
   isPillar?: boolean;
@@ -60,10 +60,11 @@ function combatantElevationFt(fighter: Combatant): number {
   return 0;
 }
 
+// Crisp High-Resolution Token HUD Badge Texture
 function createTokenBadgeTexture(fighter: Combatant, isMeleeThreatened: boolean): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
-  canvas.width = 256;
-  canvas.height = 128;
+  canvas.width = 300;
+  canvas.height = 140;
   let ctx: CanvasRenderingContext2D | null = null;
   try {
     ctx = canvas.getContext("2d");
@@ -73,61 +74,68 @@ function createTokenBadgeTexture(fighter: Combatant, isMeleeThreatened: boolean)
   if (!ctx) return new THREE.CanvasTexture(canvas);
 
   try {
-    ctx.clearRect(0, 0, 256, 128);
+    ctx.clearRect(0, 0, 300, 140);
 
-    ctx.fillStyle = "#0f172a";
-    ctx.strokeStyle = fighter.entity_type === "monster" ? "#f43f5e" : "#f59e0b";
-    ctx.lineWidth = 4;
-    if (typeof ctx.roundRect === "function") {
-      ctx.beginPath();
-      ctx.roundRect(8, 8, 240, 112, 16);
-      ctx.fill();
-      ctx.stroke();
-    } else {
-      ctx.fillRect(8, 8, 240, 112);
-      ctx.strokeRect(8, 8, 240, 112);
-    }
-
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 24px sans-serif";
-    ctx.textAlign = "center";
-    const name = fighter.display_name?.slice(0, 8) ?? "单位";
-    ctx.fillText(name, 128, 42);
-
+    const isMonster = fighter.entity_type === "monster";
     const hp = Math.max(0, fighter.hp ?? 0);
     const maxHp = Math.max(1, fighter.max_hp ?? 10);
     const hpPct = Math.max(0, Math.min(1, hp / maxHp));
 
-    ctx.fillStyle = "#334155";
+    // Background Pill
+    ctx.fillStyle = "rgba(10, 15, 26, 0.92)";
+    ctx.strokeStyle = isMonster ? "#f43f5e" : "#38bdf8";
+    ctx.lineWidth = 3;
     if (typeof ctx.roundRect === "function") {
       ctx.beginPath();
-      ctx.roundRect(24, 54, 208, 20, 10);
+      ctx.roundRect(10, 10, 280, 120, 18);
       ctx.fill();
+      ctx.stroke();
+    } else {
+      ctx.fillRect(10, 10, 280, 120);
+      ctx.strokeRect(10, 10, 280, 120);
+    }
+
+    // Name text
+    ctx.fillStyle = isMonster ? "#fecdd3" : "#f1f5f9";
+    ctx.font = "bold 24px sans-serif";
+    ctx.textAlign = "center";
+    const name = fighter.display_name?.slice(0, 9) ?? "单位";
+    ctx.fillText(name, 150, 44);
+
+    // HP Bar Track
+    ctx.fillStyle = "#1e293b";
+    if (typeof ctx.roundRect === "function") {
+      ctx.beginPath();
+      ctx.roundRect(24, 58, 252, 22, 11);
+      ctx.fill();
+      // HP Bar Fill
       ctx.fillStyle = hpPct > 0.5 ? "#10b981" : hpPct > 0.2 ? "#f59e0b" : "#ef4444";
       ctx.beginPath();
-      ctx.roundRect(24, 54, Math.max(8, 208 * hpPct), 20, 10);
+      ctx.roundRect(24, 58, Math.max(10, 252 * hpPct), 22, 11);
       ctx.fill();
     } else {
-      ctx.fillRect(24, 54, 208, 20);
+      ctx.fillRect(24, 58, 252, 22);
       ctx.fillStyle = hpPct > 0.5 ? "#10b981" : hpPct > 0.2 ? "#f59e0b" : "#ef4444";
-      ctx.fillRect(24, 54, Math.max(8, 208 * hpPct), 20);
+      ctx.fillRect(24, 58, Math.max(10, 252 * hpPct), 22);
     }
 
+    // HP Number
     ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 16px monospace";
-    ctx.fillText(`${hp}/${maxHp}`, 128, 70);
+    ctx.font = "bold 15px monospace";
+    ctx.fillText(`${hp} / ${maxHp} HP`, 150, 75);
 
-    if (isMeleeThreatened && fighter.entity_type === "character") {
-      ctx.fillStyle = "#ef4444";
-      ctx.font = "bold 18px sans-serif";
-      ctx.fillText("⚠️ 借机危险区", 128, 102);
+    // Status / AC Badge
+    if (isMeleeThreatened && !isMonster) {
+      ctx.fillStyle = "#f43f5e";
+      ctx.font = "bold 17px sans-serif";
+      ctx.fillText("⚠️ 处于近战威胁", 150, 112);
     } else {
-      ctx.fillStyle = "#cbd5e1";
-      ctx.font = "16px monospace";
-      ctx.fillText(`AC ${fighter.armor_class ?? 10}`, 128, 102);
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "bold 16px monospace";
+      ctx.fillText(`🛡️ AC ${fighter.armor_class ?? 10}`, 150, 112);
     }
   } catch {
-    // Fallback if canvas methods fail in unit tests
+    // Fallback if canvas fails in headless test
   }
 
   const texture = new THREE.CanvasTexture(canvas);
@@ -159,21 +167,23 @@ export function ThreeTacticalGrid({
 
   const width = 12;
   const height = 10;
-  const cellSize = 1.6; // 3D units per 5ft cell
+  const cellSize = 1.6;
   const cellSizeFt = 5;
 
-  // Current active combatant whose turn it is
+  // Active combatant whose turn it is
   const activeFighter = fighters.find((f) => f.id === activeFighterId) ?? fighters[0] ?? null;
-  const activePos = activeFighter ? positions[activeFighter.id] : null;
-  const activePosition: GridPoint | null = activePos ? { row: activePos[0], col: activePos[1] } : null;
+  const activePos = activeFighter ? (positions[activeFighter.id] ?? [3, 3]) : [3, 3];
+  const activePosition: GridPoint = { row: activePos[0], col: activePos[1] };
 
-  // The mover for range calculations is always the active actor (or selected character)
+  // Current mover for movement range display (Always use active fighter or selected PC)
   const targetedCombatant = fighters.find((f) => f.id === selectedTargetId);
   const moverFighter = (targetedCombatant && targetedCombatant.entity_type === "character")
     ? targetedCombatant
     : activeFighter;
-  const moverPos = moverFighter ? (positions[moverFighter.id] ?? [3, 3]) : null;
-  const moverRemaining = (moverFighter?.movement_remaining_ft !== undefined && moverFighter?.movement_remaining_ft !== null)
+  const moverPos = moverFighter ? (positions[moverFighter.id] ?? [3, 3]) : [3, 3];
+  
+  // Safe remaining movement fallback
+  const moverRemaining = (moverFighter?.movement_remaining_ft !== undefined && moverFighter?.movement_remaining_ft !== null && moverFighter.movement_remaining_ft > 0)
     ? moverFighter.movement_remaining_ft
     : (moverFighter?.speed_ft ?? 30);
 
@@ -231,7 +241,6 @@ export function ThreeTacticalGrid({
   });
   const targetLookAtRef = useRef<THREE.Vector3>(new THREE.Vector3(0, 0, 0));
 
-  // Update camera position from spherical coordinates
   const updateCameraFromSpherical = useCallback(() => {
     if (!cameraRef.current) return;
     const { radius, theta, phi } = sphericalRef.current;
@@ -247,7 +256,6 @@ export function ThreeTacticalGrid({
     cameraRef.current.lookAt(targetLookAtRef.current);
   }, []);
 
-  // Set camera presets
   const applyCameraPreset = useCallback((preset: "iso" | "top" | "close") => {
     setCameraPreset(preset);
     if (preset === "iso") {
@@ -260,7 +268,6 @@ export function ThreeTacticalGrid({
     updateCameraFromSpherical();
   }, [updateCameraFromSpherical]);
 
-  // Convert (row, col) to 3D world space (x, y, z)
   const gridToWorld = useCallback((row: number, col: number, manualElevationFt?: number): THREE.Vector3 => {
     const terrain = getCellTerrain(row, col);
     const elevFt = manualElevationFt !== undefined ? manualElevationFt : terrain.elevationFt;
@@ -270,16 +277,17 @@ export function ThreeTacticalGrid({
     return new THREE.Vector3(x, y, z);
   }, [width, height, cellSize]);
 
-  // Initialize Three.js scene (NO HARSH SHADOWS - Pure Clean Geometric Tabletop)
+  // Initialize Three.js Scene with Premium Architectural Blueprint Materials
   useEffect(() => {
     if (!containerRef.current) return;
     const container = containerRef.current;
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
-    scene.background = new THREE.Color(0x0a0e17);
+    // Atmospheric Vignette Background
+    scene.background = new THREE.Color(0x0a101d);
 
-    const camera = new THREE.PerspectiveCamera(42, container.clientWidth / container.clientHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 1000);
     cameraRef.current = camera;
     updateCameraFromSpherical();
 
@@ -299,31 +307,30 @@ export function ThreeTacticalGrid({
       return;
     }
 
-    // Clean, Balanced Ambient & Diffuse Lighting
-    const ambientLight = new THREE.AmbientLight(0xd1d5db, 1.4);
+    // Clean Architectural Lighting (No Harsh Shadow Bleed)
+    const ambientLight = new THREE.AmbientLight(0xe2e8f0, 1.3);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 0.9);
-    keyLight.position.set(15, 30, 20);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    keyLight.position.set(20, 35, 25);
     scene.add(keyLight);
 
-    const fillLight = new THREE.DirectionalLight(0x94a3b8, 0.7);
-    fillLight.position.set(-20, 20, -15);
+    const fillLight = new THREE.DirectionalLight(0x60a5fa, 0.5);
+    fillLight.position.set(-20, 20, -20);
     scene.add(fillLight);
 
-    // Base Architectural Ground Board
-    const basePlateGeo = new THREE.BoxGeometry(width * cellSize + 3.0, 0.3, height * cellSize + 3.0);
-    const basePlateMat = new THREE.MeshLambertMaterial({ color: 0x111827 });
+    // Deep Slate Ground Base Board
+    const basePlateGeo = new THREE.BoxGeometry(width * cellSize + 2.4, 0.25, height * cellSize + 2.4);
+    const basePlateMat = new THREE.MeshLambertMaterial({ color: 0x0f172a });
     const basePlateMesh = new THREE.Mesh(basePlateGeo, basePlateMat);
-    basePlateMesh.position.y = -0.16;
+    basePlateMesh.position.y = -0.14;
     scene.add(basePlateMesh);
 
     const baseEdgesGeo = new THREE.EdgesGeometry(basePlateGeo);
     const baseEdgesMat = new THREE.LineBasicMaterial({ color: 0x334155, linewidth: 2 });
-    const baseEdgesLine = new THREE.LineSegments(baseEdgesGeo, baseEdgesMat);
-    basePlateMesh.add(baseEdgesLine);
+    basePlateMesh.add(new THREE.LineSegments(baseEdgesGeo, baseEdgesMat));
 
-    // Voxel Multi-Level Block Tiles
+    // Multi-Level Voxel Tiles
     const tilesMap = new Map<string, { capMesh: THREE.Mesh; capEdgeLine: THREE.LineSegments; blockMesh: THREE.Mesh }>();
 
     for (let r = 1; r <= height; r++) {
@@ -333,11 +340,11 @@ export function ThreeTacticalGrid({
         const wPos = gridToWorld(r, c, terrain.elevationFt);
         const blockHeight = Math.max(0.15, (terrain.elevationFt / 5) * 0.45 + 0.15);
 
-        // 1. Lower Block Extrusion Body
-        const blockGeo = new THREE.BoxGeometry(cellSize * 0.96, blockHeight, cellSize * 0.96);
+        // Lower Solid Voxel Extrusion
+        const blockGeo = new THREE.BoxGeometry(cellSize * 0.95, blockHeight, cellSize * 0.95);
         const isElevated = terrain.elevationFt > 0;
         const blockMat = new THREE.MeshLambertMaterial({
-          color: isElevated ? 0x222d42 : 0x182030,
+          color: isElevated ? 0x1e293b : 0x131d2e,
         });
         const blockMesh = new THREE.Mesh(blockGeo, blockMat);
         blockMesh.position.set(wPos.x, blockHeight / 2 - 0.15, wPos.z);
@@ -345,36 +352,35 @@ export function ThreeTacticalGrid({
 
         const blockEdgesGeo = new THREE.EdgesGeometry(blockGeo);
         const blockEdgesMat = new THREE.LineBasicMaterial({
-          color: isElevated ? 0x64748b : 0x334155,
+          color: isElevated ? 0x475569 : 0x1e293b,
         });
-        const blockEdgesLine = new THREE.LineSegments(blockEdgesGeo, blockEdgesMat);
-        blockMesh.add(blockEdgesLine);
+        blockMesh.add(new THREE.LineSegments(blockEdgesGeo, blockEdgesMat));
 
-        // 2. Interactive Solid 3D Cap Step (for Range Highlights & Clicks)
+        // Interactive Top Cap Step (Solid raised pad for range highlights)
         const capGeo = new THREE.BoxGeometry(cellSize * 0.92, 0.08, cellSize * 0.92);
         const capMat = new THREE.MeshLambertMaterial({
-          color: isElevated ? 0x28354d : (r + c) % 2 === 0 ? 0x1e293b : 0x172033,
+          color: isElevated ? 0x24324a : (r + c) % 2 === 0 ? 0x182234 : 0x111a28,
         });
         const capMesh = new THREE.Mesh(capGeo, capMat);
         capMesh.position.set(wPos.x, wPos.y + 0.04, wPos.z);
         capMesh.userData = { row: r, col: c, key, elevationFt: terrain.elevationFt };
         scene.add(capMesh);
 
-        // Highlight Edges Line for Cap
+        // Cap Crisp Outline Wireframe
         const capEdgeGeo = new THREE.EdgesGeometry(capGeo);
-        const capEdgeMat = new THREE.LineBasicMaterial({ color: 0x475569, linewidth: 2 });
+        const capEdgeMat = new THREE.LineBasicMaterial({ color: 0x334155, linewidth: 2 });
         const capEdgeLine = new THREE.LineSegments(capEdgeGeo, capEdgeMat);
         capMesh.add(capEdgeLine);
 
-        // Architectural Props: Pillars
+        // Dungeon Stone Pillars
         if (terrain.isPillar) {
-          const pillarGeo = new THREE.CylinderGeometry(0.2, 0.25, 1.2, 8);
-          const pillarMat = new THREE.MeshLambertMaterial({ color: 0x475569 });
+          const pillarGeo = new THREE.CylinderGeometry(0.22, 0.28, 1.4, 8);
+          const pillarMat = new THREE.MeshLambertMaterial({ color: 0x334155 });
           const pillarMesh = new THREE.Mesh(pillarGeo, pillarMat);
-          pillarMesh.position.set(wPos.x, wPos.y + 0.6, wPos.z);
+          pillarMesh.position.set(wPos.x, wPos.y + 0.7, wPos.z);
           scene.add(pillarMesh);
 
-          const pillarEdges = new THREE.LineSegments(new THREE.EdgesGeometry(pillarGeo), new THREE.LineBasicMaterial({ color: 0x94a3b8 }));
+          const pillarEdges = new THREE.LineSegments(new THREE.EdgesGeometry(pillarGeo), new THREE.LineBasicMaterial({ color: 0x64748b }));
           pillarMesh.add(pillarEdges);
         }
 
@@ -388,26 +394,23 @@ export function ThreeTacticalGrid({
 
     // Animation Loop
     const clock = new THREE.Clock();
-
     const animate = () => {
       if (!renderer || !camera) return;
       animationFrameId = requestAnimationFrame(animate);
       const delta = clock.getDelta();
-      const elapsed = clock.getElapsedTime();
 
-      // Animate active token gold ring rotation
+      // Animate active token gold ring rotation & camera-facing badges
       tokenGroupsRef.current.forEach((group) => {
         const activeRing = group.getObjectByName("activeRing");
-        if (activeRing) {
-          activeRing.rotation.z += delta * 2;
-        }
+        if (activeRing) activeRing.rotation.z += delta * 2;
+
         const badge = group.getObjectByName("badgeSprite");
         if (badge && cameraRef.current) {
           badge.quaternion.copy(cameraRef.current.quaternion);
         }
       });
 
-      // Animate particles
+      // Animate floating particles
       particleGroupRef.current.children.forEach((p) => {
         p.position.y += delta * 0.8;
         if (p instanceof THREE.Mesh && p.material instanceof THREE.Material) {
@@ -434,7 +437,7 @@ export function ThreeTacticalGrid({
     };
   }, [width, height, cellSize, gridToWorld, updateCameraFromSpherical]);
 
-  // Update Tile Colors based on state (Movement, Spell AoE, Threat Ranges, Hover)
+  // Update Dynamic Tile Highlights (Move Range, Spell AoE, Threat Auras)
   useEffect(() => {
     const tilesMap = tileMeshesRef.current;
     if (!tilesMap.size) return;
@@ -449,65 +452,64 @@ export function ThreeTacticalGrid({
         const fighter = fighters.find((f) => positions[f.id]?.[0] === r && positions[f.id]?.[1] === c);
 
         // Movement Range (Calculated from Mover Fighter)
-        const distFromMover = moverPos
-          ? gridDistanceFt({ row: moverPos[0], col: moverPos[1] }, { row: r, col: c }, cellSizeFt)
-          : null;
-        const canMoveHere = interactionMode === "move" && moverFighter && !fighter && distFromMover !== null && distFromMover <= moverRemaining && moverRemaining > 0;
+        const distFromMover = gridDistanceFt({ row: moverPos[0], col: moverPos[1] }, { row: r, col: c }, cellSizeFt);
+        const canMoveHere = interactionMode === "move" && moverFighter && !fighter && distFromMover <= moverRemaining && moverRemaining > 0;
 
         // Spell Range & AoE Coverage
-        const inCastRange = targeting && activePosition
+        const inCastRange = targeting
           ? isAimPointInRange(activePosition, { row: r, col: c }, targeting.rangeFt, cellSizeFt)
           : false;
         const isAreaAffected = areaKeys.has(key);
         const isHovered = hoveredCell?.row === r && hoveredCell?.col === c;
 
-        // Monster Threat Ranges
-        const isMeleeThreat = enemyThreatCells.meleeMap.has(key);
-        const isRangedThreat = enemyThreatCells.rangedMap.has(key);
+        // Monster Threat Ranges (Subtle boundaries when enabled)
+        const isMeleeThreat = showEnemyThreat && enemyThreatCells.meleeMap.has(key);
+        const isRangedThreat = showEnemyThreat && !isMeleeThreat && enemyThreatCells.rangedMap.has(key);
 
         const capMat = item.capMesh.material as THREE.MeshLambertMaterial;
         const edgeMat = item.capEdgeLine.material as THREE.LineBasicMaterial;
 
         if (canMoveHere) {
-          // 🟢 Brilliant Emerald Green Movement Range
-          capMat.color.setHex(isHovered ? 0x10b981 : 0x059669);
+          // 🟢 Brilliant Glowing Emerald Movement Range
+          capMat.color.setHex(isHovered ? 0x059669 : 0x047857);
           capMat.emissive.setHex(isHovered ? 0x34d399 : 0x10b981);
-          capMat.emissiveIntensity = isHovered ? 0.9 : 0.6;
+          capMat.emissiveIntensity = isHovered ? 0.95 : 0.65;
           edgeMat.color.setHex(0x34d399);
         } else if (isAreaAffected && interactionMode === "target") {
-          // 🟣 Vivid Fuchsia Spell AoE
+          // 🟣 Hot Magenta Spell AoE
           capMat.color.setHex(0xc026d3);
-          capMat.emissive.setHex(0xd946ef);
+          capMat.emissive.setHex(0xf0abfc);
           capMat.emissiveIntensity = 0.9;
-          edgeMat.color.setHex(0xf0abfc);
+          edgeMat.color.setHex(0xf472b6);
         } else if (inCastRange && interactionMode === "target") {
           // 🔵 Arcane Cyan Spell Range
           capMat.color.setHex(0x0284c7);
           capMat.emissive.setHex(0x38bdf8);
-          capMat.emissiveIntensity = 0.6;
+          capMat.emissiveIntensity = 0.65;
           edgeMat.color.setHex(0x38bdf8);
         } else if (isMeleeThreat) {
-          // 🔴 Crimson 5ft Melee Threat Danger Zone
-          capMat.color.setHex(isHovered ? 0xe11d48 : 0x9f1239);
-          capMat.emissive.setHex(0xf43f5e);
-          capMat.emissiveIntensity = 0.5;
+          // 🔴 Subtle Crimson Melee Threat Warning
+          capMat.color.setHex(0x4c0519);
+          capMat.emissive.setHex(0xe11d48);
+          capMat.emissiveIntensity = 0.35;
           edgeMat.color.setHex(0xf43f5e);
         } else if (isRangedThreat) {
-          // 🟡 Amber 30ft Ranged Threat Zone
-          capMat.color.setHex(isHovered ? 0xd97706 : 0x78350f);
-          capMat.emissive.setHex(0xf59e0b);
-          capMat.emissiveIntensity = 0.35;
+          // 🟡 Subtle Amber Ranged Threat Warning
+          capMat.color.setHex(0x451a03);
+          capMat.emissive.setHex(0xd97706);
+          capMat.emissiveIntensity = 0.25;
           edgeMat.color.setHex(0xf59e0b);
         } else if (isHovered) {
-          capMat.color.setHex(0x475569);
-          capMat.emissive.setHex(0x94a3b8);
-          capMat.emissiveIntensity = 0.2;
+          capMat.color.setHex(0x334155);
+          capMat.emissive.setHex(0x64748b);
+          capMat.emissiveIntensity = 0.3;
           edgeMat.color.setHex(0x94a3b8);
         } else {
-          capMat.color.setHex(terrain.elevationFt > 0 ? 0x28354d : (r + c) % 2 === 0 ? 0x1e293b : 0x172033);
+          // Default Slate Dungeon Floor
+          capMat.color.setHex(terrain.elevationFt > 0 ? 0x24324a : (r + c) % 2 === 0 ? 0x182234 : 0x111a28);
           capMat.emissive.setHex(0x000000);
           capMat.emissiveIntensity = 0;
-          edgeMat.color.setHex(0x475569);
+          edgeMat.color.setHex(0x334155);
         }
       }
     }
@@ -523,6 +525,7 @@ export function ThreeTacticalGrid({
     areaKeys,
     hoveredCell,
     enemyThreatCells,
+    showEnemyThreat,
     height,
     width,
     cellSizeFt,
@@ -544,9 +547,14 @@ export function ThreeTacticalGrid({
       }
     });
 
-    // Create or update chess figurine tokens
-    fighters.forEach((f) => {
-      const pos = positions[f.id] ?? [3, 3];
+    // Create or update sleek chess figurine tokens
+    fighters.forEach((f, idx) => {
+      // Prevent stacking off-board (0,0): Assign fallback grid positions
+      const defaultPos: [number, number] = f.entity_type === "monster"
+        ? [Math.min(9, 3 + idx * 2), 9]
+        : [Math.min(9, 3 + idx * 2), 3];
+      const pos = positions[f.id] ?? defaultPos;
+
       const terrain = getCellTerrain(pos[0], pos[1]);
       const manualElev = combatantElevationFt(f);
       const totalElevFt = terrain.elevationFt + manualElev;
@@ -563,26 +571,25 @@ export function ThreeTacticalGrid({
         group = new THREE.Group();
         group.userData = { fighterId: f.id };
 
-        // 1. Cylindrical Tabletop Chess Pedestal (棋子圆柱底盘)
-        const baseGeo = new THREE.CylinderGeometry(0.48, 0.54, 0.18, 24);
+        // 1. Polished Tabletop Resin Pedestal (底盘)
+        const baseGeo = new THREE.CylinderGeometry(0.46, 0.52, 0.18, 24);
         const baseMat = new THREE.MeshLambertMaterial({
-          color: isPc ? 0x0284c7 : isMonster ? 0x9f1239 : 0x6d28d9,
+          color: isPc ? 0x0369a1 : isMonster ? 0x9f1239 : 0x6d28d9,
         });
         const baseMesh = new THREE.Mesh(baseGeo, baseMat);
         baseMesh.position.y = 0.09;
         group.add(baseMesh);
 
-        // Clean White/Gold Outlines on Chess Base
         const baseEdges = new THREE.LineSegments(
           new THREE.EdgesGeometry(baseGeo),
           new THREE.LineBasicMaterial({ color: isPc ? 0x38bdf8 : isMonster ? 0xf43f5e : 0xc084fc, linewidth: 2 }),
         );
         baseMesh.add(baseEdges);
 
-        // 2. Classical Chess Piece Body
-        const stemGeo = new THREE.CylinderGeometry(0.24, 0.36, 0.55, 20);
+        // 2. Sculpted Chess Miniature Stem (立柱)
+        const stemGeo = new THREE.CylinderGeometry(0.22, 0.34, 0.55, 20);
         const stemMat = new THREE.MeshLambertMaterial({
-          color: isPc ? 0x0369a1 : isMonster ? 0x881337 : 0x581c87,
+          color: isPc ? 0x0284c7 : isMonster ? 0xbe123c : 0x7c3aed,
         });
         const stemMesh = new THREE.Mesh(stemGeo, stemMat);
         stemMesh.position.y = 0.45;
@@ -594,23 +601,23 @@ export function ThreeTacticalGrid({
         );
         stemMesh.add(stemEdges);
 
-        // 3. Chess Piece Head / Crown
+        // 3. Distinct Class Crest / Head
         const crownGeo = isPc
-          ? new THREE.OctahedronGeometry(0.26)
+          ? new THREE.OctahedronGeometry(0.25)
           : isMonster
-            ? new THREE.DodecahedronGeometry(0.26)
-            : new THREE.SphereGeometry(0.26, 12, 12);
+            ? new THREE.DodecahedronGeometry(0.25)
+            : new THREE.SphereGeometry(0.25, 12, 12);
         const crownMat = new THREE.MeshLambertMaterial({
           color: isPc ? 0x38bdf8 : isMonster ? 0xf43f5e : 0xa855f7,
           emissive: isPc ? 0x0284c7 : isMonster ? 0x881337 : 0x6b21a8,
-          emissiveIntensity: 0.3,
+          emissiveIntensity: 0.4,
         });
         const crownMesh = new THREE.Mesh(crownGeo, crownMat);
-        crownMesh.position.y = 0.88;
+        crownMesh.position.y = 0.86;
         group.add(crownMesh);
 
-        // 4. Active Gold Action Ring
-        const activeRingGeo = new THREE.RingGeometry(0.62, 0.74, 24);
+        // 4. Rotating Gold Action Turn Ring
+        const activeRingGeo = new THREE.RingGeometry(0.6, 0.72, 24);
         const activeRingMat = new THREE.MeshBasicMaterial({
           color: 0xfbbf24,
           side: THREE.DoubleSide,
@@ -623,8 +630,8 @@ export function ThreeTacticalGrid({
         activeRing.name = "activeRing";
         group.add(activeRing);
 
-        // 5. Target Emerald Selection Ring
-        const targetRingGeo = new THREE.RingGeometry(0.62, 0.72, 24);
+        // 5. Emerald Target Selection Ring
+        const targetRingGeo = new THREE.RingGeometry(0.6, 0.7, 24);
         const targetRingMat = new THREE.MeshBasicMaterial({
           color: 0x10b981,
           side: THREE.DoubleSide,
@@ -637,12 +644,12 @@ export function ThreeTacticalGrid({
         targetRing.name = "targetRing";
         group.add(targetRing);
 
-        // 6. Overhead 3D HUD Badge Sprite
+        // 6. Compact High-Res Overhead HUD Badge
         const badgeTexture = createTokenBadgeTexture(f, false);
         const badgeMat = new THREE.SpriteMaterial({ map: badgeTexture, transparent: true });
         const badgeSprite = new THREE.Sprite(badgeMat);
-        badgeSprite.scale.set(2.4, 1.2, 1);
-        badgeSprite.position.y = 1.7;
+        badgeSprite.scale.set(2.2, 1.05, 1);
+        badgeSprite.position.y = 1.65;
         badgeSprite.name = "badgeSprite";
         group.add(badgeSprite);
 
@@ -651,17 +658,14 @@ export function ThreeTacticalGrid({
         currentGroups.set(f.id, group);
       }
 
-      // Smooth Position Interpolation
-      group.position.lerp(targetWPos, 0.25);
+      group.position.lerp(targetWPos, 0.3);
 
-      // Ring Visibilities
       const activeRing = group.getObjectByName("activeRing");
       if (activeRing) activeRing.visible = isActive;
 
       const targetRing = group.getObjectByName("targetRing");
       if (targetRing) targetRing.visible = isSelected && !isActive;
 
-      // Update Sprite Texture
       const isThreatened = enemyThreatCells.meleeMap.has(`${pos[0]}:${pos[1]}`);
       const badge = group.getObjectByName("badgeSprite") as THREE.Sprite | undefined;
       if (badge && badge.material instanceof THREE.SpriteMaterial) {
@@ -739,7 +743,6 @@ export function ThreeTacticalGrid({
         previousMousePositionRef.current = { x: e.clientX, y: e.clientY };
       }
     } else {
-      // Raycasting for Hover Highlights
       if (!rendererRef.current || !cameraRef.current || !sceneRef.current) return;
       const rect = rendererRef.current.domElement.getBoundingClientRect();
       const mouse = new THREE.Vector2(
@@ -810,7 +813,7 @@ export function ThreeTacticalGrid({
       if (occupant) {
         onTargetSelect(occupant.id);
         soundboard.playDiceRoll();
-      } else if (interactionMode === "move" && moverFighter && moverPos) {
+      } else if (interactionMode === "move" && moverFighter) {
         const dist = gridDistanceFt({ row: moverPos[0], col: moverPos[1] }, point, cellSizeFt);
         if (dist <= moverRemaining && moverRemaining > 0) {
           onMoveToken(moverFighter, hit.row, hit.col, dist);
@@ -896,7 +899,7 @@ export function ThreeTacticalGrid({
             title="切换显示怪物近战 5尺 威胁区与远程 30尺 射程"
             type="button"
           >
-            <span>👹 怪物攻击范围: {showEnemyThreat ? "开" : "关"}</span>
+            <span>👹 怪物威胁范围: {showEnemyThreat ? "开" : "关"}</span>
             {showEnemyThreat ? (
               <span className="flex items-center gap-1 text-[9px] text-stone-300">
                 <span className="h-1.5 w-1.5 rounded-full bg-rose-500 inline-block" /> 近战5尺
@@ -907,9 +910,9 @@ export function ThreeTacticalGrid({
         </div>
       </div>
 
-      {/* Three.js 3D WebGL Canvas Viewport (Clean Architectural & Chess Figurine Scene) */}
+      {/* Three.js 3D WebGL Canvas Viewport */}
       <div
-        className="relative h-[380px] w-full cursor-grab active:cursor-grabbing overflow-hidden rounded-xl border border-slate-800 bg-[#080d1a]"
+        className="relative h-[380px] w-full cursor-grab active:cursor-grabbing overflow-hidden rounded-xl border border-slate-800 bg-[#0a101d]"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
