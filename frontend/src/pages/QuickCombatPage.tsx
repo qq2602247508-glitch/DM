@@ -74,6 +74,31 @@ function combatantGridPosition(fighter: Combatant): [number, number] | null {
   return null;
 }
 
+function getCombatantSpellSlots(fighter: Combatant | null): Record<number, number> {
+  if (!fighter) return { 1: 4, 2: 3, 3: 2 };
+  const snap = fighter.snapshot_json as Record<string, unknown> | undefined;
+  const slots = snap?.spell_slots as Record<string, number> | undefined;
+  if (slots) {
+    return {
+      1: typeof slots["1"] === "number" ? slots["1"] : 4,
+      2: typeof slots["2"] === "number" ? slots["2"] : 3,
+      3: typeof slots["3"] === "number" ? slots["3"] : 2,
+    };
+  }
+  return { 1: 4, 2: 3, 3: 2 };
+}
+
+function getCombatantTurnResources(fighter: Combatant | null): { action: boolean; bonus_action: boolean; reaction: boolean } {
+  if (!fighter) return { action: true, bonus_action: true, reaction: true };
+  const snap = fighter.snapshot_json as Record<string, unknown> | undefined;
+  const res = snap?.turn_resources as { action?: boolean; bonus_action?: boolean; reaction?: boolean } | undefined;
+  return {
+    action: res?.action !== false,
+    bonus_action: res?.bonus_action !== false,
+    reaction: res?.reaction !== false,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // 1. BG3 Top Floating Initiative Timeline Carousel
 // ---------------------------------------------------------------------------
@@ -299,7 +324,9 @@ function BG3BattleGrid({
 
   const selectedFighter = useMemo(() => fighters.find((f) => f.id === (selectedTokenId || activeFighterId)) ?? activeFighter, [fighters, selectedTokenId, activeFighterId, activeFighter]);
   const selectedPos = selectedFighter ? positions[selectedFighter.id] : activePos;
-  const selectedRemaining = (selectedFighter?.movement_remaining_ft != null && selectedFighter.movement_remaining_ft > 0)
+  
+  // Strict movement remaining: 0 means no more movement allowed this turn
+  const selectedRemaining = (selectedFighter?.movement_remaining_ft !== undefined && selectedFighter?.movement_remaining_ft !== null)
     ? selectedFighter.movement_remaining_ft
     : (selectedFighter?.speed_ft ?? 30);
   const selectedMaxSpeed = selectedFighter?.speed_ft ?? 30;
@@ -361,7 +388,15 @@ function BG3BattleGrid({
   // Move token mutation with movement dust VFX
   const moveMutation = useMutation({
     mutationFn: async ({ fighter, newRow, newCol, spentFt }: { fighter: Combatant; newRow: number; newCol: number; spentFt: number }) => {
-      const nextRemaining = Math.max(0, (fighter.movement_remaining_ft ?? fighter.speed_ft ?? 30) - spentFt);
+      const curRemaining = fighter.movement_remaining_ft !== undefined && fighter.movement_remaining_ft !== null
+        ? fighter.movement_remaining_ft
+        : (fighter.speed_ft ?? 30);
+      
+      if (curRemaining < spentFt) {
+        throw new Error("⚠️ 剩余移动力不足！");
+      }
+
+      const nextRemaining = Math.max(0, curRemaining - spentFt);
       const snapshot = {
         ...(fighter.snapshot_json as Record<string, unknown> | undefined),
         grid_position: {
@@ -534,7 +569,7 @@ function BG3BattleGrid({
               const distFromSelected = selectedPos
                 ? gridDistanceFt({ row: selectedPos[0], col: selectedPos[1] }, point, cellSizeFt)
                 : null;
-              const canMoveHere = interactionMode === "move" && selectedFighter && !fighter && distFromSelected !== null && distFromSelected <= selectedRemaining;
+              const canMoveHere = interactionMode === "move" && selectedFighter && !fighter && distFromSelected !== null && distFromSelected <= selectedRemaining && selectedRemaining > 0;
 
               const inCastRange = targeting && activePosition
                 ? isAimPointInRange(activePosition, point, targeting.rangeFt, cellSizeFt)
@@ -839,6 +874,7 @@ function BG3Hotbar({
   activeCombatRound,
   activeCombatIndex,
   onQuickHpAdjust,
+  onLongRest,
 }: {
   activeFighter: Combatant | null;
   activeCharacter: any;
@@ -873,8 +909,12 @@ function BG3Hotbar({
   activeCombatRound: number;
   activeCombatIndex: number;
   onQuickHpAdjust: (fighter: Combatant, delta: number) => void;
+  onLongRest: () => void;
 }): ReactElement {
   const [spellFilter, setSpellFilter] = useState<"all" | 0 | 1 | 2 | 3>("all");
+
+  const spellSlots = useMemo(() => getCombatantSpellSlots(activeFighter), [activeFighter]);
+  const turnResources = useMemo(() => getCombatantTurnResources(activeFighter), [activeFighter]);
 
   const filteredSpells = useMemo(() => {
     if (spellFilter === "all") return spells;
@@ -882,6 +922,11 @@ function BG3Hotbar({
   }, [spells, spellFilter]);
 
   const movePercent = Math.max(0, Math.min(100, (selectedRemaining / (selectedMaxSpeed || 1)) * 100));
+
+  const hasSlotForCurrent = selectedSpellLevel === 0 || (spellSlots[selectedSpellLevel] ?? 0) > 0;
+  const hasActionForCurrent = selectedSpell?.castTime.includes("附赠")
+    ? turnResources.bonus_action
+    : turnResources.action;
 
   return (
     <div className="bg3-hotbar-dock rounded-2xl p-3 shadow-2xl">
@@ -909,7 +954,7 @@ function BG3Hotbar({
             {/* Movement Speed Gauge */}
             <div className="mt-1.5 space-y-0.5">
               <div className="flex items-center justify-between text-[9px] text-stone-400">
-                <span>🏃 移动力: <strong className="text-emerald-300 font-mono">{selectedRemaining}</strong>/{selectedMaxSpeed}尺</span>
+                <span>🏃 移动力: <strong className={`font-mono ${selectedRemaining > 0 ? "text-emerald-300" : "text-rose-400"}`}>{selectedRemaining}</strong>/{selectedMaxSpeed}尺</span>
                 <button
                   className="text-[8px] text-emerald-400 hover:underline"
                   onClick={onResetSpeed}
@@ -920,25 +965,34 @@ function BG3Hotbar({
               </div>
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-ink-950 border border-ink-800">
                 <div
-                  className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-300"
+                  className={`h-full transition-all duration-300 ${
+                    selectedRemaining > 0 ? "bg-gradient-to-r from-emerald-600 to-emerald-400" : "bg-rose-900"
+                  }`}
                   style={{ width: `${movePercent}%` }}
                 />
               </div>
             </div>
 
-            {/* Action Economy Gems */}
-            <div className="mt-1.5 flex items-center gap-1.5 text-[9px]">
-              <span className="flex items-center gap-0.5" title="标准动作: 可用">
-                <span className="h-2.5 w-2.5 rounded-full bg3-gem-action inline-block" />
-                <span className="text-emerald-300">动作</span>
-              </span>
-              <span className="flex items-center gap-0.5" title="附赠动作: 可用">
-                <span className="h-2.5 w-2.5 rounded-full bg3-gem-bonus inline-block" />
-                <span className="text-orange-300">附赠</span>
-              </span>
-              <span className="flex items-center gap-0.5" title="反应: 可用">
-                <span className="h-2.5 w-2.5 rounded-full bg3-gem-reaction inline-block" />
-                <span className="text-purple-300">反应</span>
+            {/* Action Economy Gems & Spell Slots */}
+            <div className="mt-1.5 flex flex-wrap items-center justify-between gap-1 text-[9px]">
+              <div className="flex items-center gap-1.5">
+                <span className="flex items-center gap-0.5" title={`标准动作: ${turnResources.action ? "可用" : "已耗尽"}`}>
+                  <span className={`h-2.5 w-2.5 rounded-full inline-block ${turnResources.action ? "bg3-gem-action" : "bg3-gem-empty"}`} />
+                  <span className={turnResources.action ? "text-emerald-300" : "text-stone-500 line-through"}>动作</span>
+                </span>
+                <span className="flex items-center gap-0.5" title={`附赠动作: ${turnResources.bonus_action ? "可用" : "已耗尽"}`}>
+                  <span className={`h-2.5 w-2.5 rounded-full inline-block ${turnResources.bonus_action ? "bg3-gem-bonus" : "bg3-gem-empty"}`} />
+                  <span className={turnResources.bonus_action ? "text-orange-300" : "text-stone-500 line-through"}>附赠</span>
+                </span>
+                <span className="flex items-center gap-0.5" title={`反应: ${turnResources.reaction ? "可用" : "已耗尽"}`}>
+                  <span className={`h-2.5 w-2.5 rounded-full inline-block ${turnResources.reaction ? "bg3-gem-reaction" : "bg3-gem-empty"}`} />
+                  <span className={turnResources.reaction ? "text-purple-300" : "text-stone-500 line-through"}>反应</span>
+                </span>
+              </div>
+
+              {/* Spell slot indicator */}
+              <span className="text-[8px] font-mono text-fuchsia-300" title="1环/2环/3环 剩余法术位">
+                🔮 {spellSlots[1]}·{spellSlots[2]}·{spellSlots[3]}位
               </span>
             </div>
           </div>
@@ -1043,16 +1097,24 @@ function BG3Hotbar({
               </div>
             ) : null}
 
-            {/* 2. Spells & Upcast Selector */}
+            {/* 2. Spells & Upcast Selector with Live Slot Tracking */}
             {activeTab === "spells" ? (
               <div className="w-full space-y-1.5">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex gap-1 text-[9px]">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-1 text-[9px]">
                     <button className={`rounded px-1.5 py-0.2 ${spellFilter === "all" ? "bg-fuchsia-600 font-bold text-white" : "bg-ink-950 text-stone-400"}`} onClick={() => setSpellFilter("all")}>全部</button>
-                    <button className={`rounded px-1.5 py-0.2 ${spellFilter === 0 ? "bg-fuchsia-600 font-bold text-white" : "bg-ink-950 text-stone-400"}`} onClick={() => setSpellFilter(0)}>戏法</button>
-                    <button className={`rounded px-1.5 py-0.2 ${spellFilter === 1 ? "bg-fuchsia-600 font-bold text-white" : "bg-ink-950 text-stone-400"}`} onClick={() => setSpellFilter(1)}>1环</button>
-                    <button className={`rounded px-1.5 py-0.2 ${spellFilter === 2 ? "bg-fuchsia-600 font-bold text-white" : "bg-ink-950 text-stone-400"}`} onClick={() => setSpellFilter(2)}>2环</button>
-                    <button className={`rounded px-1.5 py-0.2 ${spellFilter === 3 ? "bg-fuchsia-600 font-bold text-white" : "bg-ink-950 text-stone-400"}`} onClick={() => setSpellFilter(3)}>3环</button>
+                    <button className={`rounded px-1.5 py-0.2 ${spellFilter === 0 ? "bg-fuchsia-600 font-bold text-white" : "bg-ink-950 text-stone-400"}`} onClick={() => setSpellFilter(0)}>戏法 (无限)</button>
+                    <button className={`rounded px-1.5 py-0.2 ${spellFilter === 1 ? "bg-fuchsia-600 font-bold text-white" : "bg-ink-950 text-stone-400"}`} onClick={() => setSpellFilter(1)}>1环 ({spellSlots[1]}位)</button>
+                    <button className={`rounded px-1.5 py-0.2 ${spellFilter === 2 ? "bg-fuchsia-600 font-bold text-white" : "bg-ink-950 text-stone-400"}`} onClick={() => setSpellFilter(2)}>2环 ({spellSlots[2]}位)</button>
+                    <button className={`rounded px-1.5 py-0.2 ${spellFilter === 3 ? "bg-fuchsia-600 font-bold text-white" : "bg-ink-950 text-stone-400"}`} onClick={() => setSpellFilter(3)}>3环 ({spellSlots[3]}位)</button>
+                    <button
+                      className="rounded border border-fuchsia-800/60 bg-fuchsia-950/60 px-1.5 py-0.2 text-[9px] text-fuchsia-300 hover:bg-fuchsia-900 ml-1"
+                      onClick={onLongRest}
+                      title="恢复全部法术位与动作"
+                      type="button"
+                    >
+                      🌙 长休恢复
+                    </button>
                   </div>
 
                   {selectedSpell ? (
@@ -1064,14 +1126,22 @@ function BG3Hotbar({
                         ) : (
                           Array.from({ length: 4 - selectedSpell.level }, (_, idx) => {
                             const slotLvl = selectedSpell.level + idx;
+                            const slotCount = spellSlots[slotLvl] ?? 0;
+                            const isPicked = selectedSpellLevel === slotLvl;
                             return (
                               <button
-                                className={`rounded px-1.5 py-0.2 ${selectedSpellLevel === slotLvl ? "bg-fuchsia-600 text-white" : "text-stone-400 hover:text-white"}`}
+                                className={`rounded px-1.5 py-0.2 transition ${
+                                  isPicked
+                                    ? "bg-fuchsia-600 text-white shadow"
+                                    : slotCount > 0
+                                      ? "text-stone-300 hover:text-white"
+                                      : "text-stone-600 opacity-40"
+                                }`}
                                 key={slotLvl}
                                 onClick={() => onSelectSpellLevel(slotLvl)}
                                 type="button"
                               >
-                                {slotLvl}环
+                                {slotLvl}环 ({slotCount}位)
                               </button>
                             );
                           })
@@ -1084,11 +1154,12 @@ function BG3Hotbar({
                 <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
                   {filteredSpells.map((s) => {
                     const isPicked = selectedSpell?.id === s.id;
+                    const slotCount = s.level === 0 ? 99 : (spellSlots[s.level] ?? 0);
                     return (
                       <button
                         className={`bg3-btn-slot shrink-0 rounded-xl px-2.5 py-1 text-left ${
                           isPicked ? "border-fuchsia-400 bg-fuchsia-950/80 ring-1 ring-fuchsia-400" : ""
-                        }`}
+                        } ${slotCount === 0 ? "opacity-40" : ""}`}
                         key={s.id}
                         onClick={() => onSelectSpell(s)}
                         type="button"
@@ -1224,20 +1295,27 @@ function BG3Hotbar({
           {activeTab === "spells" && selectedSpell ? (
             selectedSpell.id === "magic_missile" ? (
               <button
-                className="rounded-xl border border-fuchsia-500 bg-fuchsia-600 px-4 py-2.5 text-xs font-bold text-white shadow hover:brightness-110"
+                className="rounded-xl border border-fuchsia-500 bg-fuchsia-600 px-4 py-2.5 text-xs font-bold text-white shadow hover:brightness-110 disabled:opacity-50"
+                disabled={!hasSlotForCurrent || !hasActionForCurrent}
                 onClick={onOpenMagicMissileModal}
                 type="button"
               >
-                🚀 分配飞弹
+                {!hasActionForCurrent ? "⚠️ 动作已用" : !hasSlotForCurrent ? "⚠️ 环位已空" : "🚀 分配飞弹"}
               </button>
             ) : (
               <button
                 className="rounded-xl border border-fuchsia-500 bg-gradient-to-r from-fuchsia-600 to-purple-600 px-4 py-2.5 text-xs font-bold text-white shadow hover:brightness-110 disabled:opacity-50"
-                disabled={isCasting}
+                disabled={isCasting || !hasSlotForCurrent || !hasActionForCurrent}
                 onClick={onCastSpell}
                 type="button"
               >
-                {isCasting ? "施法中…" : `✨ 施放【${selectedSpell.name}】`}
+                {isCasting
+                  ? "施法中…"
+                  : !hasActionForCurrent
+                    ? "⚠️ 动作已耗尽"
+                    : !hasSlotForCurrent
+                      ? `⚠️ ${selectedSpellLevel}环位耗尽`
+                      : `✨ 施放【${selectedSpell.name}】`}
               </button>
             )
           ) : (
@@ -1491,22 +1569,69 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     showToast(`🔮 已选择「${spell.name}」：请在 3D 地图上选定目标并查看范围！`, "info");
   }, [activeFighter, showToast]);
 
-  // Advance Turn mutation
+  // Advance Turn mutation (Restores movement & turn actions for the next fighter!)
   const advanceTurnMutation = useMutation({
     mutationFn: async () => {
       if (!activeCombat) throw new Error("没有活跃的战斗");
-      return advanceCombatTurn(campaignId, activeCombat.id, activeCombat.version);
+
+      // Advance turn in server
+      const res = await advanceCombatTurn(campaignId, activeCombat.id, activeCombat.version);
+
+      // Reset movement & turn actions for next active fighter
+      const nextIndex = (res.current_turn_index ?? res.active_combatant_index ?? 0) % (ordered.length || 1);
+      const nextFighter = ordered[nextIndex];
+      if (nextFighter) {
+        const snap = {
+          ...(nextFighter.snapshot_json as Record<string, unknown> | undefined),
+          turn_resources: { action: true, bonus_action: true, reaction: true },
+        };
+        await updateCombatant(
+          campaignId,
+          activeCombat.id,
+          nextFighter.id,
+          {
+            movement_remaining_ft: nextFighter.speed_ft ?? 30,
+            snapshot_json: snap,
+          },
+          nextFighter.version,
+        );
+      }
+
+      return res;
     },
     onSuccess: () => {
       soundboard.playDiceRoll();
       void queryClient.invalidateQueries({ queryKey: ["combats", campaignId] });
       void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
-      showToast("⏭️ 已进入下一战斗员回合！", "success");
+      showToast("⏭️ 已进入下一战斗员回合！移动力与动作已恢复！", "success");
     },
     onError: (err) => {
       showToast(err instanceof Error ? err.message : "推进回合失败", "error");
     },
   });
+
+  // Long rest mutation: restore all spell slots and actions for current actor
+  const handleLongRest = async () => {
+    if (!activeFighter) return;
+    const snap = {
+      ...(activeFighter.snapshot_json as Record<string, unknown> | undefined),
+      spell_slots: { 1: 4, 2: 3, 3: 2 },
+      turn_resources: { action: true, bonus_action: true, reaction: true },
+    };
+    await updateCombatant(
+      campaignId,
+      combatId,
+      activeFighter.id,
+      {
+        movement_remaining_ft: activeFighter.speed_ft ?? 30,
+        snapshot_json: snap,
+      },
+      activeFighter.version,
+    );
+    soundboard.playNat20();
+    void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
+    showToast("🌙 长休完成：法术位、移动力与动作已全部恢复为满额！", "success");
+  };
 
   // Quick Roll All Initiatives
   const rollInitiativesMutation = useMutation({
@@ -1562,10 +1687,30 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     },
   });
 
-  // Cast Selected Spell with Upcast Bonus & 3D AOE Resolution
+  // Cast Selected Spell with Spell Slot & Action Deduction
   const castSelectedSpellMutation = useMutation({
     mutationFn: async () => {
       if (!selectedSpell || !activeFighter) throw new Error("请选定施法者与法术");
+
+      const spellSlots = getCombatantSpellSlots(activeFighter);
+      const turnRes = getCombatantTurnResources(activeFighter);
+      const isBonus = selectedSpell.castTime.includes("附赠");
+
+      // Check action economy
+      if (isBonus && !turnRes.bonus_action) {
+        throw new Error("⚠️ 当前回合附赠动作已耗尽！");
+      }
+      if (!isBonus && !turnRes.action) {
+        throw new Error("⚠️ 当前回合标准动作已耗尽！");
+      }
+
+      // Check spell slots
+      if (selectedSpellLevel > 0) {
+        const available = spellSlots[selectedSpellLevel] ?? 0;
+        if (available <= 0) {
+          throw new Error(`⚠️ ${selectedSpellLevel} 环法术位已耗尽，无法施法！`);
+        }
+      }
 
       const upcastDelta = Math.max(0, selectedSpellLevel - selectedSpell.level);
       const isAoE = selectedSpell.shape !== "single";
@@ -1625,7 +1770,32 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
         }
       }
 
-      const note = `${activeFighter.display_name} 施放【${selectedSpell.name}】(${selectedSpellLevel === 0 ? "戏法" : `${selectedSpellLevel}环`}) ➔ 覆盖 ${affectedTargets.length} 个目标，造成 ${rollSum} 点 ${selectedSpell.damageType} 效果！`;
+      // Deduct spell slots and action
+      const nextSlots = { ...spellSlots };
+      if (selectedSpellLevel > 0) {
+        nextSlots[selectedSpellLevel] = Math.max(0, (nextSlots[selectedSpellLevel] ?? 1) - 1);
+      }
+      const nextTurnRes = {
+        ...turnRes,
+        action: isBonus ? turnRes.action : false,
+        bonus_action: isBonus ? false : turnRes.bonus_action,
+      };
+
+      const updatedSnap = {
+        ...(activeFighter.snapshot_json as Record<string, unknown> | undefined),
+        spell_slots: nextSlots,
+        turn_resources: nextTurnRes,
+      };
+
+      await updateCombatant(
+        campaignId,
+        combatId,
+        activeFighter.id,
+        { snapshot_json: updatedSnap },
+        activeFighter.version,
+      );
+
+      const note = `${activeFighter.display_name} 施放【${selectedSpell.name}】(${selectedSpellLevel === 0 ? "戏法" : `${selectedSpellLevel}环，消耗1个${selectedSpellLevel}环法术位`}) ➔ 覆盖 ${affectedTargets.length} 个目标，造成 ${rollSum} 点 ${selectedSpell.damageType} 效果！`;
 
       const command: CombatActionCommand = {
         action_type: "spell",
@@ -1644,7 +1814,97 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
       soundboard.playAttackHit();
       void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
       void queryClient.invalidateQueries({ queryKey: ["combat-actions", campaignId, combatId] });
-      showToast(`✨ 法术【${selectedSpell?.name}】已成功施展并对目标造成伤害！`, "success");
+      showToast(`✨ 法术【${selectedSpell?.name}】已成功施展并消耗法术位！`, "success");
+    },
+    onError: (err) => {
+      showToast(err instanceof Error ? err.message : "施法失败", "error");
+    },
+  });
+
+  // Magic Missile Multi-Target Split Execution
+  const executeMagicMissileMutation = useMutation({
+    mutationFn: async () => {
+      if (!activeFighter) throw new Error("无有效施法者");
+      const spellSlots = getCombatantSpellSlots(activeFighter);
+      const turnRes = getCombatantTurnResources(activeFighter);
+
+      if (!turnRes.action) {
+        throw new Error("⚠️ 当前回合标准动作已耗尽！");
+      }
+      if (selectedSpellLevel > 0 && (spellSlots[selectedSpellLevel] ?? 0) <= 0) {
+        throw new Error(`⚠️ ${selectedSpellLevel} 环法术位已耗尽！`);
+      }
+
+      const targetEntries = Object.entries(dartAllocations).filter(([, count]) => count > 0);
+      if (!targetEntries.length) throw new Error("请为至少一个目标分配飞弹");
+
+      for (const [targetId, dartCount] of targetEntries) {
+        const target = ordered.find((f) => f.id === targetId);
+        if (!target) continue;
+
+        let targetTotalDamage = 0;
+        const rolls: number[] = [];
+        for (let i = 0; i < dartCount; i++) {
+          const dmg = Math.floor(Math.random() * 4) + 1 + 1; // 1d4+1
+          targetTotalDamage += dmg;
+          rolls.push(dmg);
+        }
+
+        const nextHp = Math.max(0, (target.hp ?? 10) - targetTotalDamage);
+        const pos = combatantGridPosition(target) ?? [3, 5];
+
+        spawnVfx({ row: pos[0], col: pos[1], type: "arcane", text: `-${targetTotalDamage}` });
+
+        await updateCombatant(
+          campaignId,
+          combatId,
+          target.id,
+          { hp: nextHp },
+          target.version,
+        );
+
+        const command: CombatActionCommand = {
+          action_type: "damage",
+          target_combatant_id: target.id,
+          target_version: target.version,
+          actor_combatant_id: activeFighter.id,
+          actor_version: activeFighter.version,
+          action_cost: "action",
+          action_name: "魔法飞弹 (Magic Missile)",
+          amount: targetTotalDamage,
+          damage_type: "force",
+          resolution_note: `${activeFighter.display_name} 射出 ${dartCount} 枚「魔法飞弹」击中 ${target.display_name}（自动必中，各 ${rolls.join("+")} 点）➔ 造成 ${targetTotalDamage} 点力场伤害！`,
+        };
+
+        await confirmCombatAction(campaignId, combatId, command);
+      }
+
+      // Deduct slot & action
+      const nextSlots = { ...spellSlots };
+      if (selectedSpellLevel > 0) {
+        nextSlots[selectedSpellLevel] = Math.max(0, (nextSlots[selectedSpellLevel] ?? 1) - 1);
+      }
+      const updatedSnap = {
+        ...(activeFighter.snapshot_json as Record<string, unknown> | undefined),
+        spell_slots: nextSlots,
+        turn_resources: { ...turnRes, action: false },
+      };
+
+      await updateCombatant(
+        campaignId,
+        combatId,
+        activeFighter.id,
+        { snapshot_json: updatedSnap },
+        activeFighter.version,
+      );
+    },
+    onSuccess: () => {
+      soundboard.playAttackHit();
+      setMagicMissileModalOpen(false);
+      setDartAllocations({});
+      void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
+      void queryClient.invalidateQueries({ queryKey: ["combat-actions", campaignId, combatId] });
+      showToast("🚀 魔法飞弹已发射并分别对目标结算必中力场伤害！", "success");
     },
     onError: (err) => {
       showToast(err instanceof Error ? err.message : "施法失败", "error");
@@ -1665,23 +1925,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
       setAiAnalysis(text);
       soundboard.playHandout();
       showToast("🤖 AI 战术建议已生成！", "success");
-    },
-  });
-
-  const aiNarrativeMutation = useMutation({
-    mutationFn: async () => {
-      const recentActions = (actionsQuery.data ?? [])
-        .slice(0, 5)
-        .map((a: CombatAction) => `- ${a.action_name ?? a.action_type}: ${a.resolution_note ?? ""}`)
-        .join("\n");
-      const prompt = `请根据以下最近发生的战斗交锋，写一段充满张力、画面感极强的中文战斗旁白（150字左右，用于主持人口述描述）：\n${recentActions || "双方正在近身对峙，伺机发动致命一击"}`;
-      const res = await runAssistantTurn(campaignId, prompt, { mode: "narrative" });
-      return res.dm_hint?.text ?? "未能生成战斗描述";
-    },
-    onSuccess: (text) => {
-      setAiNarrative(text);
-      soundboard.playHandout();
-      showToast("🎙️ 战斗生动旁白已生成！", "success");
     },
   });
 
@@ -1735,7 +1978,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     );
   }
 
-  const moverRemaining = (activeFighter?.movement_remaining_ft != null && activeFighter.movement_remaining_ft > 0)
+  const moverRemaining = (activeFighter?.movement_remaining_ft !== undefined && activeFighter?.movement_remaining_ft !== null)
     ? activeFighter.movement_remaining_ft
     : (activeFighter?.speed_ft ?? 30);
   const moverMaxSpeed = activeFighter?.speed_ft ?? 30;
@@ -1900,10 +2143,12 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           onAdvanceTurn={() => advanceTurnMutation.mutate()}
           onAutoEnemiesChange={setAutoEnemies}
           onCastSpell={() => castSelectedSpellMutation.mutate()}
+          onLongRest={handleLongRest}
           onOpenMagicMissileModal={() => {
             const initAlloc: Record<string, number> = {};
-            if (promptTargetCombatant) initAlloc[promptTargetCombatant.id] = 3 + (selectedSpellLevel - 1);
-            else if (ordered[0]) initAlloc[ordered[0].id] = 3 + (selectedSpellLevel - 1);
+            const allowed = 3 + Math.max(0, selectedSpellLevel - 1);
+            if (promptTargetCombatant) initAlloc[promptTargetCombatant.id] = allowed;
+            else if (ordered[0]) initAlloc[ordered[0].id] = allowed;
             setDartAllocations(initAlloc);
             setMagicMissileModalOpen(true);
           }}
@@ -1952,6 +2197,79 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           targetingValidity={targetingValidity}
         />
       </footer>
+
+      {/* Magic Missile Multi-Target Allocation Modal */}
+      {magicMissileModalOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-2xl border border-fuchsia-500 bg-ink-950 p-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-ink-800 pb-2.5">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🚀</span>
+                <strong className="text-sm text-fuchsia-200">
+                  魔法飞弹多目标分配（当前总数：{Object.values(dartAllocations).reduce((a, b) => a + b, 0)}/{3 + Math.max(0, selectedSpellLevel - 1)} 枚）
+                </strong>
+              </div>
+              <button
+                className="text-stone-400 hover:text-stone-200 text-xs"
+                onClick={() => setMagicMissileModalOpen(false)}
+                type="button"
+              >
+                ✕ 关闭
+              </button>
+            </div>
+
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto">
+              {ordered.map((f) => {
+                const count = dartAllocations[f.id] ?? 0;
+                return (
+                  <div className="flex items-center justify-between rounded-xl border border-ink-800 bg-ink-900/80 p-2 text-2xs" key={f.id}>
+                    <div className="min-w-0 pr-2">
+                      <strong className="truncate block text-stone-200">{f.display_name}</strong>
+                      <span className="text-stone-500 font-mono">HP: {f.hp}/{f.max_hp}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        className="h-6 w-6 rounded-lg border border-ink-700 bg-ink-950 text-xs font-bold text-stone-300 hover:bg-ink-800"
+                        onClick={() => setDartAllocations((prev) => ({ ...prev, [f.id]: Math.max(0, (prev[f.id] ?? 0) - 1) }))}
+                        type="button"
+                      >
+                        -
+                      </button>
+                      <span className="w-5 text-center font-bold text-fuchsia-300 font-mono">{count}</span>
+                      <button
+                        className="h-6 w-6 rounded-lg border border-fuchsia-700 bg-fuchsia-950/60 text-xs font-bold text-fuchsia-200 hover:bg-fuchsia-900"
+                        onClick={() => {
+                          const total = Object.values(dartAllocations).reduce((a, b) => a + b, 0);
+                          const maxAllowed = 3 + Math.max(0, selectedSpellLevel - 1);
+                          if (total >= maxAllowed) {
+                            showToast(`${selectedSpellLevel}环魔法飞弹最多分配 ${maxAllowed} 枚`, "info");
+                            return;
+                          }
+                          setDartAllocations((prev) => ({ ...prev, [f.id]: (prev[f.id] ?? 0) + 1 }));
+                        }}
+                        type="button"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 flex justify-end gap-2">
+              <Button onClick={() => setMagicMissileModalOpen(false)} variant="ghost">取消</Button>
+              <Button
+                disabled={executeMagicMissileMutation.isPending || Object.values(dartAllocations).reduce((a, b) => a + b, 0) === 0}
+                onClick={() => executeMagicMissileMutation.mutate()}
+                variant="primary"
+              >
+                {executeMagicMissileMutation.isPending ? "正在发射…" : "🚀 全数发射并分别扣除伤害"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {/* Add Combatant Modal */}
       {showAddCombatantModal ? (
