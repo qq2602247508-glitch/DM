@@ -51,6 +51,20 @@ export type VfxEvent = {
   isMiss?: boolean;
 };
 
+export type PendingSavePrompt = {
+  actorName: string;
+  actorId: string;
+  actorVersion: number;
+  spellName: string;
+  saveAbility: "STR" | "DEX" | "CON" | "INT" | "WIS" | "CHA";
+  saveDc: number;
+  damageDice: string;
+  damageType: string;
+  baseDamageAmount: number;
+  halfOnSave: boolean;
+  affectedTarget: Combatant;
+};
+
 function combatantElevationFt(fighter: Combatant): number {
   const snap = fighter.snapshot_json as Record<string, unknown> | undefined;
   if (!snap) return 0;
@@ -654,6 +668,10 @@ function BG3BattleGrid({
                         <span className="absolute h-16 w-3 rounded bg-gradient-to-b from-amber-200 via-yellow-400 to-amber-600 animate-vfx-smite shadow-[0_0_25px_#fef08a]" />
                       ) : null}
 
+                      {vfx.type === "fire" ? (
+                        <span className="absolute h-14 w-14 rounded-full bg-gradient-to-tr from-amber-600 via-orange-500 to-red-600 animate-pulse shadow-[0_0_25px_#f97316]" />
+                      ) : null}
+
                       {vfx.type === "dust" ? (
                         <span className="absolute h-8 w-8 rounded-full border border-emerald-400/60 bg-emerald-400/20 animate-token-dust" />
                       ) : null}
@@ -865,6 +883,7 @@ function BG3Hotbar({
   onQuickHpAdjust,
   onLongRest,
   onExecuteMonsterAiAttack,
+  onTriggerMonsterSpell,
   isMonsterAiExecuting,
 }: {
   activeFighter: Combatant | null;
@@ -902,6 +921,7 @@ function BG3Hotbar({
   onQuickHpAdjust: (fighter: Combatant, delta: number) => void;
   onLongRest: () => void;
   onExecuteMonsterAiAttack: () => void;
+  onTriggerMonsterSpell: (spellId: string) => void;
   isMonsterAiExecuting: boolean;
 }): ReactElement {
   const [spellFilter, setSpellFilter] = useState<"all" | 0 | 1 | 2 | 3>("all");
@@ -1068,29 +1088,42 @@ function BG3Hotbar({
           <div className="mt-2 min-h-[68px] flex items-center">
             {/* Monster AI Action Tab */}
             {isMonster || activeTab === "monster" ? (
-              <div className="flex flex-wrap items-center gap-2 w-full">
+              <div className="flex flex-wrap items-center gap-1.5 w-full">
                 <button
-                  className="bg3-btn-slot flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold text-rose-200 border-rose-500 bg-rose-950/80 hover:bg-rose-900 shadow-[0_0_12px_rgba(244,63,94,0.5)]"
+                  className="bg3-btn-slot flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold text-rose-200 border-rose-500 bg-rose-950/80 hover:bg-rose-900 shadow-[0_0_10px_rgba(244,63,94,0.5)]"
                   disabled={isMonsterAiExecuting}
                   onClick={onExecuteMonsterAiAttack}
                   type="button"
                 >
-                  <span>👹 自动执行怪物 AI 战术攻击</span>
-                  <span className="text-[9px] text-amber-300">智能索敌·移动·命中检定</span>
+                  <span>🤖 怪物 AI 智能决策与攻击</span>
                 </button>
                 <button
-                  className="bg3-btn-slot flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold text-amber-200"
+                  className="bg3-btn-slot flex items-center gap-1 rounded-xl px-2.5 py-1 text-2xs font-bold text-amber-200"
                   onClick={onOpenMeleeAttack}
                   type="button"
                 >
-                  <span>🗡️ 爪抓/撕咬攻击 (1d6+2 挥砍)</span>
+                  <span>🗡️ 爪抓/撕咬 (近战)</span>
                 </button>
                 <button
-                  className="bg3-btn-slot flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold text-sky-200"
+                  className="bg3-btn-slot flex items-center gap-1 rounded-xl px-2.5 py-1 text-2xs font-bold text-sky-200"
                   onClick={onOpenRangedAttack}
                   type="button"
                 >
-                  <span>🏹 短弓远程射击 (1d6+2 穿刺)</span>
+                  <span>🏹 短弓远程射击</span>
+                </button>
+                <button
+                  className="bg3-btn-slot flex items-center gap-1 rounded-xl px-2.5 py-1 text-2xs font-bold text-orange-200 border-orange-700 bg-orange-950/60"
+                  onClick={() => onTriggerMonsterSpell("burning_hands")}
+                  type="button"
+                >
+                  <span>🔥 燃烧之手 (DC 13敏捷)</span>
+                </button>
+                <button
+                  className="bg3-btn-slot flex items-center gap-1 rounded-xl px-2.5 py-1 text-2xs font-bold text-cyan-200 border-cyan-700 bg-cyan-950/60"
+                  onClick={() => onTriggerMonsterSpell("thunderwave")}
+                  type="button"
+                >
+                  <span>⚡ 雷鸣波 (DC 13体质)</span>
                 </button>
               </div>
             ) : null}
@@ -1462,11 +1495,14 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
   const [isMeleeAttack, setIsMeleeAttack] = useState<boolean>(true);
   const [manualAttackRoll, setManualAttackRoll] = useState<string>("");
   const [manualDamageRoll, setManualDamageRoll] = useState<string>("");
-  const [isManualCrit, setIsManualCrit] = useState<boolean>(false);
 
   // Magic Missile Multi-Target Distribution state
   const [magicMissileModalOpen, setMagicMissileModalOpen] = useState<boolean>(false);
   const [dartAllocations, setDartAllocations] = useState<Record<string, number>>({});
+
+  // Interactive Player Saving Throw Prompt State
+  const [pendingSavePrompt, setPendingSavePrompt] = useState<PendingSavePrompt | null>(null);
+  const [manualSaveD20, setManualSaveD20] = useState<string>("");
 
   // AI Guidance states
   const [aiAnalysis, setAiAnalysis] = useState<string>("");
@@ -1678,11 +1714,67 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     },
   });
 
-  // Monster AI Auto Attack Mutation
+  // Player Saving Throw Resolution Mutation
+  const resolveSaveMutation = useMutation({
+    mutationFn: async ({ d20Roll }: { d20Roll: number }) => {
+      if (!pendingSavePrompt) return;
+      const target = pendingSavePrompt.affectedTarget;
+      const mod = pendingSavePrompt.saveAbility === "DEX" ? 2 : pendingSavePrompt.saveAbility === "CON" ? 2 : 1;
+      const total = d20Roll + mod;
+      const isPassed = total >= pendingSavePrompt.saveDc;
+      const finalDmg = isPassed
+        ? (pendingSavePrompt.halfOnSave ? Math.floor(pendingSavePrompt.baseDamageAmount / 2) : 0)
+        : pendingSavePrompt.baseDamageAmount;
+
+      const nextHp = Math.max(0, (target.hp ?? 10) - finalDmg);
+      const pos = combatantGridPosition(target) ?? [3, 3];
+
+      spawnVfx({
+        row: pos[0],
+        col: pos[1],
+        type: pendingSavePrompt.damageType === "fire" ? "fire" : "shockwave",
+        text: isPassed ? `豁免成功 -${finalDmg}` : `豁免失败 -${finalDmg}`,
+      });
+
+      const updatedTarget = await updateCombatant(campaignId, combatId, target.id, { hp: nextHp }, target.version);
+
+      const command: CombatActionCommand = {
+        action_type: "damage",
+        target_combatant_id: target.id,
+        target_version: updatedTarget.version,
+        actor_combatant_id: pendingSavePrompt.actorId,
+        actor_version: pendingSavePrompt.actorVersion,
+        action_cost: "action",
+        action_name: `${pendingSavePrompt.spellName} (豁免结算)`,
+        amount: finalDmg,
+        damage_type: pendingSavePrompt.damageType,
+        resolution_note: `🛡️【${target.display_name}】针对【${pendingSavePrompt.actorName}】的【${pendingSavePrompt.spellName}】进行 ${pendingSavePrompt.saveAbility} 豁免检定：d20(${d20Roll})+${mod}=${total} vs DC ${pendingSavePrompt.saveDc} ➔ ${isPassed ? `🎉 豁免成功！承受减半伤害 (${finalDmg}点)` : `💥 豁免失败！承受全额伤害 (${finalDmg}点)`}`,
+      };
+
+      await confirmCombatAction(campaignId, combatId, command);
+      return { isPassed, finalDmg, total };
+    },
+    onSuccess: (res) => {
+      soundboard.playAttackHit();
+      setPendingSavePrompt(null);
+      setManualSaveD20("");
+      void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
+      void queryClient.invalidateQueries({ queryKey: ["combat-actions", campaignId, combatId] });
+      if (res?.isPassed) {
+        showToast(`🎉 豁免成功！总点数 ${res.total} >= DC，伤害减半为 ${res.finalDmg} 点`, "success");
+      } else if (res) {
+        showToast(`💥 豁免失败！总点数 ${res.total} < DC，受到全额 ${res.finalDmg} 点伤害`, "warn");
+      }
+    },
+    onError: (err) => {
+      showToast(err instanceof Error ? err.message : "豁免结算失败", "error");
+    },
+  });
+
+  // Monster AI Autonomous Tactical Action (Spells with Save Roll or Physical Attack)
   const monsterAiAttackMutation = useMutation({
     mutationFn: async () => {
       if (!activeFighter || activeFighter.entity_type !== "monster") return;
-      // 1. Find alive player characters
       const alivePcs = ordered.filter((f) => f.entity_type === "character" && (f.hp ?? 0) > 0);
       if (!alivePcs.length) {
         showToast("场上没有存活的玩家角色", "info");
@@ -1704,7 +1796,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
 
       const targetPos = positions[nearestPc.id] ?? [3, 3];
 
-      // 2. If farther than 5ft, move closer
+      // If farther than 5ft, move closer
       let updatedActor = activeFighter;
       if (minDistance > 5) {
         const dRow = Math.sign(targetPos[0] - monsterPos[0]);
@@ -1724,7 +1816,39 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
         }, activeFighter.version);
       }
 
-      // 3. Roll Attack (d20 + 4 vs AC)
+      // 40% chance to cast a magical AoE saving throw spell if in 15ft
+      const willCastSpell = Math.random() < 0.45;
+      if (willCastSpell) {
+        const isFire = Math.random() > 0.5;
+        const spellName = isFire ? "燃烧之手 (Burning Hands)" : "雷鸣波 (Thunderwave)";
+        const saveAbility = isFire ? "DEX" : "CON";
+        const saveDc = 13;
+        const dmgType = isFire ? "fire" : "thunder";
+        const baseDmg = isFire
+          ? Math.floor(Math.random() * 6) + 1 + Math.floor(Math.random() * 6) + 1 + Math.floor(Math.random() * 6) + 1 // 3d6
+          : Math.floor(Math.random() * 8) + 1 + Math.floor(Math.random() * 8) + 1; // 2d8
+
+        // Prompt player to roll saving throw
+        setPendingSavePrompt({
+          actorName: updatedActor.display_name,
+          actorId: updatedActor.id,
+          actorVersion: updatedActor.version,
+          spellName,
+          saveAbility: saveAbility as "DEX" | "CON",
+          saveDc,
+          damageDice: isFire ? "3d6" : "2d8",
+          damageType: dmgType,
+          baseDamageAmount: baseDmg,
+          halfOnSave: true,
+          affectedTarget: nearestPc,
+        });
+
+        soundboard.playDiceRoll();
+        showToast(`👹【${updatedActor.display_name}】发动了【${spellName}】！请玩家进行 ${saveAbility} 豁免！`, "warn");
+        return;
+      }
+
+      // Standard Physical Attack (d20 + 4 vs PC AC)
       const d20 = Math.floor(Math.random() * 20) + 1;
       const attackMod = 4;
       const attackTotal = d20 + attackMod;
@@ -1736,7 +1860,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
         ? (isCrit ? (Math.floor(Math.random() * 6) + 1) * 2 + 2 : Math.floor(Math.random() * 6) + 1 + 2)
         : 0;
 
-      // 4. Apply damage if hit
       if (isHit) {
         const nextHp = Math.max(0, (nearestPc.hp ?? 10) - dmg);
         spawnVfx({
@@ -1755,7 +1878,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           actor_combatant_id: updatedActor.id,
           actor_version: updatedActor.version,
           action_cost: "action",
-          action_name: `${activeFighter.display_name} 猛击/射击`,
+          action_name: `${activeFighter.display_name} 猛击`,
           amount: dmg,
           damage_type: "slashing",
           is_attack: true,
@@ -1793,15 +1916,43 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     },
   });
 
+  // Manual Trigger Monster Spell
+  const handleTriggerMonsterSpell = (spellId: string) => {
+    if (!activeFighter || !promptTargetCombatant) return;
+    const isFire = spellId === "burning_hands";
+    const spellName = isFire ? "燃烧之手 (Burning Hands)" : "雷鸣波 (Thunderwave)";
+    const saveAbility = isFire ? "DEX" : "CON";
+    const saveDc = 13;
+    const dmgType = isFire ? "fire" : "thunder";
+    const baseDmg = isFire
+      ? Math.floor(Math.random() * 6) + 1 + Math.floor(Math.random() * 6) + 1 + Math.floor(Math.random() * 6) + 1
+      : Math.floor(Math.random() * 8) + 1 + Math.floor(Math.random() * 8) + 1;
+
+    setPendingSavePrompt({
+      actorName: activeFighter.display_name,
+      actorId: activeFighter.id,
+      actorVersion: activeFighter.version,
+      spellName,
+      saveAbility: saveAbility as "DEX" | "CON",
+      saveDc,
+      damageDice: isFire ? "3d6" : "2d8",
+      damageType: dmgType,
+      baseDamageAmount: baseDmg,
+      halfOnSave: true,
+      affectedTarget: promptTargetCombatant,
+    });
+    soundboard.playDiceRoll();
+  };
+
   // Auto Enemy Turns trigger
   useEffect(() => {
-    if (autoEnemies && activeFighter?.entity_type === "monster" && !monsterAiAttackMutation.isPending && !advanceTurnMutation.isPending) {
+    if (autoEnemies && activeFighter?.entity_type === "monster" && !monsterAiAttackMutation.isPending && !advanceTurnMutation.isPending && !pendingSavePrompt) {
       const timer = setTimeout(() => {
         monsterAiAttackMutation.mutate();
       }, 1200);
       return () => clearTimeout(timer);
     }
-  }, [autoEnemies, activeFighter?.id, activeFighter?.entity_type]);
+  }, [autoEnemies, activeFighter?.id, activeFighter?.entity_type, pendingSavePrompt]);
 
   // Long rest mutation: restore all spell slots and actions for current actor
   const handleLongRest = async () => {
@@ -2392,6 +2543,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           onSelectSpell={handleSelectSpell}
           onSelectSpellLevel={setSelectedSpellLevel}
           onTabChange={setActiveHotbarTab}
+          onTriggerMonsterSpell={handleTriggerMonsterSpell}
           orderedFighters={ordered}
           selectedMaxSpeed={moverMaxSpeed}
           selectedRemaining={moverRemaining}
@@ -2402,6 +2554,95 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           targetingValidity={targetingValidity}
         />
       </footer>
+
+      {/* Interactive Player Saving Throw / Reaction Roll Modal */}
+      {pendingSavePrompt ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-2xl border-2 border-amber-500 bg-gradient-to-b from-ink-900 via-ink-950 to-ink-950 p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-amber-500/40 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">🛡️</span>
+                <div>
+                  <h3 className="font-display text-base font-bold text-amber-200">
+                    受到法术/范围攻击：请进行豁免检定！
+                  </h3>
+                  <span className="text-2xs text-stone-400">
+                    施法者: {pendingSavePrompt.actorName} ➔ 目标: {pendingSavePrompt.affectedTarget.display_name}
+                  </span>
+                </div>
+              </div>
+              <span className="rounded-xl border border-amber-500/60 bg-amber-950/80 px-2.5 py-1 text-xs font-bold text-amber-300">
+                DC {pendingSavePrompt.saveDc} {pendingSavePrompt.saveAbility} 豁免
+              </span>
+            </div>
+
+            {/* Spell & Damage Meta Details */}
+            <div className="mt-4 rounded-xl border border-ink-800 bg-ink-900/60 p-3.5 space-y-2 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-stone-300 font-bold">💥 法术技能:</span>
+                <span className="text-amber-200 font-bold">{pendingSavePrompt.spellName}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-stone-300 font-bold">⚡ 基础伤害:</span>
+                <span className="text-rose-300 font-mono font-bold">
+                  {pendingSavePrompt.damageDice} ({pendingSavePrompt.baseDamageAmount} 点 {pendingSavePrompt.damageType} 伤害)
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-2xs text-stone-400">
+                <span>豁免规则:</span>
+                <span>成功受一半伤害 ({Math.floor(pendingSavePrompt.baseDamageAmount / 2)}点) · 失败受全额 ({pendingSavePrompt.baseDamageAmount}点)</span>
+              </div>
+            </div>
+
+            {/* Player Roll Options */}
+            <div className="mt-5 space-y-3">
+              {/* Option 1: Auto Roll with Modifiers */}
+              <button
+                className="w-full rounded-xl border border-emerald-500 bg-gradient-to-r from-emerald-700 to-emerald-600 py-3 text-xs font-black text-white shadow-lg transition hover:brightness-110 active:scale-95 disabled:opacity-50"
+                disabled={resolveSaveMutation.isPending}
+                onClick={() => {
+                  const d20 = Math.floor(Math.random() * 20) + 1;
+                  resolveSaveMutation.mutate({ d20Roll: d20 });
+                }}
+                type="button"
+              >
+                {resolveSaveMutation.isPending
+                  ? "正在结算豁免…"
+                  : `🎲 点击一键投掷豁免骰 (d20 + 调整值)`}
+              </button>
+
+              {/* Option 2: Physical Dice Input */}
+              <div className="rounded-xl border border-amber-800/60 bg-amber-950/20 p-3">
+                <span className="text-[10px] text-amber-300 font-bold block mb-1">
+                  ✍️ 实体骰录入 (输入现实中掷出的 d20 点数 1~20)
+                </span>
+                <div className="flex gap-2">
+                  <input
+                    className={`${inputCls} font-mono text-center text-sm font-bold text-amber-200 w-28`}
+                    max={20}
+                    min={1}
+                    onChange={(e) => setManualSaveD20(e.target.value)}
+                    placeholder="如: 16"
+                    type="number"
+                    value={manualSaveD20}
+                  />
+                  <button
+                    className="flex-1 rounded-xl border border-amber-600 bg-amber-600/40 px-3 py-2 text-xs font-bold text-amber-200 hover:bg-amber-600/60 disabled:opacity-40"
+                    disabled={resolveSaveMutation.isPending || !manualSaveD20}
+                    onClick={() => {
+                      const roll = Number(manualSaveD20) || 10;
+                      resolveSaveMutation.mutate({ d20Roll: Math.max(1, Math.min(20, roll)) });
+                    }}
+                    type="button"
+                  >
+                    确认录入并计算豁免
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {/* Magic Missile Multi-Target Allocation Modal */}
       {magicMissileModalOpen ? (
