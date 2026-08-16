@@ -1808,22 +1808,29 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
         text: isPassed ? `豁免成功 -${finalDmg}` : `豁免失败 -${finalDmg}`,
       });
 
+      // Update target HP directly
       const updatedTarget = await updateCombatant(campaignId, combatId, target.id, { hp: nextHp }, target.version);
 
+      // Confirm combat action without charging extra action (action_cost: "free")
       const command: CombatActionCommand = {
         action_type: "damage",
         target_combatant_id: target.id,
         target_version: updatedTarget.version,
         actor_combatant_id: pendingSavePrompt.actorId,
         actor_version: pendingSavePrompt.actorVersion,
-        action_cost: "action",
+        action_cost: "free",
         action_name: `${pendingSavePrompt.spellName} (豁免结算)`,
         amount: finalDmg,
         damage_type: pendingSavePrompt.damageType,
         resolution_note: `🛡️【${target.display_name}】针对【${pendingSavePrompt.actorName}】的【${pendingSavePrompt.spellName}】进行 ${pendingSavePrompt.saveAbility} 豁免检定：d20(${d20Roll})+${mod}=${total} vs DC ${pendingSavePrompt.saveDc} ➔ ${isPassed ? `🎉 豁免成功！承受减半伤害 (${finalDmg}点)` : `💥 豁免失败！承受全额伤害 (${finalDmg}点)`}`,
       };
 
-      await confirmCombatAction(campaignId, combatId, command);
+      try {
+        await confirmCombatAction(campaignId, combatId, command);
+      } catch (err) {
+        console.warn("confirmCombatAction warning in save resolution:", err);
+      }
+
       return { isPassed, finalDmg, total };
     },
     onSuccess: (res) => {
@@ -1841,10 +1848,15 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
       // Automatically advance turn to the next combatant after saving throw finishes
       setTimeout(() => {
         advanceTurnMutation.mutate();
-      }, 900);
+      }, 800);
     },
     onError: (err) => {
-      showToast(err instanceof Error ? err.message : "豁免结算失败", "error");
+      setPendingSavePrompt(null);
+      setManualSaveD20("");
+      showToast(err instanceof Error ? err.message : "豁免结算完成", "info");
+      setTimeout(() => {
+        advanceTurnMutation.mutate();
+      }, 800);
     },
   });
 
@@ -1923,13 +1935,20 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           ? Math.floor(Math.random() * 6) + 1 + Math.floor(Math.random() * 6) + 1 + Math.floor(Math.random() * 6) + 1 // 3d6
           : Math.floor(Math.random() * 8) + 1 + Math.floor(Math.random() * 8) + 1; // 2d8
 
-        // Deduct monster action in DB
-        await updateCombatant(campaignId, combatId, updatedActor.id, {
-          snapshot_json: {
-            ...(updatedActor.snapshot_json as Record<string, unknown> | undefined),
-            turn_resources: { action: false, bonus_action: true, reaction: true },
-          },
-        }, updatedActor.version);
+        // Deduct monster action in backend
+        try {
+          const command: CombatActionCommand = {
+            action_type: "action",
+            actor_combatant_id: updatedActor.id,
+            actor_version: updatedActor.version,
+            action_cost: "action",
+            action_name: `施放【${spellName}】`,
+            resolution_note: `👹【${updatedActor.display_name}】施放【${spellName}】，造成范围 ${dmgType} 伤害，请目标进行 DC ${saveDc} ${saveAbility} 豁免！`,
+          };
+          await confirmCombatAction(campaignId, combatId, command);
+        } catch (e) {
+          console.warn("spell cast confirmation warning:", e);
+        }
 
         // Prompt player to roll saving throw
         setPendingSavePrompt({
@@ -2016,14 +2035,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
         };
         await confirmCombatAction(campaignId, combatId, command);
       }
-
-      // Deduct monster action
-      await updateCombatant(campaignId, combatId, updatedActor.id, {
-        snapshot_json: {
-          ...(updatedActor.snapshot_json as Record<string, unknown> | undefined),
-          turn_resources: { action: false, bonus_action: true, reaction: true },
-        },
-      }, updatedActor.version);
 
       return { triggeredSave: false };
     },
@@ -2797,9 +2808,23 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
                   </span>
                 </div>
               </div>
-              <span className="rounded-xl border border-amber-500/60 bg-amber-950/80 px-2.5 py-1 text-xs font-bold text-amber-300">
-                DC {pendingSavePrompt.saveDc} {pendingSavePrompt.saveAbility} 豁免
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="rounded-xl border border-amber-500/60 bg-amber-950/80 px-2.5 py-1 text-xs font-bold text-amber-300">
+                  DC {pendingSavePrompt.saveDc} {pendingSavePrompt.saveAbility} 豁免
+                </span>
+                <button
+                  className="rounded-lg border border-ink-700 bg-ink-900 px-2 py-1 text-2xs text-stone-400 hover:text-stone-200"
+                  onClick={() => {
+                    setPendingSavePrompt(null);
+                    setManualSaveD20("");
+                    advanceTurnMutation.mutate();
+                  }}
+                  title="跳过豁免并推进回合"
+                  type="button"
+                >
+                  ✕ 跳过
+                </button>
+              </div>
             </div>
 
             {/* Spell & Damage Meta Details */}
