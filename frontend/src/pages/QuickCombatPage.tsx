@@ -1,32 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useState, type ReactElement } from "react";
+import { useCallback, useMemo, useState, type ReactElement } from "react";
 
 import {
   advanceCombatTurn,
   confirmCombatAction,
-  confirmCombatEffectSave,
-  confirmConcentrationCheck,
-  confirmDeathSave,
   createCombat,
   createCombatant,
-  deleteCombatant,
   listCombatActions,
-  listCombatEffects,
   listCombatants,
   listCombats,
-  resolveCombatAttackResolution,
-  resolveCombatAttackResolutionTeleport,
-  resolveCombatBeguilingReflection,
-  resolveCombatDeflectRedirect,
-  resolveCombatPreDamageReaction,
-  updateCombat,
   updateCombatant,
   type CombatActionCommand,
 } from "../api/entities";
 import { listCampaigns } from "../api/campaigns";
 import { runAssistantTurn } from "../api/assistant";
-import { listCharacters, listCompanions, listNpcs, listScenes } from "../api/entities";
-import type { Combat, CombatAction, CombatEffect, Combatant, Character, Monster, Npc, SceneGrid } from "../api/types";
+import { listCharacters } from "../api/entities";
+import type { Combat, CombatAction, Combatant, SceneGrid } from "../api/types";
 import { RequireCampaign } from "../components/RequireCampaign";
 import { InitiativeCardStrip } from "../components/combat/InitiativeCardStrip";
 import {
@@ -38,41 +27,14 @@ import { PlayerRollPanel } from "../components/combat/PlayerRollPanel";
 import { useCurrentCampaign } from "../hooks/appContexts";
 import { useToast } from "../hooks/toastContext";
 import { soundboard } from "../ui/soundboard";
-import { Badge, Button, EmptyState, LoadingBlock } from "../ui/primitives";
+import { Badge, Button, LoadingBlock } from "../ui/primitives";
 import { inputCls, selectCls } from "../ui/styles";
-import { formatDateTime } from "../ui/format";
 import {
-  availableElevationLayers,
-  evaluateTargetingElevation,
-  explicitElevationFt,
   getTargetingCells,
   gridDistanceFt,
-  hasLineOfSight,
   isAimPointInRange,
-  isBlockedCell,
   type GridPoint,
-  type TargetingElevationResult,
 } from "../ui/gridTargeting";
-import {
-  movementCommitKey,
-  planApproachPath,
-  planTargetingPath,
-  planRetreatPath,
-  shortestMovementPath,
-  type MovementPlan,
-} from "../ui/combatMovement";
-import {
-  getDoorOrientation,
-  isMapVoidCell,
-  shouldShowTerrainLabel,
-  terrainCellClass,
-} from "../ui/mapPresentation";
-import {
-  chooseEnemyTarget,
-  isEnemyAiControlledCombatant,
-} from "../ui/combatAutomation";
-
-type ElevationLayer = number | "unknown";
 
 export type VfxEvent = {
   id: string;
@@ -411,9 +373,7 @@ function QuickBattleGrid({
   fighters,
   activeFighterId,
   targeting,
-  targetingActorId,
-  targetingValidity,
-  onTargetValidityChange,
+  positions,
   onTargetSelect,
   selectedTargetId,
   vfxEvents,
@@ -422,15 +382,14 @@ function QuickBattleGrid({
   onInteractionModeChange,
   aimPoint,
   onAimPointChange,
+  areaKeys,
 }: {
   campaignId: string;
   combatId: string;
   fighters: Combatant[];
   activeFighterId: string | null;
   targeting: CombatTargeting | null;
-  targetingActorId: string | null;
-  targetingValidity: CombatTargetingValidity;
-  onTargetValidityChange: (validity: CombatTargetingValidity) => void;
+  positions: Record<string, [number, number]>;
   onTargetSelect: (targetId: string) => void;
   selectedTargetId: string;
   vfxEvents: VfxEvent[];
@@ -439,6 +398,7 @@ function QuickBattleGrid({
   onInteractionModeChange: (mode: "move" | "target") => void;
   aimPoint: GridPoint | null;
   onAimPointChange: (point: GridPoint | null) => void;
+  areaKeys: Set<string>;
 }): ReactElement {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
@@ -449,29 +409,10 @@ function QuickBattleGrid({
 
   const [viewPerspective, setViewPerspective] = useState<"iso-3d" | "high-3d" | "flat-2d">("iso-3d");
   const [selectedTokenId, setSelectedTokenId] = useState<string>(activeFighterId ?? "");
-  const [fogPreview, setFogPreview] = useState<boolean>(false);
   const [showEnemyThreat, setShowEnemyThreat] = useState<boolean>(true);
   const [pings, setPings] = useState<Array<{ id: string; row: number; col: number }>>([]);
 
   const activeFighter = useMemo(() => fighters.find((f) => f.id === activeFighterId) ?? null, [fighters, activeFighterId]);
-
-  // Derive fighter grid positions
-  const positions = useMemo(() => {
-    const map: Record<string, [number, number]> = {};
-    fighters.forEach((f, i) => {
-      const pos = combatantGridPosition(f);
-      if (pos) {
-        map[f.id] = pos;
-      } else {
-        const isPlayer = f.entity_type === "character";
-        const row = isPlayer ? Math.floor(i / 3) + 2 : Math.floor(i / 3) + 2;
-        const col = isPlayer ? (i % 3) + 2 : 11 - (i % 3);
-        map[f.id] = [row, col];
-      }
-    });
-    return map;
-  }, [fighters]);
-
   const activePos = activeFighter ? positions[activeFighter.id] : null;
   const activePosition: GridPoint | null = activePos ? { row: activePos[0], col: activePos[1] } : null;
 
@@ -479,7 +420,7 @@ function QuickBattleGrid({
   const selectedPos = selectedFighter ? positions[selectedFighter.id] : null;
   const selectedRemaining = selectedFighter?.movement_remaining_ft ?? selectedFighter?.speed_ft ?? 30;
 
-  // Calculate Enemy Threat Ranges (Melee Reach 5ft & Ranged Attack Radius 30ft)
+  // Calculate Enemy Threat Ranges
   const enemyThreatCells = useMemo(() => {
     if (!showEnemyThreat) return { meleeKeys: new Set<string>(), rangedKeys: new Set<string>() };
     const meleeKeys = new Set<string>();
@@ -548,7 +489,6 @@ function QuickBattleGrid({
         col: newCol,
       };
 
-      // Trigger movement dust animation
       onSpawnVfx({ row: newRow, col: newCol, type: "dust", text: `-${spentFt}尺` });
 
       return updateCombatant(
@@ -571,52 +511,6 @@ function QuickBattleGrid({
       showToast(err instanceof Error ? err.message : "移动失败", "error");
     },
   });
-
-  // Calculate targeting area cells
-  const areaCells = useMemo(() => {
-    if (!targeting || !activePosition) return [];
-    const tacticalGrid: SceneGrid = { width, height, cell_size_ft: cellSizeFt, cells: [], spawn_zones: [], theme: "dungeon" };
-    return getTargetingCells(tacticalGrid, activePosition, aimPoint ?? activePosition, targeting);
-  }, [targeting, activePosition, aimPoint]);
-
-  const areaKeys = useMemo(() => new Set(areaCells.map((c) => `${c.row}:${c.col}`)), [areaCells]);
-
-  // Update targeting validity
-  useEffect(() => {
-    if (!targeting || !activePosition) {
-      onTargetValidityChange({
-        anchorPoint: null,
-        horizontalTargetIds: new Set(),
-        validTargetIds: new Set(),
-        missingElevationTargetIds: new Set(),
-      });
-      return;
-    }
-    const horizontalTargetIds = new Set<string>();
-    const validTargetIds = new Set<string>();
-    const missingElevationTargetIds = new Set<string>();
-
-    fighters.forEach((f) => {
-      if (f.id === targetingActorId || (f.hp ?? 0) <= 0) return;
-      const pos = positions[f.id];
-      if (!pos) return;
-      const key = `${pos[0]}:${pos[1]}`;
-      const inArea = targeting.shape === "single"
-        ? isAimPointInRange(activePosition, { row: pos[0], col: pos[1] }, targeting.rangeFt, cellSizeFt)
-        : areaKeys.has(key);
-
-      if (!inArea) return;
-      horizontalTargetIds.add(f.id);
-      validTargetIds.add(f.id);
-    });
-
-    onTargetValidityChange({
-      anchorPoint: aimPoint ?? (targeting.originSelf ? activePosition : null),
-      horizontalTargetIds,
-      validTargetIds,
-      missingElevationTargetIds,
-    });
-  }, [targeting, activePosition, aimPoint, fighters, positions, areaKeys, targetingActorId, onTargetValidityChange]);
 
   const triggerPing = (row: number, col: number) => {
     soundboard.playPing();
@@ -900,7 +794,6 @@ function QuickBattleGrid({
                   {/* 3D Elevated Token with Drop Shadow */}
                   {fighter ? (
                     <>
-                      {/* Ground Shadow for elevated tokens */}
                       {fighterElevFt > 0 && viewPerspective !== "flat-2d" ? (
                         <div className="token-shadow" style={{ transform: `scale(${Math.max(0.4, 1 - fighterElevFt * 0.02)})` }} />
                       ) : null}
@@ -968,12 +861,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
 
   const [targetingRange, setTargetingRange] = useState<CombatTargeting | null>(null);
   const [targetingActorId, setTargetingActorId] = useState<string | null>(null);
-  const [targetingValidity, setTargetingValidity] = useState<CombatTargetingValidity>({
-    anchorPoint: null,
-    horizontalTargetIds: new Set(),
-    validTargetIds: new Set(),
-    missingElevationTargetIds: new Set(),
-  });
   const [autoEnemies, setAutoEnemies] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [showAddCombatantModal, setShowAddCombatantModal] = useState<boolean>(false);
@@ -1077,12 +964,32 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     return items.sort((a, b) => (b.initiative ?? 0) - (a.initiative ?? 0));
   }, [combatantsQuery.data]);
 
+  // Positions map
+  const positions = useMemo(() => {
+    const map: Record<string, [number, number]> = {};
+    ordered.forEach((f, i) => {
+      const pos = combatantGridPosition(f);
+      if (pos) {
+        map[f.id] = pos;
+      } else {
+        const isPlayer = f.entity_type === "character";
+        const row = isPlayer ? Math.floor(i / 3) + 2 : Math.floor(i / 3) + 2;
+        const col = isPlayer ? (i % 3) + 2 : 11 - (i % 3);
+        map[f.id] = [row, col];
+      }
+    });
+    return map;
+  }, [ordered]);
+
   // Active Fighter
   const activeFighter = useMemo(() => {
     if (!ordered.length) return null;
     const index = (activeCombat?.current_turn_index ?? activeCombat?.active_combatant_index ?? 0) % ordered.length;
     return ordered[index] ?? ordered[0] ?? null;
   }, [ordered, activeCombat?.current_turn_index, activeCombat?.active_combatant_index]);
+
+  const activePos = activeFighter ? positions[activeFighter.id] : null;
+  const activePosition: GridPoint | null = useMemo(() => (activePos ? { row: activePos[0], col: activePos[1] } : null), [activePos]);
 
   const activeCharacter = useMemo(() => {
     if (!activeFighter || activeFighter.entity_type !== "character") return undefined;
@@ -1093,6 +1000,51 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
   const promptTargetCombatant = useMemo(() => {
     return ordered.find((f) => f.id === (promptTargetId || selectedMapTargetId)) ?? ordered.find((f) => f.id !== activeFighter?.id) ?? null;
   }, [ordered, promptTargetId, selectedMapTargetId, activeFighter]);
+
+  // Calculate targeting area cells purely
+  const areaCells = useMemo(() => {
+    if (!targetingRange || !activePosition) return [];
+    const tacticalGrid: SceneGrid = { width: 12, height: 10, cell_size_ft: 5, cells: [], spawn_zones: [], theme: "dungeon" };
+    return getTargetingCells(tacticalGrid, activePosition, aimPoint ?? activePosition, targetingRange);
+  }, [targetingRange, activePosition, aimPoint]);
+
+  const areaKeys = useMemo(() => new Set(areaCells.map((c) => `${c.row}:${c.col}`)), [areaCells]);
+
+  // Pure derived targeting validity - NO infinite useEffect loop!
+  const targetingValidity = useMemo<CombatTargetingValidity>(() => {
+    if (!targetingRange || !activePosition) {
+      return {
+        anchorPoint: null,
+        horizontalTargetIds: new Set(),
+        validTargetIds: new Set(),
+        missingElevationTargetIds: new Set(),
+      };
+    }
+    const horizontalTargetIds = new Set<string>();
+    const validTargetIds = new Set<string>();
+    const missingElevationTargetIds = new Set<string>();
+
+    ordered.forEach((f) => {
+      if (f.id === (targetingActorId ?? activeFighter?.id) || (f.hp ?? 0) <= 0) return;
+      const pos = positions[f.id];
+      if (!pos) return;
+      const key = `${pos[0]}:${pos[1]}`;
+      const inArea = targetingRange.shape === "single"
+        ? isAimPointInRange(activePosition, { row: pos[0], col: pos[1] }, targetingRange.rangeFt, 5)
+        : areaKeys.has(key);
+
+      if (!inArea) return;
+      horizontalTargetIds.add(f.id);
+      validTargetIds.add(f.id);
+    });
+
+    return {
+      anchorPoint: aimPoint ?? (targetingRange.originSelf ? activePosition : null),
+      horizontalTargetIds,
+      validTargetIds,
+      missingElevationTargetIds,
+    };
+  }, [targetingRange, activePosition, aimPoint, ordered, positions, targetingActorId, activeFighter?.id, areaKeys]);
 
   // When a spell is picked, auto-update 3D grid targeting range and area
   const handleSelectSpell = useCallback((spell: CombatSpellOption) => {
@@ -1132,7 +1084,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     const targetConds = promptTargetCombatant.conditions ?? [];
     const attackerConds = activeFighter.conditions ?? [];
 
-    // Target prone
     if (targetConds.includes("prone")) {
       if (isMeleeAttack) {
         hasAdv = true;
@@ -1142,17 +1093,14 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
         reasons.push("目标倒地：远程攻击具有劣势 (Disadvantage)");
       }
     }
-    // Target paralyzed / unconscious / stunned / restrained
     if (targetConds.some((c) => ["paralyzed", "unconscious", "stunned", "restrained"].includes(c))) {
       hasAdv = true;
       reasons.push("目标处于限制/失能状态：攻击具有优势");
     }
-    // Attacker invisible
     if (attackerConds.includes("invisible")) {
       hasAdv = true;
       reasons.push("攻击者处于隐形/潜伏：攻击具有优势");
     }
-    // Attacker poisoned / blinded / prone
     if (attackerConds.some((c) => ["poisoned", "blinded", "prone"].includes(c))) {
       hasDis = true;
       reasons.push("自身处于负面状态：攻击具有劣势");
@@ -1270,7 +1218,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
         throw new Error("请在地图或列表中选定施法目标");
       }
 
-      // Calculate damage with upcast bonus
       let baseDiceCount = 1;
       let dieSides = 8;
       if (selectedSpell.damageDiceBase.includes("8d6")) {
@@ -1291,14 +1238,11 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
       }
 
       let rollSum = 0;
-      const rolls: number[] = [];
       for (let i = 0; i < baseDiceCount; i++) {
         const r = Math.floor(Math.random() * dieSides) + 1;
-        rolls.push(r);
         rollSum += r;
       }
 
-      // Apply damage / healing to all affected targets in 3D AOE
       for (const target of affectedTargets) {
         const pos = combatantGridPosition(target) ?? [3, 5];
         let dmg = rollSum;
@@ -1308,7 +1252,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           spawnVfx({ row: pos[0], col: pos[1], type: "smite", text: `+${heal}` });
           await updateCombatant(campaignId, combatId, target.id, { hp: nextHp }, target.version);
         } else {
-          // Check resistances
           if ((target.damage_immunities ?? []).includes(selectedSpell.damageType)) dmg = 0;
           else if ((target.damage_resistances ?? []).includes(selectedSpell.damageType)) dmg = Math.floor(dmg / 2);
 
@@ -1349,13 +1292,12 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     },
   });
 
-  // 1-Click Auto Resolve Action Mutation (Smart Dice + VFX Trigger)
+  // 1-Click Auto Resolve Action Mutation
   const autoResolveActionMutation = useMutation({
     mutationFn: async () => {
       if (!activeFighter || !promptTargetCombatant) throw new Error("请选定攻击者与受击目标");
       const attackMod = Number(promptAttackMod) || 0;
 
-      // Roll d20 with Advantage / Disadvantage
       const roll1 = Math.floor(Math.random() * 20) + 1;
       const roll2 = Math.floor(Math.random() * 20) + 1;
       let d20 = roll1;
@@ -1393,11 +1335,9 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
         return confirmCombatAction(campaignId, combatId, command);
       }
 
-      // Roll damage
       const dieSides = promptDamageDice.includes("d12") ? 12 : promptDamageDice.includes("d10") ? 10 : promptDamageDice.includes("d6") ? 6 : promptDamageDice.includes("d4") ? 4 : 8;
       const baseDamage = Math.floor(Math.random() * dieSides) + 1 + (isCrit ? Math.floor(Math.random() * dieSides) + 1 : 0) + 2;
 
-      // Check target resistances
       const resistances = promptTargetCombatant.damage_resistances ?? [];
       const immunities = promptTargetCombatant.damage_immunities ?? [];
       const vulnerabilities = promptTargetCombatant.damage_vulnerabilities ?? [];
@@ -1406,7 +1346,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
       else if (resistances.includes(promptDamageType)) finalDamage = Math.floor(baseDamage / 2);
       else if (vulnerabilities.includes(promptDamageType)) finalDamage = baseDamage * 2;
 
-      // Trigger attack VFX on grid target cell
       spawnVfx({
         row: targetPos[0],
         col: targetPos[1],
@@ -1445,77 +1384,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     },
   });
 
-  // Thunderwave Execution with 10ft Push & Shockwave VFX
-  const thunderwaveMutation = useMutation({
-    mutationFn: async () => {
-      if (!activeFighter || !promptTargetCombatant) throw new Error("请选定施法者与目标");
-      const d8_1 = Math.floor(Math.random() * 8) + 1;
-      const d8_2 = Math.floor(Math.random() * 8) + 1;
-      const damage = d8_1 + d8_2;
-
-      // Calculate push grid coordinates (10 ft = 2 cells away from caster)
-      const casterPos = combatantGridPosition(activeFighter) ?? [3, 3];
-      const targetPos = combatantGridPosition(promptTargetCombatant) ?? [3, 5];
-      const dRow = targetPos[0] - casterPos[0];
-      const dCol = targetPos[1] - casterPos[1];
-      const stepRow = dRow === 0 ? 0 : dRow > 0 ? 2 : -2;
-      const stepCol = dCol === 0 ? 2 : dCol > 0 ? 2 : -2;
-
-      const pushedRow = Math.max(1, Math.min(10, targetPos[0] + stepRow));
-      const pushedCol = Math.max(1, Math.min(12, targetPos[1] + stepCol));
-
-      // Trigger Shockwave VFX
-      spawnVfx({ row: casterPos[0], col: casterPos[1], type: "shockwave" });
-      spawnVfx({ row: targetPos[0], col: targetPos[1], type: "shockwave", text: `-${damage} 击退10尺` });
-
-      // Push target token
-      const snapshot = {
-        ...(promptTargetCombatant.snapshot_json as Record<string, unknown> | undefined),
-        grid_position: {
-          ...((promptTargetCombatant.snapshot_json as Record<string, unknown> | undefined)?.grid_position as Record<string, unknown> | undefined),
-          row: pushedRow,
-          col: pushedCol,
-        },
-        row: pushedRow,
-        col: pushedCol,
-      };
-
-      const nextHp = Math.max(0, (promptTargetCombatant.hp ?? 10) - damage);
-
-      await updateCombatant(
-        campaignId,
-        combatId,
-        promptTargetCombatant.id,
-        {
-          hp: nextHp,
-          snapshot_json: snapshot,
-        },
-        promptTargetCombatant.version,
-      );
-
-      const command: CombatActionCommand = {
-        action_type: "damage",
-        target_combatant_id: promptTargetCombatant.id,
-        target_version: promptTargetCombatant.version,
-        actor_combatant_id: activeFighter.id,
-        actor_version: activeFighter.version,
-        action_cost: "action",
-        action_name: "雷鸣波 (Thunderwave)",
-        amount: damage,
-        damage_type: "thunder",
-        resolution_note: `${activeFighter.display_name} 施展「雷鸣波」！对 ${promptTargetCombatant.display_name} 造成 ${damage} 点雷鸣伤害，并将其震飞击退 10 尺至 (${pushedRow}, ${pushedCol})！`,
-      };
-
-      return confirmCombatAction(campaignId, combatId, command);
-    },
-    onSuccess: () => {
-      soundboard.playAttackHit();
-      void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
-      void queryClient.invalidateQueries({ queryKey: ["combat-actions", campaignId, combatId] });
-      showToast("🌊 雷鸣波已造成范围伤害并将目标震退 10 尺！", "success");
-    },
-  });
-
   // Magic Missile Multi-Target Split Execution with Arcane VFX
   const executeMagicMissileMutation = useMutation({
     mutationFn: async () => {
@@ -1538,7 +1406,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
         const nextHp = Math.max(0, (target.hp ?? 10) - targetTotalDamage);
         const pos = combatantGridPosition(target) ?? [3, 5];
 
-        // Trigger Arcane Dart VFX
         spawnVfx({ row: pos[0], col: pos[1], type: "arcane", text: `-${targetTotalDamage}` });
 
         await updateCombatant(
@@ -1893,7 +1760,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           </div>
         </div>
 
-        {/* Tab 1: 🔮 玩家法术库与施法全流程 (选择法术 ➔ 选择环数 ➔ 选择目标 ➔ 实时查看3D范围 ➔ 施法) */}
+        {/* Tab 1: 🔮 玩家法术库与施法全流程 */}
         {activeHudTab === "spells" ? (
           <div className="mt-3 space-y-3">
             {/* Step 1: Spell Selector & Filters */}
@@ -1981,7 +1848,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
               })}
             </div>
 
-            {/* Step 2 & 3: Selected Spell Controls (Upcast Slot + Target Info + 3D Range Preview & Cast) */}
+            {/* Step 2 & 3: Selected Spell Controls */}
             {selectedSpell ? (
               <div className="rounded-xl border border-fuchsia-500/60 bg-gradient-to-r from-fuchsia-950/40 via-ink-950 to-ink-950 p-3.5 shadow-xl">
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -2514,6 +2381,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           <QuickBattleGrid
             activeFighterId={activeFighter?.id ?? null}
             aimPoint={aimPoint}
+            areaKeys={areaKeys}
             campaignId={campaignId}
             combatId={combatId}
             fighters={ordered}
@@ -2525,11 +2393,9 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
               setSelectedMapTargetId(id);
               setPromptTargetId(id);
             }}
-            onTargetValidityChange={(v) => setTargetingValidity(v)}
+            positions={positions}
             selectedTargetId={selectedMapTargetId}
             targeting={targetingRange}
-            targetingActorId={targetingActorId}
-            targetingValidity={targetingValidity}
             vfxEvents={vfxEvents}
           />
 
