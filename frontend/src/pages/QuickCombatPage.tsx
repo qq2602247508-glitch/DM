@@ -1617,26 +1617,41 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     return items.sort((a, b) => (b.initiative ?? 0) - (a.initiative ?? 0));
   }, [combatantsQuery.data]);
 
-  // Positions map with clean non-overlapping fallback placement
+  // Positions map with unique non-overlapping staggered placement
   const positions = useMemo(() => {
     const map: Record<string, [number, number]> = {};
+    const occupied = new Set<string>();
     let pcIdx = 0;
     let enemyIdx = 0;
+
     ordered.forEach((f) => {
       const pos = combatantGridPosition(f);
-      if (pos) {
+      if (pos && !occupied.has(`${pos[0]}:${pos[1]}`)) {
         map[f.id] = pos;
+        occupied.add(`${pos[0]}:${pos[1]}`);
       } else {
-        const isPlayer = f.entity_type === "character";
-        if (isPlayer) {
-          const row = Math.min(8, 3 + pcIdx * 2);
-          const col = 3;
+        const isAlly = f.entity_type === "character" || (f.entity_type === "npc" && (f.affiliation as string) !== "hostile");
+        if (isAlly) {
+          let row = 2 + (pcIdx % 4) * 2;
+          let col = pcIdx < 4 ? 3 : 2;
+          while (occupied.has(`${row}:${col}`) && pcIdx < 20) {
+            pcIdx++;
+            row = 1 + (pcIdx % 8);
+            col = pcIdx < 8 ? 3 : 2;
+          }
           map[f.id] = [row, col];
+          occupied.add(`${row}:${col}`);
           pcIdx++;
         } else {
-          const row = Math.min(8, 3 + enemyIdx * 2);
-          const col = 9;
+          let row = 2 + (enemyIdx % 4) * 2;
+          let col = enemyIdx < 4 ? 10 : 11;
+          while (occupied.has(`${row}:${col}`) && enemyIdx < 20) {
+            enemyIdx++;
+            row = 1 + (enemyIdx % 8);
+            col = enemyIdx < 8 ? 10 : 11;
+          }
           map[f.id] = [row, col];
+          occupied.add(`${row}:${col}`);
           enemyIdx++;
         }
       }
@@ -2173,10 +2188,22 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
       // 2. Fetch fresh combatants to guarantee latest versions
       const freshCombatants = await listCombatants(campaignId, activeCombat.id);
 
-      for (const [idx, f] of freshCombatants.entries()) {
-        const isPlayer = f.entity_type === "character";
-        const defaultRow = isPlayer ? Math.floor(idx / 3) + 2 : Math.floor(idx / 3) + 2;
-        const defaultCol = isPlayer ? (idx % 3) + 2 : 11 - (idx % 3);
+      let allyCount = 0;
+      let enemyCount = 0;
+
+      for (const f of freshCombatants) {
+        const isAlly = f.entity_type === "character" || (f.entity_type === "npc" && (f.affiliation as string) !== "hostile");
+        let defaultRow = 2;
+        let defaultCol = 3;
+        if (isAlly) {
+          defaultRow = 2 + (allyCount % 4) * 2;
+          defaultCol = allyCount < 4 ? 3 : 2;
+          allyCount++;
+        } else {
+          defaultRow = 2 + (enemyCount % 4) * 2;
+          defaultCol = enemyCount < 4 ? 10 : 11;
+          enemyCount++;
+        }
 
         const snap = {
           ...(f.snapshot_json as Record<string, unknown> | undefined),

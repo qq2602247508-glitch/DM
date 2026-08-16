@@ -175,11 +175,14 @@ export function ThreeTacticalGrid({
   const activePos = activeFighter ? (positions[activeFighter.id] ?? [3, 3]) : [3, 3];
   const activePosition: GridPoint = { row: activePos[0], col: activePos[1] };
 
-  // Current mover for movement range display (Always use active fighter or selected PC)
+  // Always bind the mover to the Player Character (or selected PC)
   const targetedCombatant = fighters.find((f) => f.id === selectedTargetId);
   const moverFighter = (targetedCombatant && targetedCombatant.entity_type === "character")
     ? targetedCombatant
-    : activeFighter;
+    : (activeFighter && activeFighter.entity_type === "character")
+      ? activeFighter
+      : (fighters.find((f) => f.entity_type === "character") ?? activeFighter);
+
   const moverPos = moverFighter ? (positions[moverFighter.id] ?? [3, 3]) : [3, 3];
   
   // Safe remaining movement fallback
@@ -230,6 +233,7 @@ export function ThreeTacticalGrid({
   const tileMeshesRef = useRef<Map<string, { capMesh: THREE.Mesh; capEdgeLine: THREE.LineSegments; blockMesh: THREE.Mesh }>>(new Map());
   const tokenGroupsRef = useRef<Map<string, THREE.Group>>(new Map());
   const particleGroupRef = useRef<THREE.Group>(new THREE.Group());
+  const trajectoryGroupRef = useRef<THREE.Group>(new THREE.Group());
 
   // Orbit controls state
   const isDraggingRef = useRef<boolean>(false);
@@ -284,7 +288,6 @@ export function ThreeTacticalGrid({
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
-    // Atmospheric Vignette Background
     scene.background = new THREE.Color(0x0a101d);
 
     const camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 1000);
@@ -307,7 +310,7 @@ export function ThreeTacticalGrid({
       return;
     }
 
-    // Clean Architectural Lighting (No Harsh Shadow Bleed)
+    // Clean Architectural Lighting
     const ambientLight = new THREE.AmbientLight(0xe2e8f0, 1.3);
     scene.add(ambientLight);
 
@@ -389,8 +392,9 @@ export function ThreeTacticalGrid({
     }
     tileMeshesRef.current = tilesMap;
 
-    // Particle Group
+    // Groups for Particles & Dynamic 3D Trajectory / Reticle
     scene.add(particleGroupRef.current);
+    scene.add(trajectoryGroupRef.current);
 
     // Animation Loop
     const clock = new THREE.Clock();
@@ -404,11 +408,20 @@ export function ThreeTacticalGrid({
         const activeRing = group.getObjectByName("activeRing");
         if (activeRing) activeRing.rotation.z += delta * 2;
 
+        const targetRing = group.getObjectByName("targetRing");
+        if (targetRing) targetRing.rotation.z -= delta * 1.5;
+
         const badge = group.getObjectByName("badgeSprite");
         if (badge && cameraRef.current) {
           badge.quaternion.copy(cameraRef.current.quaternion);
         }
       });
+
+      // Animate 3D Trajectory Reticle
+      const reticleMesh = trajectoryGroupRef.current.getObjectByName("aimReticle");
+      if (reticleMesh) {
+        reticleMesh.rotation.z += delta * 3;
+      }
 
       // Animate floating particles
       particleGroupRef.current.children.forEach((p) => {
@@ -462,7 +475,7 @@ export function ThreeTacticalGrid({
         const isAreaAffected = areaKeys.has(key);
         const isHovered = hoveredCell?.row === r && hoveredCell?.col === c;
 
-        // Monster Threat Ranges (Subtle boundaries when enabled)
+        // Monster Threat Ranges
         const isMeleeThreat = showEnemyThreat && enemyThreatCells.meleeMap.has(key);
         const isRangedThreat = showEnemyThreat && !isMeleeThreat && enemyThreatCells.rangedMap.has(key);
 
@@ -531,6 +544,84 @@ export function ThreeTacticalGrid({
     cellSizeFt,
   ]);
 
+  // Update Dynamic 3D Spell Trajectory Line & Aiming Reticle (瞄准轨迹与激光准星)
+  useEffect(() => {
+    const trajGroup = trajectoryGroupRef.current;
+    trajGroup.clear();
+
+    if (interactionMode !== "target") return;
+
+    // Origin: Caster
+    const casterWPos = gridToWorld(activePosition.row, activePosition.col);
+    casterWPos.y += 0.8;
+
+    // Destination: Target Combatant, Aim Point, or Hovered Cell
+    let destPoint: GridPoint | null = aimPoint;
+    if (!destPoint && selectedTargetId) {
+      const tgt = fighters.find((f) => f.id === selectedTargetId);
+      const tgtPos = tgt ? positions[tgt.id] : null;
+      if (tgtPos) destPoint = { row: tgtPos[0], col: tgtPos[1] };
+    }
+    if (!destPoint && hoveredCell) {
+      destPoint = hoveredCell;
+    }
+
+    if (!destPoint) return;
+
+    const destWPos = gridToWorld(destPoint.row, destPoint.col);
+    destWPos.y += 0.3;
+
+    const distFt = gridDistanceFt(activePosition, destPoint, cellSizeFt);
+    const maxRange = targeting?.rangeFt ?? 60;
+    const inRange = distFt <= maxRange;
+
+    // 1. Parabolic 3D Curve Beam (抛物线法术/射击弹道)
+    if (casterWPos.distanceTo(destWPos) > 0.3) {
+      const midPoint = new THREE.Vector3()
+        .addVectors(casterWPos, destWPos)
+        .multiplyScalar(0.5);
+      midPoint.y += Math.max(0.6, distFt * 0.08);
+
+      const curve = new THREE.QuadraticBezierCurve3(casterWPos, midPoint, destWPos);
+      const points = curve.getPoints(24);
+      const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+      lineGeo.computeBoundingSphere();
+      const lineMat = new THREE.LineBasicMaterial({
+        color: inRange ? 0x38bdf8 : 0xf43f5e,
+        linewidth: 3,
+      });
+      const trajectoryLine = new THREE.Line(lineGeo, lineMat);
+      trajGroup.add(trajectoryLine);
+    }
+
+    // 2. Animated Concentric 3D Reticle (地面发光瞄准准星)
+    const reticleGeo = new THREE.RingGeometry(0.5, 0.65, 24);
+    const reticleMat = new THREE.MeshBasicMaterial({
+      color: inRange ? 0x38bdf8 : 0xf43f5e,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.9,
+    });
+    const reticleMesh = new THREE.Mesh(reticleGeo, reticleMat);
+    reticleMesh.rotation.x = -Math.PI / 2;
+    reticleMesh.position.set(destWPos.x, destWPos.y + 0.02, destWPos.z);
+    reticleMesh.name = "aimReticle";
+    trajGroup.add(reticleMesh);
+
+    // 3. Crosshair Lines
+    const crossGeo = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(-0.7, 0, 0),
+      new THREE.Vector3(0.7, 0, 0),
+      new THREE.Vector3(0, 0, -0.7),
+      new THREE.Vector3(0, 0, 0.7),
+    ]);
+    crossGeo.computeBoundingSphere();
+    const crossMat = new THREE.LineBasicMaterial({ color: inRange ? 0x7dd3fc : 0xfb7185 });
+    const crossMesh = new THREE.LineSegments(crossGeo, crossMat);
+    crossMesh.position.set(destWPos.x, destWPos.y + 0.03, destWPos.z);
+    trajGroup.add(crossMesh);
+  }, [interactionMode, targeting, activePosition, aimPoint, selectedTargetId, hoveredCell, fighters, positions, gridToWorld, cellSizeFt]);
+
   // Update 3D Tabletop Miniature Chess Tokens (棋子)
   useEffect(() => {
     const scene = sceneRef.current;
@@ -549,7 +640,6 @@ export function ThreeTacticalGrid({
 
     // Create or update sleek chess figurine tokens
     fighters.forEach((f, idx) => {
-      // Prevent stacking off-board (0,0): Assign fallback grid positions
       const defaultPos: [number, number] = f.entity_type === "monster"
         ? [Math.min(9, 3 + idx * 2), 9]
         : [Math.min(9, 3 + idx * 2), 3];
@@ -648,8 +738,8 @@ export function ThreeTacticalGrid({
         const badgeTexture = createTokenBadgeTexture(f, false);
         const badgeMat = new THREE.SpriteMaterial({ map: badgeTexture, transparent: true });
         const badgeSprite = new THREE.Sprite(badgeMat);
-        badgeSprite.scale.set(2.2, 1.05, 1);
-        badgeSprite.position.y = 1.65;
+        badgeSprite.scale.set(1.5, 0.72, 1);
+        badgeSprite.position.y = 1.35;
         badgeSprite.name = "badgeSprite";
         group.add(badgeSprite);
 
@@ -795,8 +885,17 @@ export function ThreeTacticalGrid({
         cur = cur.parent;
       }
       if (cur?.userData?.fighterId) {
-        onTargetSelect(cur.userData.fighterId);
+        const hitId = cur.userData.fighterId as string;
+        onTargetSelect(hitId);
         soundboard.playDiceRoll();
+
+        // If in target mode, snap aim point to the clicked token
+        if (interactionMode === "target") {
+          const tgtPos = positions[hitId];
+          if (tgtPos) {
+            onAimPointChange({ row: tgtPos[0], col: tgtPos[1] });
+          }
+        }
         return;
       }
     }
@@ -813,12 +912,17 @@ export function ThreeTacticalGrid({
       if (occupant) {
         onTargetSelect(occupant.id);
         soundboard.playDiceRoll();
-      } else if (interactionMode === "move" && moverFighter) {
+        if (interactionMode === "target") {
+          onAimPointChange(point);
+        }
+      } else if (interactionMode === "move" && moverFighter && moverFighter.entity_type === "character") {
+        // Only move the player character when clicking reachable floor in move mode
         const dist = gridDistanceFt({ row: moverPos[0], col: moverPos[1] }, point, cellSizeFt);
         if (dist <= moverRemaining && moverRemaining > 0) {
           onMoveToken(moverFighter, hit.row, hit.col, dist);
         }
       } else if (interactionMode === "target") {
+        // In target mode, floor click sets the spell aim point
         onAimPointChange(point);
       }
     }

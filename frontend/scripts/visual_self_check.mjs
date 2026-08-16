@@ -44,12 +44,19 @@ async function runVisualSelfCheck() {
     await page.goto("http://127.0.0.1:5173/#/quick-combat", { waitUntil: "networkidle" });
     await page.waitForTimeout(1500);
 
-    // If preset button is visible, click it
-    const presetBtn = page.locator("button:has-text('一键发起《红落避难所前厅突袭》')");
-    if (await presetBtn.isVisible({ timeout: 1500 }).catch(() => false)) {
-      console.log("⚡ Creating preset encounter...");
-      await presetBtn.click();
-      await page.waitForTimeout(2000);
+    // Reset or Preset encounter
+    const resetBtn = page.locator("button:has-text('重置战斗')");
+    if (await resetBtn.isVisible({ timeout: 1500 }).catch(() => false)) {
+      console.log("🔄 Resetting combat...");
+      await resetBtn.click();
+      await page.waitForTimeout(1500);
+    } else {
+      const presetBtn = page.locator("button:has-text('一键发起《红落避难所前厅突袭》')");
+      if (await presetBtn.isVisible({ timeout: 1500 }).catch(() => false)) {
+        console.log("⚡ Creating preset encounter...");
+        await presetBtn.click();
+        await page.waitForTimeout(2000);
+      }
     }
 
     // Capture 1: Combat Overview with Clean Tabletop
@@ -57,30 +64,46 @@ async function runVisualSelfCheck() {
     await page.screenshot({ path: shot1, fullPage: true });
     console.log(`📸 Saved: ${shot1}`);
 
-    // Step 2: Test Movement Mode (Reachable Emerald Grid)
-    console.log("🏃 Step 2: Testing Movement Mode...");
-    const moveBtn = page.locator("button:has-text('🏃 移动走位')");
-    if (await moveBtn.isVisible()) {
-      await moveBtn.click();
-      await page.waitForTimeout(1000);
+    // Step 2: Test Movement Mode (Clicking 3D Canvas to Move Player)
+    console.log("🏃 Step 2: Testing Player Movement on 3D Grid...");
+    const canvas = page.locator("canvas").first();
+    if (await canvas.isVisible()) {
+      const box = await canvas.boundingBox();
+      if (box) {
+        // Click near the player's reachable green zone (center-left)
+        await page.mouse.click(box.x + box.width * 0.38, box.y + box.height * 0.52);
+        await page.waitForTimeout(1200);
+      }
     }
 
     const shot2 = path.join(ARTIFACT_DIR, "shot_2_move_range.png");
     await page.screenshot({ path: shot2, fullPage: true });
     console.log(`📸 Saved: ${shot2}`);
 
-    // Step 3: Test Spell Mode & Arcane AoE Highlighting
-    console.log("🔮 Step 3: Testing Spells & AoE Range...");
+    // Step 3: Test Spell Mode & 3D Arcane Trajectory Beam
+    console.log("🔮 Step 3: Testing Spells & 3D Trajectory Aiming Beam...");
     const spellTab = page.locator("button:has-text('法术书')");
     if (await spellTab.isVisible()) {
       await spellTab.click();
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(800);
     }
 
     const burningHandsBtn = page.locator("button:has-text('燃烧之手')");
     if (await burningHandsBtn.isVisible()) {
       await burningHandsBtn.click();
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(800);
+    }
+
+    // Hover / Click over enemy area in 3D canvas
+    if (await canvas.isVisible()) {
+      const box = await canvas.boundingBox();
+      if (box) {
+        // Move mouse to target area to trigger 3D trajectory beam & laser reticle
+        await page.mouse.move(box.x + box.width * 0.62, box.y + box.height * 0.45);
+        await page.waitForTimeout(600);
+        await page.mouse.click(box.x + box.width * 0.62, box.y + box.height * 0.45);
+        await page.waitForTimeout(800);
+      }
     }
 
     const shot3 = path.join(ARTIFACT_DIR, "shot_3_spell_range.png");
@@ -98,18 +121,6 @@ async function runVisualSelfCheck() {
     const shot4 = path.join(ARTIFACT_DIR, "shot_4_monster_turn.png");
     await page.screenshot({ path: shot4, fullPage: true });
     console.log(`📸 Saved: ${shot4}`);
-
-    // If saving throw prompt modal appears, test rolling save
-    const rollSaveBtn = page.locator("button:has-text('点击一键投掷豁免骰')");
-    if (await rollSaveBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      console.log("🛡️ Step 5: Testing Interactive Saving Throw Modal...");
-      const shotSave = path.join(ARTIFACT_DIR, "shot_5_save_modal.png");
-      await page.screenshot({ path: shotSave, fullPage: true });
-      console.log(`📸 Saved: ${shotSave}`);
-
-      await rollSaveBtn.click();
-      await page.waitForTimeout(1500);
-    }
 
     console.log("🎉 Self-Check Finished! Total console errors:", consoleErrors.length);
   } catch (err) {
