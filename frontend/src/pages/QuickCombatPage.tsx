@@ -41,6 +41,7 @@ import {
   getSpellUpcastPreview,
   type CombatSpellOption,
 } from "../ui/combatConstants";
+import { ThreeTacticalGrid } from "../components/combat/ThreeTacticalGrid";
 
 export type VfxEvent = {
   id: string;
@@ -1517,6 +1518,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
   const [targetingRange, setTargetingRange] = useState<CombatTargeting | null>(null);
   const [targetingActorId, setTargetingActorId] = useState<string | null>(null);
   const [autoEnemies, setAutoEnemies] = useState<boolean>(true);
+  const [showEnemyThreat, setShowEnemyThreat] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [showAddCombatantModal, setShowAddCombatantModal] = useState<boolean>(false);
 
@@ -2558,9 +2560,9 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
       {/* 2. Center Section: 3D Tactical Battlefield + Floating Target Card & Quick Widgets */}
       <main className="relative mb-2 flex-1">
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
-          {/* Main 3D Tactical Grid Viewport (8 Cols) */}
+          {/* Main 3D Tactical Three.js Grid Viewport (8 Cols) */}
           <div className="lg:col-span-8">
-            <BG3BattleGrid
+            <ThreeTacticalGrid
               activeFighterId={activeFighter?.id ?? null}
               aimPoint={aimPoint}
               areaKeys={areaKeys}
@@ -2570,13 +2572,45 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
               interactionMode={gridInteractionMode}
               onAimPointChange={setAimPoint}
               onInteractionModeChange={setGridInteractionMode}
+              onMoveToken={(fighter, newRow, newCol, spentFt) => {
+                const curRemaining = fighter.movement_remaining_ft !== undefined && fighter.movement_remaining_ft !== null
+                  ? fighter.movement_remaining_ft
+                  : (fighter.speed_ft ?? 30);
+                if (curRemaining < spentFt) {
+                  showToast("⚠️ 剩余移动力不足！", "warn");
+                  return;
+                }
+                const nextRemaining = Math.max(0, curRemaining - spentFt);
+                spawnVfx({ row: newRow, col: newCol, type: "dust", text: `-${spentFt}尺` });
+                void updateCombatant(
+                  campaignId,
+                  combatId,
+                  fighter.id,
+                  {
+                    movement_remaining_ft: nextRemaining,
+                    snapshot_json: {
+                      ...(fighter.snapshot_json as Record<string, unknown> | undefined),
+                      row: newRow,
+                      col: newCol,
+                      grid_position: { row: newRow, col: newCol },
+                    },
+                  },
+                  fighter.version,
+                ).then(() => {
+                  soundboard.playDiceRoll();
+                  void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
+                  showToast(`🏃 ${fighter.display_name} 移动至 (${newRow}, ${newCol})，扣减 ${spentFt} 尺移动力`, "success");
+                });
+              }}
               onSpawnVfx={spawnVfx}
               onTargetSelect={(id) => {
                 setSelectedMapTargetId(id);
                 setPromptTargetId(id);
               }}
+              onToggleEnemyThreat={() => setShowEnemyThreat(!showEnemyThreat)}
               positions={positions}
               selectedTargetId={selectedMapTargetId}
+              showEnemyThreat={showEnemyThreat}
               targeting={targetingRange}
               vfxEvents={vfxEvents}
             />
