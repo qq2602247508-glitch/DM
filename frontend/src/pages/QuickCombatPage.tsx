@@ -716,7 +716,7 @@ function QuickBattleGrid({
                     triggerPing(row, col);
                   }}
                   style={{
-                    transformStyle: "preserve-3d",
+                    transform: viewPerspective !== "flat-2d" && fighterElevFt > 0 ? `translateY(-${fighterElevFt * 1.8}px)` : undefined,
                   }}
                   title={
                     fighter
@@ -813,8 +813,7 @@ function QuickBattleGrid({
                                     : "bg-red-950/70 border border-red-600/60"
                         }`}
                         style={{
-                          transform: viewPerspective !== "flat-2d" && fighterElevFt > 0 ? `translateZ(${fighterElevFt * 3.5}px)` : undefined,
-                          transformStyle: "preserve-3d",
+                          transform: viewPerspective !== "flat-2d" && fighterElevFt > 0 ? `translateY(-${fighterElevFt * 1.5}px)` : undefined,
                         }}
                       >
                         <span className="truncate font-bold text-[10px] text-parchment-100 drop-shadow">
@@ -1046,21 +1045,29 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     };
   }, [targetingRange, activePosition, aimPoint, ordered, positions, targetingActorId, activeFighter?.id, areaKeys]);
 
-  // When a spell is picked, auto-update 3D grid targeting range and area
-  const handleSelectSpell = useCallback((spell: CombatSpellOption) => {
-    setSelectedSpell(spell);
-    setSelectedSpellLevel(spell.level);
-    setGridInteractionMode("target");
-    setTargetingRange({
-      label: spell.name,
-      rangeFt: spell.rangeFt,
-      shape: spell.shape,
-      sizeFt: spell.sizeFt,
-      originSelf: spell.originSelf,
+  const handleRangeChange = useCallback((range: CombatTargeting | null, actorId?: string | null) => {
+    setTargetingRange((prev) => {
+      if (!range && !prev) return prev;
+      if (
+        range &&
+        prev &&
+        range.label === prev.label &&
+        range.rangeFt === prev.rangeFt &&
+        range.shape === prev.shape &&
+        range.sizeFt === prev.sizeFt &&
+        range.originSelf === prev.originSelf
+      ) {
+        return prev;
+      }
+      return range;
     });
-    setTargetingActorId(activeFighter?.id ?? null);
-    showToast(`🔮 已选择「${spell.name}」：请在 3D 地图上选定目标并查看范围！`, "info");
-  }, [activeFighter, showToast]);
+    setTargetingActorId((prev) => (prev === (actorId ?? null) ? prev : (actorId ?? null)));
+  }, []);
+
+  const handleTargetChange = useCallback((id: string) => {
+    setSelectedMapTargetId((prev) => (prev === id ? prev : id));
+    setPromptTargetId((prev) => (prev === id ? prev : id));
+  }, []);
 
   // Filtered spells catalog
   const filteredSpells = useMemo(() => {
@@ -2462,14 +2469,8 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
                 onEnemyTurnComplete={() => {
                   advanceTurnMutation.mutate();
                 }}
-                onRangeChange={(range, actorId) => {
-                  setTargetingRange(range);
-                  setTargetingActorId(range ? actorId ?? activeFighter.id : null);
-                }}
-                onTargetChange={(id) => {
-                  setSelectedMapTargetId(id);
-                  setPromptTargetId(id);
-                }}
+                onRangeChange={handleRangeChange}
+                onTargetChange={handleTargetChange}
                 selectedTargetId={selectedMapTargetId}
                 targetingValidity={targetingValidity}
                 turnKey={`${activeCombat.round_number}:${activeCombat.current_turn_index ?? 0}:${activeFighter.id}`}
