@@ -9,6 +9,7 @@ import {
   listCombatActions,
   listCombatants,
   listCombats,
+  updateCombat,
   updateCombatant,
   type CombatActionCommand,
 } from "../api/entities";
@@ -124,6 +125,8 @@ function BG3InitiativeTrack({
   roundNumber,
   onRollInitiatives,
   onAddCombatant,
+  onResetCombat,
+  isResettingCombat,
   campaignId,
   campaigns,
   onSelectCampaign,
@@ -142,6 +145,8 @@ function BG3InitiativeTrack({
   roundNumber: number;
   onRollInitiatives: () => void;
   onAddCombatant: () => void;
+  onResetCombat: () => void;
+  isResettingCombat: boolean;
   campaignId: string;
   campaigns: Array<{ id: string; name: string }>;
   onSelectCampaign: (id: string) => void;
@@ -212,6 +217,15 @@ function BG3InitiativeTrack({
           type="button"
         >
           👥 加人
+        </button>
+        <button
+          className="rounded-lg border border-amber-600/80 bg-amber-950/60 px-2 py-1 text-2xs font-semibold text-amber-300 transition hover:bg-amber-900 hover:border-amber-400 disabled:opacity-50"
+          disabled={isResettingCombat}
+          onClick={onResetCombat}
+          title="重置当前战斗：轮数归1，全员生命值满额，恢复法术位与移动力"
+          type="button"
+        >
+          {isResettingCombat ? "重置中…" : "🔄 重置战斗"}
         </button>
 
         {/* Auto Enemy Turns Toggle */}
@@ -2001,6 +2015,64 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     },
   });
 
+  // Reset Combat Mutation (Round 1, full health, reset spell slots & actions, clear conditions)
+  const resetCombatMutation = useMutation({
+    mutationFn: async () => {
+      if (!activeCombat) throw new Error("没有活跃的战斗");
+
+      // 1. Reset combat encounter round & turn index in database
+      await updateCombat(
+        campaignId,
+        activeCombat.id,
+        {
+          round_number: 1,
+          status: "active",
+        },
+        activeCombat.version,
+      );
+
+      // 2. Reset every combatant's HP to max_hp, clear conditions, restore spell slots & actions, reset movement
+      for (const [idx, f] of ordered.entries()) {
+        const isPlayer = f.entity_type === "character";
+        const defaultRow = isPlayer ? Math.floor(idx / 3) + 2 : Math.floor(idx / 3) + 2;
+        const defaultCol = isPlayer ? (idx % 3) + 2 : 11 - (idx % 3);
+
+        const snap = {
+          ...(f.snapshot_json as Record<string, unknown> | undefined),
+          spell_slots: { 1: 4, 2: 3, 3: 2 },
+          turn_resources: { action: true, bonus_action: true, reaction: true },
+          row: defaultRow,
+          col: defaultCol,
+          grid_position: { row: defaultRow, col: defaultCol, elevation_ft: 0 },
+          elevation_ft: 0,
+        };
+
+        await updateCombatant(
+          campaignId,
+          activeCombat.id,
+          f.id,
+          {
+            hp: f.max_hp ?? 10,
+            conditions: [],
+            movement_remaining_ft: f.speed_ft ?? 30,
+            snapshot_json: snap,
+          },
+          f.version,
+        );
+      }
+    },
+    onSuccess: () => {
+      soundboard.playNat20();
+      void queryClient.invalidateQueries({ queryKey: ["combats", campaignId] });
+      void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
+      void queryClient.invalidateQueries({ queryKey: ["combat-actions", campaignId, combatId] });
+      showToast("🔄 战斗已完全重置！轮数归1，全员生命值满额，法术位与状态已全部刷新！", "success");
+    },
+    onError: (err) => {
+      showToast(err instanceof Error ? err.message : "重置战斗失败", "error");
+    },
+  });
+
   // Quick HP adjust mutation
   const quickHpAdjustMutation = useMutation({
     mutationFn: async ({ combatant, delta }: { combatant: Combatant; delta: number }) => {
@@ -2345,7 +2417,9 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           combats={combatsQuery.data ?? []}
           fighters={ordered}
           isFullscreen={isFullscreen}
+          isResettingCombat={resetCombatMutation.isPending}
           onAddCombatant={() => setShowAddCombatantModal(true)}
+          onResetCombat={() => resetCombatMutation.mutate()}
           onRollInitiatives={() => rollInitiativesMutation.mutate()}
           onSelectCampaign={(id) => selectCampaign(id)}
           onSelectCombat={(id) => setSelectedCombatId(id)}
