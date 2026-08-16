@@ -1,4 +1,4 @@
-import { apiFetch } from "./client";
+import { apiFetch, ApiError } from "./client";
 import { createClientId } from "../ui/id";
 import type {
   CampaignEvent,
@@ -87,15 +87,29 @@ function createEntity<T, TInput>(path: string, input: TInput): Promise<T> {
   return apiFetch<T>(path, { method: "POST", body: input });
 }
 
-function patchEntity<T, TInput extends object>(
+async function patchEntity<T, TInput extends object>(
   path: string,
   input: TInput,
   version: number,
 ): Promise<T> {
-  return apiFetch<T>(path, {
-    method: "PATCH",
-    body: { ...input, version },
-  });
+  try {
+    return await apiFetch<T>(path, {
+      method: "PATCH",
+      body: { ...input, version },
+    });
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 409) {
+      const match = err.message.match(/actual\s+(\d+)/i);
+      if (match) {
+        const actualVersion = parseInt(match[1], 10);
+        return await apiFetch<T>(path, {
+          method: "PATCH",
+          body: { ...input, version: actualVersion },
+        });
+      }
+    }
+    throw err;
+  }
 }
 
 function deleteEntity(path: string, version: number): Promise<void> {
@@ -742,20 +756,47 @@ export const previewCombatAction = (
     { method: "POST", body: input },
   );
 
-export const confirmCombatAction = (
+export const confirmCombatAction = async (
   cid: string,
   combatId: string,
   input: CombatActionCommand,
   requestId: string = createClientId("request"),
-) =>
-  apiFetch<CombatActionConfirmation>(
-    `/campaigns/${cid}/combats/${combatId}/actions/confirm`,
-    {
-      method: "POST",
-      body: input,
-      headers: { "X-Request-ID": requestId },
-    },
-  );
+): Promise<CombatActionConfirmation> => {
+  try {
+    return await apiFetch<CombatActionConfirmation>(
+      `/campaigns/${cid}/combats/${combatId}/actions/confirm`,
+      {
+        method: "POST",
+        body: input,
+        headers: { "X-Request-ID": requestId },
+      },
+    );
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 409) {
+      const match = err.message.match(/actual\s+(\d+)/i);
+      if (match) {
+        const actualVersion = parseInt(match[1], 10);
+        const nextInput = { ...input };
+        if (err.message.includes(input.target_combatant_id)) {
+          nextInput.target_version = actualVersion;
+        } else if (input.actor_combatant_id && err.message.includes(input.actor_combatant_id)) {
+          nextInput.actor_version = actualVersion;
+        } else {
+          nextInput.target_version = actualVersion;
+        }
+        return await apiFetch<CombatActionConfirmation>(
+          `/campaigns/${cid}/combats/${combatId}/actions/confirm`,
+          {
+            method: "POST",
+            body: nextInput,
+            headers: { "X-Request-ID": createClientId("request") },
+          },
+        );
+      }
+    }
+    throw err;
+  }
+};
 
 export const startCombatAttackSequence = (
   cid: string,

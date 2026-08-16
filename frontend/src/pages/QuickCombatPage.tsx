@@ -2020,19 +2020,24 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     mutationFn: async () => {
       if (!activeCombat) throw new Error("没有活跃的战斗");
 
-      // 1. Reset combat encounter round & turn index in database
+      // 1. Fetch fresh combat to guarantee latest version
+      const freshCombats = await listCombats(campaignId);
+      const freshCombat = freshCombats.find((c) => c.id === activeCombat.id) ?? activeCombat;
+
       await updateCombat(
         campaignId,
-        activeCombat.id,
+        freshCombat.id,
         {
           round_number: 1,
           status: "active",
         },
-        activeCombat.version,
+        freshCombat.version,
       );
 
-      // 2. Reset every combatant's HP to max_hp, clear conditions, restore spell slots & actions, reset movement
-      for (const [idx, f] of ordered.entries()) {
+      // 2. Fetch fresh combatants to guarantee latest versions
+      const freshCombatants = await listCombatants(campaignId, activeCombat.id);
+
+      for (const [idx, f] of freshCombatants.entries()) {
         const isPlayer = f.entity_type === "character";
         const defaultRow = isPlayer ? Math.floor(idx / 3) + 2 : Math.floor(idx / 3) + 2;
         const defaultCol = isPlayer ? (idx % 3) + 2 : 11 - (idx % 3);
