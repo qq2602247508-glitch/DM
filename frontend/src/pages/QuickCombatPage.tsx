@@ -376,31 +376,48 @@ function BG3BattleGrid({
     ? selectedFighter.movement_remaining_ft
     : (selectedFighter?.speed_ft ?? 30);
 
-  // Calculate Enemy Threat Ranges
+  // Calculate Enemy Attack Ranges (Melee 5ft & Ranged 30ft/60ft)
   const enemyThreatCells = useMemo(() => {
-    if (!showEnemyThreat) return { meleeKeys: new Set<string>(), rangedKeys: new Set<string>() };
-    const meleeKeys = new Set<string>();
-    const rangedKeys = new Set<string>();
+    if (!showEnemyThreat) {
+      return {
+        meleeMap: new Map<string, string[]>(),
+        rangedMap: new Map<string, string[]>(),
+        activeMonsterMeleeKeys: new Set<string>(),
+        activeMonsterRangedKeys: new Set<string>(),
+      };
+    }
+    const meleeMap = new Map<string, string[]>();
+    const rangedMap = new Map<string, string[]>();
+    const activeMonsterMeleeKeys = new Set<string>();
+    const activeMonsterRangedKeys = new Set<string>();
 
     const enemies = fighters.filter((f) => f.entity_type === "monster" && (f.hp ?? 0) > 0);
     enemies.forEach((enemy) => {
       const pos = positions[enemy.id];
       if (!pos) return;
+      const isFocused = enemy.id === activeFighterId || enemy.id === selectedTokenId;
 
       for (let r = 1; r <= height; r++) {
         for (let c = 1; c <= width; c++) {
+          const key = `${r}:${c}`;
           const dist = gridDistanceFt({ row: pos[0], col: pos[1] }, { row: r, col: c }, cellSizeFt);
           if (dist <= 5) {
-            meleeKeys.add(`${r}:${c}`);
+            const list = meleeMap.get(key) ?? [];
+            list.push(enemy.display_name);
+            meleeMap.set(key, list);
+            if (isFocused) activeMonsterMeleeKeys.add(key);
           } else if (dist <= 30) {
-            rangedKeys.add(`${r}:${c}`);
+            const list = rangedMap.get(key) ?? [];
+            list.push(enemy.display_name);
+            rangedMap.set(key, list);
+            if (isFocused) activeMonsterRangedKeys.add(key);
           }
         }
       }
     });
 
-    return { meleeKeys, rangedKeys };
-  }, [fighters, positions, showEnemyThreat, height, width, cellSizeFt]);
+    return { meleeMap, rangedMap, activeMonsterMeleeKeys, activeMonsterRangedKeys };
+  }, [fighters, positions, showEnemyThreat, activeFighterId, selectedTokenId, height, width, cellSizeFt]);
 
   // Move token mutation with movement dust VFX
   const moveMutation = useMutation({
@@ -544,15 +561,22 @@ function BG3BattleGrid({
           </div>
 
           <button
-            className={`rounded-xl border px-2.5 py-0.5 transition ${
+            className={`rounded-xl border px-2.5 py-1 text-2xs font-bold transition flex items-center gap-1.5 ${
               showEnemyThreat
-                ? "border-rose-600 bg-rose-950/60 text-rose-200 font-bold"
+                ? "border-rose-500 bg-rose-950/80 text-rose-200 shadow-[0_0_10px_rgba(244,63,94,0.4)]"
                 : "border-ink-700 bg-ink-900 text-stone-400 hover:text-stone-200"
             }`}
             onClick={() => setShowEnemyThreat(!showEnemyThreat)}
+            title="切换显示怪物攻击范围：近战5尺（深红）与远程30尺（橙黄）"
             type="button"
           >
-            👹 威胁: {showEnemyThreat ? "开" : "关"}
+            <span>👹 怪物攻击范围: {showEnemyThreat ? "开" : "关"}</span>
+            {showEnemyThreat ? (
+              <span className="flex items-center gap-1 text-[9px] text-stone-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-rose-500 inline-block" /> 近战5尺
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 inline-block ml-0.5" /> 远程30尺
+              </span>
+            ) : null}
           </button>
         </div>
       </div>
@@ -580,8 +604,12 @@ function BG3BattleGrid({
               const isActive = activeFighterId === fighter?.id;
               const isTarget = selectedTargetId === fighter?.id;
 
-              const isEnemyMeleeThreat = enemyThreatCells.meleeKeys.has(cellKey);
-              const isEnemyRangedThreat = enemyThreatCells.rangedKeys.has(cellKey);
+              const meleeThreatMonsters = enemyThreatCells.meleeMap.get(cellKey);
+              const rangedThreatMonsters = enemyThreatCells.rangedMap.get(cellKey);
+              const isMeleeThreat = Boolean(meleeThreatMonsters && meleeThreatMonsters.length > 0);
+              const isRangedThreat = Boolean(rangedThreatMonsters && rangedThreatMonsters.length > 0);
+              const isActiveMonsterMelee = enemyThreatCells.activeMonsterMeleeKeys.has(cellKey);
+              const isActiveMonsterRanged = enemyThreatCells.activeMonsterRangedKeys.has(cellKey);
 
               const distFromSelected = selectedPos
                 ? gridDistanceFt({ row: selectedPos[0], col: selectedPos[1] }, point, cellSizeFt)
@@ -604,9 +632,13 @@ function BG3BattleGrid({
                 cellCls = "!bg-fuchsia-950/90 !border-2 !border-fuchsia-400 !shadow-[0_0_16px_rgba(217,70,239,0.8)] ring-2 ring-fuchsia-400";
               } else if (inCastRange && interactionMode === "target") {
                 cellCls = "!bg-sky-950/70 !border-sky-400/80 ring-1 ring-sky-400/60";
-              } else if (isEnemyMeleeThreat) {
-                cellCls = "bg-rose-950/40 border-rose-700/60 shadow-[inset_0_0_8px_rgba(225,29,72,0.4)]";
-              } else if (isEnemyRangedThreat) {
+              } else if (isActiveMonsterMelee) {
+                cellCls = "!bg-rose-950/70 !border-2 !border-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.6)] ring-1 ring-rose-400";
+              } else if (isMeleeThreat) {
+                cellCls = "bg-rose-950/50 border-rose-600/70 shadow-[inset_0_0_10px_rgba(225,29,72,0.45)]";
+              } else if (isActiveMonsterRanged) {
+                cellCls = "bg-amber-950/40 border-amber-500/70 shadow-[inset_0_0_8px_rgba(245,158,11,0.3)]";
+              } else if (isRangedThreat) {
                 cellCls = "bg-amber-950/20 border-amber-800/30";
               }
 
@@ -639,12 +671,14 @@ function BG3BattleGrid({
                   }}
                   title={
                     fighter
-                      ? `${fighter.display_name} (HP: ${fighter.hp}/${fighter.max_hp}, 高度: ${fighterElevFt}尺)`
+                      ? `${fighter.display_name} (HP: ${fighter.hp}/${fighter.max_hp}, 高度: ${fighterElevFt}尺)${isMeleeThreat ? ` · ⚠️ 处于【${meleeThreatMonsters?.join("、")}】近战威胁借机区` : ""}`
                       : canMoveHere
                         ? `坐标 (${row}, ${col}) · 移动距离: ${distFromSelected} 尺 (点击位移并消耗 ${distFromSelected} 尺移动力)`
-                        : isEnemyMeleeThreat
-                          ? `坐标 (${row}, ${col}) · ⚠️ 敌方近战借机区 (5尺)`
-                          : `坐标 (${row}, ${col})`
+                        : isMeleeThreat
+                          ? `坐标 (${row}, ${col}) · ⚠️ 处于【${meleeThreatMonsters?.join("、")}】的 5尺 近战威胁借机区`
+                          : isRangedThreat
+                            ? `坐标 (${row}, ${col}) · 🏹 处于【${rangedThreatMonsters?.join("、")}】的 30尺 远程射程`
+                            : `坐标 (${row}, ${col})`
                   }
                   type="button"
                 >
@@ -716,6 +750,17 @@ function BG3BattleGrid({
                     </span>
                   ) : null}
 
+                  {/* Threat Range Corner Tag on Empty Cells */}
+                  {!fighter && !canMoveHere && isMeleeThreat ? (
+                    <span className="pointer-events-none absolute bottom-0.5 right-0.5 text-[7px] text-rose-400/90 font-bold">
+                      ⚔️5尺
+                    </span>
+                  ) : !fighter && !canMoveHere && isRangedThreat ? (
+                    <span className="pointer-events-none absolute bottom-0.5 right-0.5 text-[7px] text-amber-400/70 font-mono">
+                      🏹30尺
+                    </span>
+                  ) : null}
+
                   {/* 3D Elevated Token with Drop Shadow */}
                   {fighter ? (
                     <>
@@ -750,6 +795,11 @@ function BG3BattleGrid({
                         {fighterElevFt > 0 ? (
                           <span className="mt-0.5 rounded bg-amber-400/90 px-1 text-[7px] font-black text-amber-950">
                             ▲{fighterElevFt}尺
+                          </span>
+                        ) : null}
+                        {fighter.entity_type === "character" && isMeleeThreat ? (
+                          <span className="mt-0.5 rounded bg-rose-950 border border-rose-500/80 px-1 text-[7px] font-bold text-rose-200 animate-pulse" title="⚠️ 处于敌方近战借机攻击范围！">
+                            ⚠️ 借机区
                           </span>
                         ) : null}
                         {fighter.conditions && fighter.conditions.length > 0 ? (
