@@ -249,6 +249,63 @@ export const DND_TEST_SPELLS: CombatSpellOption[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// Upcast Dynamic Preview Formula Helper
+// ---------------------------------------------------------------------------
+export function getSpellUpcastPreview(spell: CombatSpellOption, chosenLevel: number): { diceText: string; bonusText: string } {
+  if (spell.level === 0) {
+    return { diceText: spell.damageDiceBase, bonusText: "0环戏法 (无消耗)" };
+  }
+  const delta = Math.max(0, chosenLevel - spell.level);
+  if (spell.id === "magic_missile") {
+    const darts = 3 + delta;
+    return {
+      diceText: `${darts} 枚飞弹 (${darts}d4+${darts})`,
+      bonusText: delta > 0 ? `升至 ${chosenLevel} 环：+${delta} 枚飞弹 (共 ${darts} 枚必中飞弹)` : "基础 1 环：发射 3 枚飞弹",
+    };
+  }
+  if (spell.id === "scorching_ray") {
+    const rays = 3 + delta;
+    return {
+      diceText: `${rays} 道射线 (各 2d6 火焰，共 ${rays * 2}d6)`,
+      bonusText: delta > 0 ? `升至 ${chosenLevel} 环：+${delta} 道射线 (共 ${rays} 道射线)` : "基础 2 环：发射 3 道射线",
+    };
+  }
+  if (spell.id === "healing_word") {
+    const dice = 1 + delta;
+    return {
+      diceText: `${dice}d4+3 治疗`,
+      bonusText: delta > 0 ? `升至 ${chosenLevel} 环：+${delta}d4 治疗量 (共 ${dice}d4+3)` : "基础 1 环：恢复 1d4+3 HP",
+    };
+  }
+  if (spell.id === "fireball" || spell.id === "lightning_bolt") {
+    const dice = 8 + delta;
+    return {
+      diceText: `${dice}d6 元素伤害`,
+      bonusText: delta > 0 ? `升至 ${chosenLevel} 环：+${delta}d6 伤害 (共 ${dice}d6)` : `基础 3 环：造成 8d6 ${spell.damageType} 伤害`,
+    };
+  }
+  if (spell.id === "thunderwave" || spell.id === "shatter") {
+    const baseDice = spell.id === "thunderwave" ? 2 : 3;
+    const dice = baseDice + delta;
+    return {
+      diceText: `${dice}d8 雷鸣`,
+      bonusText: delta > 0 ? `升至 ${chosenLevel} 环：+${delta}d8 伤害 (共 ${dice}d8)` : `基础 ${spell.level} 环：造成 ${baseDice}d8 伤害`,
+    };
+  }
+  if (spell.id === "burning_hands") {
+    const dice = 3 + delta;
+    return {
+      diceText: `${dice}d6 火焰`,
+      bonusText: delta > 0 ? `升至 ${chosenLevel} 环：+${delta}d6 伤害 (共 ${dice}d6)` : "基础 1 环：造成 3d6 扇形烈焰",
+    };
+  }
+  return {
+    diceText: spell.damageDiceBase,
+    bonusText: delta > 0 ? `升至 ${chosenLevel} 环：获得升环增幅 (+${delta})` : `基础 ${spell.level} 环效果`,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // 5e Conditions Metadata & Rules
 // ---------------------------------------------------------------------------
 export const DND_CONDITIONS = [

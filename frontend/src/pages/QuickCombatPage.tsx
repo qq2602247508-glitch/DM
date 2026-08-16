@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useMemo, useState, type ReactElement } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactElement } from "react";
 
 import {
   advanceCombatTurn,
@@ -22,7 +22,6 @@ import {
   type CombatTargeting,
   type CombatTargetingValidity,
 } from "../components/combat/TurnCommandConsole";
-import { PlayerRollPanel } from "../components/combat/PlayerRollPanel";
 import { useCurrentCampaign } from "../hooks/appContexts";
 import { useToast } from "../hooks/toastContext";
 import { soundboard } from "../ui/soundboard";
@@ -38,6 +37,7 @@ import {
   DND_CONDITIONS,
   DND_SKILLS,
   DND_TEST_SPELLS,
+  getSpellUpcastPreview,
   type CombatSpellOption,
 } from "../ui/combatConstants";
 
@@ -118,6 +118,8 @@ function BG3InitiativeTrack({
   onSelectCombat,
   isFullscreen,
   onToggleFullscreen,
+  autoEnemies,
+  onToggleAutoEnemies,
 }: {
   fighters: Combatant[];
   activeFighterId: string | null;
@@ -134,12 +136,14 @@ function BG3InitiativeTrack({
   onSelectCombat: (id: string) => void;
   isFullscreen: boolean;
   onToggleFullscreen: () => void;
+  autoEnemies: boolean;
+  onToggleAutoEnemies: () => void;
 }): ReactElement {
   return (
-    <div className="bg3-panel flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-2.5 text-xs shadow-2xl">
+    <div className="bg3-panel flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-2 text-xs shadow-2xl">
       {/* Left Badge: Title & Round & Encounter Meta */}
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-2 mr-1">
+        <div className="flex items-center gap-1.5 mr-1">
           <span className="text-amber-400 text-base">⚡</span>
           <div>
             <h1 className="font-display text-xs font-bold text-parchment-100 leading-tight">
@@ -194,6 +198,20 @@ function BG3InitiativeTrack({
           type="button"
         >
           👥 加人
+        </button>
+
+        {/* Auto Enemy Turns Toggle */}
+        <button
+          className={`rounded-lg border px-2 py-1 text-2xs font-bold transition ${
+            autoEnemies
+              ? "border-rose-500 bg-rose-950/80 text-rose-200 shadow-[0_0_8px_rgba(244,63,94,0.4)]"
+              : "border-ink-700 bg-ink-900/90 text-stone-400 hover:text-stone-200"
+          }`}
+          onClick={onToggleAutoEnemies}
+          title="启用后轮到怪物时将自动触发 AI 决策并攻击"
+          type="button"
+        >
+          🤖 怪物自动回合: {autoEnemies ? "开" : "关"}
         </button>
       </div>
 
@@ -329,7 +347,6 @@ function BG3BattleGrid({
   const selectedRemaining = (selectedFighter?.movement_remaining_ft !== undefined && selectedFighter?.movement_remaining_ft !== null)
     ? selectedFighter.movement_remaining_ft
     : (selectedFighter?.speed_ft ?? 30);
-  const selectedMaxSpeed = selectedFighter?.speed_ft ?? 30;
 
   // Calculate Enemy Threat Ranges
   const enemyThreatCells = useMemo(() => {
@@ -356,34 +373,6 @@ function BG3BattleGrid({
 
     return { meleeKeys, rangedKeys };
   }, [fighters, positions, showEnemyThreat, height, width, cellSizeFt]);
-
-  // Adjust Elevation Mutation
-  const adjustElevationMutation = useMutation({
-    mutationFn: async ({ fighter, deltaFt }: { fighter: Combatant; deltaFt: number }) => {
-      const curElev = combatantElevationFt(fighter);
-      const nextElev = Math.max(0, curElev + deltaFt);
-      const snapshot = {
-        ...(fighter.snapshot_json as Record<string, unknown> | undefined),
-        elevation_ft: nextElev,
-        grid_position: {
-          ...((fighter.snapshot_json as Record<string, unknown> | undefined)?.grid_position as Record<string, unknown> | undefined),
-          elevation_ft: nextElev,
-        },
-      };
-      return updateCombatant(
-        campaignId,
-        combatId,
-        fighter.id,
-        { snapshot_json: snapshot },
-        fighter.version,
-      );
-    },
-    onSuccess: (_data, vars) => {
-      soundboard.playDiceRoll();
-      void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
-      showToast(`🏔️ ${vars.fighter.display_name} 高度已调整！`, "success");
-    },
-  });
 
   // Move token mutation with movement dust VFX
   const moveMutation = useMutation({
@@ -875,14 +864,16 @@ function BG3Hotbar({
   activeCombatIndex,
   onQuickHpAdjust,
   onLongRest,
+  onExecuteMonsterAiAttack,
+  isMonsterAiExecuting,
 }: {
   activeFighter: Combatant | null;
   activeCharacter: any;
   selectedRemaining: number;
   selectedMaxSpeed: number;
   onResetSpeed: () => void;
-  activeTab: "common" | "spells" | "weapons" | "features" | "skills" | "conditions" | "rules";
-  onTabChange: (tab: "common" | "spells" | "weapons" | "features" | "skills" | "conditions" | "rules") => void;
+  activeTab: "common" | "spells" | "weapons" | "features" | "skills" | "conditions" | "rules" | "monster";
+  onTabChange: (tab: "common" | "spells" | "weapons" | "features" | "skills" | "conditions" | "rules" | "monster") => void;
   spells: CombatSpellOption[];
   selectedSpell: CombatSpellOption | null;
   selectedSpellLevel: number;
@@ -910,9 +901,12 @@ function BG3Hotbar({
   activeCombatIndex: number;
   onQuickHpAdjust: (fighter: Combatant, delta: number) => void;
   onLongRest: () => void;
+  onExecuteMonsterAiAttack: () => void;
+  isMonsterAiExecuting: boolean;
 }): ReactElement {
   const [spellFilter, setSpellFilter] = useState<"all" | 0 | 1 | 2 | 3>("all");
 
+  const isMonster = activeFighter?.entity_type === "monster";
   const spellSlots = useMemo(() => getCombatantSpellSlots(activeFighter), [activeFighter]);
   const turnResources = useMemo(() => getCombatantTurnResources(activeFighter), [activeFighter]);
 
@@ -928,22 +922,28 @@ function BG3Hotbar({
     ? turnResources.bonus_action
     : turnResources.action;
 
+  const upcastPreview = selectedSpell ? getSpellUpcastPreview(selectedSpell, selectedSpellLevel) : null;
+
   return (
     <div className="bg3-hotbar-dock rounded-2xl p-3 shadow-2xl">
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-12 items-center">
         {/* Left Wing: Character Profile & Action Economy (3 Cols) */}
         <div className="flex items-center gap-3 lg:col-span-3 border-b lg:border-b-0 lg:border-r border-ink-800/80 pb-2 lg:pb-0 pr-2">
           {/* Avatar & Class */}
-          <div className="relative flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl bg-gradient-to-b from-amber-700/40 via-ink-900 to-ink-950 border-2 border-amber-500/70 shadow-lg">
-            <span className="text-xl">🛡️</span>
-            <span className="absolute -bottom-1 rounded bg-amber-950 px-1 text-[8px] font-mono font-bold text-amber-300 border border-amber-500/50">
+          <div className={`relative flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl border-2 shadow-lg ${
+            isMonster
+              ? "bg-gradient-to-b from-rose-900/60 via-ink-900 to-ink-950 border-rose-500/70"
+              : "bg-gradient-to-b from-amber-700/40 via-ink-900 to-ink-950 border-amber-500/70"
+          }`}>
+            <span className="text-xl">{isMonster ? "👹" : "🛡️"}</span>
+            <span className="absolute -bottom-1 rounded bg-ink-950 px-1 text-[8px] font-mono font-bold text-amber-300 border border-amber-500/50">
               AC {activeFighter?.armor_class ?? 10}
             </span>
           </div>
 
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between">
-              <strong className="truncate text-xs font-bold text-parchment-100">
+              <strong className={`truncate text-xs font-bold ${isMonster ? "text-rose-200" : "text-parchment-100"}`}>
                 {activeFighter?.display_name ?? "行动者"}
               </strong>
               <span className="text-[10px] text-amber-300 font-mono">
@@ -991,9 +991,11 @@ function BG3Hotbar({
               </div>
 
               {/* Spell slot indicator */}
-              <span className="text-[8px] font-mono text-fuchsia-300" title="1环/2环/3环 剩余法术位">
-                🔮 {spellSlots[1]}·{spellSlots[2]}·{spellSlots[3]}位
-              </span>
+              {!isMonster ? (
+                <span className="text-[8px] font-mono text-fuchsia-300" title="1环/2环/3环 剩余法术位">
+                  🔮 {spellSlots[1]}·{spellSlots[2]}·{spellSlots[3]}位
+                </span>
+              ) : null}
             </div>
           </div>
         </div>
@@ -1002,8 +1004,17 @@ function BG3Hotbar({
         <div className="lg:col-span-6 flex flex-col justify-between">
           {/* Drawer Category Tabs */}
           <div className="flex flex-wrap items-center gap-1 border-b border-ink-800/80 pb-1.5 text-2xs font-bold">
+            {isMonster ? (
+              <button
+                className={`rounded-lg px-2.5 py-1 transition ${activeTab === "monster" || activeTab === "common" ? "bg-rose-600 text-rose-950 shadow" : "text-stone-400 hover:text-white"}`}
+                onClick={() => onTabChange("monster")}
+                type="button"
+              >
+                👹 怪物战术动作
+              </button>
+            ) : null}
             <button
-              className={`rounded-lg px-2.5 py-1 transition ${activeTab === "common" ? "bg-emerald-600 text-emerald-950 shadow" : "text-stone-400 hover:text-white"}`}
+              className={`rounded-lg px-2.5 py-1 transition ${activeTab === "common" && !isMonster ? "bg-emerald-600 text-emerald-950 shadow" : "text-stone-400 hover:text-white"}`}
               onClick={() => onTabChange("common")}
               type="button"
             >
@@ -1055,8 +1066,37 @@ function BG3Hotbar({
 
           {/* Drawer Content Area */}
           <div className="mt-2 min-h-[68px] flex items-center">
+            {/* Monster AI Action Tab */}
+            {isMonster || activeTab === "monster" ? (
+              <div className="flex flex-wrap items-center gap-2 w-full">
+                <button
+                  className="bg3-btn-slot flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold text-rose-200 border-rose-500 bg-rose-950/80 hover:bg-rose-900 shadow-[0_0_12px_rgba(244,63,94,0.5)]"
+                  disabled={isMonsterAiExecuting}
+                  onClick={onExecuteMonsterAiAttack}
+                  type="button"
+                >
+                  <span>👹 自动执行怪物 AI 战术攻击</span>
+                  <span className="text-[9px] text-amber-300">智能索敌·移动·命中检定</span>
+                </button>
+                <button
+                  className="bg3-btn-slot flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold text-amber-200"
+                  onClick={onOpenMeleeAttack}
+                  type="button"
+                >
+                  <span>🗡️ 爪抓/撕咬攻击 (1d6+2 挥砍)</span>
+                </button>
+                <button
+                  className="bg3-btn-slot flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold text-sky-200"
+                  onClick={onOpenRangedAttack}
+                  type="button"
+                >
+                  <span>🏹 短弓远程射击 (1d6+2 穿刺)</span>
+                </button>
+              </div>
+            ) : null}
+
             {/* 1. Common Actions */}
-            {activeTab === "common" ? (
+            {activeTab === "common" && !isMonster ? (
               <div className="flex flex-wrap items-center gap-1.5 w-full">
                 <button
                   className="bg3-btn-slot flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold text-emerald-200"
@@ -1097,8 +1137,8 @@ function BG3Hotbar({
               </div>
             ) : null}
 
-            {/* 2. Spells & Upcast Selector with Live Slot Tracking */}
-            {activeTab === "spells" ? (
+            {/* 2. Spells & Upcast Selector with Live Slot Tracking & Upcast Bonus Preview */}
+            {activeTab === "spells" && !isMonster ? (
               <div className="w-full space-y-1.5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-1 text-[9px]">
@@ -1117,6 +1157,7 @@ function BG3Hotbar({
                     </button>
                   </div>
 
+                  {/* Upcast Level Picker */}
                   {selectedSpell ? (
                     <div className="flex items-center gap-1.5">
                       <span className="text-[10px] text-fuchsia-300 font-bold">升环选择:</span>
@@ -1151,6 +1192,25 @@ function BG3Hotbar({
                   ) : null}
                 </div>
 
+                {/* Upcast Bonus Live Preview Banner */}
+                {upcastPreview && selectedSpell ? (
+                  <div className="flex items-center justify-between rounded-xl border border-fuchsia-500/40 bg-fuchsia-950/40 px-2.5 py-1 text-2xs">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-fuchsia-300">🔮 升环效果:</span>
+                      <span className="text-stone-200">{upcastPreview.bonusText}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 font-mono">
+                      <span className="rounded bg-fuchsia-900/80 px-2 py-0.2 text-fuchsia-200 font-bold border border-fuchsia-500/50">
+                        {upcastPreview.diceText}
+                      </span>
+                      <span className="text-amber-300 font-bold">
+                        {selectedSpell.damageType === "healing" ? "💚 治疗" : `⚡ ${selectedSpell.damageType} 效果`}
+                      </span>
+                    </div>
+                  </div>
+                ) : null}
+
+                {/* Spell Cards List */}
                 <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
                   {filteredSpells.map((s) => {
                     const isPicked = selectedSpell?.id === s.id;
@@ -1292,7 +1352,7 @@ function BG3Hotbar({
 
         {/* Right Wing: Turn End Gold Button & Cast Action (3 Cols) */}
         <div className="flex items-center justify-end gap-2 lg:col-span-3 border-t lg:border-t-0 lg:border-l border-ink-800/80 pt-2 lg:pt-0 pl-2">
-          {activeTab === "spells" && selectedSpell ? (
+          {activeTab === "spells" && selectedSpell && !isMonster ? (
             selectedSpell.id === "magic_missile" ? (
               <button
                 className="rounded-xl border border-fuchsia-500 bg-fuchsia-600 px-4 py-2.5 text-xs font-bold text-white shadow hover:brightness-110 disabled:opacity-50"
@@ -1300,7 +1360,7 @@ function BG3Hotbar({
                 onClick={onOpenMagicMissileModal}
                 type="button"
               >
-                {!hasActionForCurrent ? "⚠️ 动作已用" : !hasSlotForCurrent ? "⚠️ 环位已空" : "🚀 分配飞弹"}
+                {!hasActionForCurrent ? "⚠️ 动作已用" : !hasSlotForCurrent ? "⚠️ 环位已空" : `🚀 分配飞弹 (${3 + Math.max(0, selectedSpellLevel - 1)}枚)`}
               </button>
             ) : (
               <button
@@ -1315,9 +1375,18 @@ function BG3Hotbar({
                     ? "⚠️ 动作已耗尽"
                     : !hasSlotForCurrent
                       ? `⚠️ ${selectedSpellLevel}环位耗尽`
-                      : `✨ 施放【${selectedSpell.name}】`}
+                      : `✨ 施放【${selectedSpell.name}】(${selectedSpellLevel}环)`}
               </button>
             )
+          ) : isMonster ? (
+            <button
+              className="rounded-2xl border border-rose-500 bg-gradient-to-r from-rose-600 to-amber-600 px-5 py-3 text-xs font-black text-white shadow-2xl active:scale-95 transition"
+              disabled={isMonsterAiExecuting}
+              onClick={onExecuteMonsterAiAttack}
+              type="button"
+            >
+              {isMonsterAiExecuting ? "🤖 怪物执行中…" : "👹 怪物 AI 攻击"}
+            </button>
           ) : (
             <button
               className="bg3-end-turn-btn flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-xs font-black text-amber-950 shadow-2xl active:scale-95 transition"
@@ -1366,7 +1435,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
   }, []);
 
   // BG3 Hotbar Active Tab
-  const [activeHotbarTab, setActiveHotbarTab] = useState<"common" | "spells" | "weapons" | "features" | "skills" | "conditions" | "rules">("common");
+  const [activeHotbarTab, setActiveHotbarTab] = useState<"common" | "spells" | "weapons" | "features" | "skills" | "conditions" | "rules" | "monster">("common");
 
   // Spell Casting Engine States
   const [selectedSpell, setSelectedSpell] = useState<CombatSpellOption | null>(DND_TEST_SPELLS[0]);
@@ -1401,7 +1470,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
 
   // AI Guidance states
   const [aiAnalysis, setAiAnalysis] = useState<string>("");
-  const [aiNarrative, setAiNarrative] = useState<string>("");
 
   // Queries
   const campaignsQuery = useQuery({
@@ -1610,6 +1678,131 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     },
   });
 
+  // Monster AI Auto Attack Mutation
+  const monsterAiAttackMutation = useMutation({
+    mutationFn: async () => {
+      if (!activeFighter || activeFighter.entity_type !== "monster") return;
+      // 1. Find alive player characters
+      const alivePcs = ordered.filter((f) => f.entity_type === "character" && (f.hp ?? 0) > 0);
+      if (!alivePcs.length) {
+        showToast("场上没有存活的玩家角色", "info");
+        return;
+      }
+
+      // Find nearest PC
+      const monsterPos = positions[activeFighter.id] ?? [3, 7];
+      let nearestPc = alivePcs[0];
+      let minDistance = 999;
+      for (const pc of alivePcs) {
+        const pcPos = positions[pc.id] ?? [3, 3];
+        const dist = gridDistanceFt({ row: monsterPos[0], col: monsterPos[1] }, { row: pcPos[0], col: pcPos[1] }, 5);
+        if (dist < minDistance) {
+          minDistance = dist;
+          nearestPc = pc;
+        }
+      }
+
+      const targetPos = positions[nearestPc.id] ?? [3, 3];
+
+      // 2. If farther than 5ft, move closer
+      let updatedActor = activeFighter;
+      if (minDistance > 5) {
+        const dRow = Math.sign(targetPos[0] - monsterPos[0]);
+        const dCol = Math.sign(targetPos[1] - monsterPos[1]);
+        const newRow = Math.max(1, Math.min(10, monsterPos[0] + dRow));
+        const newCol = Math.max(1, Math.min(12, monsterPos[1] + dCol));
+        
+        spawnVfx({ row: newRow, col: newCol, type: "dust", text: "-5尺" });
+        updatedActor = await updateCombatant(campaignId, combatId, activeFighter.id, {
+          movement_remaining_ft: Math.max(0, (activeFighter.movement_remaining_ft ?? 30) - 5),
+          snapshot_json: {
+            ...(activeFighter.snapshot_json as Record<string, unknown> | undefined),
+            row: newRow,
+            col: newCol,
+            grid_position: { row: newRow, col: newCol },
+          },
+        }, activeFighter.version);
+      }
+
+      // 3. Roll Attack (d20 + 4 vs AC)
+      const d20 = Math.floor(Math.random() * 20) + 1;
+      const attackMod = 4;
+      const attackTotal = d20 + attackMod;
+      const targetAc = nearestPc.armor_class ?? 10;
+      const isHit = attackTotal >= targetAc || d20 === 20;
+      const isCrit = d20 === 20;
+
+      const dmg = isHit
+        ? (isCrit ? (Math.floor(Math.random() * 6) + 1) * 2 + 2 : Math.floor(Math.random() * 6) + 1 + 2)
+        : 0;
+
+      // 4. Apply damage if hit
+      if (isHit) {
+        const nextHp = Math.max(0, (nearestPc.hp ?? 10) - dmg);
+        spawnVfx({
+          row: targetPos[0],
+          col: targetPos[1],
+          type: "slash",
+          text: `-${dmg}`,
+          isCrit,
+        });
+        const updatedPc = await updateCombatant(campaignId, combatId, nearestPc.id, { hp: nextHp }, nearestPc.version);
+
+        const command: CombatActionCommand = {
+          action_type: "damage",
+          target_combatant_id: nearestPc.id,
+          target_version: updatedPc.version,
+          actor_combatant_id: updatedActor.id,
+          actor_version: updatedActor.version,
+          action_cost: "action",
+          action_name: `${activeFighter.display_name} 猛击/射击`,
+          amount: dmg,
+          damage_type: "slashing",
+          is_attack: true,
+          attack_roll_total: attackTotal,
+          resolution_note: `👹【${activeFighter.display_name}】对【${nearestPc.display_name}】发动攻击：d20(${d20})+${attackMod}=${attackTotal} ➔ 命中！造成 ${dmg} 点伤害！`,
+        };
+        await confirmCombatAction(campaignId, combatId, command);
+      } else {
+        spawnVfx({
+          row: targetPos[0],
+          col: targetPos[1],
+          type: "dust",
+          text: "未命中",
+          isMiss: true,
+        });
+        const command: CombatActionCommand = {
+          action_type: "action",
+          actor_combatant_id: updatedActor.id,
+          actor_version: updatedActor.version,
+          action_cost: "action",
+          action_name: `${activeFighter.display_name} 攻击未命中`,
+          resolution_note: `👹【${activeFighter.display_name}】对【${nearestPc.display_name}】发动攻击：d20(${d20})+${attackMod}=${attackTotal} ➔ 未命中 (目标 AC ${targetAc})`,
+        };
+        await confirmCombatAction(campaignId, combatId, command);
+      }
+    },
+    onSuccess: () => {
+      soundboard.playAttackHit();
+      void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
+      void queryClient.invalidateQueries({ queryKey: ["combat-actions", campaignId, combatId] });
+      showToast("👹 敌方 AI 战术行动已执行完毕！", "info");
+    },
+    onError: (err) => {
+      showToast(err instanceof Error ? err.message : "怪物行动执行失败", "error");
+    },
+  });
+
+  // Auto Enemy Turns trigger
+  useEffect(() => {
+    if (autoEnemies && activeFighter?.entity_type === "monster" && !monsterAiAttackMutation.isPending && !advanceTurnMutation.isPending) {
+      const timer = setTimeout(() => {
+        monsterAiAttackMutation.mutate();
+      }, 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [autoEnemies, activeFighter?.id, activeFighter?.entity_type]);
+
   // Long rest mutation: restore all spell slots and actions for current actor
   const handleLongRest = async () => {
     if (!activeFighter) return;
@@ -1754,7 +1947,8 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           const heal = rollSum + 3;
           const nextHp = Math.min(target.max_hp ?? 20, (target.hp ?? 0) + heal);
           spawnVfx({ row: pos[0], col: pos[1], type: "smite", text: `+${heal}` });
-          await updateCombatant(campaignId, combatId, target.id, { hp: nextHp }, target.version);
+          const updated = await updateCombatant(campaignId, combatId, target.id, { hp: nextHp }, target.version);
+          target.version = updated.version;
         } else {
           if ((target.damage_immunities ?? []).includes(selectedSpell.damageType)) dmg = 0;
           else if ((target.damage_resistances ?? []).includes(selectedSpell.damageType)) dmg = Math.floor(dmg / 2);
@@ -1766,7 +1960,8 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
             type: selectedSpell.vfx,
             text: `-${dmg} (${selectedSpell.damageType})`,
           });
-          await updateCombatant(campaignId, combatId, target.id, { hp: nextHp }, target.version);
+          const updated = await updateCombatant(campaignId, combatId, target.id, { hp: nextHp }, target.version);
+          target.version = updated.version;
         }
       }
 
@@ -1787,7 +1982,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
         turn_resources: nextTurnRes,
       };
 
-      await updateCombatant(
+      const updatedActor = await updateCombatant(
         campaignId,
         combatId,
         activeFighter.id,
@@ -1799,8 +1994,8 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
 
       const command: CombatActionCommand = {
         action_type: "spell",
-        actor_combatant_id: activeFighter.id,
-        actor_version: activeFighter.version,
+        actor_combatant_id: updatedActor.id,
+        actor_version: updatedActor.version,
         action_cost: selectedSpell.castTime.includes("附赠") ? "bonus" : "action",
         action_name: `${selectedSpell.name} (${selectedSpellLevel}环)`,
         amount: rollSum,
@@ -1814,7 +2009,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
       soundboard.playAttackHit();
       void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
       void queryClient.invalidateQueries({ queryKey: ["combat-actions", campaignId, combatId] });
-      showToast(`✨ 法术【${selectedSpell?.name}】已成功施展并消耗法术位！`, "success");
+      showToast(`✨ 法术【${selectedSpell?.name}】(${selectedSpellLevel}环) 已成功施展！`, "success");
     },
     onError: (err) => {
       showToast(err instanceof Error ? err.message : "施法失败", "error");
@@ -1838,6 +2033,8 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
       const targetEntries = Object.entries(dartAllocations).filter(([, count]) => count > 0);
       if (!targetEntries.length) throw new Error("请为至少一个目标分配飞弹");
 
+      let currentActorVersion = activeFighter.version;
+
       for (const [targetId, dartCount] of targetEntries) {
         const target = ordered.find((f) => f.id === targetId);
         if (!target) continue;
@@ -1855,7 +2052,8 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
 
         spawnVfx({ row: pos[0], col: pos[1], type: "arcane", text: `-${targetTotalDamage}` });
 
-        await updateCombatant(
+        // Update target HP and obtain FRESH target version
+        const updatedTarget = await updateCombatant(
           campaignId,
           combatId,
           target.id,
@@ -1866,9 +2064,9 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
         const command: CombatActionCommand = {
           action_type: "damage",
           target_combatant_id: target.id,
-          target_version: target.version,
+          target_version: updatedTarget.version,
           actor_combatant_id: activeFighter.id,
-          actor_version: activeFighter.version,
+          actor_version: currentActorVersion,
           action_cost: "action",
           action_name: "魔法飞弹 (Magic Missile)",
           amount: targetTotalDamage,
@@ -1895,7 +2093,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
         combatId,
         activeFighter.id,
         { snapshot_json: updatedSnap },
-        activeFighter.version,
+        currentActorVersion,
       );
     },
     onSuccess: () => {
@@ -1986,9 +2184,10 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
   return (
     <div className={`flex min-h-screen flex-col justify-between bg-[#080b11] p-3 text-stone-200 ${isFullscreen ? "fixed inset-0 z-50 overflow-y-auto" : ""}`}>
       {/* 1. Top Section: BG3 Floating Initiative Carousel */}
-      <header className="mb-2.5">
+      <header className="mb-2">
         <BG3InitiativeTrack
           activeFighterId={activeFighter?.id ?? null}
+          autoEnemies={autoEnemies}
           campaignId={campaignId}
           campaigns={campaignsQuery.data ?? []}
           combatId={combatId}
@@ -2003,6 +2202,10 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
             setSelectedMapTargetId(id);
             setPromptTargetId(id);
           }}
+          onToggleAutoEnemies={() => {
+            setAutoEnemies(!autoEnemies);
+            showToast(`🤖 怪物自动回合已${!autoEnemies ? "开启" : "关闭"}`, "info");
+          }}
           onToggleFullscreen={() => setIsFullscreen(!isFullscreen)}
           roundNumber={activeCombat.round_number}
           selectedTargetId={selectedMapTargetId}
@@ -2010,7 +2213,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
       </header>
 
       {/* 2. Center Section: 3D Tactical Battlefield + Floating Target Card & Quick Widgets */}
-      <main className="relative mb-2.5 flex-1">
+      <main className="relative mb-2 flex-1">
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
           {/* Main 3D Tactical Grid Viewport (8 Cols) */}
           <div className="lg:col-span-8">
@@ -2037,13 +2240,13 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           </div>
 
           {/* Right Inspection & Widget Column (4 Cols) */}
-          <div className="flex flex-col gap-2.5 lg:col-span-4">
+          <div className="flex flex-col gap-2 lg:col-span-4">
             {/* Quick HP Adjustment Strip for All Combatants */}
             <div className="bg3-panel rounded-2xl p-2.5 shadow-xl">
               <span className="text-[10px] font-bold text-parchment-200">
                 ⚡ 快速生命微调
               </span>
-              <div className="mt-1.5 space-y-1 max-h-28 overflow-y-auto pr-1">
+              <div className="mt-1 space-y-1 max-h-24 overflow-y-auto pr-1">
                 {ordered.map((f) => (
                   <div className="flex items-center justify-between rounded border border-ink-800 bg-ink-950/70 p-1 text-2xs" key={f.id}>
                     <span className="truncate font-bold text-stone-200">{f.display_name} ({f.hp}/{f.max_hp})</span>
@@ -2140,9 +2343,11 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           handleTargetChange={handleTargetChange}
           isAdvancingTurn={advanceTurnMutation.isPending}
           isCasting={castSelectedSpellMutation.isPending}
+          isMonsterAiExecuting={monsterAiAttackMutation.isPending}
           onAdvanceTurn={() => advanceTurnMutation.mutate()}
           onAutoEnemiesChange={setAutoEnemies}
           onCastSpell={() => castSelectedSpellMutation.mutate()}
+          onExecuteMonsterAiAttack={() => monsterAiAttackMutation.mutate()}
           onLongRest={handleLongRest}
           onOpenMagicMissileModal={() => {
             const initAlloc: Record<string, number> = {};
@@ -2206,7 +2411,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
               <div className="flex items-center gap-2">
                 <span className="text-lg">🚀</span>
                 <strong className="text-sm text-fuchsia-200">
-                  魔法飞弹多目标分配（当前总数：{Object.values(dartAllocations).reduce((a, b) => a + b, 0)}/{3 + Math.max(0, selectedSpellLevel - 1)} 枚）
+                  【{selectedSpellLevel} 环】魔法飞弹多目标分配（当前已分配：{Object.values(dartAllocations).reduce((a, b) => a + b, 0)}/{3 + Math.max(0, selectedSpellLevel - 1)} 枚）
                 </strong>
               </div>
               <button
@@ -2264,7 +2469,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
                 onClick={() => executeMagicMissileMutation.mutate()}
                 variant="primary"
               >
-                {executeMagicMissileMutation.isPending ? "正在发射…" : "🚀 全数发射并分别扣除伤害"}
+                {executeMagicMissileMutation.isPending ? "正在发射…" : "🚀 全数发射并分别扣除必中伤害"}
               </Button>
             </div>
           </div>
