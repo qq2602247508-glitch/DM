@@ -282,26 +282,6 @@ export function ThreeTacticalGrid({
     return new THREE.Vector3(x, y, z);
   }, [width, height, cellSize]);
 
-  // Step movement helper (Directional D-Pad)
-  const handleStepMove = useCallback((dRow: number, dCol: number) => {
-    if (!moverFighter) return;
-    const targetRow = Math.max(1, Math.min(height, moverPos[0] + dRow));
-    const targetCol = Math.max(1, Math.min(width, moverPos[1] + dCol));
-    if (targetRow === moverPos[0] && targetCol === moverPos[1]) return;
-
-    // Check if target is occupied
-    const occupied = fighters.find((f) => positions[f.id]?.[0] === targetRow && positions[f.id]?.[1] === targetCol);
-    if (occupied) {
-      soundboard.playMiss();
-      return;
-    }
-
-    const dist = gridDistanceFt({ row: moverPos[0], col: moverPos[1] }, { row: targetRow, col: targetCol }, cellSizeFt);
-    if (dist <= moverRemaining && moverRemaining > 0) {
-      onMoveToken(moverFighter, targetRow, targetCol, dist);
-    }
-  }, [moverFighter, moverPos, height, width, fighters, positions, cellSizeFt, moverRemaining, onMoveToken]);
-
   // Initialize Three.js Scene with Premium Architectural Blueprint Materials
   useEffect(() => {
     if (!containerRef.current) return;
@@ -414,7 +394,7 @@ export function ThreeTacticalGrid({
     }
     tileMeshesRef.current = tilesMap;
 
-    // Groups for Particles & Dynamic 3D Trajectory / Reticle
+    // Groups for Particles & Dynamic 3D Trajectory / Movement Path
     scene.add(particleGroupRef.current);
     scene.add(trajectoryGroupRef.current);
 
@@ -439,7 +419,7 @@ export function ThreeTacticalGrid({
         }
       });
 
-      // Animate 3D Trajectory Reticle
+      // Animate 3D Trajectory / Move Reticle
       const reticleMesh = trajectoryGroupRef.current.getObjectByName("aimReticle");
       if (reticleMesh) {
         reticleMesh.rotation.z += delta * 3;
@@ -566,18 +546,61 @@ export function ThreeTacticalGrid({
     cellSizeFt,
   ]);
 
-  // Update Dynamic 3D Spell Trajectory Line & Aiming Reticle (瞄准轨迹与激光准星)
+  // Update Dynamic 3D Path Preview & Trajectory Reticle
   useEffect(() => {
     const trajGroup = trajectoryGroupRef.current;
     trajGroup.clear();
 
+    if (interactionMode === "move") {
+      // 🟢 Movement Mode: Draw Emerald Navigation Path from Character to Hovered Tile
+      if (!hoveredCell || !moverPos) return;
+
+      const distFt = gridDistanceFt({ row: moverPos[0], col: moverPos[1] }, hoveredCell, cellSizeFt);
+      const isReachable = distFt <= moverRemaining && moverRemaining > 0;
+      const isOccupied = fighters.some((f) => positions[f.id]?.[0] === hoveredCell.row && positions[f.id]?.[1] === hoveredCell.col);
+
+      if (isOccupied && (hoveredCell.row !== moverPos[0] || hoveredCell.col !== moverPos[1])) return;
+
+      const originWPos = gridToWorld(moverPos[0], moverPos[1]);
+      originWPos.y += 0.15;
+
+      const destWPos = gridToWorld(hoveredCell.row, hoveredCell.col);
+      destWPos.y += 0.15;
+
+      // 1. Sleek Emerald Movement Ground Line
+      if (originWPos.distanceTo(destWPos) > 0.2) {
+        const lineGeo = new THREE.BufferGeometry().setFromPoints([originWPos, destWPos]);
+        lineGeo.computeBoundingSphere();
+        const lineMat = new THREE.LineBasicMaterial({
+          color: isReachable ? 0x10b981 : 0xf43f5e,
+          linewidth: 3,
+        });
+        const line = new THREE.Line(lineGeo, lineMat);
+        trajGroup.add(line);
+      }
+
+      // 2. Landing Concentric Target Disc Marker (落点光环)
+      const ringGeo = new THREE.RingGeometry(0.35, 0.55, 24);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: isReachable ? 0x34d399 : 0xf43f5e,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.9,
+      });
+      const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+      ringMesh.rotation.x = -Math.PI / 2;
+      ringMesh.position.set(destWPos.x, destWPos.y + 0.02, destWPos.z);
+      ringMesh.name = "aimReticle";
+      trajGroup.add(ringMesh);
+      return;
+    }
+
     if (interactionMode !== "target") return;
 
-    // Origin: Caster
+    // 🔮 Target Mode: Draw Arcane Trajectory & Laser Crosshair
     const casterWPos = gridToWorld(activePosition.row, activePosition.col);
     casterWPos.y += 0.8;
 
-    // Destination: Target Combatant, Aim Point, or Hovered Cell
     let destPoint: GridPoint | null = aimPoint;
     if (!destPoint && selectedTargetId) {
       const tgt = fighters.find((f) => f.id === selectedTargetId);
@@ -597,7 +620,7 @@ export function ThreeTacticalGrid({
     const maxRange = targeting?.rangeFt ?? 60;
     const inRange = distFt <= maxRange;
 
-    // 1. Parabolic 3D Curve Beam (抛物线法术/射击弹道)
+    // 1. Parabolic 3D Curve Beam
     if (casterWPos.distanceTo(destWPos) > 0.3) {
       const midPoint = new THREE.Vector3()
         .addVectors(casterWPos, destWPos)
@@ -616,7 +639,7 @@ export function ThreeTacticalGrid({
       trajGroup.add(trajectoryLine);
     }
 
-    // 2. Animated Concentric 3D Reticle (地面发光瞄准准星)
+    // 2. Animated Concentric 3D Reticle
     const reticleGeo = new THREE.RingGeometry(0.5, 0.65, 24);
     const reticleMat = new THREE.MeshBasicMaterial({
       color: inRange ? 0x38bdf8 : 0xf43f5e,
@@ -642,7 +665,7 @@ export function ThreeTacticalGrid({
     const crossMesh = new THREE.LineSegments(crossGeo, crossMat);
     crossMesh.position.set(destWPos.x, destWPos.y + 0.03, destWPos.z);
     trajGroup.add(crossMesh);
-  }, [interactionMode, targeting, activePosition, aimPoint, selectedTargetId, hoveredCell, fighters, positions, gridToWorld, cellSizeFt]);
+  }, [interactionMode, targeting, activePosition, aimPoint, selectedTargetId, hoveredCell, fighters, positions, gridToWorld, cellSizeFt, moverPos, moverRemaining]);
 
   // Update 3D Tabletop Miniature Chess Tokens (棋子)
   useEffect(() => {
@@ -836,7 +859,7 @@ export function ThreeTacticalGrid({
     }
   }, [vfxEvents, gridToWorld]);
 
-  // Pointer interaction & Drag vs Click separation
+  // Pointer interaction: Left click = Move / Target; Right click or large drag = Camera Orbit
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     pointerDownPosRef.current = { x: e.clientX, y: e.clientY };
     previousMousePositionRef.current = { x: e.clientX, y: e.clientY };
@@ -848,15 +871,14 @@ export function ThreeTacticalGrid({
     const dy = e.clientY - previousMousePositionRef.current.y;
     const totalDist = Math.hypot(e.clientX - pointerDownPosRef.current.x, e.clientY - pointerDownPosRef.current.y);
 
-    if (e.buttons === 1 || e.buttons === 2) {
-      if (totalDist > 8) {
-        isDraggingRef.current = true;
-        sphericalRef.current.theta -= dx * 0.006;
-        sphericalRef.current.phi = Math.max(0.1, Math.min(Math.PI / 2.05, sphericalRef.current.phi - dy * 0.006));
-        updateCameraFromSpherical();
-        previousMousePositionRef.current = { x: e.clientX, y: e.clientY };
-      }
-    } else {
+    // Right mouse button (2) orbits freely; Left mouse button only orbits if deliberately dragged (> 20px)
+    if (e.buttons === 2 || (e.buttons === 1 && totalDist > 20)) {
+      isDraggingRef.current = true;
+      sphericalRef.current.theta -= dx * 0.006;
+      sphericalRef.current.phi = Math.max(0.1, Math.min(Math.PI / 2.05, sphericalRef.current.phi - dy * 0.006));
+      updateCameraFromSpherical();
+      previousMousePositionRef.current = { x: e.clientX, y: e.clientY };
+    } else if (e.buttons === 0) {
       // Hover Raycasting across all tile meshes (caps and blocks)
       if (!rendererRef.current || !cameraRef.current || !sceneRef.current) return;
       const rect = rendererRef.current.domElement.getBoundingClientRect();
@@ -888,12 +910,17 @@ export function ThreeTacticalGrid({
     updateCameraFromSpherical();
   };
 
+  // Pure Point-and-Click Movement & Targeting on Mouse Up
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     const totalDist = Math.hypot(e.clientX - pointerDownPosRef.current.x, e.clientY - pointerDownPosRef.current.y);
-    if (totalDist > 8 || isDraggingRef.current) {
+
+    // If it was a deliberate right-click or long drag, ignore click
+    if (e.button === 2 || totalDist > 20 || (isDraggingRef.current && totalDist > 20)) {
       isDraggingRef.current = false;
       return;
     }
+    isDraggingRef.current = false;
+
     if (!rendererRef.current || !cameraRef.current) return;
 
     const rect = rendererRef.current.domElement.getBoundingClientRect();
@@ -949,7 +976,7 @@ export function ThreeTacticalGrid({
           onAimPointChange(point);
         }
       } else if (interactionMode === "move" && moverFighter) {
-        // Move the active player character to the clicked cell
+        // Point-and-Click: Directly move the character to the clicked destination!
         const dist = gridDistanceFt({ row: moverPos[0], col: moverPos[1] }, point, cellSizeFt);
         if (dist <= moverRemaining && moverRemaining > 0) {
           onMoveToken(moverFighter, hit.row, hit.col, dist);
@@ -962,30 +989,6 @@ export function ThreeTacticalGrid({
       }
     }
   };
-
-  // Keyboard navigation for movement
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (interactionMode !== "move") return;
-
-      if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
-        e.preventDefault();
-        handleStepMove(-1, 0);
-      } else if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
-        e.preventDefault();
-        handleStepMove(1, 0);
-      } else if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
-        e.preventDefault();
-        handleStepMove(0, -1);
-      } else if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
-        e.preventDefault();
-        handleStepMove(0, 1);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [interactionMode, handleStepMove]);
 
   return (
     <div className="relative flex flex-col justify-between rounded-2xl border border-sky-500/30 bg-[#090d16] p-3 shadow-2xl">
@@ -1073,9 +1076,10 @@ export function ThreeTacticalGrid({
         </div>
       </div>
 
-      {/* Three.js 3D WebGL Canvas Viewport */}
+      {/* Three.js 3D WebGL Canvas Viewport (Mouse Left Click: Point & Click Move; Right Click: Orbit Camera) */}
       <div
-        className="relative h-[380px] w-full cursor-pointer overflow-hidden rounded-xl border border-slate-800 bg-[#0a101d]"
+        className="relative h-[380px] w-full cursor-crosshair overflow-hidden rounded-xl border border-slate-800 bg-[#0a101d]"
+        onContextMenu={(e) => e.preventDefault()}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -1083,11 +1087,11 @@ export function ThreeTacticalGrid({
         ref={containerRef}
       />
 
-      {/* Bottom Floating Legend Bar & Quick Directional Step Controller */}
+      {/* Bottom Floating Legend Bar */}
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[10px] text-stone-400">
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded bg-emerald-500 inline-block" /> 绿色: 可移动范围 ({moverRemaining}尺)
+            <span className="h-2 w-2 rounded bg-emerald-500 inline-block" /> 绿色: 可移动范围 ({moverRemaining}尺 · 鼠标点击地格直接走位)
           </span>
           <span className="flex items-center gap-1">
             <span className="h-2 w-2 rounded bg-sky-500 inline-block" /> 蓝色: 施法射程
@@ -1095,43 +1099,6 @@ export function ThreeTacticalGrid({
           <span className="flex items-center gap-1">
             <span className="h-2 w-2 rounded bg-fuchsia-500 inline-block" /> 紫色: 3D法术范围
           </span>
-        </div>
-
-        {/* Directional Step Controls (D-Pad) for 100% Reliable 5ft Steps */}
-        <div className="flex items-center gap-1 bg-ink-900/90 p-1 rounded-xl border border-ink-800 shadow">
-          <span className="text-2xs text-stone-400 font-bold mr-1">🎮 步进:</span>
-          <button
-            className="rounded bg-ink-800 px-2 py-0.5 font-mono font-bold text-stone-200 hover:bg-emerald-600 hover:text-white active:scale-95"
-            onClick={() => handleStepMove(-1, 0)}
-            title="向上移动 5 尺 (或按 W / 上箭头)"
-            type="button"
-          >
-            ⬆️ 上
-          </button>
-          <button
-            className="rounded bg-ink-800 px-2 py-0.5 font-mono font-bold text-stone-200 hover:bg-emerald-600 hover:text-white active:scale-95"
-            onClick={() => handleStepMove(1, 0)}
-            title="向下移动 5 尺 (或按 S / 下箭头)"
-            type="button"
-          >
-            ⬇️ 下
-          </button>
-          <button
-            className="rounded bg-ink-800 px-2 py-0.5 font-mono font-bold text-stone-200 hover:bg-emerald-600 hover:text-white active:scale-95"
-            onClick={() => handleStepMove(0, -1)}
-            title="向左移动 5 尺 (或按 A / 左箭头)"
-            type="button"
-          >
-            ⬅️ 左
-          </button>
-          <button
-            className="rounded bg-ink-800 px-2 py-0.5 font-mono font-bold text-stone-200 hover:bg-emerald-600 hover:text-white active:scale-95"
-            onClick={() => handleStepMove(0, 1)}
-            title="向右移动 5 尺 (或按 D / 右箭头)"
-            type="button"
-          >
-            ➡️ 右
-          </button>
         </div>
 
         {hoveredCell ? (
