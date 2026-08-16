@@ -1540,6 +1540,9 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
   const [selectedSpell, setSelectedSpell] = useState<CombatSpellOption | null>(DND_TEST_SPELLS[0]);
   const [selectedSpellLevel, setSelectedSpellLevel] = useState<number>(0);
 
+  // Optimistic position cache for instant movement feedback
+  const [optimisticPositions, setOptimisticPositions] = useState<Record<string, [number, number]>>({});
+
   // Quick Dice Box
   const [customDiceMod, setCustomDiceMod] = useState<string>("3");
   const [diceHistory, setDiceHistory] = useState<Array<{ id: string; formula: string; result: number; rolls: number[]; isCrit?: boolean }>>([]);
@@ -1659,6 +1662,11 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     return map;
   }, [ordered]);
 
+  // Merge server positions with optimistic local movement cache
+  const effectivePositions = useMemo(() => {
+    return { ...positions, ...optimisticPositions };
+  }, [positions, optimisticPositions]);
+
   // Active Fighter
   const activeFighter = useMemo(() => {
     if (!ordered.length) return null;
@@ -1666,7 +1674,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     return ordered[index] ?? ordered[0] ?? null;
   }, [ordered, activeCombat?.current_turn_index, activeCombat?.active_combatant_index]);
 
-  const activePos = activeFighter ? positions[activeFighter.id] : null;
+  const activePos = activeFighter ? effectivePositions[activeFighter.id] : null;
   const activePosition: GridPoint | null = useMemo(() => (activePos ? { row: activePos[0], col: activePos[1] } : null), [activePos]);
 
   const activeCharacter = useMemo(() => {
@@ -2651,7 +2659,13 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
                   return;
                 }
                 const nextRemaining = Math.max(0, curRemaining - spentFt);
+
+                // 1. Instant optimistic update for 0ms visual feedback
+                setOptimisticPositions((prev) => ({ ...prev, [fighter.id]: [newRow, newCol] }));
                 spawnVfx({ row: newRow, col: newCol, type: "dust", text: `-${spentFt}尺` });
+                soundboard.playDiceRoll();
+
+                // 2. Persist to SQLite backend with version-conflict auto-retry
                 void updateCombatant(
                   campaignId,
                   combatId,
@@ -2667,9 +2681,33 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
                   },
                   fighter.version,
                 ).then(() => {
-                  soundboard.playDiceRoll();
                   void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
                   showToast(`🏃 ${fighter.display_name} 移动至 (${newRow}, ${newCol})，扣减 ${spentFt} 尺移动力`, "success");
+                }).catch(async () => {
+                  try {
+                    const freshList = await listCombatants(campaignId, combatId);
+                    const freshFighter = freshList.find((f) => f.id === fighter.id);
+                    if (freshFighter) {
+                      await updateCombatant(
+                        campaignId,
+                        combatId,
+                        freshFighter.id,
+                        {
+                          movement_remaining_ft: nextRemaining,
+                          snapshot_json: {
+                            ...(freshFighter.snapshot_json as Record<string, unknown> | undefined),
+                            row: newRow,
+                            col: newCol,
+                            grid_position: { row: newRow, col: newCol },
+                          },
+                        },
+                        freshFighter.version,
+                      );
+                      void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
+                    }
+                  } catch {
+                    // Fallback
+                  }
                 });
               }}
               onSpawnVfx={spawnVfx}
@@ -2678,7 +2716,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
                 setPromptTargetId(id);
               }}
               onToggleEnemyThreat={() => setShowEnemyThreat(!showEnemyThreat)}
-              positions={positions}
+              positions={effectivePositions}
               selectedTargetId={selectedMapTargetId}
               showEnemyThreat={showEnemyThreat}
               targeting={targetingRange}

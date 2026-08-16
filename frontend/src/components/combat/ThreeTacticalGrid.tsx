@@ -177,11 +177,11 @@ export function ThreeTacticalGrid({
 
   // Always bind the mover to the Player Character (or selected PC)
   const targetedCombatant = fighters.find((f) => f.id === selectedTargetId);
-  const moverFighter = (targetedCombatant && targetedCombatant.entity_type === "character")
+  const moverFighter = (targetedCombatant && (targetedCombatant.entity_type === "character" || targetedCombatant.entity_type === "npc"))
     ? targetedCombatant
-    : (activeFighter && activeFighter.entity_type === "character")
+    : (activeFighter && (activeFighter.entity_type === "character" || activeFighter.entity_type === "npc"))
       ? activeFighter
-      : (fighters.find((f) => f.entity_type === "character") ?? activeFighter);
+      : (fighters.find((f) => f.entity_type === "character" || f.entity_type === "npc") ?? activeFighter);
 
   const moverPos = moverFighter ? (positions[moverFighter.id] ?? [3, 3]) : [3, 3];
   
@@ -235,8 +235,9 @@ export function ThreeTacticalGrid({
   const particleGroupRef = useRef<THREE.Group>(new THREE.Group());
   const trajectoryGroupRef = useRef<THREE.Group>(new THREE.Group());
 
-  // Orbit controls state
+  // Orbit controls & drag detection state
   const isDraggingRef = useRef<boolean>(false);
+  const pointerDownPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const previousMousePositionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const sphericalRef = useRef<{ radius: number; theta: number; phi: number }>({
     radius: 24,
@@ -280,6 +281,26 @@ export function ThreeTacticalGrid({
     const y = (elevFt / 5) * 0.45;
     return new THREE.Vector3(x, y, z);
   }, [width, height, cellSize]);
+
+  // Step movement helper (Directional D-Pad)
+  const handleStepMove = useCallback((dRow: number, dCol: number) => {
+    if (!moverFighter) return;
+    const targetRow = Math.max(1, Math.min(height, moverPos[0] + dRow));
+    const targetCol = Math.max(1, Math.min(width, moverPos[1] + dCol));
+    if (targetRow === moverPos[0] && targetCol === moverPos[1]) return;
+
+    // Check if target is occupied
+    const occupied = fighters.find((f) => positions[f.id]?.[0] === targetRow && positions[f.id]?.[1] === targetCol);
+    if (occupied) {
+      soundboard.playMiss();
+      return;
+    }
+
+    const dist = gridDistanceFt({ row: moverPos[0], col: moverPos[1] }, { row: targetRow, col: targetCol }, cellSizeFt);
+    if (dist <= moverRemaining && moverRemaining > 0) {
+      onMoveToken(moverFighter, targetRow, targetCol, dist);
+    }
+  }, [moverFighter, moverPos, height, width, fighters, positions, cellSizeFt, moverRemaining, onMoveToken]);
 
   // Initialize Three.js Scene with Premium Architectural Blueprint Materials
   useEffect(() => {
@@ -351,6 +372,7 @@ export function ThreeTacticalGrid({
         });
         const blockMesh = new THREE.Mesh(blockGeo, blockMat);
         blockMesh.position.set(wPos.x, blockHeight / 2 - 0.15, wPos.z);
+        blockMesh.userData = { row: r, col: c, key, elevationFt: terrain.elevationFt };
         scene.add(blockMesh);
 
         const blockEdgesGeo = new THREE.EdgesGeometry(blockGeo);
@@ -814,18 +836,20 @@ export function ThreeTacticalGrid({
     }
   }, [vfxEvents, gridToWorld]);
 
-  // Pointer interaction & Raycasting
+  // Pointer interaction & Drag vs Click separation
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    isDraggingRef.current = false;
+    pointerDownPosRef.current = { x: e.clientX, y: e.clientY };
     previousMousePositionRef.current = { x: e.clientX, y: e.clientY };
+    isDraggingRef.current = false;
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const dx = e.clientX - previousMousePositionRef.current.x;
     const dy = e.clientY - previousMousePositionRef.current.y;
+    const totalDist = Math.hypot(e.clientX - pointerDownPosRef.current.x, e.clientY - pointerDownPosRef.current.y);
 
     if (e.buttons === 1 || e.buttons === 2) {
-      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+      if (totalDist > 8) {
         isDraggingRef.current = true;
         sphericalRef.current.theta -= dx * 0.006;
         sphericalRef.current.phi = Math.max(0.1, Math.min(Math.PI / 2.05, sphericalRef.current.phi - dy * 0.006));
@@ -833,6 +857,7 @@ export function ThreeTacticalGrid({
         previousMousePositionRef.current = { x: e.clientX, y: e.clientY };
       }
     } else {
+      // Hover Raycasting across all tile meshes (caps and blocks)
       if (!rendererRef.current || !cameraRef.current || !sceneRef.current) return;
       const rect = rendererRef.current.domElement.getBoundingClientRect();
       const mouse = new THREE.Vector2(
@@ -842,12 +867,13 @@ export function ThreeTacticalGrid({
       const raycaster = new THREE.Raycaster();
       raycaster.setFromCamera(mouse, cameraRef.current);
 
-      const capMeshes = Array.from(tileMeshesRef.current.values()).map((v) => v.capMesh);
-      const intersects = raycaster.intersectObjects(capMeshes);
+      const allInteractables: THREE.Object3D[] = [];
+      tileMeshesRef.current.forEach((t) => allInteractables.push(t.capMesh, t.blockMesh));
+      const intersects = raycaster.intersectObjects(allInteractables);
 
       if (intersects.length > 0) {
         const hit = intersects[0].object.userData as { row: number; col: number };
-        if (hit.row !== hoveredCell?.row || hit.col !== hoveredCell?.col) {
+        if (hit?.row && (hit.row !== hoveredCell?.row || hit.col !== hoveredCell?.col)) {
           setHoveredCell({ row: hit.row, col: hit.col });
         }
       } else if (hoveredCell !== null) {
@@ -863,7 +889,11 @@ export function ThreeTacticalGrid({
   };
 
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (isDraggingRef.current) return;
+    const totalDist = Math.hypot(e.clientX - pointerDownPosRef.current.x, e.clientY - pointerDownPosRef.current.y);
+    if (totalDist > 8 || isDraggingRef.current) {
+      isDraggingRef.current = false;
+      return;
+    }
     if (!rendererRef.current || !cameraRef.current) return;
 
     const rect = rendererRef.current.domElement.getBoundingClientRect();
@@ -874,7 +904,7 @@ export function ThreeTacticalGrid({
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(mouse, cameraRef.current);
 
-    // 1. Check for token hits
+    // 1. Check for token hits (Direct token click)
     const tokenMeshes: THREE.Object3D[] = [];
     tokenGroupsRef.current.forEach((grp) => tokenMeshes.push(...grp.children));
     const tokenHits = raycaster.intersectObjects(tokenMeshes);
@@ -900,12 +930,15 @@ export function ThreeTacticalGrid({
       }
     }
 
-    // 2. Check for tile hits
-    const capMeshes = Array.from(tileMeshesRef.current.values()).map((v) => v.capMesh);
-    const tileHits = raycaster.intersectObjects(capMeshes);
+    // 2. Check for tile hits (Cap Mesh + Block Mesh)
+    const allInteractables: THREE.Object3D[] = [];
+    tileMeshesRef.current.forEach((t) => allInteractables.push(t.capMesh, t.blockMesh));
+    const tileHits = raycaster.intersectObjects(allInteractables);
 
     if (tileHits.length > 0) {
       const hit = tileHits[0].object.userData as { row: number; col: number; elevationFt: number };
+      if (!hit?.row || !hit?.col) return;
+
       const point = { row: hit.row, col: hit.col };
       const occupant = fighters.find((f) => positions[f.id]?.[0] === hit.row && positions[f.id]?.[1] === hit.col);
 
@@ -915,11 +948,13 @@ export function ThreeTacticalGrid({
         if (interactionMode === "target") {
           onAimPointChange(point);
         }
-      } else if (interactionMode === "move" && moverFighter && moverFighter.entity_type === "character") {
-        // Only move the player character when clicking reachable floor in move mode
+      } else if (interactionMode === "move" && moverFighter) {
+        // Move the active player character to the clicked cell
         const dist = gridDistanceFt({ row: moverPos[0], col: moverPos[1] }, point, cellSizeFt);
         if (dist <= moverRemaining && moverRemaining > 0) {
           onMoveToken(moverFighter, hit.row, hit.col, dist);
+        } else if (dist > moverRemaining) {
+          soundboard.playMiss();
         }
       } else if (interactionMode === "target") {
         // In target mode, floor click sets the spell aim point
@@ -927,6 +962,30 @@ export function ThreeTacticalGrid({
       }
     }
   };
+
+  // Keyboard navigation for movement
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (interactionMode !== "move") return;
+
+      if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
+        e.preventDefault();
+        handleStepMove(-1, 0);
+      } else if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
+        e.preventDefault();
+        handleStepMove(1, 0);
+      } else if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
+        e.preventDefault();
+        handleStepMove(0, -1);
+      } else if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
+        e.preventDefault();
+        handleStepMove(0, 1);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [interactionMode, handleStepMove]);
 
   return (
     <div className="relative flex flex-col justify-between rounded-2xl border border-sky-500/30 bg-[#090d16] p-3 shadow-2xl">
@@ -944,7 +1003,7 @@ export function ThreeTacticalGrid({
               onClick={() => onInteractionModeChange("move")}
               type="button"
             >
-              🏃 移动走位 ({moverRemaining}尺)
+              🏃 移动走位: {moverFighter?.display_name ?? "主角"} ({moverRemaining}尺)
             </button>
             <button
               className={`rounded-lg px-3 py-1 font-bold transition ${
@@ -1016,7 +1075,7 @@ export function ThreeTacticalGrid({
 
       {/* Three.js 3D WebGL Canvas Viewport */}
       <div
-        className="relative h-[380px] w-full cursor-grab active:cursor-grabbing overflow-hidden rounded-xl border border-slate-800 bg-[#0a101d]"
+        className="relative h-[380px] w-full cursor-pointer overflow-hidden rounded-xl border border-slate-800 bg-[#0a101d]"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -1024,7 +1083,7 @@ export function ThreeTacticalGrid({
         ref={containerRef}
       />
 
-      {/* Bottom Floating Legend Bar */}
+      {/* Bottom Floating Legend Bar & Quick Directional Step Controller */}
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[10px] text-stone-400">
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1">
@@ -1037,6 +1096,44 @@ export function ThreeTacticalGrid({
             <span className="h-2 w-2 rounded bg-fuchsia-500 inline-block" /> 紫色: 3D法术范围
           </span>
         </div>
+
+        {/* Directional Step Controls (D-Pad) for 100% Reliable 5ft Steps */}
+        <div className="flex items-center gap-1 bg-ink-900/90 p-1 rounded-xl border border-ink-800 shadow">
+          <span className="text-2xs text-stone-400 font-bold mr-1">🎮 步进:</span>
+          <button
+            className="rounded bg-ink-800 px-2 py-0.5 font-mono font-bold text-stone-200 hover:bg-emerald-600 hover:text-white active:scale-95"
+            onClick={() => handleStepMove(-1, 0)}
+            title="向上移动 5 尺 (或按 W / 上箭头)"
+            type="button"
+          >
+            ⬆️ 上
+          </button>
+          <button
+            className="rounded bg-ink-800 px-2 py-0.5 font-mono font-bold text-stone-200 hover:bg-emerald-600 hover:text-white active:scale-95"
+            onClick={() => handleStepMove(1, 0)}
+            title="向下移动 5 尺 (或按 S / 下箭头)"
+            type="button"
+          >
+            ⬇️ 下
+          </button>
+          <button
+            className="rounded bg-ink-800 px-2 py-0.5 font-mono font-bold text-stone-200 hover:bg-emerald-600 hover:text-white active:scale-95"
+            onClick={() => handleStepMove(0, -1)}
+            title="向左移动 5 尺 (或按 A / 左箭头)"
+            type="button"
+          >
+            ⬅️ 左
+          </button>
+          <button
+            className="rounded bg-ink-800 px-2 py-0.5 font-mono font-bold text-stone-200 hover:bg-emerald-600 hover:text-white active:scale-95"
+            onClick={() => handleStepMove(0, 1)}
+            title="向右移动 5 尺 (或按 D / 右箭头)"
+            type="button"
+          >
+            ➡️ 右
+          </button>
+        </div>
+
         {hoveredCell ? (
           <div className="rounded-lg bg-ink-950 px-2 py-0.5 border border-ink-800 font-mono text-amber-300">
             坐标: ({hoveredCell.row}, {hoveredCell.col}) · 高度: {getCellTerrain(hoveredCell.row, hoveredCell.col).elevationFt} 尺
