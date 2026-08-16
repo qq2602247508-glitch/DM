@@ -17,7 +17,6 @@ import { runAssistantTurn } from "../api/assistant";
 import { listCharacters } from "../api/entities";
 import type { Combat, CombatAction, Combatant, SceneGrid } from "../api/types";
 import { RequireCampaign } from "../components/RequireCampaign";
-import { InitiativeCardStrip } from "../components/combat/InitiativeCardStrip";
 import {
   TurnCommandConsole,
   type CombatTargeting,
@@ -76,9 +75,180 @@ function combatantGridPosition(fighter: Combatant): [number, number] | null {
 }
 
 // ---------------------------------------------------------------------------
-// 45° 3D Isometric Tactical Grid Component with High-Visibility Move & Spell Modes
+// 1. BG3 Top Floating Initiative Timeline Carousel
 // ---------------------------------------------------------------------------
-function QuickBattleGrid({
+function BG3InitiativeTrack({
+  fighters,
+  activeFighterId,
+  selectedTargetId,
+  onSelectCombatant,
+  roundNumber,
+  onRollInitiatives,
+  onAddCombatant,
+  campaignId,
+  campaigns,
+  onSelectCampaign,
+  combatId,
+  combats,
+  onSelectCombat,
+  isFullscreen,
+  onToggleFullscreen,
+}: {
+  fighters: Combatant[];
+  activeFighterId: string | null;
+  selectedTargetId: string;
+  onSelectCombatant: (id: string) => void;
+  roundNumber: number;
+  onRollInitiatives: () => void;
+  onAddCombatant: () => void;
+  campaignId: string;
+  campaigns: Array<{ id: string; name: string }>;
+  onSelectCampaign: (id: string) => void;
+  combatId: string;
+  combats: Combat[];
+  onSelectCombat: (id: string) => void;
+  isFullscreen: boolean;
+  onToggleFullscreen: () => void;
+}): ReactElement {
+  return (
+    <div className="bg3-panel flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-2.5 text-xs shadow-2xl">
+      {/* Left Badge: Title & Round & Encounter Meta */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2 mr-1">
+          <span className="text-amber-400 text-base">⚡</span>
+          <div>
+            <h1 className="font-display text-xs font-bold text-parchment-100 leading-tight">
+              快捷战斗座舱 (Quick Combat)
+            </h1>
+            <span className="text-[9px] text-stone-400">博德之门 3 战术 HUD</span>
+          </div>
+        </div>
+
+        {/* Campaign Selector */}
+        <select
+          className="rounded-lg border border-ink-700 bg-ink-950 px-2 py-1 text-2xs text-stone-200 outline-none"
+          onChange={(e) => onSelectCampaign(e.target.value)}
+          value={campaignId}
+        >
+          {campaigns.map((cp) => (
+            <option className="bg-ink-900 text-stone-200" key={cp.id} value={cp.id}>
+              {cp.name}
+            </option>
+          ))}
+        </select>
+
+        {/* Combat Selector */}
+        <select
+          className="max-w-36 rounded-lg border border-ink-700 bg-ink-950 px-2 py-1 text-2xs font-medium text-stone-200 outline-none truncate"
+          onChange={(e) => onSelectCombat(e.target.value)}
+          value={combatId}
+        >
+          {combats.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name || `遭遇 #${c.id.slice(0, 5)}`}
+            </option>
+          ))}
+        </select>
+
+        <div className="flex items-center gap-1 rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-950/80 to-ink-950 px-2.5 py-1 font-bold text-amber-200 shadow-inner">
+          <span>第 {roundNumber} 轮</span>
+        </div>
+
+        <button
+          className="rounded-lg border border-ink-700 bg-ink-900/90 px-2 py-1 text-2xs font-semibold text-stone-300 transition hover:border-amber-500 hover:text-amber-200"
+          onClick={onRollInitiatives}
+          title="重新投掷全员先攻值"
+          type="button"
+        >
+          🎲 投先攻
+        </button>
+        <button
+          className="rounded-lg border border-ink-700 bg-ink-900/90 px-2 py-1 text-2xs font-semibold text-stone-300 transition hover:border-amber-500 hover:text-amber-200"
+          onClick={onAddCombatant}
+          title="添加新角色或怪物"
+          type="button"
+        >
+          👥 加人
+        </button>
+      </div>
+
+      {/* Center Carousel: Initiative Order Cards */}
+      <div className="flex items-center gap-2 overflow-x-auto py-1 max-w-xl no-scrollbar">
+        {fighters.map((f, idx) => {
+          const isActive = f.id === activeFighterId;
+          const isTarget = f.id === selectedTargetId;
+          const isPc = f.entity_type === "character";
+          const isMonster = f.entity_type === "monster";
+          const hpPercent = Math.max(0, Math.min(100, ((f.hp ?? 0) / (f.max_hp || 1)) * 100));
+
+          return (
+            <button
+              className={`group relative flex items-center gap-2 rounded-xl border px-2.5 py-1.5 transition-all ${
+                isActive
+                  ? "bg3-panel-gold scale-105 ring-2 ring-amber-400 shadow-[0_0_16px_rgba(245,158,11,0.5)] z-10"
+                  : isTarget
+                    ? "border-emerald-400 bg-emerald-950/70 ring-1 ring-emerald-400"
+                    : isPc
+                      ? "border-sky-700/60 bg-sky-950/40 hover:border-sky-400"
+                      : isMonster
+                        ? "border-rose-800/60 bg-rose-950/40 hover:border-rose-500"
+                        : "border-violet-800/60 bg-violet-950/40 hover:border-violet-500"
+              }`}
+              key={f.id}
+              onClick={() => onSelectCombatant(f.id)}
+              type="button"
+            >
+              <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-bold ${
+                isActive ? "bg-amber-400 text-amber-950" : "bg-ink-800 text-stone-300"
+              }`}>
+                {idx + 1}
+              </span>
+
+              <div className="flex flex-col items-start min-w-[65px] max-w-[95px] text-left">
+                <div className="flex w-full items-center justify-between gap-1">
+                  <span className={`truncate text-2xs font-bold ${isActive ? "text-amber-200" : "text-stone-200"}`}>
+                    {f.display_name}
+                  </span>
+                  {isActive ? <span className="text-[10px]">👑</span> : null}
+                </div>
+
+                <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-ink-950 border border-ink-800">
+                  <div
+                    className={`h-full transition-all duration-300 ${
+                      hpPercent > 50 ? "bg-emerald-500" : hpPercent > 20 ? "bg-amber-500" : "bg-rose-500"
+                    }`}
+                    style={{ width: `${hpPercent}%` }}
+                  />
+                </div>
+
+                <div className="mt-0.5 flex w-full justify-between text-[8px] font-mono text-stone-400">
+                  <span>🛡️{f.armor_class ?? 10}</span>
+                  <span>{f.hp}/{f.max_hp}</span>
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Fullscreen Button */}
+      <div className="flex items-center gap-1.5">
+        <button
+          className="rounded-lg border border-ink-700 bg-ink-900 px-2.5 py-1 text-xs text-stone-400 hover:text-stone-200"
+          onClick={onToggleFullscreen}
+          type="button"
+        >
+          {isFullscreen ? "🗗 退出全屏" : "🗖 全景"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// 2. BG3 Center 3D Isometric Battlefield Component
+// ---------------------------------------------------------------------------
+function BG3BattleGrid({
   campaignId,
   combatId,
   fighters,
@@ -188,25 +358,6 @@ function QuickBattleGrid({
     },
   });
 
-  // Reset Movement Mutation
-  const resetMovementMutation = useMutation({
-    mutationFn: async ({ fighter }: { fighter: Combatant }) => {
-      const maxSpd = fighter.speed_ft ?? 30;
-      return updateCombatant(
-        campaignId,
-        combatId,
-        fighter.id,
-        { movement_remaining_ft: maxSpd },
-        fighter.version,
-      );
-    },
-    onSuccess: () => {
-      soundboard.playDiceRoll();
-      void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
-      showToast("🔄 移动力已恢复为满速！", "success");
-    },
-  });
-
   // Move token mutation with movement dust VFX
   const moveMutation = useMutation({
     mutationFn: async ({ fighter, newRow, newCol, spentFt }: { fighter: Combatant; newRow: number; newCol: number; spentFt: number }) => {
@@ -256,7 +407,6 @@ function QuickBattleGrid({
     const targetCol = Math.max(1, Math.min(width, selectedPos[1] + dCol));
     if (targetRow === selectedPos[0] && targetCol === selectedPos[1]) return;
 
-    // Check if cell is occupied
     const occupied = fighters.find((f) => positions[f.id]?.[0] === targetRow && positions[f.id]?.[1] === targetCol);
     if (occupied) {
       showToast(`⚠️ 该位置已被 ${occupied.display_name} 占据！`, "warn");
@@ -282,49 +432,58 @@ function QuickBattleGrid({
   };
 
   return (
-    <div className="rounded-xl border border-ink-800 bg-ink-950/90 p-3.5 shadow-2xl">
-      {/* Grid 3D Toolbar & Perspective Controls */}
-      <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2 text-2xs">
-        <div className="flex flex-wrap items-center gap-2">
-          <strong className="text-stone-100 font-bold text-xs">⚔️ 3D 战术战场 ({width}×{height})</strong>
-          <span className="text-stone-500 font-mono">5尺/格</span>
-          <div className="flex rounded-lg border border-ink-700 bg-ink-900 p-0.5">
+    <div className="relative flex flex-col justify-between rounded-2xl border border-ink-800 bg-gradient-to-b from-ink-950 via-[#07090e] to-ink-950 p-3 shadow-2xl">
+      {/* Viewport Floating Top Bar */}
+      <div className="z-20 mb-2 flex flex-wrap items-center justify-between gap-2 text-2xs">
+        <div className="flex items-center gap-2">
+          <div className="flex rounded-xl border border-ink-700 bg-ink-900/90 p-0.5">
             <button
-              className={`rounded px-2.5 py-1 text-2xs font-bold transition ${interactionMode === "move" ? "bg-emerald-600 text-emerald-950 shadow-md ring-1 ring-emerald-400" : "text-stone-300 hover:text-white"}`}
+              className={`rounded-lg px-3 py-1 font-bold transition ${interactionMode === "move" ? "bg-emerald-600 text-emerald-950 shadow ring-1 ring-emerald-400" : "text-stone-300 hover:text-white"}`}
               onClick={() => onInteractionModeChange("move")}
               type="button"
             >
-              🏃 移动模式
+              🏃 移动走位
             </button>
             <button
-              className={`rounded px-2.5 py-1 text-2xs font-bold transition ${interactionMode === "target" ? "bg-fuchsia-600 text-fuchsia-950 shadow-md ring-1 ring-fuchsia-400" : "text-stone-300 hover:text-white"}`}
+              className={`rounded-lg px-3 py-1 font-bold transition ${interactionMode === "target" ? "bg-fuchsia-600 text-fuchsia-950 shadow ring-1 ring-fuchsia-400" : "text-stone-300 hover:text-white"}`}
               onClick={() => onInteractionModeChange("target")}
               type="button"
             >
               🔮 施法瞄准
             </button>
           </div>
+
+          {/* Quick Step Buttons */}
+          {interactionMode === "move" ? (
+            <div className="flex items-center gap-1 rounded-xl border border-emerald-800/60 bg-emerald-950/40 px-2 py-0.5">
+              <span className="text-emerald-300 text-[10px]">微调:</span>
+              <button className="h-5 w-5 rounded bg-ink-950 text-emerald-300 hover:bg-emerald-900" onClick={() => handleStepMove(-1, 0)} type="button">⬆️</button>
+              <button className="h-5 w-5 rounded bg-ink-950 text-emerald-300 hover:bg-emerald-900" onClick={() => handleStepMove(1, 0)} type="button">⬇️</button>
+              <button className="h-5 w-5 rounded bg-ink-950 text-emerald-300 hover:bg-emerald-900" onClick={() => handleStepMove(0, -1)} type="button">⬅️</button>
+              <button className="h-5 w-5 rounded bg-ink-950 text-emerald-300 hover:bg-emerald-900" onClick={() => handleStepMove(0, 1)} type="button">➡️</button>
+            </div>
+          ) : null}
         </div>
 
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {/* 3D Perspective Switcher */}
-          <div className="flex rounded-lg border border-ink-700 bg-ink-900 p-0.5">
+        <div className="flex items-center gap-1.5">
+          {/* Camera View Switcher */}
+          <div className="flex rounded-xl border border-ink-700 bg-ink-900/90 p-0.5">
             <button
-              className={`rounded px-2 py-0.5 text-2xs transition ${viewPerspective === "iso-3d" ? "bg-amber-600 font-bold text-amber-950 shadow" : "text-stone-400 hover:text-stone-200"}`}
+              className={`rounded-lg px-2.5 py-0.5 transition ${viewPerspective === "iso-3d" ? "bg-amber-600 font-bold text-amber-950 shadow" : "text-stone-400 hover:text-stone-200"}`}
               onClick={() => setViewPerspective("iso-3d")}
               type="button"
             >
               📐 45° 3D
             </button>
             <button
-              className={`rounded px-2 py-0.5 text-2xs transition ${viewPerspective === "high-3d" ? "bg-amber-600 font-bold text-amber-950 shadow" : "text-stone-400 hover:text-stone-200"}`}
+              className={`rounded-lg px-2.5 py-0.5 transition ${viewPerspective === "high-3d" ? "bg-amber-600 font-bold text-amber-950 shadow" : "text-stone-400 hover:text-stone-200"}`}
               onClick={() => setViewPerspective("high-3d")}
               type="button"
             >
               🦅 俯角 3D
             </button>
             <button
-              className={`rounded px-2 py-0.5 text-2xs transition ${viewPerspective === "flat-2d" ? "bg-amber-600 font-bold text-amber-950 shadow" : "text-stone-400 hover:text-stone-200"}`}
+              className={`rounded-lg px-2.5 py-0.5 transition ${viewPerspective === "flat-2d" ? "bg-amber-600 font-bold text-amber-950 shadow" : "text-stone-400 hover:text-stone-200"}`}
               onClick={() => setViewPerspective("flat-2d")}
               type="button"
             >
@@ -333,7 +492,7 @@ function QuickBattleGrid({
           </div>
 
           <button
-            className={`rounded border px-2 py-0.5 text-2xs transition ${
+            className={`rounded-xl border px-2.5 py-0.5 transition ${
               showEnemyThreat
                 ? "border-rose-600 bg-rose-950/60 text-rose-200 font-bold"
                 : "border-ink-700 bg-ink-900 text-stone-400 hover:text-stone-200"
@@ -341,129 +500,22 @@ function QuickBattleGrid({
             onClick={() => setShowEnemyThreat(!showEnemyThreat)}
             type="button"
           >
-            👹 敌方威胁: {showEnemyThreat ? "开" : "关"}
+            👹 威胁: {showEnemyThreat ? "开" : "关"}
           </button>
         </div>
       </div>
 
-      {/* Movement Mode Action Banner with Quick Arrow Steppers */}
-      {interactionMode === "move" && selectedFighter ? (
-        <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-emerald-500/60 bg-emerald-950/50 px-3 py-2 text-2xs shadow-inner animate-fade-in">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm">🏃</span>
-            <span className="text-stone-300">当前移动单位:</span>
-            <strong className="text-emerald-200 text-xs">{selectedFighter.display_name}</strong>
-            <span className="rounded bg-emerald-950 border border-emerald-600/70 px-2 py-0.5 font-mono text-emerald-300 font-bold">
-              剩余移动力: {selectedRemaining} / {selectedMaxSpeed} 尺 ({Math.floor(selectedRemaining / 5)} 格)
-            </span>
-            <button
-              className="rounded border border-emerald-600/60 bg-emerald-900/60 px-2 py-0.5 text-[10px] text-emerald-200 hover:bg-emerald-800 transition"
-              onClick={() => resetMovementMutation.mutate({ fighter: selectedFighter })}
-              type="button"
-            >
-              🔄 重置满速
-            </button>
-          </div>
-
-          {/* Quick 5ft Step Direction Buttons */}
-          <div className="flex items-center gap-1">
-            <span className="text-stone-400">微调步进:</span>
-            <button
-              className="h-6 w-6 rounded border border-emerald-700 bg-ink-950 text-2xs text-emerald-300 hover:bg-emerald-900/50"
-              onClick={() => handleStepMove(-1, 0)}
-              title="向上移动 5 尺"
-              type="button"
-            >
-              ⬆️
-            </button>
-            <button
-              className="h-6 w-6 rounded border border-emerald-700 bg-ink-950 text-2xs text-emerald-300 hover:bg-emerald-900/50"
-              onClick={() => handleStepMove(1, 0)}
-              title="向下移动 5 尺"
-              type="button"
-            >
-              ⬇️
-            </button>
-            <button
-              className="h-6 w-6 rounded border border-emerald-700 bg-ink-950 text-2xs text-emerald-300 hover:bg-emerald-900/50"
-              onClick={() => handleStepMove(0, -1)}
-              title="向左移动 5 尺"
-              type="button"
-            >
-              ⬅️
-            </button>
-            <button
-              className="h-6 w-6 rounded border border-emerald-700 bg-ink-950 text-2xs text-emerald-300 hover:bg-emerald-900/50"
-              onClick={() => handleStepMove(0, 1)}
-              title="向右移动 5 尺"
-              type="button"
-            >
-              ➡️
-            </button>
-          </div>
-        </div>
-      ) : null}
-
-      {/* Targeting Mode Banner */}
-      {interactionMode === "target" && targeting ? (
-        <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-fuchsia-500/60 bg-fuchsia-950/40 px-3 py-1.5 text-2xs shadow-inner">
-          <div className="flex items-center gap-2">
-            <span className="text-sm">🔮</span>
-            <span className="text-stone-300">施法瞄准指示:</span>
-            <strong className="text-fuchsia-200">{targeting.label}</strong>
-            <span className="rounded bg-fuchsia-950 border border-fuchsia-700/60 px-2 py-0.5 font-mono text-fuchsia-300 font-bold">
-              射程: {targeting.rangeFt} 尺 · 形状: {targeting.shape} {targeting.sizeFt ? `${targeting.sizeFt}尺` : ""}
-            </span>
-          </div>
-          <span className="text-stone-400">点击地图选择爆破点/受击目标</span>
-        </div>
-      ) : null}
-
-      {/* Selected Token Elevation Adjuster & High Ground Banner */}
-      {selectedFighter ? (
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-ink-700/60 bg-ink-900/80 px-3 py-1 text-2xs">
-          <div className="flex items-center gap-2">
-            <span className="text-stone-400">选定单位:</span>
-            <strong className="text-parchment-100">{selectedFighter.display_name}</strong>
-            <span className="rounded bg-ink-950 px-2 py-0.5 font-mono text-amber-300 font-bold border border-ink-800">
-              🏔️ 拔高/飞行: {combatantElevationFt(selectedFighter)} 尺
-            </span>
-            {combatantElevationFt(selectedFighter) > 0 ? (
-              <Badge tone="ok">高地优势 (+2远程命中)</Badge>
-            ) : null}
-          </div>
-
-          <div className="flex items-center gap-1">
-            <span className="text-stone-400">高度微调:</span>
-            <button
-              className="rounded border border-ink-700 bg-ink-950 px-2 py-0.5 text-2xs text-stone-300 hover:border-amber-500 hover:text-amber-200"
-              onClick={() => adjustElevationMutation.mutate({ fighter: selectedFighter, deltaFt: -5 })}
-              type="button"
-            >
-              ⬇️ -5尺
-            </button>
-            <button
-              className="rounded border border-amber-600/70 bg-amber-950/40 px-2 py-0.5 text-2xs font-bold text-amber-200 hover:bg-amber-900/50"
-              onClick={() => adjustElevationMutation.mutate({ fighter: selectedFighter, deltaFt: 5 })}
-              type="button"
-            >
-              ⬆️ +5尺高地
-            </button>
-          </div>
-        </div>
-      ) : null}
-
       {/* 3D Perspective Stage Container */}
-      <div className="perspective-stage overflow-hidden rounded-xl border border-ink-800 bg-gradient-to-b from-ink-950 via-[#07090d] to-ink-950 p-3 py-6">
+      <div className="perspective-stage overflow-hidden rounded-xl border border-ink-800/80 bg-[#06080d] p-2 py-3 flex items-center justify-center min-h-[320px] max-h-[390px]">
         <div
-          className={`grid gap-1 min-w-[520px] mx-auto ${
+          className={`grid gap-0.5 min-w-[420px] mx-auto ${
             viewPerspective === "iso-3d"
               ? "grid-3d-iso"
               : viewPerspective === "high-3d"
                 ? "grid-3d-high"
                 : "grid-2d-flat"
           }`}
-          style={{ gridTemplateColumns: `repeat(${width}, minmax(36px, 1fr))` }}
+          style={{ gridTemplateColumns: `repeat(${width}, minmax(28px, 1fr))` }}
         >
           {Array.from({ length: height }, (_, r) =>
             Array.from({ length: width }, (_, c) => {
@@ -476,17 +528,14 @@ function QuickBattleGrid({
               const isActive = activeFighterId === fighter?.id;
               const isTarget = selectedTargetId === fighter?.id;
 
-              // Enemy Threat Highlight
               const isEnemyMeleeThreat = enemyThreatCells.meleeKeys.has(cellKey);
               const isEnemyRangedThreat = enemyThreatCells.rangedKeys.has(cellKey);
 
-              // Movement reachability
               const distFromSelected = selectedPos
                 ? gridDistanceFt({ row: selectedPos[0], col: selectedPos[1] }, point, cellSizeFt)
                 : null;
               const canMoveHere = interactionMode === "move" && selectedFighter && !fighter && distFromSelected !== null && distFromSelected <= selectedRemaining;
 
-              // Targeting reachability
               const inCastRange = targeting && activePosition
                 ? isAimPointInRange(activePosition, point, targeting.rangeFt, cellSizeFt)
                 : false;
@@ -496,8 +545,7 @@ function QuickBattleGrid({
 
               const fighterElevFt = fighter ? combatantElevationFt(fighter) : 0;
 
-              // Clean, deterministic cell background & border class
-              let cellCls = "border-ink-800/80 bg-ink-900/70 hover:bg-ink-800/60";
+              let cellCls = "border border-ink-800/80 bg-ink-900/70 hover:bg-ink-800/60";
               if (canMoveHere) {
                 cellCls = "!bg-emerald-950/90 !border-2 !border-emerald-400 shadow-[0_0_14px_rgba(16,185,129,0.7)] hover:!bg-emerald-800/90 ring-2 ring-emerald-400 cursor-pointer animate-pulse";
               } else if (isAreaAffected && interactionMode === "target") {
@@ -667,7 +715,550 @@ function QuickBattleGrid({
 }
 
 // ---------------------------------------------------------------------------
-// Main Quick Combat Cockpit Page with Unified Side-by-Side Cockpit Layout
+// 3. BG3 Floating Target Inspector Card
+// ---------------------------------------------------------------------------
+function BG3TargetInspector({
+  target,
+  activeFighter,
+  positions,
+  onQuickDamage,
+}: {
+  target: Combatant | null;
+  activeFighter: Combatant | null;
+  positions: Record<string, [number, number]>;
+  onQuickDamage: (delta: number) => void;
+}): ReactElement | null {
+  if (!target) return null;
+
+  const targetPos = positions[target.id];
+  const activePos = activeFighter ? positions[activeFighter.id] : null;
+  const distFt = targetPos && activePos ? gridDistanceFt({ row: activePos[0], col: activePos[1] }, { row: targetPos[0], col: targetPos[1] }, 5) : 0;
+  const hpPercent = Math.max(0, Math.min(100, ((target.hp ?? 0) / (target.max_hp || 1)) * 100));
+
+  return (
+    <div className="bg3-panel flex flex-col justify-between rounded-2xl p-3 text-xs shadow-2xl border-amber-500/30">
+      <div className="flex items-start justify-between gap-2 border-b border-ink-800 pb-2">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-rose-900 to-ink-950 border border-rose-600/60 font-bold text-rose-200">
+            {target.display_name?.slice(0, 1)}
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <strong className="font-bold text-parchment-100">{target.display_name}</strong>
+              <Badge tone={target.entity_type === "monster" ? "warn" : "ok"}>
+                {target.entity_type === "monster" ? "敌方怪物" : target.entity_type === "character" ? "玩家" : "NPC"}
+              </Badge>
+            </div>
+            <span className="text-[10px] text-stone-400">距离: <strong className="text-amber-300 font-mono">{distFt} 尺</strong></span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1 rounded-xl bg-ink-950 px-2 py-1 border border-ink-800">
+          <span className="text-stone-400 text-2xs">护甲 AC</span>
+          <strong className="text-amber-300 font-bold text-sm">{target.armor_class ?? 10}</strong>
+        </div>
+      </div>
+
+      {/* HP Bar */}
+      <div className="my-2 space-y-1">
+        <div className="flex justify-between text-[10px] font-mono">
+          <span className="text-stone-400">生命值 (HP)</span>
+          <strong className="text-emerald-300">{target.hp} / {target.max_hp}</strong>
+        </div>
+        <div className="h-2 w-full overflow-hidden rounded-full bg-ink-950 border border-ink-800">
+          <div
+            className={`h-full transition-all duration-300 ${
+              hpPercent > 50 ? "bg-emerald-500" : hpPercent > 20 ? "bg-amber-500" : "bg-rose-500"
+            }`}
+            style={{ width: `${hpPercent}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Conditions & Resistances */}
+      <div className="flex flex-wrap items-center gap-1 text-[9px]">
+        {target.conditions && target.conditions.length > 0 ? (
+          target.conditions.map((c) => (
+            <span className="rounded bg-rose-950 border border-rose-700/60 px-1.5 py-0.2 text-rose-300 font-bold" key={c}>
+              ⚠️ {c}
+            </span>
+          ))
+        ) : (
+          <span className="text-stone-500 text-[10px]">无负面状态</span>
+        )}
+      </div>
+
+      {/* Quick HP adjustment buttons */}
+      <div className="mt-2 flex items-center justify-between border-t border-ink-800/60 pt-1.5">
+        <span className="text-[10px] text-stone-400">快速结算:</span>
+        <div className="flex gap-1">
+          <button className="rounded border border-rose-900 bg-rose-950/60 px-1.5 py-0.5 text-[10px] text-rose-300 hover:bg-rose-900" onClick={() => onQuickDamage(-5)}>-5</button>
+          <button className="rounded border border-rose-900 bg-rose-950/60 px-1.5 py-0.5 text-[10px] text-rose-300 hover:bg-rose-900" onClick={() => onQuickDamage(-1)}>-1</button>
+          <button className="rounded border border-emerald-900 bg-emerald-950/60 px-1.5 py-0.5 text-[10px] text-emerald-300 hover:bg-emerald-900" onClick={() => onQuickDamage(1)}>+1</button>
+          <button className="rounded border border-emerald-900 bg-emerald-950/60 px-1.5 py-0.5 text-[10px] text-emerald-300 hover:bg-emerald-900" onClick={() => onQuickDamage(5)}>+5</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// 4. BG3 Classic Action Hotbar (Bottom Dock)
+// ---------------------------------------------------------------------------
+function BG3Hotbar({
+  activeFighter,
+  activeCharacter,
+  selectedRemaining,
+  selectedMaxSpeed,
+  onResetSpeed,
+  activeTab,
+  onTabChange,
+  spells,
+  selectedSpell,
+  selectedSpellLevel,
+  onSelectSpell,
+  onSelectSpellLevel,
+  onCastSpell,
+  isCasting,
+  targetingValidity,
+  onOpenMeleeAttack,
+  onOpenRangedAttack,
+  onOpenOpportunityAttack,
+  onAdvanceTurn,
+  isAdvancingTurn,
+  onOpenMagicMissileModal,
+  orderedFighters,
+  campaignId,
+  combatId,
+  actions,
+  autoEnemies,
+  onAutoEnemiesChange,
+  handleRangeChange,
+  handleTargetChange,
+  selectedTargetId,
+  activeCombatRound,
+  activeCombatIndex,
+  onQuickHpAdjust,
+}: {
+  activeFighter: Combatant | null;
+  activeCharacter: any;
+  selectedRemaining: number;
+  selectedMaxSpeed: number;
+  onResetSpeed: () => void;
+  activeTab: "common" | "spells" | "weapons" | "features" | "skills" | "conditions" | "rules";
+  onTabChange: (tab: "common" | "spells" | "weapons" | "features" | "skills" | "conditions" | "rules") => void;
+  spells: CombatSpellOption[];
+  selectedSpell: CombatSpellOption | null;
+  selectedSpellLevel: number;
+  onSelectSpell: (spell: CombatSpellOption) => void;
+  onSelectSpellLevel: (lvl: number) => void;
+  onCastSpell: () => void;
+  isCasting: boolean;
+  targetingValidity: CombatTargetingValidity;
+  onOpenMeleeAttack: () => void;
+  onOpenRangedAttack: () => void;
+  onOpenOpportunityAttack: () => void;
+  onAdvanceTurn: () => void;
+  isAdvancingTurn: boolean;
+  onOpenMagicMissileModal: () => void;
+  orderedFighters: Combatant[];
+  campaignId: string;
+  combatId: string;
+  actions: CombatAction[];
+  autoEnemies: boolean;
+  onAutoEnemiesChange: (auto: boolean) => void;
+  handleRangeChange: (range: CombatTargeting | null, actorId?: string | null) => void;
+  handleTargetChange: (id: string) => void;
+  selectedTargetId: string;
+  activeCombatRound: number;
+  activeCombatIndex: number;
+  onQuickHpAdjust: (fighter: Combatant, delta: number) => void;
+}): ReactElement {
+  const [spellFilter, setSpellFilter] = useState<"all" | 0 | 1 | 2 | 3>("all");
+
+  const filteredSpells = useMemo(() => {
+    if (spellFilter === "all") return spells;
+    return spells.filter((s) => s.level === spellFilter);
+  }, [spells, spellFilter]);
+
+  const movePercent = Math.max(0, Math.min(100, (selectedRemaining / (selectedMaxSpeed || 1)) * 100));
+
+  return (
+    <div className="bg3-hotbar-dock rounded-2xl p-3 shadow-2xl">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-12 items-center">
+        {/* Left Wing: Character Profile & Action Economy (3 Cols) */}
+        <div className="flex items-center gap-3 lg:col-span-3 border-b lg:border-b-0 lg:border-r border-ink-800/80 pb-2 lg:pb-0 pr-2">
+          {/* Avatar & Class */}
+          <div className="relative flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl bg-gradient-to-b from-amber-700/40 via-ink-900 to-ink-950 border-2 border-amber-500/70 shadow-lg">
+            <span className="text-xl">🛡️</span>
+            <span className="absolute -bottom-1 rounded bg-amber-950 px-1 text-[8px] font-mono font-bold text-amber-300 border border-amber-500/50">
+              AC {activeFighter?.armor_class ?? 10}
+            </span>
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between">
+              <strong className="truncate text-xs font-bold text-parchment-100">
+                {activeFighter?.display_name ?? "行动者"}
+              </strong>
+              <span className="text-[10px] text-amber-300 font-mono">
+                HP {activeFighter?.hp}/{activeFighter?.max_hp}
+              </span>
+            </div>
+
+            {/* Movement Speed Gauge */}
+            <div className="mt-1.5 space-y-0.5">
+              <div className="flex items-center justify-between text-[9px] text-stone-400">
+                <span>🏃 移动力: <strong className="text-emerald-300 font-mono">{selectedRemaining}</strong>/{selectedMaxSpeed}尺</span>
+                <button
+                  className="text-[8px] text-emerald-400 hover:underline"
+                  onClick={onResetSpeed}
+                  type="button"
+                >
+                  重置满速
+                </button>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-ink-950 border border-ink-800">
+                <div
+                  className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-300"
+                  style={{ width: `${movePercent}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Action Economy Gems */}
+            <div className="mt-1.5 flex items-center gap-1.5 text-[9px]">
+              <span className="flex items-center gap-0.5" title="标准动作: 可用">
+                <span className="h-2.5 w-2.5 rounded-full bg3-gem-action inline-block" />
+                <span className="text-emerald-300">动作</span>
+              </span>
+              <span className="flex items-center gap-0.5" title="附赠动作: 可用">
+                <span className="h-2.5 w-2.5 rounded-full bg3-gem-bonus inline-block" />
+                <span className="text-orange-300">附赠</span>
+              </span>
+              <span className="flex items-center gap-0.5" title="反应: 可用">
+                <span className="h-2.5 w-2.5 rounded-full bg3-gem-reaction inline-block" />
+                <span className="text-purple-300">反应</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Center Deck: Multi-Drawer Action Hotbar (6 Cols) */}
+        <div className="lg:col-span-6 flex flex-col justify-between">
+          {/* Drawer Category Tabs */}
+          <div className="flex flex-wrap items-center gap-1 border-b border-ink-800/80 pb-1.5 text-2xs font-bold">
+            <button
+              className={`rounded-lg px-2.5 py-1 transition ${activeTab === "common" ? "bg-emerald-600 text-emerald-950 shadow" : "text-stone-400 hover:text-white"}`}
+              onClick={() => onTabChange("common")}
+              type="button"
+            >
+              🏃 常用动作
+            </button>
+            <button
+              className={`rounded-lg px-2.5 py-1 transition ${activeTab === "spells" ? "bg-fuchsia-600 text-fuchsia-950 shadow" : "text-stone-400 hover:text-white"}`}
+              onClick={() => onTabChange("spells")}
+              type="button"
+            >
+              🔮 法术书 (0~3环)
+            </button>
+            <button
+              className={`rounded-lg px-2.5 py-1 transition ${activeTab === "weapons" ? "bg-amber-600 text-amber-950 shadow" : "text-stone-400 hover:text-white"}`}
+              onClick={() => onTabChange("weapons")}
+              type="button"
+            >
+              ⚔️ 武器攻击
+            </button>
+            <button
+              className={`rounded-lg px-2.5 py-1 transition ${activeTab === "features" ? "bg-purple-600 text-purple-950 shadow" : "text-stone-400 hover:text-white"}`}
+              onClick={() => onTabChange("features")}
+              type="button"
+            >
+              🛡️ 职业特技
+            </button>
+            <button
+              className={`rounded-lg px-2.5 py-1 transition ${activeTab === "skills" ? "bg-sky-600 text-sky-950 shadow" : "text-stone-400 hover:text-white"}`}
+              onClick={() => onTabChange("skills")}
+              type="button"
+            >
+              🎯 技能
+            </button>
+            <button
+              className={`rounded-lg px-2.5 py-1 transition ${activeTab === "conditions" ? "bg-rose-600 text-rose-950 shadow" : "text-stone-400 hover:text-white"}`}
+              onClick={() => onTabChange("conditions")}
+              type="button"
+            >
+              🏷️ 状态
+            </button>
+            <button
+              className={`rounded-lg px-2.5 py-1 transition ${activeTab === "rules" ? "bg-amber-700 text-amber-100 shadow" : "text-stone-400 hover:text-white"}`}
+              onClick={() => onTabChange("rules")}
+              type="button"
+            >
+              📦 规则积木
+            </button>
+          </div>
+
+          {/* Drawer Content Area */}
+          <div className="mt-2 min-h-[68px] flex items-center">
+            {/* 1. Common Actions */}
+            {activeTab === "common" ? (
+              <div className="flex flex-wrap items-center gap-1.5 w-full">
+                <button
+                  className="bg3-btn-slot flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold text-emerald-200"
+                  onClick={onResetSpeed}
+                  type="button"
+                >
+                  <span>⚡ 疾走 (Dash)</span>
+                  <span className="text-[9px] text-stone-400">+30尺</span>
+                </button>
+                <button
+                  className="bg3-btn-slot flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold text-sky-200"
+                  onClick={() => soundboard.playDiceRoll()}
+                  type="button"
+                >
+                  <span>🛡️ 撤退 (Disengage)</span>
+                </button>
+                <button
+                  className="bg3-btn-slot flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold text-amber-200"
+                  onClick={() => soundboard.playDiceRoll()}
+                  type="button"
+                >
+                  <span>🤝 协助 (Help)</span>
+                </button>
+                <button
+                  className="bg3-btn-slot flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold text-stone-300"
+                  onClick={() => soundboard.playDiceRoll()}
+                  type="button"
+                >
+                  <span>🌫️ 躲藏 (Hide)</span>
+                </button>
+                <button
+                  className="bg3-btn-slot flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold text-rose-300"
+                  onClick={() => soundboard.playAttackHit()}
+                  type="button"
+                >
+                  <span>💥 推撞 (Shove)</span>
+                </button>
+              </div>
+            ) : null}
+
+            {/* 2. Spells & Upcast Selector */}
+            {activeTab === "spells" ? (
+              <div className="w-full space-y-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex gap-1 text-[9px]">
+                    <button className={`rounded px-1.5 py-0.2 ${spellFilter === "all" ? "bg-fuchsia-600 font-bold text-white" : "bg-ink-950 text-stone-400"}`} onClick={() => setSpellFilter("all")}>全部</button>
+                    <button className={`rounded px-1.5 py-0.2 ${spellFilter === 0 ? "bg-fuchsia-600 font-bold text-white" : "bg-ink-950 text-stone-400"}`} onClick={() => setSpellFilter(0)}>戏法</button>
+                    <button className={`rounded px-1.5 py-0.2 ${spellFilter === 1 ? "bg-fuchsia-600 font-bold text-white" : "bg-ink-950 text-stone-400"}`} onClick={() => setSpellFilter(1)}>1环</button>
+                    <button className={`rounded px-1.5 py-0.2 ${spellFilter === 2 ? "bg-fuchsia-600 font-bold text-white" : "bg-ink-950 text-stone-400"}`} onClick={() => setSpellFilter(2)}>2环</button>
+                    <button className={`rounded px-1.5 py-0.2 ${spellFilter === 3 ? "bg-fuchsia-600 font-bold text-white" : "bg-ink-950 text-stone-400"}`} onClick={() => setSpellFilter(3)}>3环</button>
+                  </div>
+
+                  {selectedSpell ? (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] text-fuchsia-300 font-bold">升环选择:</span>
+                      <div className="flex rounded-lg border border-fuchsia-700 bg-ink-950 p-0.5 text-[9px] font-bold">
+                        {selectedSpell.level === 0 ? (
+                          <span className="px-2 py-0.2 text-fuchsia-300">0环戏法</span>
+                        ) : (
+                          Array.from({ length: 4 - selectedSpell.level }, (_, idx) => {
+                            const slotLvl = selectedSpell.level + idx;
+                            return (
+                              <button
+                                className={`rounded px-1.5 py-0.2 ${selectedSpellLevel === slotLvl ? "bg-fuchsia-600 text-white" : "text-stone-400 hover:text-white"}`}
+                                key={slotLvl}
+                                onClick={() => onSelectSpellLevel(slotLvl)}
+                                type="button"
+                              >
+                                {slotLvl}环
+                              </button>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                  {filteredSpells.map((s) => {
+                    const isPicked = selectedSpell?.id === s.id;
+                    return (
+                      <button
+                        className={`bg3-btn-slot shrink-0 rounded-xl px-2.5 py-1 text-left ${
+                          isPicked ? "border-fuchsia-400 bg-fuchsia-950/80 ring-1 ring-fuchsia-400" : ""
+                        }`}
+                        key={s.id}
+                        onClick={() => onSelectSpell(s)}
+                        type="button"
+                      >
+                        <div className="flex items-center justify-between gap-1.5">
+                          <strong className="text-2xs font-bold text-parchment-100">{s.name}</strong>
+                          <span className="text-[8px] font-mono text-fuchsia-300">{s.level === 0 ? "0环" : `${s.level}环`}</span>
+                        </div>
+                        <span className="text-[8px] font-mono text-amber-300 block">{s.damageDiceBase}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
+
+            {/* 3. Weapons */}
+            {activeTab === "weapons" ? (
+              <div className="flex flex-wrap items-center gap-2 w-full">
+                <button
+                  className="bg3-btn-slot flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-bold text-amber-200"
+                  onClick={onOpenMeleeAttack}
+                  type="button"
+                >
+                  <span>🗡️ 主手近战重击</span>
+                  <span className="text-[9px] text-stone-400">1d8+3 挥砍</span>
+                </button>
+                <button
+                  className="bg3-btn-slot flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-bold text-sky-200"
+                  onClick={onOpenRangedAttack}
+                  type="button"
+                >
+                  <span>🏹 远程精准射击</span>
+                  <span className="text-[9px] text-stone-400">1d8+3 穿刺 (150尺)</span>
+                </button>
+                <button
+                  className="bg3-btn-slot flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-bold text-rose-200"
+                  onClick={onOpenOpportunityAttack}
+                  type="button"
+                >
+                  <span>⚡ 借机攻击 (反应)</span>
+                </button>
+              </div>
+            ) : null}
+
+            {/* 4. Features */}
+            {activeTab === "features" ? (
+              <div className="flex flex-wrap items-center gap-2 w-full">
+                <button
+                  className="bg3-btn-slot flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-bold text-emerald-200"
+                  onClick={() => {
+                    if (!activeFighter) return;
+                    const heal = Math.floor(Math.random() * 10) + 1 + 3;
+                    onQuickHpAdjust(activeFighter, heal);
+                    soundboard.playNat20();
+                  }}
+                  type="button"
+                >
+                  <span>🛡️ 战士回气 (Second Wind)</span>
+                  <span className="text-[9px] text-stone-400">+1d10+3 HP</span>
+                </button>
+                <button
+                  className="bg3-btn-slot flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-bold text-amber-200"
+                  onClick={() => soundboard.playNat20()}
+                  type="button"
+                >
+                  <span>⚖️ 至圣斩 (Divine Smite)</span>
+                  <span className="text-[9px] text-stone-400">+2d8 光耀</span>
+                </button>
+              </div>
+            ) : null}
+
+            {/* 5. Skills */}
+            {activeTab === "skills" ? (
+              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1 w-full">
+                {DND_SKILLS.slice(0, 8).map((skill) => (
+                  <button
+                    className="bg3-btn-slot shrink-0 rounded-xl px-2.5 py-1 text-2xs font-bold text-sky-200"
+                    key={skill.id}
+                    onClick={() => soundboard.playDiceRoll()}
+                    type="button"
+                  >
+                    🎲 {skill.name.split(" ")[0]}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
+            {/* 6. Conditions */}
+            {activeTab === "conditions" ? (
+              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1 w-full">
+                {DND_CONDITIONS.slice(0, 8).map((cond) => (
+                  <button
+                    className="bg3-btn-slot shrink-0 rounded-xl px-2 py-1 text-2xs font-bold text-rose-200"
+                    key={cond.id}
+                    onClick={() => soundboard.playHandout()}
+                    type="button"
+                  >
+                    {cond.icon} {cond.name.split(" ")[0]}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
+            {/* 7. Rules Console */}
+            {activeTab === "rules" && activeFighter ? (
+              <div className="w-full overflow-y-auto max-h-24">
+                <TurnCommandConsole
+                  active={activeFighter}
+                  activeCharacter={activeCharacter}
+                  autoEnemies={autoEnemies}
+                  automationReady={true}
+                  campaignId={campaignId}
+                  combatActions={actions}
+                  combatId={combatId}
+                  fighters={orderedFighters}
+                  key={`${combatId}:${activeFighter.id}`}
+                  onAutoEnemiesChange={onAutoEnemiesChange}
+                  onEnemyTurnComplete={onAdvanceTurn}
+                  onRangeChange={handleRangeChange}
+                  onTargetChange={handleTargetChange}
+                  selectedTargetId={selectedTargetId}
+                  targetingValidity={targetingValidity}
+                  turnKey={`${activeCombatRound}:${activeCombatIndex}:${activeFighter.id}`}
+                />
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        {/* Right Wing: Turn End Gold Button & Cast Action (3 Cols) */}
+        <div className="flex items-center justify-end gap-2 lg:col-span-3 border-t lg:border-t-0 lg:border-l border-ink-800/80 pt-2 lg:pt-0 pl-2">
+          {activeTab === "spells" && selectedSpell ? (
+            selectedSpell.id === "magic_missile" ? (
+              <button
+                className="rounded-xl border border-fuchsia-500 bg-fuchsia-600 px-4 py-2.5 text-xs font-bold text-white shadow hover:brightness-110"
+                onClick={onOpenMagicMissileModal}
+                type="button"
+              >
+                🚀 分配飞弹
+              </button>
+            ) : (
+              <button
+                className="rounded-xl border border-fuchsia-500 bg-gradient-to-r from-fuchsia-600 to-purple-600 px-4 py-2.5 text-xs font-bold text-white shadow hover:brightness-110 disabled:opacity-50"
+                disabled={isCasting}
+                onClick={onCastSpell}
+                type="button"
+              >
+                {isCasting ? "施法中…" : `✨ 施放【${selectedSpell.name}】`}
+              </button>
+            )
+          ) : (
+            <button
+              className="bg3-end-turn-btn flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-xs font-black text-amber-950 shadow-2xl active:scale-95 transition"
+              disabled={isAdvancingTurn}
+              onClick={onAdvanceTurn}
+              type="button"
+            >
+              <span>⏭️ 结束回合</span>
+              <span className="rounded bg-amber-950/40 px-1 text-[9px] text-amber-200">Space</span>
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main Quick Combat Cockpit Page with Baldur's Gate 3 (BG3) UI Layout
 // ---------------------------------------------------------------------------
 function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElement {
   const queryClient = useQueryClient();
@@ -696,14 +1287,16 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     }, 1200);
   }, []);
 
-  // Active Tab for Quick Actions HUD
-  const [activeHudTab, setActiveHudTab] = useState<"move" | "spells" | "actions" | "skills" | "features" | "conditions">("move");
+  // BG3 Hotbar Active Tab
+  const [activeHotbarTab, setActiveHotbarTab] = useState<"common" | "spells" | "weapons" | "features" | "skills" | "conditions" | "rules">("common");
 
   // Spell Casting Engine States
   const [selectedSpell, setSelectedSpell] = useState<CombatSpellOption | null>(DND_TEST_SPELLS[0]);
   const [selectedSpellLevel, setSelectedSpellLevel] = useState<number>(0);
-  const [spellLevelFilter, setSpellLevelFilter] = useState<"all" | 0 | 1 | 2 | 3>("all");
-  const [spellSearchTerm, setSpellSearchTerm] = useState<string>("");
+
+  // Quick Dice Box
+  const [customDiceMod, setCustomDiceMod] = useState<string>("3");
+  const [diceHistory, setDiceHistory] = useState<Array<{ id: string; formula: string; result: number; rolls: number[]; isCrit?: boolean }>>([]);
 
   // New combatant form
   const [newCombatantName, setNewCombatantName] = useState<string>("");
@@ -727,14 +1320,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
   // Magic Missile Multi-Target Distribution state
   const [magicMissileModalOpen, setMagicMissileModalOpen] = useState<boolean>(false);
   const [dartAllocations, setDartAllocations] = useState<Record<string, number>>({});
-
-  // Skill Check Modal state
-  const [skillCheckMod, setSkillCheckMod] = useState<string>("3");
-  const [skillCheckResult, setSkillCheckResult] = useState<string>("");
-
-  // Dice Roller states
-  const [diceHistory, setDiceHistory] = useState<Array<{ id: string; formula: string; result: number; rolls: number[]; isCrit?: boolean; isFumble?: boolean }>>([]);
-  const [customDiceMod, setCustomDiceMod] = useState<string>("3");
 
   // AI Guidance states
   const [aiAnalysis, setAiAnalysis] = useState<string>("");
@@ -906,53 +1491,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     showToast(`🔮 已选择「${spell.name}」：请在 3D 地图上选定目标并查看范围！`, "info");
   }, [activeFighter, showToast]);
 
-  // Filtered spells catalog
-  const filteredSpells = useMemo(() => {
-    return DND_TEST_SPELLS.filter((spell) => {
-      const matchLevel = spellLevelFilter === "all" || spell.level === spellLevelFilter;
-      const matchSearch = !spellSearchTerm.trim()
-        || spell.name.includes(spellSearchTerm.trim())
-        || spell.nameEn.toLowerCase().includes(spellSearchTerm.trim().toLowerCase())
-        || spell.description.includes(spellSearchTerm.trim());
-      return matchLevel && matchSearch;
-    });
-  }, [spellLevelFilter, spellSearchTerm]);
-
-  // Derive Advantage / Disadvantage based on conditions
-  const attackAdvantageState = useMemo(() => {
-    if (!activeFighter || !promptTargetCombatant) return { hasAdvantage: false, hasDisadvantage: false, reasons: [] as string[] };
-    const reasons: string[] = [];
-    let hasAdv = false;
-    let hasDis = false;
-
-    const targetConds = promptTargetCombatant.conditions ?? [];
-    const attackerConds = activeFighter.conditions ?? [];
-
-    if (targetConds.includes("prone")) {
-      if (isMeleeAttack) {
-        hasAdv = true;
-        reasons.push("目标倒地：近战攻击具有优势 (Advantage)");
-      } else {
-        hasDis = true;
-        reasons.push("目标倒地：远程攻击具有劣势 (Disadvantage)");
-      }
-    }
-    if (targetConds.some((c) => ["paralyzed", "unconscious", "stunned", "restrained"].includes(c))) {
-      hasAdv = true;
-      reasons.push("目标处于限制/失能状态：攻击具有优势");
-    }
-    if (attackerConds.includes("invisible")) {
-      hasAdv = true;
-      reasons.push("攻击者处于隐形/潜伏：攻击具有优势");
-    }
-    if (attackerConds.some((c) => ["poisoned", "blinded", "prone"].includes(c))) {
-      hasDis = true;
-      reasons.push("自身处于负面状态：攻击具有劣势");
-    }
-
-    return { hasAdvantage: hasAdv && !hasDis, hasDisadvantage: hasDis && !hasAdv, reasons };
-  }, [activeFighter, promptTargetCombatant, isMeleeAttack]);
-
   // Advance Turn mutation
   const advanceTurnMutation = useMutation({
     mutationFn: async () => {
@@ -991,29 +1529,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
       soundboard.playDiceRoll();
       void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
       showToast("🎲 全员先攻已重新投掷并排序！", "success");
-    },
-  });
-
-  // Toggle condition mutation
-  const toggleConditionMutation = useMutation({
-    mutationFn: async ({ combatant, conditionId }: { combatant: Combatant; conditionId: string }) => {
-      const current = combatant.conditions ?? [];
-      const hasIt = current.includes(conditionId);
-      const nextConditions = hasIt ? current.filter((c) => c !== conditionId) : [...current, conditionId];
-      return updateCombatant(
-        campaignId,
-        combatId,
-        combatant.id,
-        { conditions: nextConditions },
-        combatant.version,
-      );
-    },
-    onSuccess: (_data, vars) => {
-      const current = vars.combatant.conditions ?? [];
-      const isAdd = !current.includes(vars.conditionId);
-      if (isAdd) soundboard.playHandout();
-      void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
-      showToast(`🏷️ ${vars.combatant.display_name} 已${isAdd ? "获得状态" : "解除状态"}：${vars.conditionId}`, "info");
     },
   });
 
@@ -1136,209 +1651,6 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     },
   });
 
-  // 1-Click Auto Resolve Action Mutation
-  const autoResolveActionMutation = useMutation({
-    mutationFn: async () => {
-      if (!activeFighter || !promptTargetCombatant) throw new Error("请选定攻击者与受击目标");
-      const attackMod = Number(promptAttackMod) || 0;
-
-      const roll1 = Math.floor(Math.random() * 20) + 1;
-      const roll2 = Math.floor(Math.random() * 20) + 1;
-      let d20 = roll1;
-      let rollDesc = `d20(${roll1})`;
-      if (attackAdvantageState.hasAdvantage) {
-        d20 = Math.max(roll1, roll2);
-        rollDesc = `优势取高(${roll1}, ${roll2}) ➔ ${d20}`;
-      } else if (attackAdvantageState.hasDisadvantage) {
-        d20 = Math.min(roll1, roll2);
-        rollDesc = `劣势取低(${roll1}, ${roll2}) ➔ ${d20}`;
-      }
-
-      const attackTotal = d20 + attackMod;
-      const isCrit = d20 === 20 || (isMeleeAttack && (promptTargetCombatant.conditions ?? []).some((c) => ["paralyzed", "unconscious"].includes(c)));
-      const targetAc = promptTargetCombatant.armor_class ?? 10;
-      const isHit = isCrit || attackTotal >= targetAc;
-      const targetPos = combatantGridPosition(promptTargetCombatant) ?? [3, 5];
-
-      if (!isHit) {
-        soundboard.playDiceRoll();
-        spawnVfx({ row: targetPos[0], col: targetPos[1], type: "dust", text: "MISS!", isMiss: true });
-        const command: CombatActionCommand = {
-          action_type: "damage",
-          target_combatant_id: promptTargetCombatant.id,
-          target_version: promptTargetCombatant.version,
-          actor_combatant_id: activeFighter.id,
-          actor_version: activeFighter.version,
-          action_cost: "action",
-          action_name: promptActionName,
-          amount: 0,
-          is_attack: true,
-          attack_roll_total: attackTotal,
-          resolution_note: `${activeFighter.display_name} 发动「${promptActionName}」命中检定 ${rollDesc} + ${attackMod} = ${attackTotal} (vs AC ${targetAc}) ➔ ❌ 未命中！`,
-        };
-        return confirmCombatAction(campaignId, combatId, command);
-      }
-
-      const dieSides = promptDamageDice.includes("d12") ? 12 : promptDamageDice.includes("d10") ? 10 : promptDamageDice.includes("d6") ? 6 : promptDamageDice.includes("d4") ? 4 : 8;
-      const baseDamage = Math.floor(Math.random() * dieSides) + 1 + (isCrit ? Math.floor(Math.random() * dieSides) + 1 : 0) + 2;
-
-      const resistances = promptTargetCombatant.damage_resistances ?? [];
-      const immunities = promptTargetCombatant.damage_immunities ?? [];
-      const vulnerabilities = promptTargetCombatant.damage_vulnerabilities ?? [];
-      let finalDamage = baseDamage;
-      if (immunities.includes(promptDamageType)) finalDamage = 0;
-      else if (resistances.includes(promptDamageType)) finalDamage = Math.floor(baseDamage / 2);
-      else if (vulnerabilities.includes(promptDamageType)) finalDamage = baseDamage * 2;
-
-      spawnVfx({
-        row: targetPos[0],
-        col: targetPos[1],
-        type: promptDamageType === "fire" ? "fire" : "slash",
-        text: isCrit ? `CRIT! -${finalDamage}` : `-${finalDamage}`,
-        isCrit,
-      });
-
-      const command: CombatActionCommand = {
-        action_type: "damage",
-        target_combatant_id: promptTargetCombatant.id,
-        target_version: promptTargetCombatant.version,
-        actor_combatant_id: activeFighter.id,
-        actor_version: activeFighter.version,
-        action_cost: "action",
-        action_name: promptActionName,
-        amount: finalDamage,
-        damage_type: promptDamageType,
-        is_attack: true,
-        attack_roll_total: attackTotal,
-        critical_hit: isCrit,
-        resolution_note: `${activeFighter.display_name} 发动「${promptActionName}」命中检定 ${rollDesc} + ${attackMod} = ${attackTotal} (vs AC ${targetAc}) ➔ ✅ 命中！造成 ${finalDamage} 点 ${promptDamageType} 伤害${isCrit ? "（💥暴击！）" : ""}${resistances.includes(promptDamageType) ? "（抗性减半）" : ""}`,
-      };
-
-      return confirmCombatAction(campaignId, combatId, command);
-    },
-    onSuccess: () => {
-      soundboard.playAttackHit();
-      setActionPromptOpen(false);
-      void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
-      void queryClient.invalidateQueries({ queryKey: ["combat-actions", campaignId, combatId] });
-      showToast("⚔️ 动作已自动投骰并结算！", "success");
-    },
-    onError: (err) => {
-      showToast(err instanceof Error ? err.message : "自动结算失败", "error");
-    },
-  });
-
-  // Magic Missile Multi-Target Split Execution with Arcane VFX
-  const executeMagicMissileMutation = useMutation({
-    mutationFn: async () => {
-      if (!activeFighter) throw new Error("无有效施法者");
-      const targetEntries = Object.entries(dartAllocations).filter(([, count]) => count > 0);
-      if (!targetEntries.length) throw new Error("请为至少一个目标分配飞弹");
-
-      for (const [targetId, dartCount] of targetEntries) {
-        const target = ordered.find((f) => f.id === targetId);
-        if (!target) continue;
-
-        let targetTotalDamage = 0;
-        const rolls: number[] = [];
-        for (let i = 0; i < dartCount; i++) {
-          const dmg = Math.floor(Math.random() * 4) + 1 + 1; // 1d4+1
-          targetTotalDamage += dmg;
-          rolls.push(dmg);
-        }
-
-        const nextHp = Math.max(0, (target.hp ?? 10) - targetTotalDamage);
-        const pos = combatantGridPosition(target) ?? [3, 5];
-
-        spawnVfx({ row: pos[0], col: pos[1], type: "arcane", text: `-${targetTotalDamage}` });
-
-        await updateCombatant(
-          campaignId,
-          combatId,
-          target.id,
-          { hp: nextHp },
-          target.version,
-        );
-
-        const command: CombatActionCommand = {
-          action_type: "damage",
-          target_combatant_id: target.id,
-          target_version: target.version,
-          actor_combatant_id: activeFighter.id,
-          actor_version: activeFighter.version,
-          action_cost: "action",
-          action_name: "魔法飞弹 (Magic Missile)",
-          amount: targetTotalDamage,
-          damage_type: "force",
-          resolution_note: `${activeFighter.display_name} 射出 ${dartCount} 枚「魔法飞弹」击中 ${target.display_name}（自动必中，各 ${rolls.join("+")} 点）➔ 造成 ${targetTotalDamage} 点力场伤害！`,
-        };
-
-        await confirmCombatAction(campaignId, combatId, command);
-      }
-    },
-    onSuccess: () => {
-      soundboard.playAttackHit();
-      setMagicMissileModalOpen(false);
-      setDartAllocations({});
-      void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
-      void queryClient.invalidateQueries({ queryKey: ["combat-actions", campaignId, combatId] });
-      showToast("🚀 魔法飞弹已发射并分别对目标结算必中力场伤害！", "success");
-    },
-    onError: (err) => {
-      showToast(err instanceof Error ? err.message : "施法失败", "error");
-    },
-  });
-
-  // Manual Dice Input Confirmation Mutation (Physical dice input)
-  const confirmManualDiceActionMutation = useMutation({
-    mutationFn: async () => {
-      if (!activeFighter || !promptTargetCombatant) throw new Error("请选定攻击者与受击目标");
-      const attackTotal = Number(manualAttackRoll) || 15;
-      const targetAc = promptTargetCombatant.armor_class ?? 10;
-      const isHit = isManualCrit || attackTotal >= targetAc;
-      const dmg = Number(manualDamageRoll) || 0;
-      const finalDmg = isHit ? dmg : 0;
-      const targetPos = combatantGridPosition(promptTargetCombatant) ?? [3, 5];
-
-      if (isHit) {
-        spawnVfx({ row: targetPos[0], col: targetPos[1], type: "slash", text: isManualCrit ? `CRIT! -${finalDmg}` : `-${finalDmg}`, isCrit: isManualCrit });
-      } else {
-        spawnVfx({ row: targetPos[0], col: targetPos[1], type: "dust", text: "MISS!", isMiss: true });
-      }
-
-      const command: CombatActionCommand = {
-        action_type: "damage",
-        target_combatant_id: promptTargetCombatant.id,
-        target_version: promptTargetCombatant.version,
-        actor_combatant_id: activeFighter.id,
-        actor_version: activeFighter.version,
-        action_cost: "action",
-        action_name: promptActionName,
-        amount: finalDmg,
-        damage_type: promptDamageType,
-        is_attack: true,
-        attack_roll_total: attackTotal,
-        critical_hit: isManualCrit,
-        resolution_note: `${activeFighter.display_name} 录入实体骰「${promptActionName}」命中检定 ${attackTotal} (vs AC ${targetAc}) ➔ ${isHit ? `✅ 命中！造成 ${finalDmg} 点伤害` : "❌ 未命中"}${isManualCrit ? "（💥暴击！）" : ""}`,
-      };
-
-      return confirmCombatAction(campaignId, combatId, command);
-    },
-    onSuccess: () => {
-      soundboard.playAttackHit();
-      setActionPromptOpen(false);
-      setManualAttackRoll("");
-      setManualDamageRoll("");
-      setIsManualCrit(false);
-      void queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
-      void queryClient.invalidateQueries({ queryKey: ["combat-actions", campaignId, combatId] });
-      showToast("✍️ 玩家实体骰结果已应用并结算！", "success");
-    },
-    onError: (err) => {
-      showToast(err instanceof Error ? err.message : "实体骰应用失败", "error");
-    },
-  });
-
   // AI Guidance
   const aiTacticsMutation = useMutation({
     mutationFn: async () => {
@@ -1373,61 +1685,28 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     },
   });
 
-  // Roll dice helper
-  const rollDice = (sides: number, count = 1) => {
+  const rollDice = (sides: number) => {
     soundboard.playDiceRoll();
     const mod = Number(customDiceMod) || 0;
-    const rolls: number[] = [];
-    let sum = 0;
-    for (let i = 0; i < count; i++) {
-      const r = Math.floor(Math.random() * sides) + 1;
-      rolls.push(r);
-      sum += r;
-    }
-    const total = sum + mod;
-    const isCrit = sides === 20 && count === 1 && rolls[0] === 20;
-    const isFumble = sides === 20 && count === 1 && rolls[0] === 1;
-
+    const r = Math.floor(Math.random() * sides) + 1;
+    const total = r + mod;
+    const isCrit = sides === 20 && r === 20;
     if (isCrit) soundboard.playNat20();
-    if (isFumble) soundboard.playNat1();
-
-    const entry = {
-      id: `${Date.now()}-${Math.random()}`,
-      formula: `${count}d${sides}${mod !== 0 ? (mod > 0 ? `+${mod}` : `${mod}`) : ""}`,
-      result: total,
-      rolls,
-      isCrit,
-      isFumble,
-    };
-    setDiceHistory((prev) => [entry, ...prev.slice(0, 9)]);
-  };
-
-  // Perform a 5e Skill Check
-  const executeSkillCheck = (skill: (typeof DND_SKILLS)[0]) => {
-    soundboard.playDiceRoll();
-    const d20 = Math.floor(Math.random() * 20) + 1;
-    const mod = Number(skillCheckMod) || 0;
-    const total = d20 + mod;
-    const isCrit = d20 === 20;
-    const isFumble = d20 === 1;
-    const text = `${activeFighter?.display_name ?? "行动者"} 进行【${skill.name}】检定：d20(${d20}) + ${mod} = ${total}${isCrit ? "（💥天然20极佳表现！）" : ""}${isFumble ? "（💀天然1大失败！）" : ""}`;
-    setSkillCheckResult(text);
-    if (isCrit) soundboard.playNat20();
-    if (isFumble) soundboard.playNat1();
-    showToast(`🎲 ${skill.name} 检定总值: ${total}`, "info");
+    const entry = { id: `${Date.now()}`, formula: `1d${sides}${mod ? `+${mod}` : ""}`, result: total, rolls: [r], isCrit };
+    setDiceHistory((prev) => [entry, ...prev.slice(0, 4)]);
   };
 
   if (combatsQuery.isLoading) {
     return <LoadingBlock label="正在载入战役战斗数据…" />;
   }
 
-  // 1-Click Starter Encounter Loader when no combat is active
+  // Fallback when no combat exists
   if (!activeCombat || (combatsQuery.data ?? []).length === 0) {
     return (
       <div className="mx-auto max-w-4xl p-6">
         <div className="rounded-2xl border border-amber-500/40 bg-gradient-to-b from-ink-900 via-ink-950 to-ink-950 p-8 shadow-2xl text-center">
           <span className="text-5xl">⚡</span>
-          <h2 className="mt-4 font-display text-2xl font-bold text-parchment-100">当前战役尚无活跃战斗遭遇</h2>
+          <h2 className="mt-4 font-display text-2xl font-bold text-parchment-100">快捷战斗座舱 (Quick Combat)</h2>
           <p className="mt-2 text-sm text-stone-400">
             您可以一键快速发起标准新手遭遇，或手动新建一场遭遇战并导入玩家与怪物。
           </p>
@@ -1456,195 +1735,115 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     );
   }
 
+  const moverRemaining = (activeFighter?.movement_remaining_ft != null && activeFighter.movement_remaining_ft > 0)
+    ? activeFighter.movement_remaining_ft
+    : (activeFighter?.speed_ft ?? 30);
+  const moverMaxSpeed = activeFighter?.speed_ft ?? 30;
+
   return (
-    <div className={`flex flex-col bg-ink-950 text-stone-200 ${isFullscreen ? "fixed inset-0 z-50 overflow-y-auto p-4" : "p-3 lg:p-4"}`}>
-      {/* Top Cockpit Header */}
-      <header className="mb-2.5 flex flex-wrap items-center justify-between gap-2.5 rounded-xl border border-ink-700/80 bg-ink-900/90 p-2.5 shadow-xl backdrop-blur-md">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">⚡</span>
-            <div>
-              <h1 className="font-display text-base font-bold text-parchment-100">快捷战斗座舱 (Quick Combat)</h1>
-              <p className="text-[10px] text-stone-400">3D 战场网格 · 移动走位 · 法术选择与升环增效 · 规则积木</p>
-            </div>
-          </div>
-
-          {/* Campaign Selector */}
-          <div className="flex items-center gap-1.5 rounded-lg border border-ink-700 bg-ink-950/80 px-2 py-0.5">
-            <span className="text-2xs text-stone-400">战役:</span>
-            <select
-              className="bg-transparent text-xs text-parchment-100 outline-none"
-              onChange={(e) => selectCampaign(e.target.value)}
-              value={campaignId}
-            >
-              {(campaignsQuery.data ?? []).map((cp) => (
-                <option className="bg-ink-900 text-stone-200" key={cp.id} value={cp.id}>
-                  {cp.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Combat Selector */}
-          <select
-            className={`${selectCls} max-w-44 text-xs font-medium py-1`}
-            onChange={(e) => setSelectedCombatId(e.target.value)}
-            value={combatId}
-          >
-            {(combatsQuery.data ?? []).map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name || `遭遇战斗 #${c.id.slice(0, 6)}`} ({c.status === "active" ? "进行中" : "已结束"})
-              </option>
-            ))}
-          </select>
-
-          {activeCombat ? (
-            <div className="flex items-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-950/30 px-2.5 py-0.5 text-xs">
-              <span className="font-bold text-amber-300">第 {activeCombat.round_number} 轮</span>
-              <span className="text-stone-500">|</span>
-              <span className="text-stone-300">当前回合:</span>
-              <strong className="text-amber-200">{activeFighter?.display_name ?? "未指定"}</strong>
-            </div>
-          ) : null}
-        </div>
-
-        {/* Action Controls */}
-        <div className="flex flex-wrap items-center gap-1.5">
-          <button
-            className="rounded-lg border border-ink-700 bg-ink-800 px-2.5 py-1 text-xs text-stone-300 transition hover:border-amber-500/50 hover:text-amber-200"
-            onClick={() => setShowAddCombatantModal(true)}
-            type="button"
-          >
-            👥 加人
-          </button>
-          <button
-            className="rounded-lg border border-ink-700 bg-ink-800 px-2.5 py-1 text-xs text-stone-300 transition hover:border-amber-500/50 hover:text-amber-200"
-            onClick={() => rollInitiativesMutation.mutate()}
-            type="button"
-          >
-            🎲 投先攻
-          </button>
-          <button
-            className="rounded-lg border border-emerald-600/70 bg-emerald-950/40 px-3 py-1 text-xs font-bold text-emerald-200 transition hover:bg-emerald-900/50 shadow-sm"
-            disabled={advanceTurnMutation.isPending}
-            onClick={() => advanceTurnMutation.mutate()}
-            type="button"
-          >
-            ⏭️ 推进下一回合
-          </button>
-          <button
-            className="rounded-lg border border-ink-700 bg-ink-900 px-2 py-1 text-xs text-stone-400 hover:text-stone-200"
-            onClick={() => setIsFullscreen(!isFullscreen)}
-            type="button"
-          >
-            {isFullscreen ? "🗗" : "🗖"}
-          </button>
-        </div>
+    <div className={`flex min-h-screen flex-col justify-between bg-[#080b11] p-3 text-stone-200 ${isFullscreen ? "fixed inset-0 z-50 overflow-y-auto" : ""}`}>
+      {/* 1. Top Section: BG3 Floating Initiative Carousel */}
+      <header className="mb-2.5">
+        <BG3InitiativeTrack
+          activeFighterId={activeFighter?.id ?? null}
+          campaignId={campaignId}
+          campaigns={campaignsQuery.data ?? []}
+          combatId={combatId}
+          combats={combatsQuery.data ?? []}
+          fighters={ordered}
+          isFullscreen={isFullscreen}
+          onAddCombatant={() => setShowAddCombatantModal(true)}
+          onRollInitiatives={() => rollInitiativesMutation.mutate()}
+          onSelectCampaign={(id) => selectCampaign(id)}
+          onSelectCombat={(id) => setSelectedCombatId(id)}
+          onSelectCombatant={(id) => {
+            setSelectedMapTargetId(id);
+            setPromptTargetId(id);
+          }}
+          onToggleFullscreen={() => setIsFullscreen(!isFullscreen)}
+          roundNumber={activeCombat.round_number}
+          selectedTargetId={selectedMapTargetId}
+        />
       </header>
 
-      {/* Top Initiative Card Strip */}
-      {ordered.length > 0 ? (
-        <div className="mb-2.5">
-          <InitiativeCardStrip
-            currentIndex={activeCombat?.current_turn_index ?? activeCombat?.active_combatant_index ?? 0}
-            fighters={ordered}
-          />
-        </div>
-      ) : null}
+      {/* 2. Center Section: 3D Tactical Battlefield + Floating Target Card & Quick Widgets */}
+      <main className="relative mb-2.5 flex-1">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
+          {/* Main 3D Tactical Grid Viewport (8 Cols) */}
+          <div className="lg:col-span-8">
+            <BG3BattleGrid
+              activeFighterId={activeFighter?.id ?? null}
+              aimPoint={aimPoint}
+              areaKeys={areaKeys}
+              campaignId={campaignId}
+              combatId={combatId}
+              fighters={ordered}
+              interactionMode={gridInteractionMode}
+              onAimPointChange={setAimPoint}
+              onInteractionModeChange={setGridInteractionMode}
+              onSpawnVfx={spawnVfx}
+              onTargetSelect={(id) => {
+                setSelectedMapTargetId(id);
+                setPromptTargetId(id);
+              }}
+              positions={positions}
+              selectedTargetId={selectedMapTargetId}
+              targeting={targetingRange}
+              vfxEvents={vfxEvents}
+            />
+          </div>
 
-      {/* Main Side-by-Side Cockpit Grid: 3D Grid on Left, Actions & Console on Right */}
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3.5 lg:grid-cols-12">
-        {/* Left Column: 🗺️ 3D 战术网格战场 (Always visible at the top left) (7 Cols) */}
-        <div className="flex flex-col gap-2.5 lg:col-span-7">
-          <QuickBattleGrid
-            activeFighterId={activeFighter?.id ?? null}
-            aimPoint={aimPoint}
-            areaKeys={areaKeys}
-            campaignId={campaignId}
-            combatId={combatId}
-            fighters={ordered}
-            interactionMode={gridInteractionMode}
-            onAimPointChange={setAimPoint}
-            onInteractionModeChange={(mode) => {
-              setGridInteractionMode(mode);
-              if (mode === "move") setActiveHudTab("move");
-              else if (mode === "target") setActiveHudTab("spells");
-            }}
-            onSpawnVfx={spawnVfx}
-            onTargetSelect={(id) => {
-              setSelectedMapTargetId(id);
-              setPromptTargetId(id);
-            }}
-            positions={positions}
-            selectedTargetId={selectedMapTargetId}
-            targeting={targetingRange}
-            vfxEvents={vfxEvents}
-          />
-
-          {/* Quick HP Adjustment & Dice Box */}
-          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-            {/* Quick HP Adjustment Strip */}
-            <div className="rounded-xl border border-ink-800 bg-ink-900/60 p-2.5 shadow-md">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-parchment-200">
-                ⚡ 快速生命值微调器
+          {/* Right Inspection & Widget Column (4 Cols) */}
+          <div className="flex flex-col gap-2.5 lg:col-span-4">
+            {/* Quick HP Adjustment Strip for All Combatants */}
+            <div className="bg3-panel rounded-2xl p-2.5 shadow-xl">
+              <span className="text-[10px] font-bold text-parchment-200">
+                ⚡ 快速生命微调
               </span>
-              <div className="mt-1.5 space-y-1.5 max-h-36 overflow-y-auto pr-1">
-                {ordered.slice(0, 6).map((f) => (
-                  <div className="flex items-center justify-between rounded border border-ink-800 bg-ink-950/60 p-1.5 text-2xs" key={f.id}>
-                    <div className="min-w-0 pr-1.5 truncate">
-                      <strong className="text-stone-200">{f.display_name}</strong>
-                      <span className="text-stone-400 font-mono ml-1">HP:{f.hp}/{f.max_hp}</span>
-                    </div>
+              <div className="mt-1.5 space-y-1 max-h-28 overflow-y-auto pr-1">
+                {ordered.map((f) => (
+                  <div className="flex items-center justify-between rounded border border-ink-800 bg-ink-950/70 p-1 text-2xs" key={f.id}>
+                    <span className="truncate font-bold text-stone-200">{f.display_name} ({f.hp}/{f.max_hp})</span>
                     <div className="flex gap-1 shrink-0">
-                      <button
-                        className="rounded border border-rose-900 bg-rose-950/50 px-1 py-0.2 text-[10px] text-rose-300 hover:bg-rose-900"
-                        onClick={() => quickHpAdjustMutation.mutate({ combatant: f, delta: -5 })}
-                      >
-                        -5
-                      </button>
-                      <button
-                        className="rounded border border-rose-900 bg-rose-950/50 px-1 py-0.2 text-[10px] text-rose-300 hover:bg-rose-900"
-                        onClick={() => quickHpAdjustMutation.mutate({ combatant: f, delta: -1 })}
-                      >
-                        -1
-                      </button>
-                      <button
-                        className="rounded border border-emerald-900 bg-emerald-950/50 px-1 py-0.2 text-[10px] text-emerald-300 hover:bg-emerald-900"
-                        onClick={() => quickHpAdjustMutation.mutate({ combatant: f, delta: 1 })}
-                      >
-                        +1
-                      </button>
-                      <button
-                        className="rounded border border-emerald-900 bg-emerald-950/50 px-1 py-0.2 text-[10px] text-emerald-300 hover:bg-emerald-900"
-                        onClick={() => quickHpAdjustMutation.mutate({ combatant: f, delta: 5 })}
-                      >
-                        +5
-                      </button>
+                      <button className="rounded border border-rose-900 bg-rose-950/60 px-1 py-0.2 text-[10px] text-rose-300 hover:bg-rose-900" onClick={() => quickHpAdjustMutation.mutate({ combatant: f, delta: -5 })}>-5</button>
+                      <button className="rounded border border-rose-900 bg-rose-950/60 px-1 py-0.2 text-[10px] text-rose-300 hover:bg-rose-900" onClick={() => quickHpAdjustMutation.mutate({ combatant: f, delta: -1 })}>-1</button>
+                      <button className="rounded border border-emerald-900 bg-emerald-950/60 px-1 py-0.2 text-[10px] text-emerald-300 hover:bg-emerald-900" onClick={() => quickHpAdjustMutation.mutate({ combatant: f, delta: 1 })}>+1</button>
+                      <button className="rounded border border-emerald-900 bg-emerald-950/60 px-1 py-0.2 text-[10px] text-emerald-300 hover:bg-emerald-900" onClick={() => quickHpAdjustMutation.mutate({ combatant: f, delta: 5 })}>+5</button>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Quick Dice Roller */}
-            <div className="rounded-xl border border-ink-800 bg-ink-900/60 p-2.5 shadow-md flex flex-col justify-between">
-              <div>
+            {/* Target Inspector Card */}
+            <BG3TargetInspector
+              activeFighter={activeFighter}
+              onQuickDamage={(delta) => {
+                if (promptTargetCombatant) {
+                  quickHpAdjustMutation.mutate({ combatant: promptTargetCombatant, delta });
+                }
+              }}
+              positions={positions}
+              target={promptTargetCombatant}
+            />
+
+            {/* Quick Dice Roller & AI Copilot Widget */}
+            <div className="grid grid-cols-2 gap-2">
+              {/* Quick Dice Roller */}
+              <div className="bg3-panel rounded-2xl p-2 shadow-xl flex flex-col justify-between">
                 <div className="flex items-center justify-between border-b border-ink-800 pb-1">
-                  <span className="text-xs font-bold text-parchment-200">🎲 极速骰盘</span>
-                  <div className="flex items-center gap-1">
-                    <span className="text-2xs text-stone-400">调整:</span>
-                    <input
-                      className="w-8 rounded border border-ink-700 bg-ink-950 px-1 text-center font-mono text-xs text-amber-200"
-                      onChange={(e) => setCustomDiceMod(e.target.value)}
-                      type="number"
-                      value={customDiceMod}
-                    />
-                  </div>
+                  <span className="text-[10px] font-bold text-parchment-200">🎲 极速骰盘</span>
+                  <input
+                    className="w-7 rounded border border-ink-700 bg-ink-950 px-1 text-center font-mono text-[10px] text-amber-200"
+                    onChange={(e) => setCustomDiceMod(e.target.value)}
+                    type="number"
+                    value={customDiceMod}
+                  />
                 </div>
-                <div className="mt-2 grid grid-cols-4 gap-1">
+                <div className="mt-1.5 grid grid-cols-3 gap-1">
                   {[20, 12, 10, 8, 6, 4].map((d) => (
                     <button
-                      className="rounded border border-ink-700 bg-ink-950/80 py-1 text-xs font-bold text-stone-300 hover:border-amber-500 hover:text-amber-200"
+                      className="rounded border border-ink-700 bg-ink-950/80 py-0.5 text-2xs font-bold text-stone-300 hover:text-amber-200"
                       key={d}
                       onClick={() => rollDice(d)}
                       type="button"
@@ -1652,631 +1851,112 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
                       d{d}
                     </button>
                   ))}
+                </div>
+                {diceHistory.length > 0 ? (
+                  <span className="mt-1 text-[9px] font-mono text-amber-300 truncate">
+                    {diceHistory[0].formula}➔<strong>{diceHistory[0].result}</strong>
+                  </span>
+                ) : null}
+              </div>
+
+              {/* AI Tactical Copilot */}
+              <div className="bg3-panel rounded-2xl p-2 shadow-xl flex flex-col justify-between">
+                <div className="flex items-center justify-between border-b border-ink-800 pb-1">
+                  <span className="text-[10px] font-bold text-parchment-200">🤖 AI 战术军师</span>
                   <button
-                    className="col-span-2 rounded border border-amber-800/60 bg-amber-950/30 py-1 text-xs font-bold text-amber-300 hover:bg-amber-900/40"
-                    onClick={() => rollDice(6, 2)}
+                    className="rounded border border-amber-700/60 bg-amber-950/30 px-1.5 py-0.2 text-[9px] text-amber-300 hover:bg-amber-900/40"
+                    disabled={aiTacticsMutation.isPending}
+                    onClick={() => aiTacticsMutation.mutate()}
                     type="button"
                   >
-                    2d6
+                    {aiTacticsMutation.isPending ? "思考…" : "战术"}
                   </button>
                 </div>
-              </div>
-
-              {diceHistory.length > 0 ? (
-                <div className="mt-1.5 flex flex-wrap gap-1 border-t border-ink-800/60 pt-1">
-                  {diceHistory.slice(0, 3).map((r) => (
-                    <span
-                      className={`rounded border px-1.5 py-0.2 font-mono text-[10px] ${
-                        r.isCrit ? "border-amber-500 bg-amber-500/20 text-amber-200 font-bold" : "border-ink-800 bg-ink-950 text-stone-300"
-                      }`}
-                      key={r.id}
-                    >
-                      {r.formula}➔<strong>{r.result}</strong>
-                    </span>
-                  ))}
+                <div className="mt-1 min-h-[32px] max-h-16 overflow-y-auto text-[9px] text-stone-300">
+                  {aiAnalysis ? <p className="text-amber-200/90 leading-tight">{aiAnalysis}</p> : <span className="text-stone-500">点击生成建议</span>}
                 </div>
-              ) : null}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: 🔮 玩家行动总控台 & 法术库 & 规则积木控制台 (5 Cols) */}
-        <div className="flex flex-col gap-2.5 lg:col-span-5">
-          {/* Action Station Navigation Tabs */}
-          <div className="rounded-xl border border-ink-700 bg-ink-900/90 p-3 shadow-xl">
-            <div className="flex flex-wrap items-center justify-between border-b border-ink-800 pb-2 gap-1.5">
-              <div className="flex flex-wrap rounded-lg border border-ink-700 bg-ink-950/80 p-0.5 text-2xs">
-                <button
-                  className={`rounded px-2.5 py-1 font-bold transition ${activeHudTab === "move" ? "bg-emerald-600 text-emerald-950 shadow" : "text-stone-400 hover:text-stone-200"}`}
-                  onClick={() => {
-                    setActiveHudTab("move");
-                    setGridInteractionMode("move");
-                  }}
-                  type="button"
-                >
-                  🏃 移动走位
-                </button>
-                <button
-                  className={`rounded px-2.5 py-1 font-bold transition ${activeHudTab === "spells" ? "bg-fuchsia-600 text-fuchsia-950 shadow" : "text-stone-400 hover:text-stone-200"}`}
-                  onClick={() => {
-                    setActiveHudTab("spells");
-                    setGridInteractionMode("target");
-                  }}
-                  type="button"
-                >
-                  🔮 法术库
-                </button>
-                <button
-                  className={`rounded px-2.5 py-1 font-bold transition ${activeHudTab === "actions" ? "bg-amber-600 text-amber-950 shadow" : "text-stone-400 hover:text-stone-200"}`}
-                  onClick={() => setActiveHudTab("actions")}
-                  type="button"
-                >
-                  ⚔️ 武器
-                </button>
-                <button
-                  className={`rounded px-2.5 py-1 font-bold transition ${activeHudTab === "skills" ? "bg-sky-600 text-sky-950 shadow" : "text-stone-400 hover:text-stone-200"}`}
-                  onClick={() => setActiveHudTab("skills")}
-                  type="button"
-                >
-                  🎯 技能
-                </button>
-                <button
-                  className={`rounded px-2.5 py-1 font-bold transition ${activeHudTab === "features" ? "bg-purple-600 text-purple-950 shadow" : "text-stone-400 hover:text-stone-200"}`}
-                  onClick={() => setActiveHudTab("features")}
-                  type="button"
-                >
-                  🛡️ 特技
-                </button>
-                <button
-                  className={`rounded px-2.5 py-1 font-bold transition ${activeHudTab === "conditions" ? "bg-rose-600 text-rose-950 shadow" : "text-stone-400 hover:text-stone-200"}`}
-                  onClick={() => setActiveHudTab("conditions")}
-                  type="button"
-                >
-                  🏷️ 状态
-                </button>
-              </div>
-
-              <div className="flex items-center gap-1.5 text-[10px] text-stone-400">
-                <span>行动: <strong className="text-amber-300">{activeFighter?.display_name?.slice(0, 4) ?? "未选"}</strong></span>
-                <span>|</span>
-                <span>目标: <strong className="text-emerald-300">{promptTargetCombatant?.display_name?.slice(0, 4) ?? "未选"}</strong></span>
-              </div>
-            </div>
-
-            {/* Tab: 🏃 移动走位专区 */}
-            {activeHudTab === "move" ? (
-              <div className="mt-2.5 space-y-2">
-                <div className="rounded-lg border border-emerald-600/50 bg-emerald-950/30 p-2.5 text-2xs">
-                  <div className="flex items-center justify-between">
-                    <strong className="text-xs text-emerald-200 font-bold">🏃 移动模式已开启</strong>
-                    <span className="rounded bg-emerald-900/60 px-2 py-0.5 font-mono text-emerald-300 font-bold border border-emerald-700/60">
-                      剩余 {activeFighter?.movement_remaining_ft ?? activeFighter?.speed_ft ?? 30} / {activeFighter?.speed_ft ?? 30} 尺
-                    </span>
-                  </div>
-                  <p className="mt-1.5 text-stone-300 leading-relaxed">
-                    💡 <strong>操作指引</strong>：左侧 3D 地图上已用 <span className="text-emerald-300 font-bold">翠绿色高亮</span> 标出所有可达格子，格子上标有移动距离（5尺、10尺、15尺等）。<strong>直接点击绿色格子即可位移</strong>！
-                  </p>
-                </div>
-              </div>
-            ) : null}
-
-            {/* Tab: 🔮 玩家法术库与施法全流程 */}
-            {activeHudTab === "spells" ? (
-              <div className="mt-2.5 space-y-2.5">
-                {/* Step 1: Spell Selector & Filters */}
-                <div className="flex flex-wrap items-center justify-between gap-1.5">
-                  <div className="flex rounded border border-ink-700 bg-ink-950 p-0.5 text-[10px]">
-                    <button
-                      className={`rounded px-1.5 py-0.2 transition ${spellLevelFilter === "all" ? "bg-fuchsia-600 font-bold text-fuchsia-950" : "text-stone-400 hover:text-stone-200"}`}
-                      onClick={() => setSpellLevelFilter("all")}
-                      type="button"
-                    >
-                      全部
-                    </button>
-                    <button
-                      className={`rounded px-1.5 py-0.2 transition ${spellLevelFilter === 0 ? "bg-fuchsia-600 font-bold text-fuchsia-950" : "text-stone-400 hover:text-stone-200"}`}
-                      onClick={() => setSpellLevelFilter(0)}
-                      type="button"
-                    >
-                      0环
-                    </button>
-                    <button
-                      className={`rounded px-1.5 py-0.2 transition ${spellLevelFilter === 1 ? "bg-fuchsia-600 font-bold text-fuchsia-950" : "text-stone-400 hover:text-stone-200"}`}
-                      onClick={() => setSpellLevelFilter(1)}
-                      type="button"
-                    >
-                      1环
-                    </button>
-                    <button
-                      className={`rounded px-1.5 py-0.2 transition ${spellLevelFilter === 2 ? "bg-fuchsia-600 font-bold text-fuchsia-950" : "text-stone-400 hover:text-stone-200"}`}
-                      onClick={() => setSpellLevelFilter(2)}
-                      type="button"
-                    >
-                      2环
-                    </button>
-                    <button
-                      className={`rounded px-1.5 py-0.2 transition ${spellLevelFilter === 3 ? "bg-fuchsia-600 font-bold text-fuchsia-950" : "text-stone-400 hover:text-stone-200"}`}
-                      onClick={() => setSpellLevelFilter(3)}
-                      type="button"
-                    >
-                      3环
-                    </button>
-                  </div>
-
-                  <input
-                    className="w-32 rounded border border-ink-700 bg-ink-950 px-2 py-0.5 text-[10px] text-stone-200 placeholder-stone-500 outline-none focus:border-fuchsia-500"
-                    onChange={(e) => setSpellSearchTerm(e.target.value)}
-                    placeholder="🔍 搜索法术…"
-                    value={spellSearchTerm}
-                  />
-                </div>
-
-                {/* Spells Grid Cards */}
-                <div className="grid grid-cols-2 gap-1.5 max-h-36 overflow-y-auto pr-1">
-                  {filteredSpells.map((spell) => {
-                    const isCurrent = selectedSpell?.id === spell.id;
-                    return (
-                      <button
-                        className={`flex flex-col items-start rounded border p-1.5 text-left transition shadow-sm ${
-                          isCurrent
-                            ? "border-fuchsia-400 bg-fuchsia-950/70 ring-1 ring-fuchsia-400"
-                            : "border-ink-800 bg-ink-950/80 hover:border-fuchsia-500/60"
-                        }`}
-                        key={spell.id}
-                        onClick={() => handleSelectSpell(spell)}
-                        type="button"
-                      >
-                        <div className="flex w-full items-center justify-between">
-                          <strong className="text-2xs font-bold text-parchment-100">{spell.name}</strong>
-                          <span className="text-[8px] font-mono text-fuchsia-300">
-                            {spell.level === 0 ? "戏法" : `${spell.level}环`}
-                          </span>
-                        </div>
-                        <span className="text-[8px] text-amber-300 font-mono mt-0.5">{spell.damageDiceBase} {spell.damageType}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Selected Spell Controls & Slot Picker */}
-                {selectedSpell ? (
-                  <div className="rounded-lg border border-fuchsia-500/60 bg-fuchsia-950/30 p-2 text-2xs space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <strong className="text-fuchsia-200 font-bold">{selectedSpell.name}</strong>
-                        <span className="text-stone-400">({selectedSpell.rangeFt}尺)</span>
-                      </div>
-
-                      {/* Upcast Selector */}
-                      <div className="flex rounded border border-fuchsia-700 bg-ink-950 p-0.5 text-[10px] font-bold">
-                        {selectedSpell.level === 0 ? (
-                          <span className="px-2 py-0.2 text-fuchsia-300">0环戏法</span>
-                        ) : (
-                          Array.from({ length: 4 - selectedSpell.level }, (_, idx) => {
-                            const slotLvl = selectedSpell.level + idx;
-                            const isPicked = selectedSpellLevel === slotLvl;
-                            return (
-                              <button
-                                className={`rounded px-1.5 py-0.2 transition ${
-                                  isPicked
-                                    ? "bg-fuchsia-600 text-white shadow"
-                                    : "text-stone-400 hover:text-white"
-                                }`}
-                                key={slotLvl}
-                                onClick={() => setSelectedSpellLevel(slotLvl)}
-                                type="button"
-                              >
-                                {slotLvl}环{slotLvl > selectedSpell.level ? `(+${slotLvl - selectedSpell.level})` : ""}
-                              </button>
-                            );
-                          })
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between border-t border-ink-800/80 pt-1.5">
-                      <span className="text-stone-400">
-                        覆盖目标: <strong className="text-emerald-300">{targetingValidity.validTargetIds.size || (promptTargetCombatant ? 1 : 0)} 名</strong>
-                      </span>
-
-                      {selectedSpell.id === "magic_missile" ? (
-                        <button
-                          className="rounded border border-fuchsia-500 bg-fuchsia-600 px-2.5 py-1 text-2xs font-bold text-white shadow hover:brightness-110"
-                          onClick={() => {
-                            const initAlloc: Record<string, number> = {};
-                            if (promptTargetCombatant) initAlloc[promptTargetCombatant.id] = 3 + (selectedSpellLevel - 1);
-                            else if (ordered[0]) initAlloc[ordered[0].id] = 3 + (selectedSpellLevel - 1);
-                            setDartAllocations(initAlloc);
-                            setMagicMissileModalOpen(true);
-                          }}
-                          type="button"
-                        >
-                          🚀 多目标分配
-                        </button>
-                      ) : (
-                        <button
-                          className="rounded border border-fuchsia-500 bg-gradient-to-r from-fuchsia-600 to-purple-600 px-3 py-1 text-2xs font-bold text-white shadow hover:brightness-110 disabled:opacity-50 transition active:scale-95"
-                          disabled={castSelectedSpellMutation.isPending}
-                          onClick={() => castSelectedSpellMutation.mutate()}
-                          type="button"
-                        >
-                          {castSelectedSpellMutation.isPending ? "施法中…" : `✨ 立即施放【${selectedSpell.name}】`}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
-
-            {/* Tab: ⚔️ 武器攻击 */}
-            {activeHudTab === "actions" ? (
-              <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-                <button
-                  className="rounded border border-amber-600/60 bg-amber-950/40 px-2.5 py-1 text-xs font-bold text-amber-200 hover:bg-amber-900/50 shadow"
-                  onClick={() => {
-                    setPromptActionName("近战武器重击 (Melee Attack)");
-                    setPromptAttackMod("5");
-                    setPromptDamageDice("1d8+3");
-                    setPromptDamageType("slashing");
-                    setIsMeleeAttack(true);
-                    setActionPromptOpen(true);
-                  }}
-                  type="button"
-                >
-                  🗡️ 近战攻击
-                </button>
-                <button
-                  className="rounded border border-sky-600/60 bg-sky-950/40 px-2.5 py-1 text-xs font-bold text-sky-200 hover:bg-sky-900/50 shadow"
-                  onClick={() => {
-                    setPromptActionName("远程射击 (Ranged Attack)");
-                    setPromptAttackMod("6");
-                    setPromptDamageDice("1d8+3");
-                    setPromptDamageType("piercing");
-                    setIsMeleeAttack(false);
-                    setActionPromptOpen(true);
-                  }}
-                  type="button"
-                >
-                  🏹 远程射击
-                </button>
-                <button
-                  className="rounded border border-rose-600/60 bg-rose-950/40 px-2.5 py-1 text-xs font-bold text-rose-200 hover:bg-rose-900/50 shadow"
-                  onClick={() => {
-                    setPromptActionName("借机攻击 (Opportunity Attack)");
-                    setPromptAttackMod("5");
-                    setPromptDamageDice("1d8+3");
-                    setPromptDamageType("slashing");
-                    setIsMeleeAttack(true);
-                    setActionPromptOpen(true);
-                  }}
-                  type="button"
-                >
-                  ⚡ 借机攻击
-                </button>
-              </div>
-            ) : null}
-
-            {/* Tab: 🎯 技能检定 */}
-            {activeHudTab === "skills" ? (
-              <div className="mt-2.5">
-                <div className="grid grid-cols-3 gap-1 max-h-36 overflow-y-auto pr-1">
-                  {DND_SKILLS.map((skill) => (
-                    <button
-                      className="rounded border border-ink-800 bg-ink-950/80 p-1 text-left hover:border-sky-500/60 text-[10px]"
-                      key={skill.id}
-                      onClick={() => executeSkillCheck(skill)}
-                      type="button"
-                    >
-                      <strong className="text-stone-200">{skill.name.split(" ")[0]}</strong>
-                    </button>
-                  ))}
-                </div>
-                {skillCheckResult ? (
-                  <div className="mt-1.5 rounded border border-sky-800/60 bg-sky-950/40 p-1.5 text-2xs text-sky-200 font-mono">
-                    {skillCheckResult}
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
-
-            {/* Tab: 🛡️ 职业特技 */}
-            {activeHudTab === "features" ? (
-              <div className="mt-2.5 grid grid-cols-2 gap-1.5">
-                <button
-                  className="rounded border border-emerald-700/60 bg-emerald-950/30 p-2 text-left hover:bg-emerald-900/40 text-2xs"
-                  onClick={() => {
-                    if (!activeFighter) return;
-                    const heal = Math.floor(Math.random() * 10) + 1 + 3;
-                    quickHpAdjustMutation.mutate({ combatant: activeFighter, delta: heal });
-                    showToast(`🛡️ 战士回气：回复 ${heal} 点生命值！`, "success");
-                  }}
-                  type="button"
-                >
-                  <strong className="text-emerald-200 font-bold block">🛡️ 回气 (Second Wind)</strong>
-                  <span className="text-[10px] text-stone-400">恢复 1d10+3 生命</span>
-                </button>
-                <button
-                  className="rounded border border-amber-700/60 bg-amber-950/30 p-2 text-left hover:bg-amber-900/40 text-2xs"
-                  onClick={() => {
-                    if (!promptTargetCombatant) return;
-                    const smiteDamage = Math.floor(Math.random() * 8) + 1 + Math.floor(Math.random() * 8) + 1;
-                    const pos = combatantGridPosition(promptTargetCombatant) ?? [3, 5];
-                    spawnVfx({ row: pos[0], col: pos[1], type: "smite", text: `-${smiteDamage} 光耀` });
-                    quickHpAdjustMutation.mutate({ combatant: promptTargetCombatant, delta: -smiteDamage });
-                    showToast(`⚖️ 圣负惩击：追加 ${smiteDamage} 点光耀伤害！`, "success");
-                  }}
-                  type="button"
-                >
-                  <strong className="text-amber-200 font-bold block">⚖️ 至圣斩 (Smite)</strong>
-                  <span className="text-[10px] text-stone-400">+2d8 光耀伤害</span>
-                </button>
-              </div>
-            ) : null}
-
-            {/* Tab: 🏷️ 核心状态 */}
-            {activeHudTab === "conditions" ? (
-              <div className="mt-2.5 grid grid-cols-3 gap-1 max-h-36 overflow-y-auto pr-1">
-                {DND_CONDITIONS.map((cond) => {
-                  const isActive = (promptTargetCombatant?.conditions ?? []).includes(cond.id);
-                  return (
-                    <button
-                      className={`rounded border p-1 text-left text-[10px] transition ${
-                        isActive
-                          ? "border-rose-500 bg-rose-950/60 font-bold text-rose-200"
-                          : "border-ink-800 bg-ink-950/80 text-stone-300"
-                      }`}
-                      key={cond.id}
-                      onClick={() => {
-                        if (!promptTargetCombatant) return;
-                        toggleConditionMutation.mutate({ combatant: promptTargetCombatant, conditionId: cond.id });
-                      }}
-                      type="button"
-                    >
-                      {cond.icon} {cond.name.split(" ")[0]}
-                    </button>
-                  );
-                })}
-              </div>
-            ) : null}
-          </div>
-
-          {/* Turn Command Console */}
-          {activeFighter ? (
-            <div className="rounded-xl border border-amber-600/50 bg-ink-900/90 p-3 shadow-xl">
-              <TurnCommandConsole
-                active={activeFighter}
-                activeCharacter={activeCharacter}
-                autoEnemies={autoEnemies}
-                automationReady={true}
-                campaignId={campaignId}
-                combatActions={actionsQuery.data ?? []}
-                combatId={combatId}
-                fighters={ordered}
-                key={`${combatId}:${activeFighter.id}`}
-                onAutoEnemiesChange={setAutoEnemies}
-                onEnemyTurnComplete={() => {
-                  advanceTurnMutation.mutate();
-                }}
-                onRangeChange={handleRangeChange}
-                onTargetChange={handleTargetChange}
-                selectedTargetId={selectedMapTargetId}
-                targetingValidity={targetingValidity}
-                turnKey={`${activeCombat.round_number}:${activeCombat.current_turn_index ?? 0}:${activeFighter.id}`}
-              />
-            </div>
-          ) : null}
-
-          {/* Player Rolls Queue */}
-          <PlayerRollPanel
-            actions={actionsQuery.data ?? []}
-            activeEnemy={activeFighter?.entity_type === "monster" ? activeFighter : undefined}
-            automationEnabled={autoEnemies}
-            campaignId={campaignId}
-            combatId={combatId}
-            fighters={ordered}
-            onResolved={() => {
-              void queryClient.invalidateQueries({ queryKey: ["combat-actions", campaignId, combatId] });
-            }}
-          />
-
-          {/* AI Tactical Copilot */}
-          <div className="rounded-xl border border-ink-800 bg-ink-900/60 p-2.5 shadow-md flex flex-col justify-between">
-            <div className="flex items-center justify-between border-b border-ink-800 pb-1">
-              <span className="text-xs font-bold text-parchment-200">🤖 AI 战术军师</span>
-              <div className="flex gap-1">
-                <button
-                  className="rounded border border-amber-700/60 bg-amber-950/30 px-1.5 py-0.2 text-2xs text-amber-300 hover:bg-amber-900/40 disabled:opacity-50"
-                  disabled={aiTacticsMutation.isPending}
-                  onClick={() => aiTacticsMutation.mutate()}
-                  type="button"
-                >
-                  {aiTacticsMutation.isPending ? "思考…" : "战术建议"}
-                </button>
-                <button
-                  className="rounded border border-sky-700/60 bg-sky-950/30 px-1.5 py-0.2 text-2xs text-sky-300 hover:bg-sky-900/40 disabled:opacity-50"
-                  disabled={aiNarrativeMutation.isPending}
-                  onClick={() => aiNarrativeMutation.mutate()}
-                  type="button"
-                >
-                  {aiNarrativeMutation.isPending ? "构思…" : "战况朗读"}
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-1.5 min-h-[40px] max-h-24 overflow-y-auto text-2xs text-stone-300">
-              {aiAnalysis ? <p className="text-amber-200/90 leading-relaxed">{aiAnalysis}</p> : null}
-              {aiNarrative ? <p className="font-serif text-sky-200/90 italic leading-relaxed">{aiNarrative}</p> : null}
-              {!aiAnalysis && !aiNarrative ? <p className="text-stone-500 py-1 text-center">点击按钮获取 AI 决策建议与战况旁白</p> : null}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Magic Missile Multi-Target Allocation Modal */}
-      {magicMissileModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-xl border border-fuchsia-500 bg-ink-950 p-5 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-ink-800 pb-2.5">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">🚀</span>
-                <strong className="text-sm text-fuchsia-200">
-                  魔法飞弹多目标分配（当前总数：{Object.values(dartAllocations).reduce((a, b) => a + b, 0)}/{3 + Math.max(0, selectedSpellLevel - 1)} 枚）
-                </strong>
-              </div>
-              <button
-                className="text-stone-400 hover:text-stone-200 text-xs"
-                onClick={() => setMagicMissileModalOpen(false)}
-                type="button"
-              >
-                ✕ 关闭
-              </button>
-            </div>
-
-            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto">
-              {ordered.map((f) => {
-                const count = dartAllocations[f.id] ?? 0;
-                return (
-                  <div className="flex items-center justify-between rounded-lg border border-ink-800 bg-ink-900/80 p-2 text-2xs" key={f.id}>
-                    <div className="min-w-0 pr-2">
-                      <strong className="truncate block text-stone-200">{f.display_name}</strong>
-                      <span className="text-stone-500 font-mono">HP: {f.hp}/{f.max_hp}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        className="h-6 w-6 rounded border border-ink-700 bg-ink-950 text-xs font-bold text-stone-300 hover:bg-ink-800"
-                        onClick={() => setDartAllocations((prev) => ({ ...prev, [f.id]: Math.max(0, (prev[f.id] ?? 0) - 1) }))}
-                        type="button"
-                      >
-                        -
-                      </button>
-                      <span className="w-5 text-center font-bold text-fuchsia-300 font-mono">{count}</span>
-                      <button
-                        className="h-6 w-6 rounded border border-fuchsia-700 bg-fuchsia-950/60 text-xs font-bold text-fuchsia-200 hover:bg-fuchsia-900"
-                        onClick={() => {
-                          const total = Object.values(dartAllocations).reduce((a, b) => a + b, 0);
-                          const maxAllowed = 3 + Math.max(0, selectedSpellLevel - 1);
-                          if (total >= maxAllowed) {
-                            showToast(`${selectedSpellLevel}环魔法飞弹最多分配 ${maxAllowed} 枚`, "info");
-                            return;
-                          }
-                          setDartAllocations((prev) => ({ ...prev, [f.id]: (prev[f.id] ?? 0) + 1 }));
-                        }}
-                        type="button"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="mt-4 flex justify-end gap-2">
-              <Button onClick={() => setMagicMissileModalOpen(false)} variant="ghost">取消</Button>
-              <Button
-                disabled={executeMagicMissileMutation.isPending || Object.values(dartAllocations).reduce((a, b) => a + b, 0) === 0}
-                onClick={() => executeMagicMissileMutation.mutate()}
-                variant="primary"
-              >
-                {executeMagicMissileMutation.isPending ? "正在发射…" : "🚀 全数发射并分别扣除伤害"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {/* Action & Dice Prompt Interactive Modal */}
-      {actionPromptOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-xl rounded-xl border border-amber-500 bg-ink-950 p-5 shadow-2xl">
-            <div className="flex flex-wrap items-center justify-between border-b border-ink-800 pb-2.5">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">🎲</span>
-                <strong className="text-sm text-parchment-100">
-                  动作判定：{promptActionName} ➔ 目标：
-                  <span className="text-emerald-300 ml-1">
-                    {promptTargetCombatant?.display_name ?? "未选定"} (AC {promptTargetCombatant?.armor_class ?? 10})
-                  </span>
-                </strong>
-              </div>
-              <button
-                className="text-stone-400 hover:text-stone-200 text-xs"
-                onClick={() => setActionPromptOpen(false)}
-                type="button"
-              >
-                ✕ 关闭
-              </button>
-            </div>
-
-            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {/* Auto Resolve */}
-              <div className="flex flex-col justify-between rounded-lg border border-emerald-800/60 bg-emerald-950/20 p-3">
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-emerald-400 font-bold text-xs uppercase">🤖 智能自动投骰与结算</span>
-                    <Badge tone="ok">推荐</Badge>
-                  </div>
-                  <p className="mt-1.5 text-2xs text-stone-300">
-                    自动投掷 d20 检定，计算优势/劣势与护甲 AC 比对，计算暴击与伤害抗性扣除生命。
-                  </p>
-                </div>
-                <button
-                  className="mt-3 w-full rounded-lg border border-emerald-600 bg-emerald-600/40 py-2 text-xs font-bold text-emerald-200 hover:bg-emerald-600/60 transition"
-                  disabled={autoResolveActionMutation.isPending || !promptTargetCombatant}
-                  onClick={() => autoResolveActionMutation.mutate()}
-                  type="button"
-                >
-                  {autoResolveActionMutation.isPending ? "结算中…" : "🎲 一键自动投骰结算"}
-                </button>
-              </div>
-
-              {/* Manual Physical Dice */}
-              <div className="rounded-lg border border-amber-800/60 bg-amber-950/20 p-3">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-amber-400 font-bold text-xs uppercase">✍️ 实体骰录入</span>
-                  <Badge tone="warn">真实投骰</Badge>
-                </div>
-                <div className="mt-2 grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-[10px] text-stone-400">命中检定 (d20+加值)</label>
-                    <input
-                      className={`${inputCls} mt-0.5 font-mono text-xs`}
-                      onChange={(e) => setManualAttackRoll(e.target.value)}
-                      placeholder="如: 19"
-                      type="number"
-                      value={manualAttackRoll}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] text-stone-400">伤害点数</label>
-                    <input
-                      className={`${inputCls} mt-0.5 font-mono text-xs`}
-                      onChange={(e) => setManualDamageRoll(e.target.value)}
-                      placeholder="如: 8"
-                      type="number"
-                      value={manualDamageRoll}
-                    />
-                  </div>
-                </div>
-                <button
-                  className="mt-3 w-full rounded-lg border border-amber-600 bg-amber-600/40 py-2 text-xs font-bold text-amber-200 hover:bg-amber-600/60 transition"
-                  disabled={confirmManualDiceActionMutation.isPending || !promptTargetCombatant}
-                  onClick={() => confirmManualDiceActionMutation.mutate()}
-                  type="button"
-                >
-                  {confirmManualDiceActionMutation.isPending ? "应用中…" : "✅ 确认录入"}
-                </button>
               </div>
             </div>
           </div>
         </div>
-      ) : null}
+      </main>
+
+      {/* 3. Bottom Section: BG3 Integrated Action Hotbar */}
+      <footer>
+        <BG3Hotbar
+          actions={actionsQuery.data ?? []}
+          activeCharacter={activeCharacter}
+          activeCombatIndex={activeCombat.current_turn_index ?? 0}
+          activeCombatRound={activeCombat.round_number}
+          activeFighter={activeFighter}
+          activeTab={activeHotbarTab}
+          autoEnemies={autoEnemies}
+          campaignId={campaignId}
+          combatId={combatId}
+          handleRangeChange={handleRangeChange}
+          handleTargetChange={handleTargetChange}
+          isAdvancingTurn={advanceTurnMutation.isPending}
+          isCasting={castSelectedSpellMutation.isPending}
+          onAdvanceTurn={() => advanceTurnMutation.mutate()}
+          onAutoEnemiesChange={setAutoEnemies}
+          onCastSpell={() => castSelectedSpellMutation.mutate()}
+          onOpenMagicMissileModal={() => {
+            const initAlloc: Record<string, number> = {};
+            if (promptTargetCombatant) initAlloc[promptTargetCombatant.id] = 3 + (selectedSpellLevel - 1);
+            else if (ordered[0]) initAlloc[ordered[0].id] = 3 + (selectedSpellLevel - 1);
+            setDartAllocations(initAlloc);
+            setMagicMissileModalOpen(true);
+          }}
+          onOpenMeleeAttack={() => {
+            setPromptActionName("近战武器重击 (Melee Attack)");
+            setPromptAttackMod("5");
+            setPromptDamageDice("1d8+3");
+            setPromptDamageType("slashing");
+            setIsMeleeAttack(true);
+            setActionPromptOpen(true);
+          }}
+          onOpenOpportunityAttack={() => {
+            setPromptActionName("借机攻击 (Opportunity Attack)");
+            setPromptAttackMod("5");
+            setPromptDamageDice("1d8+3");
+            setPromptDamageType("slashing");
+            setIsMeleeAttack(true);
+            setActionPromptOpen(true);
+          }}
+          onOpenRangedAttack={() => {
+            setPromptActionName("远程射击 (Ranged Attack)");
+            setPromptAttackMod("6");
+            setPromptDamageDice("1d8+3");
+            setPromptDamageType("piercing");
+            setIsMeleeAttack(false);
+            setActionPromptOpen(true);
+          }}
+          onQuickHpAdjust={(fighter, delta) => quickHpAdjustMutation.mutate({ combatant: fighter, delta })}
+          onResetSpeed={() => {
+            if (activeFighter) {
+              const maxSpd = activeFighter.speed_ft ?? 30;
+              void updateCombatant(campaignId, combatId, activeFighter.id, { movement_remaining_ft: maxSpd }, activeFighter.version)
+                .then(() => queryClient.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] }));
+            }
+          }}
+          onSelectSpell={handleSelectSpell}
+          onSelectSpellLevel={setSelectedSpellLevel}
+          onTabChange={setActiveHotbarTab}
+          orderedFighters={ordered}
+          selectedMaxSpeed={moverMaxSpeed}
+          selectedRemaining={moverRemaining}
+          selectedSpell={selectedSpell}
+          selectedSpellLevel={selectedSpellLevel}
+          selectedTargetId={selectedMapTargetId}
+          spells={DND_TEST_SPELLS}
+          targetingValidity={targetingValidity}
+        />
+      </footer>
 
       {/* Add Combatant Modal */}
       {showAddCombatantModal ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl border border-ink-700 bg-ink-900 p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-amber-500/50 bg-ink-950 p-6 shadow-2xl">
             <h3 className="font-display text-base font-bold text-parchment-100">添加参战者 / 怪物</h3>
             <div className="mt-4 space-y-3">
               <div>
@@ -2361,6 +2041,102 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
               >
                 加入战场
               </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Action Prompt / Manual Dice Modal */}
+      {actionPromptOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-2xl border border-amber-500 bg-ink-950 p-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-ink-800 pb-2.5">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🎲</span>
+                <strong className="text-sm text-parchment-100">
+                  {promptActionName} ➔ {promptTargetCombatant?.display_name ?? "目标"}
+                </strong>
+              </div>
+              <button
+                className="text-stone-400 hover:text-stone-200 text-xs"
+                onClick={() => setActionPromptOpen(false)}
+                type="button"
+              >
+                ✕ 关闭
+              </button>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-3">
+              <button
+                className="rounded-xl border border-emerald-600 bg-emerald-600/40 py-2.5 text-xs font-bold text-emerald-200 hover:bg-emerald-600/60 shadow"
+                onClick={async () => {
+                  if (!activeFighter || !promptTargetCombatant) return;
+                  const roll = Math.floor(Math.random() * 20) + 1;
+                  const total = roll + Number(promptAttackMod);
+                  const isHit = total >= (promptTargetCombatant.armor_class ?? 10);
+                  const dmg = Math.floor(Math.random() * 8) + 1 + 3;
+
+                  if (isHit) {
+                    quickHpAdjustMutation.mutate({ combatant: promptTargetCombatant, delta: -dmg });
+                  }
+
+                  const cmd: CombatActionCommand = {
+                    action_type: "damage",
+                    target_combatant_id: promptTargetCombatant.id,
+                    target_version: promptTargetCombatant.version,
+                    actor_combatant_id: activeFighter.id,
+                    actor_version: activeFighter.version,
+                    action_cost: "action",
+                    action_name: promptActionName,
+                    amount: isHit ? dmg : 0,
+                    damage_type: promptDamageType,
+                    is_attack: true,
+                    attack_roll_total: total,
+                    resolution_note: `${activeFighter.display_name} 发动「${promptActionName}」命中检定 d20(${roll})+${promptAttackMod}=${total} ➔ ${isHit ? `命中！造成 ${dmg} 点伤害` : "未命中"}`,
+                  };
+                  await confirmCombatAction(campaignId, combatId, cmd);
+                  setActionPromptOpen(false);
+                  showToast(isHit ? `✅ 命中！造成 ${dmg} 伤害` : "❌ 未命中", isHit ? "success" : "info");
+                }}
+                type="button"
+              >
+                🤖 一键自动投骰与智能结算 (推荐)
+              </button>
+
+              <div className="rounded-xl border border-amber-800/60 bg-amber-950/20 p-3">
+                <span className="text-[10px] text-amber-300 font-bold">✍️ 实体骰录入</span>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <input
+                    className={`${inputCls} font-mono text-xs`}
+                    onChange={(e) => setManualAttackRoll(e.target.value)}
+                    placeholder="命中点数 (如: 18)"
+                    type="number"
+                    value={manualAttackRoll}
+                  />
+                  <input
+                    className={`${inputCls} font-mono text-xs`}
+                    onChange={(e) => setManualDamageRoll(e.target.value)}
+                    placeholder="伤害点数 (如: 7)"
+                    type="number"
+                    value={manualDamageRoll}
+                  />
+                </div>
+                <button
+                  className="mt-2.5 w-full rounded-xl border border-amber-600 bg-amber-600/40 py-2 text-xs font-bold text-amber-200 hover:bg-amber-600/60"
+                  onClick={async () => {
+                    if (!activeFighter || !promptTargetCombatant) return;
+                    const dmg = Number(manualDamageRoll) || 0;
+                    if (dmg > 0) {
+                      quickHpAdjustMutation.mutate({ combatant: promptTargetCombatant, delta: -dmg });
+                    }
+                    setActionPromptOpen(false);
+                    showToast("✅ 实体骰点数已成功结算！", "success");
+                  }}
+                  type="button"
+                >
+                  确认录入实体骰
+                </button>
+              </div>
             </div>
           </div>
         </div>
