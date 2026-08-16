@@ -2491,6 +2491,28 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
     setDiceHistory((prev) => [entry, ...prev.slice(0, 4)]);
   };
 
+  const handleTabChange = useCallback(
+    (tab: "common" | "spells" | "weapons" | "features" | "skills" | "conditions" | "rules" | "monster") => {
+      setActiveHotbarTab(tab);
+      if (tab === "spells") {
+        setGridInteractionMode("target");
+        if (selectedSpell) {
+          setTargetingRange({
+            label: selectedSpell.name,
+            rangeFt: selectedSpell.rangeFt,
+            shape: selectedSpell.shape,
+            sizeFt: selectedSpell.sizeFt,
+            originSelf: selectedSpell.originSelf,
+          });
+          setTargetingActorId(activeFighter?.id ?? null);
+        }
+      } else if (tab === "common" || tab === "weapons") {
+        setGridInteractionMode("move");
+      }
+    },
+    [selectedSpell, activeFighter],
+  );
+
   if (combatsQuery.isLoading) {
     return <LoadingBlock label="正在载入战役战斗数据…" />;
   }
@@ -2779,7 +2801,7 @@ function QuickCombatCockpit({ campaignId }: { campaignId: string }): ReactElemen
           }}
           onSelectSpell={handleSelectSpell}
           onSelectSpellLevel={setSelectedSpellLevel}
-          onTabChange={setActiveHotbarTab}
+          onTabChange={handleTabChange}
           onTriggerMonsterSpell={handleTriggerMonsterSpell}
           orderedFighters={ordered}
           selectedMaxSpeed={moverMaxSpeed}
